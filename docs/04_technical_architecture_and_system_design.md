@@ -1,4 +1,4 @@
-﻿04 — Technical Architecture, System Design & Production Kotlin Engines (Consolidated Phases 1, 2 & 3)
+04 — Technical Architecture, System Design & Production Kotlin Engines (Consolidated Phases 1, 2 & 3)
 1. Unified Multi-Module Gradle Topology (All 3 Phases)
 The project enforces a strict directed acyclic graph (DAG) across its Gradle modules. Crucially, :core:tax-engine is a pure Kotlin JVM module (kotlin("jvm")) with zero Android SDK or LLM dependencies, enabling 100% deterministic execution and sub-second JUnit 5 verification on CI servers.
 
@@ -1270,6 +1270,11 @@ object CapitalGainsAndForeignAssetEngine {
 Deterministic Extraction First: PdfBox-Android parses the structured variance table inside the Sec 143(1) Intimation or Sec 139(9) Defective Return PDF (As Provided by Taxpayer in Return vs. As Computed u/s 143(1)).
 Immutable Token-Locking: Numerical figures and statutory section codes are replaced with immutable placeholders ({{NOTICE_SECTION}}, {{VARIANCE_AMOUNT}}, {{ACTION_DEADLINE}}) before invoking on-device Gemini Nano (temperature = 0.0f).
 Byte-for-Byte Verification & Re-Injection: The post-inference validator asserts 100% token preservation in the translated Hindi (hi-IN) or Gujarati (gu-IN) output before deterministically re-injecting the verified Rupee figures.
+
+3.5 TaxBuddy-Style Conversational Filing Bot & Mandatory Pre-Filing Review Gate
+Conversational Intake State Machine: Users can converse naturally using conversational chips and prompts (Gross salary, multi-employer switch detection, home loan EMI amortization, Section 80D health insurance, NPS 80CCD(1B), 80TTA savings interest, and bank accounts).
+Zero-LLM Math Policy: All financial impacts and deduction statutory caps (Sec 24(b) ₹2,00,000, Sec 80C ₹1,50,000, Sec 80CCD(1B) ₹50,000, Sec 80TTA ₹10,000) are calculated deterministically by HomeLoanAndDeductionCalculator and DeterministicIndianTaxEngine in real-time.
+Mandatory 6-Gate Review Invariant: Even though data intake is conversational, direct submission to the ITD portal is strictly prohibited from chat. The conversational flow terminates at ChatStep.COMPLETED_AWAITING_REVIEW, requiring the taxpayer to pass through the 6-Gate Pre-Filing Audit and statutory verification before the CBDT JSON payload can be generated or transmitted.
 
 4. CA & Principal Architect Statutory Verification Notes
 Section 87A Marginal Relief & Section 112A(6) Special-Rate Carve-Out:

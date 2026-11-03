@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import in.zerotax.app.ui.components.*
 import in.zerotax.app.ui.audit.PreFilingAuditView
+import in.zerotax.app.ui.chat.ConversationalFilingChatScreen
 import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
 import in.zerotax.app.ui.portal.PortalAssistantScreen
 import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
@@ -56,6 +57,19 @@ fun ZeroTaxFourTapSpineScaffold(
     var showAisTransactions by remember { mutableStateOf(false) }
     var showDeductionsAdvisor by remember { mutableStateOf(false) }
     var showPreFilingAudit by remember { mutableStateOf(false) }
+    var showChatbotFiling by remember { mutableStateOf(false) }
+
+    if (showChatbotFiling) {
+        ConversationalFilingChatScreen(
+            pan = uiState.pan,
+            onBack = { showChatbotFiling = false },
+            onProceedToFullReview = { _, _, _, _, _ ->
+                showChatbotFiling = false
+                showPreFilingAudit = true
+            }
+        )
+        return
+    }
 
     if (showPortalAssistant) {
         PortalAssistantScreen(
@@ -112,7 +126,8 @@ fun ZeroTaxFourTapSpineScaffold(
             EnterpriseTopHeader(
                 pan = uiState.pan,
                 assessmentYear = uiState.assessmentYear,
-                isVaultEncrypted = !uiState.isVaultShredded
+                isVaultEncrypted = !uiState.isVaultShredded,
+                onOpenChatbot = { showChatbotFiling = true }
             )
         },
         bottomBar = {
@@ -183,7 +198,8 @@ fun ZeroTaxFourTapSpineScaffold(
                     OnboardingTap.Tap1IdentityConsent -> Stage1IdentityConsent(
                         pan = uiState.pan,
                         onPanChanged = { viewModel.onPanChanged(it) },
-                        onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap2LiveDiscovery) }
+                        onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap2LiveDiscovery) },
+                        onOpenChatbot = { showChatbotFiling = true }
                     )
 
                     OnboardingTap.Tap2LiveDiscovery -> Stage2DocumentDiscovery(
@@ -225,6 +241,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         onOpenAisTransactions = { showAisTransactions = true },
                         onRunAudit = { showPreFilingAudit = true },
                         onLaunchPortalAssistant = { showPortalAssistant = true },
+                        onOpenChatbot = { showChatbotFiling = true },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
                 }
@@ -260,7 +277,8 @@ fun ZeroTaxFourTapSpineScaffold(
 private fun Stage1IdentityConsent(
     pan: String,
     onPanChanged: (String) -> Unit,
-    onProceed: () -> Unit
+    onProceed: () -> Unit,
+    onOpenChatbot: () -> Unit = {}
 ) {
     val isPanValid = pan.length == 10 && pan[3] == 'P'
     var isVisible by remember { mutableStateOf(false) }
@@ -340,6 +358,22 @@ private fun Stage1IdentityConsent(
         }
 
         Spacer(Modifier.weight(1f))
+
+        OutlinedButton(
+            onClick = onOpenChatbot,
+            shape = RoundedCornerShape(4.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+        ) {
+            Text(
+                text = "🤖 Prefer Chat? Open TaxBuddy-Style Assistant",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
 
         Button(
             onClick = onProceed,
@@ -831,6 +865,7 @@ private fun ProWorkspaceView(
     onOpenAisTransactions: () -> Unit,
     onRunAudit: () -> Unit,
     onLaunchPortalAssistant: () -> Unit,
+    onOpenChatbot: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
     var isShreddingInProgress by remember { mutableStateOf(false) }
@@ -934,6 +969,15 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("🛡️ Run 6-Gate Pre-Filing Audit & CPC Refund Tracker", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = onOpenChatbot,
+                                        shape = RoundedCornerShape(4.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("🤖 Conversational Filing Chatbot (TaxBuddy Style)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }

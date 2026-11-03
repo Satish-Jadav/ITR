@@ -30,4 +30,5 @@ dependencies {
 
     compileOnly("com.google.ai.edge.aicore:aicore:1.0.0-alpha01")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    testImplementation("junit:junit:4.13.2")
 }
