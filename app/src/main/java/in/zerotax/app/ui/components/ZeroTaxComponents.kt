@@ -192,7 +192,8 @@ fun DiscreteStatutoryStepper(
 fun SmartIndividualPanField(
     panValue: String,
     onPanChanged: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isReadOnly: Boolean = false
 ) {
     val dynamicKeyboardType = if (panValue.length in 5..8) KeyboardType.NumberPassword else KeyboardType.Ascii
     val isFourthCharInvalid = panValue.length >= 4 && panValue[3] != 'P'
@@ -201,10 +202,13 @@ fun SmartIndividualPanField(
     OutlinedTextField(
         value = panValue,
         onValueChange = { raw ->
-            val up = raw.uppercase().take(10)
-            val valid = up.indices.all { i -> if (i in 5..8) up[i].isDigit() else up[i].isLetter() }
-            if (valid) onPanChanged(up)
+            if (!isReadOnly) {
+                val up = raw.uppercase().take(10)
+                val valid = up.indices.all { i -> if (i in 5..8) up[i].isDigit() else up[i].isLetter() }
+                if (valid) onPanChanged(up)
+            }
         },
+        readOnly = isReadOnly,
         label = { Text("Permanent Account Number (PAN)", style = MaterialTheme.typography.bodyMedium) },
         placeholder = { Text("ABCDE1234F", style = TextStyle(fontFamily = FontFamily.Monospace, color = Slate400)) },
         supportingText = {

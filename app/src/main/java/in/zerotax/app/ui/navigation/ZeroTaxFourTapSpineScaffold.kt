@@ -669,7 +669,7 @@ private fun Stage4RegimeShowdown(
                 colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                 modifier = Modifier.weight(2.2f).height(44.dp)
             ) {
-                Text("Auto-Fill ITD Portal u/s 139(1B)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                Text("Direct In-App ITR Filing u/s 139(1)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
             }
         }
     }
@@ -760,7 +760,7 @@ private fun ProWorkspaceView(
                                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
-                                        Text("Direct Portal Auto-Fill & Gemini Copilot (Sec 139(1B))", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                        Text("Direct In-App ITR Filing Suite & Gemini Copilot", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }

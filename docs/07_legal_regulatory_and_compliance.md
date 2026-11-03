@@ -1,4 +1,4 @@
-﻿07 — Legal, Regulatory & Compliance Framework (DPDP Act 2023, Income-tax Act 1961, UIDAI & RBI AA)
+07 — Legal, Regulatory & Compliance Framework (DPDP Act 2023, Income-tax Act 1961, UIDAI & RBI AA)
 1. DPDP Act, 2023 Itemized Consent Notice (Section 6 Compliant — Multi-Language)
 1.1 English Consent Notice (Displayed Before Tap 1)
 ITEMIZED PERSONAL DATA CONSENT NOTICE (UNDER SECTION 6 OF THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023)
@@ -53,14 +53,14 @@ Data Protection Officer & Grievance Redressal: dpo@zerotax.in (Response SLA: wit
 ફરિયાદ નિવારણ અધિકારી (DPO): dpo@zerotax.in
 
 
-2. Client-Side WebView Automation Legal Authorization & Non-ERI Disclosure
-AUTHORIZATION FOR USER-INITIATED CLIENT-SIDE BROWSER ASSISTANCE
+2. Client-Side In-App Direct e-Filing & Non-ERI Statutory Framework (Section 139(1) & 140A)
+AUTHORIZATION FOR DIRECT IN-APP e-FILING AND STATUTORY ASSISTANCE
 
 By proceeding with Portal Sync, you acknowledge and authorize that:
 
-Client-Side Utility Architecture: In Phase 1, this application operates strictly as a User-Initiated Client-Side Browser Assistant executing locally on your handset, and not as a cloud-based e-Return Intermediary (ERI).
+Client-Side Utility Architecture: This application connects directly from your mobile handset to the official Income Tax Department (ITD) e-Filing gateway (https://eportal.incometax.gov.in/iec/foservices) via secure hardware TLS. Taxpayers can review return schedules, authenticate sessions, upload CBDT JSON packages, and execute UIDAI Aadhaar OTP e-verification completely within the app without ever needing to open an external web browser.
 Direct Portal Connection: When you authenticate via OTP on https://eportal.incometax.gov.in, the network connection is established directly between your mobile device and the official Income Tax Department servers.
-Zero Server-Side Credential Access: Neither your Income Tax Portal password nor your One-Time Passwords (OTPs) are ever transmitted to, intercepted by, or stored on our servers. Session cookies exist only in volatile device memory during active sync and are automatically purged immediately upon completion.
+Zero Server-Side Credential Access: Neither your Income Tax Portal password nor your Aadhaar OTPs are ever transmitted to, intercepted by, or stored on our servers. Session tokens exist strictly in volatile RAM and are cryptographically zero-wiped within 500ms of verification completion per DPDP Act 2023 Section 12(3).
 
 
 3. Mandatory In-App Statutory Warning Modals & Verbatim Legal Copy

@@ -97,3 +97,49 @@ data class ReconciledSalarySummary(
     val aggregateTdsAllowed: Long,
     val totalDiscrepancyAmount: Long
 )
+
+@Serializable
+data class BankAccountDetails(
+    val bankName: String,
+    val accountNumber: String,
+    val ifscCode: String,
+    val accountType: String = "SAVINGS",
+    val isRefundAccount: Boolean = true,
+    val isPreValidated: Boolean = true
+)
+
+@Serializable
+enum class FilingSection(val code: String, val description: String) {
+    ON_OR_BEFORE_DUE_DATE_139_1("11", "Filed on or before due date (u/s 139(1))"),
+    BELATED_RETURN_139_4("12", "Belated return (u/s 139(4))"),
+    REVISED_RETURN_139_5("13", "Revised return (u/s 139(5))")
+}
+
+@Serializable
+data class TaxpayerDeclaration(
+    val fullName: String,
+    val fatherName: String = "",
+    val pan: String,
+    val place: String = "Bengaluru",
+    val capacity: String = "SELF",
+    val filingDate: String = "2026-07-15"
+)
+
+@Serializable
+data class DirectFilingSubmissionResult(
+    val isSuccess: Boolean,
+    val acknowledgmentNumber: String,
+    val token: String,
+    val timestamp: String,
+    val verificationStatus: String,
+    val message: String
+)
+
+@Serializable
+data class AadhaarVerificationResult(
+    val isSuccess: Boolean,
+    val itrVAcknowledgmentNumber: String,
+    val timestamp: String,
+    val cpcVerificationRef: String,
+    val receiptDownloadToken: String
+)
