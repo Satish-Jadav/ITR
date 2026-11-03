@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import in.zerotax.app.ui.components.*
 import in.zerotax.app.ui.portal.PortalAssistantScreen
+import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
 import in.zerotax.app.ui.theme.*
 import in.zerotax.app.viewmodel.ZeroTaxViewModel
 import in.zerotax.core.model.Rupee
@@ -50,6 +51,7 @@ fun ZeroTaxFourTapSpineScaffold(
     val uiState by viewModel.uiState.collectAsState()
     var showSection270ADialog by remember { mutableStateOf(false) }
     var showPortalAssistant by remember { mutableStateOf(false) }
+    var showAisTransactions by remember { mutableStateOf(false) }
 
     if (showPortalAssistant) {
         PortalAssistantScreen(
@@ -59,6 +61,14 @@ fun ZeroTaxFourTapSpineScaffold(
             taxLiability = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
             tdsClaimed = uiState.salarySummary.aggregateTdsAllowed,
             onClose = { showPortalAssistant = false }
+        )
+        return
+    }
+
+    if (showAisTransactions) {
+        SmartTransactionSuggestionsView(
+            pan = uiState.pan,
+            onBack = { showAisTransactions = false }
         )
         return
     }
@@ -145,6 +155,7 @@ fun ZeroTaxFourTapSpineScaffold(
 
                     OnboardingTap.Tap2LiveDiscovery -> Stage2DocumentDiscovery(
                         grossSalary = uiState.grossSalaryRupees,
+                        onOpenAisTransactions = { showAisTransactions = true },
                         onBack = { viewModel.onNavigateToTap(OnboardingTap.Tap1IdentityConsent) },
                         onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap3NudgeCards) }
                     )
@@ -174,6 +185,7 @@ fun ZeroTaxFourTapSpineScaffold(
                     null -> ProWorkspaceView(
                         selectedTab = uiState.selectedWorkspaceTab,
                         uiState = uiState,
+                        onOpenAisTransactions = { showAisTransactions = true },
                         onLaunchPortalAssistant = { showPortalAssistant = true },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
@@ -313,6 +325,7 @@ private fun Stage1IdentityConsent(
 @Composable
 private fun Stage2DocumentDiscovery(
     grossSalary: Long,
+    onOpenAisTransactions: () -> Unit,
     onBack: () -> Unit,
     onProceed: () -> Unit
 ) {
@@ -452,6 +465,41 @@ private fun Stage2DocumentDiscovery(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        // AIS / TIS Transactions & Form 60 Intelligence Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onOpenAisTransactions() },
+            shape = RoundedCornerShape(4.dp),
+            colors = CardDefaults.cardColors(containerColor = IndigoStatutoryBg),
+            border = CardDefaults.outlinedCardBorder().copy(
+                width = 0.75.dp,
+                brush = androidx.compose.ui.graphics.SolidColor(IndigoStatutory.copy(alpha = 0.4f))
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "AIS / TIS Transactions & Form 60 Profile",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = IndigoStatutory)
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "Fetch bank interest, dividend TDS, and link client KYC profile details.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Slate700
+                    )
+                }
+                StatutoryBadge(text = "Inspect →", tone = BadgeTone.STATUTORY)
             }
         }
 
@@ -682,6 +730,7 @@ private fun Stage4RegimeShowdown(
 private fun ProWorkspaceView(
     selectedTab: WorkspaceTab,
     uiState: in.zerotax.app.viewmodel.ZeroTaxUiState,
+    onOpenAisTransactions: () -> Unit,
     onLaunchPortalAssistant: () -> Unit,
     onShredVault: () -> Unit
 ) {
@@ -761,6 +810,14 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("Direct In-App ITR Filing Suite & Gemini Copilot", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = onOpenAisTransactions,
+                                        shape = RoundedCornerShape(4.dp),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("Inspect AIS Transactions & Form 60 KYC Profile", style = MaterialTheme.typography.labelMedium)
                                     }
                                 }
                             }

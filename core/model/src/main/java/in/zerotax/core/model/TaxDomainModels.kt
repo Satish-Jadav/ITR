@@ -143,3 +143,58 @@ data class AadhaarVerificationResult(
     val cpcVerificationRef: String,
     val receiptDownloadToken: String
 )
+
+@Serializable
+enum class AisCategory(val code: String, val displayName: String) {
+    SAVINGS_INTEREST("INT-SB", "Savings Bank Account Interest"),
+    TIME_DEPOSIT_INTEREST("INT-TD", "Fixed / Term Deposit Interest"),
+    DIVIDENDS("DIV", "Dividend from Shares / Mutual Funds"),
+    SALE_OF_SECURITIES("SFT-006", "Mutual Fund / Equity Sale Proceeds"),
+    RENT_RECEIVED("RENT", "Rent Received (Sec 194-IB / 194-I)"),
+    HIGH_VALUE_CASH("SFT-005", "High-Value Cash Deposit / Withdrawal")
+}
+
+@Serializable
+data class AisTransactionRecord(
+    val transactionId: String,
+    val category: AisCategory,
+    val reportingEntity: String,
+    val accountOrFolioNumber: String,
+    val grossAmount: Long,
+    val tdsWithheld: Long = 0L,
+    val quarterOrDate: String,
+    val suggestedSchedule: String,
+    val suggestedExemptionSection: String? = null,
+    val suggestedExemptionAmount: Long = 0L,
+    val isAccepted: Boolean = true
+)
+
+@Serializable
+data class Form60ClientProfile(
+    val declarantName: String,
+    val fatherName: String,
+    val dateOfBirth: String,
+    val flatDoorBlock: String,
+    val premisesName: String = "",
+    val roadStreet: String,
+    val cityDistrict: String,
+    val state: String,
+    val pincode: String,
+    val mobileNumber: String,
+    val email: String,
+    val estimatedAgriculturalIncome: Long = 0L,
+    val estimatedOtherIncome: Long = 0L,
+    val identityDocumentType: String = "AADHAAR_CARD",
+    val identityDocumentNumber: String = "••••••••5819",
+    val transactionType: String = "OPENING_BANK_ACCOUNT_AND_TAX_FILING"
+)
+
+@Serializable
+data class SmartTransactionNudge(
+    val title: String,
+    val description: String,
+    val statutoryReference: String,
+    val taxBenefitAmount: Long,
+    val category: AisCategory,
+    val isApplied: Boolean = true
+)
