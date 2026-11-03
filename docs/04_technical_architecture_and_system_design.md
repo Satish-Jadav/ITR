@@ -1313,3 +1313,11 @@ Operates as a pure-JVM deterministic allocation engine to legally minimize emplo
 6.3 Tax Notice Defense & Rectification Assistant (`TaxNoticeDefenseAssistantScreen.kt`)
 - CPC Bengaluru notice analysis across Sections 143(1), 139(9), 245, and 148A.
 - Explains mismatch causation, statutory deadlines (15-30 days), and generates CBDT-compliant formal written submissions for e-Proceedings / Section 154 online rectification.
+
+
+6.4 Small Business Tax Audit & Presumptive Suite (`SmallBusinessAuditAndPresumptiveEngine.kt`)
+- Full statutory automation for small businesses, contractors, traders, and professionals.
+- Section 44AB threshold analyzer: Evaluates ₹1 Crore vs ₹10 Crore threshold based on <= 5% cash receipts and cash payments ratio.
+- Section 44AD / 44ADA Presumptive profit calculator (6% digital, 8% cash, 50% professional) with Section 44AD(4) 5-year lock-in debarment check.
+- Form 3CD disallowance diagnostics: Automatically adds back Section 43B(h) MSME overdue payments (>45 days), Section 40A(3) cash expenses (>₹10,000/day), Section 40(a)(ia) 30% TDS non-deduction, and Section 43B unpaid statutory dues.
+- 1-Tap CA Pre-Audit Handover Dossier generator to eliminate audit prep friction between small business clients and their practicing Chartered Accountants.

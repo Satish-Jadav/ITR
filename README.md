@@ -53,7 +53,13 @@
 - **Statutory Deadline Tracking & Penalty Shield:** Alerts taxpayers to statutory windows (15 to 30 days) to prevent automatic Section 220(2) penal interest and Section 221 penalty orders.
 - **1-Tap CBDT-Compliant Written Submission Generator:** Generates legally structured formal written replies quoting supreme court precedents, CBDT circulars, and Form 26AS annexures ready for e-Proceedings / Section 154 online rectification.
 
-### 7. ⚖️ Comprehensive Statutory Legal Framework & Cloud Crash Resilience
+### 7. 🏢 Small Business Tax Audit & Presumptive Suite
+- **Section 44AB Mandatory Tax Audit Analyzer:** Evaluates turnover thresholds—standard ₹1 Crore limit vs enhanced ₹10 Crore limit (under the Proviso to Section 44AB(a) for cash receipts and cash payments $\le$ 5%).
+- **Section 44AD & 44ADA Presumptive Calculator:** Validates minimum deemed profits (6% digital, 8% cash for eligible businesses up to ₹3 Crores; 50% for specified professionals up to ₹75 Lakhs) with Section 44AD(4) 5-year lock-in debarment warnings.
+- **Form 3CD Statutory Disallowances Pre-Audit Scanner:** Flags and adds back Section 43B(h) MSME overdue payments (>45 days), Section 40A(3) single-day cash expenses (>₹10,000), Section 40(a)(ia) 30% TDS non-deduction, and Section 43B unpaid statutory liabilities.
+- **Chartered Accountant Handover Pack:** 1-tap exports a structured pre-audit compliance dossier (trial balance, 5% cash ratio, disallowances) to streamline CA tax audit sign-off and shield small business clients against Section 271B penalties.
+
+### 8. ⚖️ Comprehensive Statutory Legal Framework & Cloud Crash Resilience
 - **Statutory Self-Declaration u/s 140:** Taxpayers solemnly declare return authenticity, acknowledging Section 277 penal consequences (up to 7 years imprisonment) and Section 270A penalties (50% to 200%).
 - **Non-Advisory Platform Disclaimer:** Clarifies that ZeroTax is an automated client-side software utility, NOT a Chartered Accountant firm (CA Act 1949), legal practice, or SEBI RIA.
 - **Cloud Crash-Resilience State Retention Manager (`CloudBackupSyncManager`):** Forward-compatible with remote cloud backup APIs (`/api/v1/tax/backup-sync`). Maintains an encrypted, zero-knowledge local journal and synchronizes session state so that if the Android OS terminates the app or the device shuts down, the user's return draft is safely recovered.
@@ -88,6 +94,7 @@ The application enforces a strict directed acyclic graph (DAG) across modules wi
                               - DeterministicReconciler
                               - SalaryRestructuringOptimizer
                               - CapitalGainsAndLossLedgerEngine
+                              - SmallBusinessAuditAndPresumptiveEngine
                               - PreFilingAuditEngine
                               - HomeLoanAndDeductionCalculator
                               - HraAndInterestEngine

@@ -728,3 +728,21 @@ Statutory framework under Finance (No. 2) Act, 2024 (effective July 23, 2024) an
 - Schedule CFL & CYLA (Section 74):
   - Unabsorbed STCL and LTCL can be carried forward for up to 8 Assessment Years from the assessment year in which they were first computed.
   - Section 80 / 139(3) Mandate: Loss carry-forward rights are strictly conditioned on filing the original ITR on or before the Section 139(1) due date (July 31). Returns filed belatedly under Section 139(4) forfeit the right to carry forward capital losses.
+
+
+8. Small Business Tax Audit & Presumptive Compliance Engine (`SmallBusinessAuditAndPresumptiveEngine`)
+Statutory architecture under Income-tax Act, 1961 for Small Businesses, Contractors & Specified Professionals:
+- Section 44AB Statutory Tax Audit Mandate:
+  - Clause (a): General business turnover exceeding ₹1 Crore.
+  - Proviso to Clause (a): Enhanced ₹10 Crore threshold applicable strictly where aggregate cash receipts do not exceed 5% of total turnover AND aggregate cash payments do not exceed 5% of total payments. If cash transactions exceed 5%, the audit trigger threshold automatically resets to ₹1 Crore.
+  - Clause (b): Gross receipts from specified profession exceeding ₹50 Lakhs (or ₹75 Lakhs under Section 44ADA if cash receipts <= 5%).
+  - Clause (d): Professional declaring profit below 50% statutory deemed rate with total income exceeding the basic exemption limit (₹3,00,000 u/s 115BAC).
+  - Clause (e): Business declaring profit below 6% (digital) or 8% (cash) deemed rates, or triggering the Section 44AD(4) 5-year lock-in debarment rule.
+- Section 271B Penal Protection:
+  - Penalty for failure to get accounts audited and furnish report u/s 44AB on or before September 30 is 0.5% of turnover/gross receipts, capped at ₹1,50,000.
+- Form 3CD Key Disallowance Diagnostic Scanner:
+  - Clause 22 / Section 43B(h): Strict disallowance of overdue sums payable to Micro and Small Enterprises beyond the 15-day / 45-day statutory limit under Section 15 of the MSMED Act, 2006.
+  - Clause 21(d) / Section 40A(3): 100% disallowance of expenditure paid in cash exceeding ₹10,000 in a single day to a single person.
+  - Clause 21(a) / Section 40(a)(ia): 30% disallowance on contractor, commission, or professional fees where TDS was not deducted or deposited before the Section 139(1) due date.
+  - Clause 26 / Section 43B: Disallowance of unpaid statutory liabilities (GST, EPF, ESIC, bonus) not cleared before the ITR filing due date.
+- CA Handover Package: Auto-compiles the pre-audit working trial balance, disallowance schedule, and Form 3CB-3CD draft pack for immediate submission to the Chartered Accountant.

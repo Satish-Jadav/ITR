@@ -107,4 +107,63 @@ class AdvancedIndustryTaxFeaturesTestSuite {
         assertEquals("AY 2030-31", ltclBucket.expiryYear)
         assertFalse(ltclBucket.isLapsed)
     }
+
+    @Test
+    fun testSmallBusinessAudit_Presumptive44ADAndLowProfitAuditTrigger() {
+        // Case 1: Presumptive 44AD Compliant (₹1.8 Cr turnover, digital, profit >= 6%)
+        val compliantInput = in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.BusinessFinancialsInput(
+            businessType = in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.BusinessType.ELIGIBLE_BUSINESS_44AD,
+            totalTurnoverRupees = 18000000L,
+            digitalTurnoverRupees = 18000000L,
+            cashTurnoverRupees = 0L,
+            declaredNetProfitRupees = 1200000L // 6.67% > 6% deemed rate
+        )
+        val compliantReport = in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.evaluateBusinessAudit(compliantInput)
+        assertEquals(in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.AuditVerdict.EXEMPT_PRESUMPTIVE_44AD, compliantReport.verdict)
+        assertFalse(compliantReport.isTaxAuditMandatory)
+        assertEquals("ITR-4 (Sugam)", compliantReport.applicableItrForm)
+
+        // Case 2: Profit below 6% triggers mandatory Section 44AB(e) tax audit
+        val lowProfitInput = compliantInput.copy(
+            declaredNetProfitRupees = 600000L // 3.33% < 6% deemed profit
+        )
+        val auditReport = in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.evaluateBusinessAudit(lowProfitInput)
+        assertEquals(in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.AuditVerdict.MANDATORY_TAX_AUDIT_44AB, auditReport.verdict)
+        assertTrue(auditReport.isTaxAuditMandatory)
+        assertEquals("ITR-3 + Form 3CB-3CD", auditReport.applicableItrForm)
+        assertEquals("September 30", auditReport.statutoryAuditDueDate)
+        assertEquals("October 31", auditReport.itrDueDateWithAudit)
+        assertTrue(auditReport.potentialSection271BPenalty > 0L)
+    }
+
+    @Test
+    fun testSmallBusinessAudit_Form3CDDisallowanceAddbacks() {
+        val inputWithDisallowances = in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.BusinessFinancialsInput(
+            businessType = in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.BusinessType.OTHER_REGULAR_BUSINESS,
+            totalTurnoverRupees = 50000000L, // ₹5 Crores
+            digitalTurnoverRupees = 48000000L,
+            cashTurnoverRupees = 2000000L,
+            totalPaymentsRupees = 40000000L,
+            cashPaymentsRupees = 1000000L,
+            declaredNetProfitRupees = 3500000L, // Books net profit ₹35 Lakhs
+            msmeOverdueUnpaid43Bh = 350000L, // ₹3.5L MSME overdue u/s 43B(h)
+            cashExpensesOver10k40A3 = 120000L, // ₹1.2L Cash > ₹10k u/s 40A(3)
+            expensesWithoutTds40aIa = 500000L, // ₹5L without TDS => 30% = ₹1.5L
+            unpaidStatutoryDues43B = 100000L // ₹1L unpaid GST/PF
+        )
+
+        val report = in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.evaluateBusinessAudit(inputWithDisallowances)
+
+        // 30% of ₹5,00,000 = ₹1,50,000
+        assertEquals(150000L, report.disallowances.section40aIaTdsDisallowance30Pct)
+        // Total addbacks = 3.5L + 1.2L + 1.5L + 1.0L = 7.2L
+        assertEquals(720000L, report.disallowances.totalStatutoryAddbacks)
+        // Adjusted net profit = 35L + 7.2L = 42.2L
+        assertEquals(4220000L, report.effectiveBusinessNetProfit)
+
+        // Cash % <= 5% (receipts 4%, payments 2.5%), so eligible for ₹10 Cr limit. Turnover ₹5 Cr is below ₹10 Cr limit.
+        assertEquals(in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.AuditVerdict.EXEMPT_BELOW_TURNOVER_THRESHOLD, report.verdict)
+        assertFalse(report.isTaxAuditMandatory)
+    }
 }
+

@@ -1,4 +1,4 @@
-﻿01 — Master Product Requirements Document (PRD): Project "ZeroTax-Local" (Consolidated Phases 1, 2 & 3 — CA & Legal Counsel Edition)
+01 — Master Product Requirements Document (PRD): Project "ZeroTax-Local" (Consolidated Phases 1, 2 & 3 — CA & Legal Counsel Edition)
 1. Executive Vision, Problem Statement & Architectural Mandate
 1.1 The Indian Retail Tax Filing Trilemma
 Every Assessment Year, over 8.5 crore Indian taxpayers confront a broken trilemma when filing their Income Tax Returns (ITR-1 through ITR-4 and ITR-U):
@@ -194,3 +194,8 @@ Black Money Act, 2015 (Sections 42 & 43) & Rule 128(5) Foreign Tax Credit: Enfor
 Section 139(1B) Non-ERI Browser Assistant Classification: Executes strictly inside an isolated, no-cache Android WebView connecting directly to eportal.incometax.gov.in with 500ms session cookie destruction and zero server-side credential custody.
 DPDP Act, 2023 (Sections 6, 8(5) & 12(3)): Enforces localized itemized consent (en-IN, hi-IN, gu-IN), hardware-backed StrongBox AES-256-GCM + SQLCipher 4.5.x storage, and 1-Tap cryptographic erasure (Shred Local Tax Vault) in under 300ms.
 UIDAI Aadhaar Act Section 29 & RBI NBFC-AA Master Directions: Redacts all 12-digit Verhoeff-valid Aadhaar strings to "[Aadhaar Redacted]" prior to AI inference or SQLite persistence, and zero-wipes (0x00) all Curve25519/AES-256-GCM buffers in volatile RAM inside a mandatory finally block.
+
+8.3 Small Business, MSME & Professional Tax Audit Sign-Off (Sections 44AB, 44AD, 44ADA & Form 3CD)
+Section 44AB Statutory Threshold Automation: Evaluates the ₹10 Crore threshold versus the ₹1 Crore threshold by computing the 5% cash receipt and 5% cash payment test. Enforces Section 271B penalty protection (0.5% capped at ₹1,50,000) with September 30 audit report and October 31 ITR filing deadlines.
+Presumptive Compliance & Lock-In Protection (Sections 44AD & 44ADA): Enforces the 6% digital and 8% cash deemed profit rates for businesses up to ₹3 Crores, the 50% deemed profit rate for professionals up to ₹75 Lakhs, and monitors the Section 44AD(4) 5-year lock-in debarment penalty.
+Form 3CD Clause Add-Back Verification: Scans and adds back Section 43B(h) MSME overdue payments (>45 days), Section 40A(3) single-day cash expenses (>₹10,000), Section 40(a)(ia) 30% TDS non-deduction, and Section 43B unpaid statutory dues to compile verified Chartered Accountant handover dossiers.

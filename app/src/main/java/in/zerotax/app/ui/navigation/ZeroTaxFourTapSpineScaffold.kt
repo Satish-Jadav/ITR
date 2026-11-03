@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import in.zerotax.app.ui.components.*
 import in.zerotax.app.ui.audit.PreFilingAuditView
+import in.zerotax.app.ui.business.SmallBusinessAuditSuiteScreen
 import in.zerotax.app.ui.chat.ConversationalFilingChatScreen
 import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
 import in.zerotax.app.ui.insights.TaxVisualizerAndAnalyticsScreen
@@ -67,6 +68,15 @@ fun ZeroTaxFourTapSpineScaffold(
     var showTaxToolkit by remember { mutableStateOf(false) }
     var showAnalyticsScreen by remember { mutableStateOf(false) }
     var showNoticeDefense by remember { mutableStateOf(false) }
+    var showBusinessAudit by remember { mutableStateOf(false) }
+
+    if (showBusinessAudit) {
+        SmallBusinessAuditSuiteScreen(
+            pan = uiState.pan,
+            onBack = { showBusinessAudit = false }
+        )
+        return
+    }
 
     if (showNoticeDefense) {
         TaxNoticeDefenseAssistantScreen(
@@ -169,7 +179,8 @@ fun ZeroTaxFourTapSpineScaffold(
                 onOpenChatbot = { showChatbotFiling = true },
                 onOpenToolkit = { showTaxToolkit = true },
                 onOpenAnalytics = { showAnalyticsScreen = true },
-                onOpenNotices = { showNoticeDefense = true }
+                onOpenNotices = { showNoticeDefense = true },
+                onOpenBusinessAudit = { showBusinessAudit = true }
             )
         },
         bottomBar = {
@@ -288,6 +299,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         onOpenToolkit = { showTaxToolkit = true },
                         onOpenAnalytics = { showAnalyticsScreen = true },
                         onOpenNotices = { showNoticeDefense = true },
+                        onOpenBusinessAudit = { showBusinessAudit = true },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
                 }
@@ -926,6 +938,7 @@ private fun ProWorkspaceView(
     onOpenToolkit: () -> Unit = {},
     onOpenAnalytics: () -> Unit = {},
     onOpenNotices: () -> Unit = {},
+    onOpenBusinessAudit: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
     var isShreddingInProgress by remember { mutableStateOf(false) }
@@ -1065,6 +1078,15 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("🛡️ Tax Notice Defense & Rectification (Sec 143(1), 139(9), 154, 245)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = onOpenBusinessAudit,
+                                        shape = RoundedCornerShape(4.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = IndigoStatutory),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("🏢 Small Business Tax Audit & Presumptive Suite (Sec 44AB/AD & Form 3CD)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }

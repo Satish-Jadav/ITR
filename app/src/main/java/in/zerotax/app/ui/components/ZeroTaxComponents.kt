@@ -75,6 +75,7 @@ fun EnterpriseTopHeader(
     onOpenToolkit: (() -> Unit)? = null,
     onOpenAnalytics: (() -> Unit)? = null,
     onOpenNotices: (() -> Unit)? = null,
+    onOpenBusinessAudit: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -177,6 +178,24 @@ fun EnterpriseTopHeader(
                                 Text("🛡️", fontSize = 11.sp)
                                 Spacer(Modifier.width(4.dp))
                                 Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AmberWarning))
+                            }
+                        }
+                        Spacer(Modifier.width(6.dp))
+                    }
+
+                    if (onOpenBusinessAudit != null) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(IndigoStatutoryBg)
+                                .border(0.5.dp, IndigoStatutory, RoundedCornerShape(4.dp))
+                                .clickable { onOpenBusinessAudit() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("🏢", fontSize = 11.sp)
+                                Spacer(Modifier.width(4.dp))
+                                Text("Business Audit", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
                             }
                         }
                         Spacer(Modifier.width(6.dp))
