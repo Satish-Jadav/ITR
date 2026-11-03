@@ -1,4 +1,4 @@
-﻿03 — Information Architecture, Screen-by-Screen Wireframes & Multilingual CBDT Taxonomy (Consolidated Phases 1–3)
+03 — Information Architecture, Screen-by-Screen Wireframes & Multilingual CBDT Taxonomy (Consolidated Phases 1–3)
 1. Dual-Mode Navigation Topology & Phase 1–3 Evolution
 To ensure first-time filers complete their return in under 180 seconds without ever confronting raw government tax schedules—while giving power users, investors, and MNC employees year-round portfolio and notice management—the application implements a Dual-Mode Navigation Architecture:
 
@@ -546,3 +546,9 @@ fun allowTemporaryExportSnapshot(lifecycleScope: CoroutineScope) {
 • Transition Tap 2 -> Tap 3 (Ingestion & Math Sanity Gate): Blocked if any imported Form 16 Part B fails |Gross - Sec10 - Sec16 - Net| <= ₹5 until the user resolves the OneTapPdfDisambiguationCard with the cropped PDF region bitmap.
 • Transition Tap 3 -> Tap 4 (Exception Nudge & Statutory Shield Gate): Automatically enforces the Form 26AS Part A TDS cap (Schedule TDS1), the Rule 2A Landlord PAN gate for annual rent > ₹1,00,000, the Section 44ADA >= 50% presumptive profit floor, and logs any downward income modification via Section270AStatutoryOverrideDialog or foreign asset holding via BlackMoneyActForeignAssetModal.
 • Transition Tap 4 -> Post-Filing 3-Tab Pro Workspace (Category 'A' Defect & Section 140 Gate): Enabled only after CbdtCategoryADefectGate passes all pre-submission checks (BalTaxPayable == 0 via Schedule IT Challan 280 if tax was due, valid 11-character refund IFSC, and AadhaarCardNo == "[Aadhaar Redacted]") and the taxpayer checks the Section 140 verification declaration.
+
+6.2 Smart Tax Toolkit Value-Add Architecture (HRA, Advance Tax, LTCG Harvesting, Statement Exporter)
+• HRA Exemption Maximizer & Rent Receipts Generator (Rule 2A): Real-time least-of-three calculation (Actual HRA, Rent - 10% Basic, 50%/40% Metro cap) with automated 12-month Rent Receipt package generator formatted with revenue stamp layout for employer HR submission.
+• Advance Tax Radar & Instant Challan 280 UPI Assistant (Sections 208, 234B, 234C): Continuous tracking of net tax payable above the ₹10,000 threshold, quarterly calendar milestone countdowns (15%, 45%, 75%, 100%), interest penalty avoidance calculator, and pre-filled Challan 280 (Major Head 0021, Minor Head 100/300) with NPCI UPI intent generator.
+• March 31 LTCG Tax-Harvesting Radar (Section 112A): Visual gauge monitoring the annual ₹1,25,000 tax-free long-term capital gains headroom, automated tax-harvesting profit booking recommendations before March 31, and STCG short-term loss harvesting against realized gains.
+• Bank-Ready "Statement of Total Income & Tax Computation" Exporter: Formats formal bank-grade ITR summaries with breakdown of Gross Salary, Chapter VI-A deductions, Section 87A rebate, TDS, and refund due, stamped with a tamper-evident SHA-256 seal for Home Loan, Car Loan, and Visa documentation.

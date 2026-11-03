@@ -72,6 +72,7 @@ fun EnterpriseTopHeader(
     assessmentYear: String = "2026-27",
     isVaultEncrypted: Boolean = true,
     onOpenChatbot: (() -> Unit)? = null,
+    onOpenToolkit: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -120,6 +121,24 @@ fun EnterpriseTopHeader(
                                 Text("🤖", fontSize = 11.sp)
                                 Spacer(Modifier.width(4.dp))
                                 Text("Chat & File", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                            }
+                        }
+                        Spacer(Modifier.width(6.dp))
+                    }
+
+                    if (onOpenToolkit != null) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(IndigoStatutoryBg)
+                                .border(0.5.dp, IndigoStatutory, RoundedCornerShape(4.dp))
+                                .clickable { onOpenToolkit() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("🛠️", fontSize = 11.sp)
+                                Spacer(Modifier.width(4.dp))
+                                Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
                             }
                         }
                         Spacer(Modifier.width(6.dp))

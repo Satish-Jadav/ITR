@@ -28,6 +28,7 @@ import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
 import in.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
 import in.zerotax.app.ui.portal.PortalAssistantScreen
 import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
+import in.zerotax.app.ui.toolkit.SmartTaxToolkitScreen
 import in.zerotax.feature.portalbridge.CloudBackupSyncManager
 import in.zerotax.app.ui.theme.*
 import in.zerotax.app.viewmodel.ZeroTaxViewModel
@@ -61,6 +62,18 @@ fun ZeroTaxFourTapSpineScaffold(
     var showPreFilingAudit by remember { mutableStateOf(false) }
     var showChatbotFiling by remember { mutableStateOf(false) }
     var showMasterLegalDialog by remember { mutableStateOf(false) }
+    var showTaxToolkit by remember { mutableStateOf(false) }
+
+    if (showTaxToolkit) {
+        SmartTaxToolkitScreen(
+            pan = uiState.pan,
+            grossSalary = uiState.grossSalaryRupees,
+            taxLiability = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
+            tdsClaimed = uiState.salarySummary.aggregateTdsAllowed,
+            onBack = { showTaxToolkit = false }
+        )
+        return
+    }
 
     if (showChatbotFiling) {
         ConversationalFilingChatScreen(
@@ -130,7 +143,8 @@ fun ZeroTaxFourTapSpineScaffold(
                 pan = uiState.pan,
                 assessmentYear = uiState.assessmentYear,
                 isVaultEncrypted = !uiState.isVaultShredded,
-                onOpenChatbot = { showChatbotFiling = true }
+                onOpenChatbot = { showChatbotFiling = true },
+                onOpenToolkit = { showTaxToolkit = true }
             )
         },
         bottomBar = {
@@ -246,6 +260,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         onLaunchPortalAssistant = { showPortalAssistant = true },
                         onOpenChatbot = { showChatbotFiling = true },
                         onOpenLegalDialog = { showMasterLegalDialog = true },
+                        onOpenToolkit = { showTaxToolkit = true },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
                 }
@@ -881,6 +896,7 @@ private fun ProWorkspaceView(
     onLaunchPortalAssistant: () -> Unit,
     onOpenChatbot: () -> Unit = {},
     onOpenLegalDialog: () -> Unit = {},
+    onOpenToolkit: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
     var isShreddingInProgress by remember { mutableStateOf(false) }
@@ -993,6 +1009,15 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("🤖 Conversational Filing Chatbot (TaxBuddy Style)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = onOpenToolkit,
+                                        shape = RoundedCornerShape(4.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = IndigoStatutory),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("🛠️ Smart Tax Toolkit (HRA, Advance Tax, LTCG Harvesting)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }
