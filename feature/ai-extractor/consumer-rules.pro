@@ -1,0 +1,2 @@
+-keep class com.google.ai.edge.aicore.** { *; }
+-keep class in.zerotax.feature.aiextractor.** { *; }

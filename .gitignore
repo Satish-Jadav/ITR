@@ -1,0 +1,78 @@
+# Built application files
+*.apk
+*.aar
+*.aab
+*.ap_
+*.dex
+
+# Files for the ART/Dalvik VM
+*.class
+
+# Temporary scripts & scratch files
+*.ps1
+scratch/
+
+*.log
+*.tmp
+*.bak
+
+# Gradle files
+.gradle/
+build/
+*/build/
+*/*/build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Proguard / R8 foldering
+proguard/
+
+# Log Files
+*.log
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Android Studio / IntelliJ IDEA
+*.iml
+.idea/
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
+
+# Visual Studio Code
+.vscode/
+
+# Keystores & Signing credentials (Zero-Leakage Invariant)
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+signing.properties
+release-keystore.properties
+
+# External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild
+.cxx/
+
+# Google Services (Firebase / Cloud credentials if any added in future)
+google-services.json
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini

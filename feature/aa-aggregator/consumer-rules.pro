@@ -1,0 +1,1 @@
+-keep class in.zerotax.feature.aaaggregator.** { *; }

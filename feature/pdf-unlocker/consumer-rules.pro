@@ -1,0 +1,2 @@
+-keep class com.tom_roush.pdfbox.** { *; }
+-keep class in.zerotax.feature.pdfunlocker.** { *; }
