@@ -28,4 +28,5 @@ dependencies {
     implementation(project(":core:tax-engine"))
     implementation(project(":core:security"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    testImplementation("junit:junit:4.13.2")
 }

@@ -25,8 +25,10 @@ import in.zerotax.app.ui.components.*
 import in.zerotax.app.ui.audit.PreFilingAuditView
 import in.zerotax.app.ui.chat.ConversationalFilingChatScreen
 import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
+import in.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
 import in.zerotax.app.ui.portal.PortalAssistantScreen
 import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
+import in.zerotax.feature.portalbridge.CloudBackupSyncManager
 import in.zerotax.app.ui.theme.*
 import in.zerotax.app.viewmodel.ZeroTaxViewModel
 import in.zerotax.core.model.Rupee
@@ -58,6 +60,7 @@ fun ZeroTaxFourTapSpineScaffold(
     var showDeductionsAdvisor by remember { mutableStateOf(false) }
     var showPreFilingAudit by remember { mutableStateOf(false) }
     var showChatbotFiling by remember { mutableStateOf(false) }
+    var showMasterLegalDialog by remember { mutableStateOf(false) }
 
     if (showChatbotFiling) {
         ConversationalFilingChatScreen(
@@ -242,9 +245,20 @@ fun ZeroTaxFourTapSpineScaffold(
                         onRunAudit = { showPreFilingAudit = true },
                         onLaunchPortalAssistant = { showPortalAssistant = true },
                         onOpenChatbot = { showChatbotFiling = true },
+                        onOpenLegalDialog = { showMasterLegalDialog = true },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
                 }
+            }
+
+            if (showMasterLegalDialog) {
+                ComprehensiveLegalAcknowledgementDialog(
+                    pan = uiState.pan,
+                    onDismiss = { showMasterLegalDialog = false },
+                    onAcknowledgeAndAccept = { _, _ ->
+                        showMasterLegalDialog = false
+                    }
+                )
             }
 
             if (showSection270ADialog) {
@@ -866,6 +880,7 @@ private fun ProWorkspaceView(
     onRunAudit: () -> Unit,
     onLaunchPortalAssistant: () -> Unit,
     onOpenChatbot: () -> Unit = {},
+    onOpenLegalDialog: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
     var isShreddingInProgress by remember { mutableStateOf(false) }
@@ -1055,6 +1070,49 @@ private fun ProWorkspaceView(
 
                 WorkspaceTab.PrivacyAndSettings -> {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        // Statutory Legal Protection & Cloud Shield Summary Card
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(4.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = CardDefaults.outlinedCardBorder().copy(
+                                    width = 1.dp,
+                                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(14.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Statutory Legal Protection & Cloud Shield",
+                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                        StatutoryBadge(text = "DPDP §6 & §140", tone = BadgeTone.STATUTORY)
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(
+                                        text = "Comprehensive legal coverage active: Section 140 taxpayer declaration, Section 277 penal disclaimers, technology intermediary protections, and zero-knowledge cloud crash resilience for session recovery.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Slate600
+                                    )
+                                    Spacer(Modifier.height(10.dp))
+                                    OutlinedButton(
+                                        onClick = onOpenLegalDialog,
+                                        shape = RoundedCornerShape(4.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
+                                        modifier = Modifier.fillMaxWidth().height(40.dp)
+                                    ) {
+                                        Text("⚖️ Review Master Legal Terms & Declarations", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(12.dp))
+                        }
+
                         item {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),

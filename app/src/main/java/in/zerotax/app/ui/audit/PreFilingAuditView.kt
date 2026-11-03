@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import in.zerotax.app.ui.components.*
+import in.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
 import in.zerotax.app.ui.theme.*
 import in.zerotax.core.model.BankAccountDetails
 import in.zerotax.core.model.NoticeRiskLevel
@@ -33,6 +34,7 @@ import in.zerotax.core.taxengine.advanced.PreFilingAuditEngine
 import in.zerotax.core.taxengine.calculator.RegimeComputationResult
 import in.zerotax.feature.aiextractor.CopilotExplanation
 import in.zerotax.feature.aiextractor.OnDeviceTaxCopilot
+import in.zerotax.feature.portalbridge.CloudBackupSyncManager
 import in.zerotax.feature.aiextractor.SupportedVernacularLocale
 import kotlinx.coroutines.launch
 
@@ -62,6 +64,9 @@ fun PreFilingAuditView(
     var selectedLocale by remember { mutableStateOf(SupportedVernacularLocale.ENGLISH_IN) }
     var currentExplanation by remember { mutableStateOf<CopilotExplanation?>(null) }
     var isCopilotThinking by remember { mutableStateOf(false) }
+    var isLegalAcknowledgementSigned by remember { mutableStateOf(false) }
+    var showLegalDialog by remember { mutableStateOf(false) }
+    var signedConsentSha256 by remember { mutableStateOf("") }
 
     val auditFaqs = remember {
         listOf(
@@ -135,13 +140,24 @@ fun PreFilingAuditView(
                         )
                     }
                     Button(
-                        onClick = onProceedToFiling,
+                        onClick = {
+                            if (!isLegalAcknowledgementSigned) {
+                                showLegalDialog = true
+                            } else {
+                                onProceedToFiling()
+                            }
+                        },
                         enabled = auditReport.canFileDirectly,
                         shape = RoundedCornerShape(4.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isLegalAcknowledgementSigned) EnterpriseTeal600 else AmberWarning
+                        ),
                         modifier = Modifier.height(44.dp)
                     ) {
-                        Text("Proceed to Direct Filing →", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        Text(
+                            text = if (isLegalAcknowledgementSigned) "Proceed to Direct Filing →" else "Review & Sign Legal Terms →",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
             }
@@ -285,6 +301,69 @@ fun PreFilingAuditView(
                             Text(
                                 text = gate.recommendation,
                                 style = TextStyle(fontSize = 10.sp, color = Slate500, fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Mandatory Statutory Legal Protection & Cloud Crash Shield
+            item {
+                Spacer(Modifier.height(16.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isLegalAcknowledgementSigned) EnterpriseTeal50 else AmberWarningBg
+                    ),
+                    border = CardDefaults.outlinedCardBorder().copy(
+                        width = 1.dp,
+                        brush = androidx.compose.ui.graphics.SolidColor(
+                            if (isLegalAcknowledgementSigned) EnterpriseTeal600 else AmberWarning
+                        )
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("⚖️", fontSize = 16.sp)
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "Statutory Legal Protection & Cloud Shield",
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+                            StatutoryBadge(
+                                text = if (isLegalAcknowledgementSigned) "Legally Verified" else "Action Required",
+                                tone = if (isLegalAcknowledgementSigned) BadgeTone.SUCCESS else BadgeTone.WARNING
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = if (isLegalAcknowledgementSigned) {
+                                "Taxpayer self-declaration verified u/s 140 & DPDP Act 2023. Return draft is crash-proof & encrypted for cloud recovery (SHA-256: ${signedConsentSha256.take(12)}...)."
+                            } else {
+                                "Under Indian Law (Section 140 Income-tax Act, 1961 & DPDP Act 2023), you must review and acknowledge statutory terms, non-advisory platform disclaimers, and cloud crash-retention consent before filing."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Slate700
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        OutlinedButton(
+                            onClick = { showLegalDialog = true },
+                            shape = RoundedCornerShape(4.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = if (isLegalAcknowledgementSigned) EnterpriseTeal700 else AmberWarning
+                            ),
+                            modifier = Modifier.fillMaxWidth().height(40.dp)
+                        ) {
+                            Text(
+                                text = if (isLegalAcknowledgementSigned) "✓ View Signed Legal Terms & Cloud Sync Status" else "Review & Sign Statutory Terms (Mandatory) →",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                             )
                         }
                     }
@@ -483,6 +562,33 @@ fun PreFilingAuditView(
                 Spacer(Modifier.height(20.dp))
             }
         }
+    }
+
+    if (showLegalDialog) {
+        val employerTan = salarySummary.employers.firstOrNull()?.employerTan ?: "ABCDE1234F"
+        ComprehensiveLegalAcknowledgementDialog(
+            pan = employerTan,
+            onDismiss = { showLegalDialog = false },
+            onAcknowledgeAndAccept = { sha256, _ ->
+                isLegalAcknowledgementSigned = true
+                signedConsentSha256 = sha256
+                showLegalDialog = false
+                val snapshot = CloudBackupSyncManager.packageState(
+                    pan = employerTan,
+                    grossSalaryRupees = salarySummary.aggregateGrossSalary,
+                    totalDeductionsRupees = computation.totalChapterVIADeductions + computation.standardDeduction,
+                    netTaxableIncomeRupees = computation.netTaxableNormalIncomeRounded288A,
+                    totalTaxLiabilityRupees = computation.totalTaxLiabilityRounded288B,
+                    refundDueRupees = salarySummary.aggregateTdsAllowed - computation.totalTaxLiabilityRounded288B,
+                    bankName = bankAccount?.bankName ?: "State Bank of India",
+                    bankAccountMasked = bankAccount?.accountNumber ?: "••••1234",
+                    consentSha256Hash = sha256
+                )
+                scope.launch {
+                    CloudBackupSyncManager.syncStateToCloud(context, snapshot)
+                }
+            }
+        )
     }
 }
 
