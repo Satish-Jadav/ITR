@@ -235,3 +235,30 @@ data class StatutoryDeductionSpec(
     val isSelected: Boolean = false,
     val userClaimedAmount: Long = 0L
 )
+
+@Serializable
+data class HomeLoanTaxImpact(
+    val monthlyEmi: Long,
+    val annualTotalEmiPaid: Long,
+    val estimatedAnnualInterest: Long,
+    val estimatedAnnualPrincipal: Long,
+    val sec24bInterestDeductionAllowed: Long,
+    val sec80cPrincipalDeductionAllowed: Long,
+    val totalHomeLoanDeduction: Long,
+    val unclaimedExcessInterest: Long,
+    val unclaimedExcessPrincipal: Long
+)
+
+@Serializable
+data class TaxableIncomeImpact(
+    val grossSalary: Long,
+    val standardDeduction: Long,
+    val homeLoanDeduction: Long,
+    val otherChapterVIADeductions: Long,
+    val totalDeductions: Long,
+    val originalTaxableIncome: Long,
+    val newTaxableIncome: Long,
+    val taxBeforeHomeLoan: Long,
+    val taxAfterHomeLoan: Long,
+    val netCashTaxSaved: Long
+)

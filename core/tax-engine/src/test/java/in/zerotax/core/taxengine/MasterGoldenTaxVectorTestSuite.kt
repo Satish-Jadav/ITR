@@ -251,4 +251,39 @@ class MasterGoldenTaxVectorTestSuite {
             assertEquals(ItrFormType.ITR_4_SUGAM, decision.selectedForm)
         }
     }
+
+    @Nested
+    @DisplayName("Home Loan EMI & Taxable Income Simulator Tests")
+    inner class HomeLoanSimulatorTests {
+        @Test
+        fun `verify EMI split enforces Section 24b and Section 80C caps`() {
+            // ₹40,000/mo EMI => Annual ₹4,80,000
+            val impact = HomeLoanAndDeductionCalculator.calculateHomeLoanDeduction(monthlyEmi = 40_000L)
+
+            assertEquals(4_80_000L, impact.annualTotalEmiPaid)
+            // Sec 24(b) interest capped at ₹2,00,000
+            assertEquals(2_00_000L, impact.sec24bInterestDeductionAllowed)
+            // Sec 80C principal capped at ₹1,50,000
+            assertEquals(1_50_000L, impact.sec80cPrincipalDeductionAllowed)
+            // Combined home loan deduction capped at ₹3,50,000
+            assertEquals(3_50_000L, impact.totalHomeLoanDeduction)
+            assertTrue(impact.unclaimedExcessInterest > 0L)
+        }
+
+        @Test
+        fun `verify home loan deduction reduces taxable income and saves cash tax`() {
+            val homeLoanImpact = HomeLoanAndDeductionCalculator.calculateHomeLoanDeduction(monthlyEmi = 38_000L)
+            val taxImpact = HomeLoanAndDeductionCalculator.computeTaxImpact(
+                grossSalary = 15_00_000L,
+                otherDeductions = 50_000L,
+                homeLoanImpact = homeLoanImpact
+            )
+
+            assertEquals(15_00_000L, taxImpact.grossSalary)
+            // New taxable income must be strictly less than original taxable income
+            assertTrue(taxImpact.newTaxableIncome < taxImpact.originalTaxableIncome)
+            // Tax saved must be positive and direct cash relief
+            assertTrue(taxImpact.netCashTaxSaved > 50_000L)
+        }
+    }
 }

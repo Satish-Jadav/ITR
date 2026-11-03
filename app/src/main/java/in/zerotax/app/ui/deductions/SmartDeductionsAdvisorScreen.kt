@@ -30,6 +30,7 @@ import in.zerotax.core.model.DeductionRegimeScope
 import in.zerotax.core.model.LifeEventTag
 import in.zerotax.core.model.Rupee
 import in.zerotax.core.model.StatutoryDeductionSpec
+import in.zerotax.core.taxengine.advanced.HomeLoanAndDeductionCalculator
 import in.zerotax.core.taxengine.advanced.SmartDeductionsCatalog
 import in.zerotax.feature.aiextractor.CopilotExplanation
 import in.zerotax.feature.aiextractor.OnDeviceTaxCopilot
@@ -52,12 +53,36 @@ fun SmartDeductionsAdvisorScreen(
         mutableStateOf(setOf(LifeEventTag.HOME_LOAN, LifeEventTag.HEALTH_INSURANCE, LifeEventTag.NPS_INVESTMENT))
     }
 
+    // Home Loan EMI Simulator States
+    var monthlyEmiInput by remember { mutableStateOf("38000") }
+    var grossSalaryInput by remember { mutableStateOf("1500000") }
+
+    val numericMonthlyEmi = monthlyEmiInput.filter { it.isDigit() }.toLongOrNull() ?: 0L
+    val numericGrossSalary = grossSalaryInput.filter { it.isDigit() }.toLongOrNull() ?: 15_00_000L
+
+    val homeLoanImpact = remember(numericMonthlyEmi) {
+        HomeLoanAndDeductionCalculator.calculateHomeLoanDeduction(numericMonthlyEmi)
+    }
+
+    val taxableIncomeImpact = remember(numericGrossSalary, homeLoanImpact) {
+        HomeLoanAndDeductionCalculator.computeTaxImpact(
+            grossSalary = numericGrossSalary,
+            otherDeductions = 50_000L,
+            homeLoanImpact = homeLoanImpact
+        )
+    }
+
     // Editable state of deductions
     var deductionSpecs by remember {
         mutableStateOf(
             SmartDeductionsCatalog.ALL_DEDUCTION_SPECS.map { spec ->
                 if (spec.lifeEventTag in selectedLifeEvents) {
-                    spec.copy(isSelected = true, userClaimedAmount = spec.defaultEligibleAmount)
+                    val amount = when (spec.sectionCode) {
+                        "24(b)" -> homeLoanImpact.sec24bInterestDeductionAllowed
+                        "80C (Principal)" -> homeLoanImpact.sec80cPrincipalDeductionAllowed
+                        else -> spec.defaultEligibleAmount
+                    }
+                    spec.copy(isSelected = true, userClaimedAmount = amount)
                 } else {
                     spec
                 }
@@ -73,18 +98,17 @@ fun SmartDeductionsAdvisorScreen(
 
     val deductionFaqs = remember {
         listOf(
-            "Can I claim both HRA exemption and Home Loan Section 24(b)?",
-            "What is the difference between 80C principal and 24(b) interest?",
+            "How does home loan EMI reduce my taxable income?",
+            "What is the difference between Section 24(b) interest and 80C principal?",
+            "Can I claim both HRA exemption and Section 24(b) home loan interest?",
             "Can I claim Section 80CCD(2) employer NPS in New Tax Regime?",
-            "Do I need landlord PAN for HRA or Section 80GG?",
-            "Can I claim Section 80E education loan for my child?",
-            "What documents are needed for Section 80D health insurance?"
+            "Do I need my landlord's PAN for HRA or Section 80GG?",
+            "What documents are needed from my bank for home loan deduction?"
         )
     }
 
     val visibleDeductions = deductionSpecs.filter { it.lifeEventTag in selectedLifeEvents }
     val totalClaimedDeductions = visibleDeductions.filter { it.isSelected }.sumOf { it.userClaimedAmount }
-    val estimatedTaxSavings = (totalClaimedDeductions * 0.208).toLong() // Approx 20% slab + 4% cess
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -97,7 +121,7 @@ fun SmartDeductionsAdvisorScreen(
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "Statutory Rules, Proof Holders & Document Fetching Guide",
+                            text = "EMI Simulator, Statutory Caps & Proof Holder Guide",
                             style = MaterialTheme.typography.labelSmall,
                             color = Slate500
                         )
@@ -140,16 +164,16 @@ fun SmartDeductionsAdvisorScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Total Identified Deductions",
+                            text = "New Taxable Income",
                             style = MaterialTheme.typography.labelSmall,
                             color = Slate500
                         )
                         Text(
-                            text = Rupee(totalClaimedDeductions).toString(),
+                            text = Rupee(taxableIncomeImpact.newTaxableIncome).toString(),
                             style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
                         )
                         Text(
-                            text = "Est. Tax Saved: ~₹${estimatedTaxSavings}",
+                            text = "Tax Saved: ~₹${taxableIncomeImpact.netCashTaxSaved}",
                             style = TextStyle(fontSize = 11.sp, color = EmeraldSuccess, fontWeight = FontWeight.SemiBold)
                         )
                     }
@@ -183,7 +207,7 @@ fun SmartDeductionsAdvisorScreen(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "Pick what applies to you. ZeroTax automatically identifies the exact deductions, limits, and document holders.",
+                    text = "Pick what applies to you. ZeroTax automatically calculates your exact deduction limits and document holders.",
                     style = MaterialTheme.typography.bodySmall,
                     color = Slate600
                 )
@@ -231,14 +255,214 @@ fun SmartDeductionsAdvisorScreen(
                 }
 
                 Spacer(Modifier.height(16.dp))
+            }
+
+            // ================================================================
+            // HOME LOAN EMI & TAXABLE INCOME SIMULATOR CARD
+            // ================================================================
+            if (LifeEventTag.HOME_LOAN in selectedLifeEvents) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            width = 1.dp,
+                            brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600.copy(alpha = 0.5f))
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "🏠 Home Loan EMI & Taxable Income Simulator",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                                )
+                                StatutoryBadge(text = "Live Amortization", tone = BadgeTone.SUCCESS)
+                            }
+
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "Enter your monthly EMI to see how your taxable income and cash tax savings are automatically computed.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = EnterpriseTeal800
+                            )
+
+                            Spacer(Modifier.height(12.dp))
+
+                            // Monthly EMI Input Row with Presets
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedTextField(
+                                    value = monthlyEmiInput,
+                                    onValueChange = { monthlyEmiInput = it.filter { char -> char.isDigit() } },
+                                    label = { Text("Monthly Home Loan EMI (₹)") },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                                    modifier = Modifier.weight(1.5f)
+                                )
+
+                                Spacer(Modifier.width(8.dp))
+
+                                Row(
+                                    modifier = Modifier.weight(2f),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    listOf("25000" to "₹25k", "38000" to "₹38k", "50000" to "₹50k", "75000" to "₹75k").forEach { (amount, label) ->
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(if (monthlyEmiInput == amount) EnterpriseTeal600 else PureWhite)
+                                                .border(0.5.dp, EnterpriseTeal600, RoundedCornerShape(4.dp))
+                                                .clickable { monthlyEmiInput = amount }
+                                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                                        ) {
+                                            Text(
+                                                text = label,
+                                                style = TextStyle(
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (monthlyEmiInput == amount) PureWhite else EnterpriseTeal800
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(Modifier.height(14.dp))
+
+                            // Amortization & Deduction Breakdown
+                            Text(
+                                text = "Annual EMI Breakdown & Statutory Caps:",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate700)
+                            )
+                            Spacer(Modifier.height(6.dp))
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(4.dp),
+                                colors = CardDefaults.cardColors(containerColor = PureWhite),
+                                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    EnterpriseLedgerRow(label = "Total Annual EMI Paid", amount = homeLoanImpact.annualTotalEmiPaid)
+                                    EnterpriseLedgerRow(
+                                        label = "Interest Paid (Section 24(b))",
+                                        statutoryRef = "Max Cap ₹2,00,000",
+                                        amount = homeLoanImpact.sec24bInterestDeductionAllowed,
+                                        isDeduction = true
+                                    )
+                                    EnterpriseLedgerRow(
+                                        label = "Principal Repaid (Section 80C)",
+                                        statutoryRef = "Max Cap ₹1,50,000",
+                                        amount = homeLoanImpact.sec80cPrincipalDeductionAllowed,
+                                        isDeduction = true
+                                    )
+                                    EnterpriseLedgerRow(
+                                        label = "Total Home Loan Deductions Claimed",
+                                        amount = homeLoanImpact.totalHomeLoanDeduction,
+                                        isHighlighted = true
+                                    )
+                                }
+                            }
+
+                            Spacer(Modifier.height(12.dp))
+
+                            // Taxable Income Impact Ledger
+                            Text(
+                                text = "Direct Impact on Your Taxable Income:",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate700)
+                            )
+                            Spacer(Modifier.height(6.dp))
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(4.dp),
+                                colors = CardDefaults.cardColors(containerColor = EmeraldSuccessBg),
+                                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess.copy(alpha = 0.4f)))
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    EnterpriseLedgerRow(label = "Original Gross Salary", amount = taxableIncomeImpact.grossSalary)
+                                    EnterpriseLedgerRow(label = "Standard Deduction u/s 16(ia)", amount = taxableIncomeImpact.standardDeduction, isDeduction = true)
+                                    EnterpriseLedgerRow(label = "Home Loan Deduction u/s 24(b) + 80C", amount = taxableIncomeImpact.homeLoanDeduction, isDeduction = true)
+                                    EnterpriseLedgerRow(label = "Other Deductions (80D Health, etc.)", amount = taxableIncomeImpact.otherChapterVIADeductions, isDeduction = true)
+                                    EnterpriseLedgerRow(
+                                        label = "Reduced Taxable Income",
+                                        amount = taxableIncomeImpact.newTaxableIncome,
+                                        isHighlighted = true
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Estimated Direct Cash Tax Saved:",
+                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                                        )
+                                        Text(
+                                            text = "₹${taxableIncomeImpact.netCashTaxSaved}",
+                                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(Modifier.height(10.dp))
+
+                            // Document Retrieval Callout
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Slate100)
+                                    .padding(10.dp)
+                            ) {
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text("🏛️", fontSize = 12.sp)
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            text = "Who Holds This: Lending Bank (SBI, HDFC, ICICI, LIC HFL, Axis)",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate800)
+                                        )
+                                    }
+                                    Spacer(Modifier.height(2.dp))
+                                    Text(
+                                        text = "Certificate: Annual Home Loan Provisional Interest & Principal Certificate",
+                                        style = MaterialTheme.typography.bodySmall.copy(color = Slate700)
+                                    )
+                                    Text(
+                                        text = "How to Download: NetBanking > Loans > Tax Certificate (instant PDF download)",
+                                        style = TextStyle(fontSize = 11.sp, color = Slate600)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Other Deductions Detail List
+            item {
                 Text(
-                    text = "Recommended Deductions for Selected Life-Events (${visibleDeductions.size}):",
+                    text = "Itemized Statutory Deductions (${visibleDeductions.size}):",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                 )
                 Spacer(Modifier.height(8.dp))
             }
 
-            // Deductions Detail List
             items(visibleDeductions) { spec ->
                 Card(
                     modifier = Modifier
@@ -450,14 +674,14 @@ fun SmartDeductionsAdvisorScreen(
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(Slate100)
                                 .border(0.5.dp, Slate300, RoundedCornerShape(4.dp))
-                                .clickable {
-                                    scope.launch {
-                                        isCopilotThinking = true
-                                        currentExplanation = copilot.explainContextualTaxTopic(q, selectedLocale)
-                                        isCopilotThinking = false
-                                    }
+                            .clickable {
+                                scope.launch {
+                                    isCopilotThinking = true
+                                    currentExplanation = copilot.explainContextualTaxTopic(q, selectedLocale)
+                                    isCopilotThinking = false
                                 }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                            }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
                             Text(text = q, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium))
                         }
