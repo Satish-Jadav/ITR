@@ -140,6 +140,45 @@ fun ConversationalFilingChatScreen(
                         Spacer(Modifier.height(8.dp))
                     }
 
+                    // Contextual Tax Advice FAQs (TaxBuddy Intelligence)
+                    val faqPrompts = listOf(
+                        "Which Regime is Better?",
+                        "Can I Claim HRA & Home Loan Both?",
+                        "80D Health Insurance Limits",
+                        "NPS 80CCD(1B) ₹50k",
+                        "How to Save More Tax?"
+                    )
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 6.dp)
+                    ) {
+                        items(faqPrompts) { prompt ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Slate100)
+                                    .border(0.5.dp, Slate300, RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        sendMessage(
+                                            userText = prompt,
+                                            bot = bot,
+                                            messages = messages,
+                                            onUpdateMessages = { messages = it },
+                                            onThinkingChanged = { isBotThinking = it }
+                                        )
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = "💡 $prompt",
+                                    style = TextStyle(fontSize = 10.sp, color = Slate700, fontWeight = FontWeight.Medium)
+                                )
+                            }
+                        }
+                    }
+
                     // Quick Reply Chips
                     val latestQuickReplies = messages.lastOrNull { it.sender == ChatSender.BOT }?.quickReplies.orEmpty()
                     if (latestQuickReplies.isNotEmpty()) {
@@ -238,7 +277,7 @@ fun ConversationalFilingChatScreen(
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // Live Real-Time Return Snapshot Card
+            // Live Real-Time Return Snapshot Card with Dual-Regime Optimizer
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -247,33 +286,55 @@ fun ConversationalFilingChatScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text("Gross Income", style = MaterialTheme.typography.labelSmall, color = Slate500)
-                        Text(
-                            text = Rupee(currentSnapshot.grossSalary).toString(),
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        )
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Gross Income", style = MaterialTheme.typography.labelSmall, color = Slate500)
+                            Text(
+                                text = Rupee(currentSnapshot.grossSalary).toString(),
+                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            )
+                        }
+                        Column {
+                            Text("Deductions Claimed", style = MaterialTheme.typography.labelSmall, color = Slate500)
+                            Text(
+                                text = Rupee(currentSnapshot.totalDeductionsClaimed).toString(),
+                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = IndigoStatutory)
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text("Net Refund Due", style = MaterialTheme.typography.labelSmall, color = Slate500)
+                            Text(
+                                text = Rupee(currentSnapshot.estimatedRefundDue).toString(),
+                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = EmeraldSuccess)
+                            )
+                        }
                     }
-                    Column {
-                        Text("Deductions Claimed", style = MaterialTheme.typography.labelSmall, color = Slate500)
+
+                    Spacer(Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(EnterpriseTeal50)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
-                            text = Rupee(currentSnapshot.totalDeductionsClaimed).toString(),
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = IndigoStatutory)
+                            text = "🏆 Recommended: ${currentSnapshot.recommendedRegime}",
+                            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
                         )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("Net Refund Due", style = MaterialTheme.typography.labelSmall, color = Slate500)
-                        Text(
-                            text = Rupee(currentSnapshot.estimatedRefundDue).toString(),
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = EmeraldSuccess)
-                        )
+                        if (currentSnapshot.taxSavedByRecommendedRegime > 0) {
+                            Text(
+                                text = "Saves ₹${Rupee.formatInr(currentSnapshot.taxSavedByRecommendedRegime)}",
+                                style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                            )
+                        }
                     }
                 }
             }
@@ -340,16 +401,29 @@ private fun ChatBubbleItem(message: in.zerotax.feature.aiextractor.ChatMessage) 
                     bottomEnd = 12.dp
                 ),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isBot) MaterialTheme.colorScheme.surface else EnterpriseTeal600
+                    containerColor = when {
+                        !isBot -> EnterpriseTeal600
+                        message.isAdvisorTip -> AmberWarningBg
+                        else -> MaterialTheme.colorScheme.surface
+                    }
                 ),
                 border = CardDefaults.outlinedCardBorder().copy(
                     width = 0.5.dp,
                     brush = androidx.compose.ui.graphics.SolidColor(
-                        if (isBot) MaterialTheme.colorScheme.outlineVariant else EnterpriseTeal700
+                        when {
+                            !isBot -> EnterpriseTeal700
+                            message.isAdvisorTip -> AmberWarning
+                            else -> MaterialTheme.colorScheme.outlineVariant
+                        }
                     )
                 )
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
+                    if (message.isAdvisorTip) {
+                        StatutoryBadge(text = "💡 TaxBuddy Expert Guidance", tone = BadgeTone.WARNING)
+                        Spacer(Modifier.height(4.dp))
+                    }
+
                     Text(
                         text = message.text,
                         style = MaterialTheme.typography.bodyMedium.copy(
