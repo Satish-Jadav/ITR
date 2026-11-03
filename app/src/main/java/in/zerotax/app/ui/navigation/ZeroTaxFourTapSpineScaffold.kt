@@ -27,6 +27,7 @@ import in.zerotax.app.ui.chat.ConversationalFilingChatScreen
 import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
 import in.zerotax.app.ui.insights.TaxVisualizerAndAnalyticsScreen
 import in.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
+import in.zerotax.app.ui.notice.TaxNoticeDefenseAssistantScreen
 import in.zerotax.app.ui.portal.PortalAssistantScreen
 import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
 import in.zerotax.app.ui.toolkit.SmartTaxToolkitScreen
@@ -65,6 +66,15 @@ fun ZeroTaxFourTapSpineScaffold(
     var showMasterLegalDialog by remember { mutableStateOf(false) }
     var showTaxToolkit by remember { mutableStateOf(false) }
     var showAnalyticsScreen by remember { mutableStateOf(false) }
+    var showNoticeDefense by remember { mutableStateOf(false) }
+
+    if (showNoticeDefense) {
+        TaxNoticeDefenseAssistantScreen(
+            pan = uiState.pan,
+            onBack = { showNoticeDefense = false }
+        )
+        return
+    }
 
     if (showAnalyticsScreen) {
         TaxVisualizerAndAnalyticsScreen(
@@ -158,7 +168,8 @@ fun ZeroTaxFourTapSpineScaffold(
                 isVaultEncrypted = !uiState.isVaultShredded,
                 onOpenChatbot = { showChatbotFiling = true },
                 onOpenToolkit = { showTaxToolkit = true },
-                onOpenAnalytics = { showAnalyticsScreen = true }
+                onOpenAnalytics = { showAnalyticsScreen = true },
+                onOpenNotices = { showNoticeDefense = true }
             )
         },
         bottomBar = {
@@ -276,6 +287,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         onOpenLegalDialog = { showMasterLegalDialog = true },
                         onOpenToolkit = { showTaxToolkit = true },
                         onOpenAnalytics = { showAnalyticsScreen = true },
+                        onOpenNotices = { showNoticeDefense = true },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
                 }
@@ -913,6 +925,7 @@ private fun ProWorkspaceView(
     onOpenLegalDialog: () -> Unit = {},
     onOpenToolkit: () -> Unit = {},
     onOpenAnalytics: () -> Unit = {},
+    onOpenNotices: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
     var isShreddingInProgress by remember { mutableStateOf(false) }
@@ -1043,6 +1056,15 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("📊 Tax Intelligence (Income Flow, 3-Way Radar, Calendar)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = onOpenNotices,
+                                        shape = RoundedCornerShape(4.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = AmberWarning),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("🛡️ Tax Notice Defense & Rectification (Sec 143(1), 139(9), 154, 245)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }

@@ -1,4 +1,4 @@
-﻿08 — Deterministic Tax Sub-Engines (ITR Auto-Router, HRA Rule 2A & Statutory Interest)
+08 — Deterministic Tax Sub-Engines (ITR Auto-Router, HRA Rule 2A & Statutory Interest)
 1. Deterministic ITR Form Auto-Router (ITR-1 vs. ITR-4 vs. ITR-2 vs. ITR-3)
 Under the Income-tax Rules, 1962, filing on an ineligible form renders a return defective under Section 139(9). The DeterministicItrFormRouter evaluates 14 statutory conditions deterministically in pure Kotlin to route the taxpayer to the simplest legally valid form.
 
@@ -707,3 +707,24 @@ Sections 24(a), 24(b), 71(3A), 71B & 44ADA
 Excess HP loss claim or sub-50% presumptive filing without audit
 Caps self-occupied interest and inter-head HP loss set-off at ₹2,00,000 (carrying forward excess for 8 AYs) and enforces the 50% presumptive profit floor.
 
+
+
+6. Deterministic CTC Salary Restructuring & Flexi-Benefits Optimizer (`SalaryRestructuringOptimizer`)
+Under the Income-tax Act, 1961 and amendments introduced under the Finance Act, 2024:
+- Section 80CCD(2): Employer contribution to the National Pension System (NPS) up to 14% of (Basic Salary + Dearness Allowance) is allowable as an above-the-line deduction in BOTH the Old and New Tax Regimes (AY 2026-27). This deduction is outside the Section 80C ₹1.5L cap and Section 80CCD(1B) ₹50,000 cap.
+- Rule 3(7)(ix): Telephony and high-speed broadband reimbursements incurred for official purposes are 100% tax-free against valid invoices.
+- Section 10(14)(i): Allowances or reimbursements for professional literature, books, journals, and certifications are exempt.
+- Rule 3(7)(iii): Meal vouchers / Sodexo cards are tax-exempt up to ₹50 per meal (~₹26,400/year) under the Old Tax Regime.
+The `SalaryRestructuringOptimizer` models these statutory provisions to compute tax-optimal CTC structures and auto-generates ready-to-submit HR proposal letters.
+
+
+7. Multi-Broker Capital Gains & 8-Year Loss Carry-Forward Ledger (`CapitalGainsAndLossLedgerEngine`)
+Statutory framework under Finance (No. 2) Act, 2024 (effective July 23, 2024) and Assessment Year 2026-27:
+- Section 111A: Short-Term Capital Gains on listed equities/equity-oriented mutual funds subject to STT are taxed at 20.0%.
+- Section 112A: Long-Term Capital Gains on listed equities/equity funds subject to STT are taxed at 12.5% for gains exceeding the ₹1,25,000 statutory exemption threshold.
+- Section 70 & Section 71 Set-Off Mechanics:
+  - Current Year STCL can be set off against BOTH current year STCG and LTCG.
+  - Current Year LTCL can ONLY be set off against current year LTCG (cannot be set off against STCG or other income heads).
+- Schedule CFL & CYLA (Section 74):
+  - Unabsorbed STCL and LTCL can be carried forward for up to 8 Assessment Years from the assessment year in which they were first computed.
+  - Section 80 / 139(3) Mandate: Loss carry-forward rights are strictly conditioned on filing the original ITR on or before the Section 139(1) due date (July 31). Returns filed belatedly under Section 139(4) forfeit the right to carry forward capital losses.

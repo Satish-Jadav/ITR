@@ -34,8 +34,10 @@
 - **Instant Aadhaar OTP e-Verification u/s 140A:** Fetches OTP and completes verification entirely within the app, generating the official 15-digit ITR-V acknowledgement number without requiring external browser logins.
 - **Ephemeral Session Security:** Auth tokens and session cookies are cryptographically wiped from RAM within 500ms of transaction completion per DPDP Act Section 12(3).
 
-### 4. 🛠️ Smart Tax Toolkit (4 Value-Add Tools)
+### 4. 🛠️ Smart Tax Toolkit (6 Value-Add Industry Tools)
 - **HRA Exemption Maximizer & Rent Receipt Generator (Rule 2A):** Real-time Least-of-3 calculation (Actual HRA, Rent minus 10% Basic, 50%/40% Metro cap) with mandatory Landlord PAN alerts (>₹1L/year) and 1-tap 12-month revenue-stamped rent receipt pack generation for employer HR.
+- **CTC Salary Restructuring & Flexi-Benefits Optimizer (Section 80CCD(2), Rule 3):** Simulates employer corporate NPS up to 14% of Basic (exempt in BOTH New and Old Regimes), broadband/telecom (Rule 3(7)(ix)), books & periodicals (Sec 10(14)(i)), and food coupons (Rule 3(7)(iii)) to save ₹30,000 to ₹1,50,000+ in taxes with 1-tap HR payroll proposal letter generation.
+- **Multi-Broker Capital Gains & 8-Year Loss Carry-Forward Ledger (Schedule CG, CYLA & CFL):** Computes Finance (No. 2) Act 2024 rates (STCG 111A @ 20%, LTCG 112A @ 12.5% >₹1.25L), intra-head set-off u/s 70/71, and 8-year historical loss bucket tracking with Section 139(1) timely filing verification.
 - **Advance Tax Radar & Instant Challan 280 UPI Assistant (Sections 208, 234B, 234C):** Monitors the ₹10,000 net liability threshold, quarterly milestone countdowns (15%, 45%, 75%, 100%), interest penalty avoidance calculator, and pre-filled Challan 280 (Major Head 0021, Minor Head 100/300) with NPCI UPI intent strings.
 - **March 31 Equity LTCG Tax-Harvesting Radar (Section 112A):** Tracks annual ₹1,25,000 tax-free LTCG headroom, automated profit-booking recommendations before March 31, and STCG short-term loss harvesting.
 - **Bank-Ready "Statement of Total Income" Exporter:** Formats formal bank-grade ITR summaries with tamper-evident SHA-256 seal for Home Loans, Car Loans, and Visa applications.
@@ -46,7 +48,12 @@
 - **Statutory Tax Calendar & Compliance Reminders:** Live countdown timers for the July 31 filing deadline and all quarterly compliance milestones.
 - **Multi-Year Historical ITR Dossier:** 3-Year comparative trajectory of Gross Income, Taxes Paid, and Refunds Credited with Year-on-Year growth tracking.
 
-### 6. ⚖️ Comprehensive Statutory Legal Framework & Cloud Crash Resilience
+### 6. 🛡️ Tax Notice Defense & CPC Rectification Assistant
+- **Automated CPC Bengaluru Notice Scanner:** Covers Section 143(1) Tax Demand / Discrepancy notices, Section 139(9) Defective Returns, Section 245 Past Refund Adjustments, and Section 148A High-Value Inquiry notices.
+- **Statutory Deadline Tracking & Penalty Shield:** Alerts taxpayers to statutory windows (15 to 30 days) to prevent automatic Section 220(2) penal interest and Section 221 penalty orders.
+- **1-Tap CBDT-Compliant Written Submission Generator:** Generates legally structured formal written replies quoting supreme court precedents, CBDT circulars, and Form 26AS annexures ready for e-Proceedings / Section 154 online rectification.
+
+### 7. ⚖️ Comprehensive Statutory Legal Framework & Cloud Crash Resilience
 - **Statutory Self-Declaration u/s 140:** Taxpayers solemnly declare return authenticity, acknowledging Section 277 penal consequences (up to 7 years imprisonment) and Section 270A penalties (50% to 200%).
 - **Non-Advisory Platform Disclaimer:** Clarifies that ZeroTax is an automated client-side software utility, NOT a Chartered Accountant firm (CA Act 1949), legal practice, or SEBI RIA.
 - **Cloud Crash-Resilience State Retention Manager (`CloudBackupSyncManager`):** Forward-compatible with remote cloud backup APIs (`/api/v1/tax/backup-sync`). Maintains an encrypted, zero-knowledge local journal and synchronizes session state so that if the Android OS terminates the app or the device shuts down, the user's return draft is safely recovered.
@@ -79,6 +86,8 @@ The application enforces a strict directed acyclic graph (DAG) across modules wi
                               Stateless, 100% Deterministic (Zero Android SDK)
                               - DeterministicIndianTaxEngine
                               - DeterministicReconciler
+                              - SalaryRestructuringOptimizer
+                              - CapitalGainsAndLossLedgerEngine
                               - PreFilingAuditEngine
                               - HomeLoanAndDeductionCalculator
                               - HraAndInterestEngine
@@ -170,3 +179,4 @@ All tax calculation and statutory deduction sub-engines reside in `:core:tax-eng
 ## ⚖️ License & Statutory Disclaimer
 
 ZeroTax-Local is a self-directed client software utility. It is not a registered Chartered Accountant firm under the Chartered Accountants Act, 1949, nor an advocate practice under the Advocates Act, 1961. The user acts as a self-filer under Section 140 of the Income-tax Act, 1961 and assumes sole responsibility for all declarations and returns filed.
+

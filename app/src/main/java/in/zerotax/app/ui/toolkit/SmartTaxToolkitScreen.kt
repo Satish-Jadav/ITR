@@ -21,12 +21,19 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import in.zerotax.app.ui.components.*
 import in.zerotax.app.ui.theme.*
 import in.zerotax.core.model.Rupee
+import in.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine
+import in.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine.BroughtForwardLoss
+import in.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine.CapitalGainsPortfolioInput
+import in.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine.LossType
 import in.zerotax.core.taxengine.advanced.HraAndInterestEngine
 import in.zerotax.core.taxengine.advanced.HraComputationInput
 import in.zerotax.core.taxengine.advanced.RevisionAndHarvestingEngine
+import in.zerotax.core.taxengine.advanced.SalaryRestructuringOptimizer
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.max
@@ -34,6 +41,8 @@ import kotlin.math.min
 
 enum class ToolkitTab(val label: String, val icon: String) {
     HRA_OPTIMIZER("HRA & Rent Receipts", "🏠"),
+    CTC_OPTIMIZER("CTC Restructuring", "💼"),
+    CAPITAL_GAINS_LEDGER("Capital Gains & CFL", "📊"),
     ADVANCE_TAX_RADAR("Advance Tax & Challan 280", "⚡"),
     LTCG_HARVESTING("LTCG Tax-Harvesting", "📈"),
     STATEMENT_EXPORTER("Bank-Ready Summary", "📄")
@@ -113,6 +122,8 @@ fun SmartTaxToolkitScreen(
             ) {
                 when (selectedTab) {
                     ToolkitTab.HRA_OPTIMIZER -> HraOptimizerView(pan = pan, grossSalary = grossSalary)
+                    ToolkitTab.CTC_OPTIMIZER -> CtcRestructuringView(grossSalary = grossSalary)
+                    ToolkitTab.CAPITAL_GAINS_LEDGER -> CapitalGainsLedgerView()
                     ToolkitTab.ADVANCE_TAX_RADAR -> AdvanceTaxRadarView(pan = pan, totalTaxLiability = taxLiability, tdsPaid = tdsClaimed)
                     ToolkitTab.LTCG_HARVESTING -> LtcgHarvestingRadarView()
                     ToolkitTab.STATEMENT_EXPORTER -> BankReadyStatementView(pan = pan, grossSalary = grossSalary, taxLiability = taxLiability, tdsClaimed = tdsClaimed)
@@ -714,3 +725,625 @@ private fun BankReadyStatementView(
         }
     }
 }
+
+// ============================================================================
+// 5. CTC SALARY RESTRUCTURING & FLEXI-BENEFITS OPTIMIZER
+// ============================================================================
+@Composable
+private fun CtcRestructuringView(grossSalary: Long) {
+    var ctcText by remember { mutableStateOf((if (grossSalary > 0L) grossSalary else 1800000L).toString()) }
+    var basicPercent by remember { mutableStateOf(0.50) }
+    var rentPaidAnnualText by remember { mutableStateOf("300000") }
+    var isMetroCity by remember { mutableStateOf(true) }
+    var copyStatusMessage by remember { mutableStateOf<String?>(null) }
+    val clipboardManager = LocalClipboardManager.current
+
+    val currentGross = ctcText.toLongOrNull() ?: 1800000L
+    val rentPaid = rentPaidAnnualText.toLongOrNull() ?: 0L
+
+    val report = remember(currentGross, basicPercent, rentPaid, isMetroCity) {
+        SalaryRestructuringOptimizer.optimizeSalaryStructure(
+            grossSalaryCtc = currentGross,
+            currentBasicPercent = basicPercent,
+            rentPaidAnnual = rentPaid,
+            isMetroCity = isMetroCity
+        )
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Hero Savings Card
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 1.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Annual Tax Savings",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = EnterpriseTeal700
+                            )
+                            Text(
+                                text = "₹${"%,d".format(report.annualTaxSavings)}",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = EnterpriseTeal900
+                                )
+                            )
+                        }
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = EmeraldSuccessBg),
+                            border = CardDefaults.outlinedCardBorder().copy(
+                                width = 0.5.dp,
+                                brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess)
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.End) {
+                                Text("In-Hand Pay Boost", style = MaterialTheme.typography.labelSmall, color = EmeraldSuccess)
+                                Text(
+                                    text = "+₹${"%,d".format(report.monthlyTakeHomeIncrease)}/mo",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        text = "By shifting fully-taxable Special Allowance into Section 80CCD(2) Employer NPS (14% Basic) & official flexi-reimbursements, your tax drops from ₹${"%,d".format(report.currentTax)} to ₹${"%,d".format(report.optimizedTax)}.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Slate700
+                    )
+                }
+            }
+        }
+
+        // Configuration Inputs
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "CTC Parameters",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = ctcText,
+                            onValueChange = { ctcText = it },
+                            label = { Text("Annual Gross CTC (₹)") },
+                            modifier = Modifier.weight(1.2f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
+                        )
+                        OutlinedTextField(
+                            value = rentPaidAnnualText,
+                            onValueChange = { rentPaidAnnualText = it },
+                            label = { Text("Annual Rent (₹)") },
+                            modifier = Modifier.weight(0.8f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Basic Salary Proportion:", style = MaterialTheme.typography.labelSmall)
+                        Row {
+                            FilterChip(
+                                selected = basicPercent == 0.40,
+                                onClick = { basicPercent = 0.40 },
+                                label = { Text("40% Basic") }
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            FilterChip(
+                                selected = basicPercent == 0.50,
+                                onClick = { basicPercent = 0.50 },
+                                label = { Text("50% Basic (Recommended)") }
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(6.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Metro City Residence (50% HRA cap):", style = MaterialTheme.typography.labelSmall)
+                        Switch(
+                            checked = isMetroCity,
+                            onCheckedChange = { isMetroCity = it },
+                            colors = SwitchDefaults.colors(checkedThumbColor = EnterpriseTeal600)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Restructuring Breakdown Table
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Salary Component Re-Allocation",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    val compRows = listOf(
+                        Triple("Basic Salary", report.currentComponents.basicSalary, report.optimizedComponents.basicSalary),
+                        Triple("House Rent Allowance (HRA)", report.currentComponents.hraReceived, report.optimizedComponents.hraReceived),
+                        Triple("Employer NPS u/s 80CCD(2) (14%)", report.currentComponents.employerNps80CCD2, report.optimizedComponents.employerNps80CCD2),
+                        Triple("Broadband & Telecom Reimbursement", report.currentComponents.telecomReimbursement, report.optimizedComponents.telecomReimbursement),
+                        Triple("Books & Professional Periodicals", report.currentComponents.booksAndPeriodicals, report.optimizedComponents.booksAndPeriodicals),
+                        Triple("Meal / Sodexo Coupons", report.currentComponents.foodVouchers, report.optimizedComponents.foodVouchers),
+                        Triple("Special Allowance (Taxable residual)", report.currentComponents.specialAllowance, report.optimizedComponents.specialAllowance)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Component", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), modifier = Modifier.weight(1.5f))
+                        Text("Current", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), modifier = Modifier.weight(1f))
+                        Text("Optimized", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal700), modifier = Modifier.weight(1f))
+                    }
+                    Divider(color = Slate200, thickness = 0.5.dp)
+
+                    compRows.forEach { (title, cur, opt) ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(title, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.5f))
+                            Text("₹${"%,d".format(cur)}", style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp), modifier = Modifier.weight(1f))
+                            Text(
+                                "₹${"%,d".format(opt)}",
+                                style = TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (opt > cur) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (opt > cur) EnterpriseTeal700 else MaterialTheme.colorScheme.onSurface
+                                ),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Action: Copy HR Restructuring Proposal
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "HR Payroll Proposal Draft",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Button(
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(report.hrProposalLetterMarkdown))
+                                copyStatusMessage = "Proposal letter copied! Submit to your HR payroll desk."
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text("📋 Copy HR Letter", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                        }
+                    }
+
+                    if (copyStatusMessage != null) {
+                        Spacer(Modifier.height(6.dp))
+                        StatutoryBadge(text = copyStatusMessage!!, tone = BadgeTone.SUCCESS)
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Submit this zero-cost restructuring proposal to your employer's HR or payroll team to implement Section 80CCD(2) 14% NPS and flexi-reimbursements before the next payroll cycle.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Slate600
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// 6. CAPITAL GAINS & 8-YEAR LOSS CARRY-FORWARD LEDGER (SCHEDULE CG & CFL)
+// ============================================================================
+@Composable
+private fun CapitalGainsLedgerView() {
+    var stcg111AText by remember { mutableStateOf("250000") }
+    var ltcg112AText by remember { mutableStateOf("320000") }
+    var cyStclLossText by remember { mutableStateOf("60000") }
+    var cyLtclLossText by remember { mutableStateOf("40000") }
+    var bfStclLossText by remember { mutableStateOf("50000") }
+    var bfLtclLossText by remember { mutableStateOf("30000") }
+    var copyStatusMessage by remember { mutableStateOf<String?>(null) }
+    val clipboardManager = LocalClipboardManager.current
+
+    val input = remember(stcg111AText, ltcg112AText, cyStclLossText, cyLtclLossText, bfStclLossText, bfLtclLossText) {
+        val bfList = mutableListOf<BroughtForwardLoss>()
+        val bfStcl = bfStclLossText.toLongOrNull() ?: 0L
+        val bfLtcl = bfLtclLossText.toLongOrNull() ?: 0L
+        if (bfStcl > 0L) {
+            bfList.add(BroughtForwardLoss("2022-23", LossType.STCL, bfStcl, 0L, filedBeforeDueDate = true))
+        }
+        if (bfLtcl > 0L) {
+            bfList.add(BroughtForwardLoss("2023-24", LossType.LTCL, bfLtcl, 0L, filedBeforeDueDate = true))
+        }
+
+        CapitalGainsPortfolioInput(
+            stcg111AListedGain = stcg111AText.toLongOrNull() ?: 0L,
+            stcl111AListedLoss = cyStclLossText.toLongOrNull() ?: 0L,
+            ltcg112AListedGain = ltcg112AText.toLongOrNull() ?: 0L,
+            ltcl112AListedLoss = cyLtclLossText.toLongOrNull() ?: 0L,
+            broughtForwardLosses = bfList
+        )
+    }
+
+    val result = remember(input) {
+        CapitalGainsAndLossLedgerEngine.computeCapitalGainsAndLosses(input)
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Tax Summary Hero
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 1.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Total Capital Gains Tax", style = MaterialTheme.typography.labelSmall, color = Slate600)
+                            Text(
+                                text = "₹${"%,d".format(result.totalCapitalGainsTax)}",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                        StatutoryBadge(text = "Finance Act 2024 Rates", tone = BadgeTone.STATUTORY)
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            colors = CardDefaults.cardColors(containerColor = Slate100)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Text("STCG (20%)", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                Text("₹${"%,d".format(result.taxOnStcg111A)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
+                            }
+                        }
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            colors = CardDefaults.cardColors(containerColor = Slate100)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Text("LTCG (12.5% >1.25L)", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                Text("₹${"%,d".format(result.taxOnLtcg112A)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
+                            }
+                        }
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            colors = CardDefaults.cardColors(containerColor = Slate100)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Text("Sec 112A Exemption", style = TextStyle(fontSize = 10.sp, color = EmeraldSuccess))
+                                Text("₹${"%,d".format(result.exemption112AClaimed)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Multi-Broker Portfolio Inputs
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Current Year Capital Gains & Losses",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = stcg111AText,
+                            onValueChange = { stcg111AText = it },
+                            label = { Text("STCG 111A (Gain ₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                        OutlinedTextField(
+                            value = cyStclLossText,
+                            onValueChange = { cyStclLossText = it },
+                            label = { Text("STCL (Loss ₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = ltcg112AText,
+                            onValueChange = { ltcg112AText = it },
+                            label = { Text("LTCG 112A (Gain ₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                        OutlinedTextField(
+                            value = cyLtclLossText,
+                            onValueChange = { cyLtclLossText = it },
+                            label = { Text("LTCL (Loss ₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = "Brought-Forward Losses from Previous Assessment Years (Schedule BFLA)",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold)
+                    )
+                    Spacer(Modifier.height(6.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = bfStclLossText,
+                            onValueChange = { bfStclLossText = it },
+                            label = { Text("B/F STCL (AY 22-23 ₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                        OutlinedTextField(
+                            value = bfLtclLossText,
+                            onValueChange = { bfLtclLossText = it },
+                            label = { Text("B/F LTCL (AY 23-24 ₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Schedule CYLA Intra-Head Set-off Audit Trail
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Schedule CYLA: Intra-Head Set-Off Audit Trail",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    if (result.setOffAuditLog.isEmpty()) {
+                        Text(
+                            "No current year losses to set off.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Slate500
+                        )
+                    } else {
+                        result.setOffAuditLog.forEach { step ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("⚡", fontSize = 11.sp)
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        "${step.lossSource} → ${step.setOffAgainstGain}",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        "₹${"%,d".format(step.setOffAmount)}",
+                                        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    StatutoryBadge(text = step.statutorySection, tone = BadgeTone.STATUTORY)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Schedule CFL: 8-Year Loss Carry-Forward Ledger
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Schedule CFL: 8-Year Carry-Forward Ledger",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        StatutoryBadge(
+                            text = "Total Carried Forward: ₹${"%,d".format(result.totalUnabsorbedLossCarriedForward)}",
+                            tone = BadgeTone.WARNING
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+
+                    if (result.carriedForwardToFutureAy.isEmpty()) {
+                        Text("No unabsorbed losses to carry forward.", style = MaterialTheme.typography.bodySmall, color = Slate500)
+                    } else {
+                        result.carriedForwardToFutureAy.forEach { bucket ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(if (bucket.isLapsed) CrimsonDangerBg else Slate100)
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            "${bucket.lossType.name} (${bucket.assessmentYear})",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        StatutoryBadge(
+                                            text = "Expires ${bucket.expiryYear}",
+                                            tone = if (bucket.isLapsed) BadgeTone.DANGER else BadgeTone.STATUTORY
+                                        )
+                                    }
+                                    Text(
+                                        "Opening: ₹${"%,d".format(bucket.openingUnabsorbed)} | Set Off: ₹${"%,d".format(bucket.utilizedThisYear)}",
+                                        style = TextStyle(fontSize = 10.sp, color = Slate600)
+                                    )
+                                }
+
+                                Text(
+                                    "Balance: ₹${"%,d".format(bucket.closingCarryForward)}",
+                                    style = TextStyle(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (bucket.isLapsed) CrimsonDanger else EnterpriseTeal800
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+                    Button(
+                        onClick = {
+                            val cflSummary = "Schedule CFL Summary: Total Unabsorbed Loss Carried Forward = ₹${result.totalUnabsorbedLossCarriedForward} across ${result.carriedForwardToFutureAy.size} assessment year buckets."
+                            clipboardManager.setText(AnnotatedString(cflSummary))
+                            copyStatusMessage = "Schedule CFL summary copied!"
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                        modifier = Modifier.fillMaxWidth().height(38.dp)
+                    ) {
+                        Text("📋 Copy Schedule CFL Data for e-Filing", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                    }
+                }
+            }
+        }
+    }
+}
+

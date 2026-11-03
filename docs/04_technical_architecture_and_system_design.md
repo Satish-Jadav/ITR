@@ -1294,3 +1294,22 @@ Both netTaxableNormalIncomeRounded288A (Section 288A) and totalTaxLiabilityRound
 5.1 Pure-JVM Immutability & Coroutine Dispatcher Isolation
 Zero Shared Mutable State in :core:tax-engine: All tax calculation, reconciliation, capital gains, Schedule FA, and ITR-U engines (DeterministicReconciler, DeterministicIndianTaxEngine, CapitalGainsAndForeignAssetEngine) are stateless Kotlin object singletons operating exclusively on immutable data class inputs using 64-bit integer Long rupee arithmetic and roundToLong() half-even/half-up statutory rounding.
 Strict Dispatcher Partitioning: PDF unlocking (SilentPdfUnlocker), regex extraction (DeterministicTracesRegexParser), and AICore inference execute on Dispatchers.Default; SQLCipher database transactions and DpdpVaultShredder random file overwrites execute on Dispatchers.IO; WebView cookie/DOM storage destruction (CookieManager.removeAllCookies + WebStorage.deleteAllData) executes on Dispatchers.Main within 500ms of JSON payload interception.
+
+
+6. Advanced Value-Add Engines: Salary Restructuring, Capital Gains Loss Ledger & Notice Defense
+6.1 CTC Salary Restructuring & Flexi-Benefits Optimizer (`SalaryRestructuringOptimizer.kt`)
+Operates as a pure-JVM deterministic allocation engine to legally minimize employee tax burden by converting fully-taxable allowances into statutory exempt flexi-benefits:
+- Employer NPS u/s 80CCD(2): Up to 14% of Basic Salary without ₹1.5L cap.
+- Rule 3(7)(ix) Broadband & Telephony: 100% exempt against official bills.
+- Section 10(14)(i) Technical Literature & Books: Exempt against professional upskilling expenses.
+- Rule 3(7)(iii) Meal Vouchers: Up to ₹50/meal (~₹26,400/yr) exempt in Old Regime.
+- Generates instant side-by-side tax showdown and formal HR Payroll Restructuring Proposal markdown.
+
+6.2 Multi-Broker Capital Gains & 8-Year Loss Carry-Forward Ledger (`CapitalGainsAndLossLedgerEngine.kt`)
+- Full compliance with Finance (No. 2) Act, 2024: STCG 111A @ 20.0%, LTCG 112A @ 12.5% exceeding ₹1,25,000 exemption.
+- Section 70/71 Intra-Head Set-off rules: STCL absorbs STCG & LTCG; LTCL absorbs LTCG only.
+- Schedule CFL: 8-year historical loss bucket tracking (AY 2019-20 to AY 2026-27) with Section 139(1) timely filing verification.
+
+6.3 Tax Notice Defense & Rectification Assistant (`TaxNoticeDefenseAssistantScreen.kt`)
+- CPC Bengaluru notice analysis across Sections 143(1), 139(9), 245, and 148A.
+- Explains mismatch causation, statutory deadlines (15-30 days), and generates CBDT-compliant formal written submissions for e-Proceedings / Section 154 online rectification.
