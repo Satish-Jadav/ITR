@@ -99,12 +99,22 @@ fun TaxVisualizerAndAnalyticsScreen(
                 }
             }
 
-            Box(
+            AnimatedContent(
+                targetState = selectedTab,
+                transitionSpec = {
+                    val isForward = targetState.ordinal > initialState.ordinal
+                    (slideInHorizontally(tween(280, easing = FastOutSlowInEasing)) { if (isForward) it / 3 else -it / 3 } +
+                            fadeIn(tween(220))).togetherWith(
+                        slideOutHorizontally(tween(220, easing = FastOutSlowInEasing)) { if (isForward) -it / 3 else it / 3 } +
+                                fadeOut(tween(180))
+                    )
+                },
+                label = "AnalyticsTabTransition",
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
-            ) {
-                when (selectedTab) {
+            ) { tab ->
+                when (tab) {
                     AnalyticsViewTab.INCOME_FLOW -> IncomeFlowVisualizerView(grossSalary = grossSalary, taxLiability = taxLiability, tdsClaimed = tdsClaimed)
                     AnalyticsViewTab.THREE_WAY_RECONCILIATION -> ThreeWayReconciliationRadarView(grossSalary = grossSalary, tdsClaimed = tdsClaimed)
                     AnalyticsViewTab.STATUTORY_CALENDAR -> StatutoryTaxCalendarView()
@@ -242,6 +252,17 @@ private fun WaterfallBarItem(
     isNet: Boolean = false,
     isHighlighted: Boolean = false
 ) {
+    val targetProgress = (percentageOfGross.toFloat() / 100f).coerceIn(0.05f, 1f)
+    var isStarted by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        isStarted = true
+    }
+    val animatedProgress by animateFloatAsState(
+        targetValue = if (isStarted) targetProgress else 0.05f,
+        animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing),
+        label = "WaterfallBarProgress"
+    )
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         shape = RoundedCornerShape(4.dp),
@@ -267,7 +288,7 @@ private fun WaterfallBarItem(
             }
             Spacer(Modifier.height(4.dp))
             LinearProgressIndicator(
-                progress = { (percentageOfGross.toFloat() / 100f).coerceIn(0.05f, 1f) },
+                progress = { animatedProgress },
                 modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
                 color = color,
                 trackColor = Slate200
