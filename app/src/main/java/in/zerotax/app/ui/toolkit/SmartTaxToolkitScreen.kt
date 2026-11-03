@@ -32,8 +32,15 @@ import in.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine.Capita
 import in.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine.LossType
 import in.zerotax.core.taxengine.advanced.HraAndInterestEngine
 import in.zerotax.core.taxengine.advanced.HraComputationInput
+import in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator
+import in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator.ItrUInput
+import in.zerotax.core.taxengine.advanced.PropertyLtcgIndexationEngine
+import in.zerotax.core.taxengine.advanced.PropertyLtcgIndexationEngine.PropertySaleInput
 import in.zerotax.core.taxengine.advanced.RevisionAndHarvestingEngine
 import in.zerotax.core.taxengine.advanced.SalaryRestructuringOptimizer
+import in.zerotax.core.taxengine.advanced.Section89ArrearsReliefCalculator
+import in.zerotax.core.taxengine.advanced.Section89ArrearsReliefCalculator.Section89ComputationInput
+import in.zerotax.core.taxengine.advanced.Section89ArrearsReliefCalculator.AccrualYearParticulars
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.max
@@ -43,6 +50,9 @@ enum class ToolkitTab(val label: String, val icon: String) {
     HRA_OPTIMIZER("HRA & Rent Receipts", "🏠"),
     CTC_OPTIMIZER("CTC Restructuring", "💼"),
     CAPITAL_GAINS_LEDGER("Capital Gains & CFL", "📊"),
+    PROPERTY_LTCG("Property Dual-Option", "🏘️"),
+    FORM_10E_RELIEF("Salary Arrears Sec 89", "📑"),
+    ITR_U_UPDATED_RETURN("ITR-U Updated Return", "🔄"),
     ADVANCE_TAX_RADAR("Advance Tax & Challan 280", "⚡"),
     LTCG_HARVESTING("LTCG Tax-Harvesting", "📈"),
     STATEMENT_EXPORTER("Bank-Ready Summary", "📄")
@@ -124,6 +134,9 @@ fun SmartTaxToolkitScreen(
                     ToolkitTab.HRA_OPTIMIZER -> HraOptimizerView(pan = pan, grossSalary = grossSalary)
                     ToolkitTab.CTC_OPTIMIZER -> CtcRestructuringView(grossSalary = grossSalary)
                     ToolkitTab.CAPITAL_GAINS_LEDGER -> CapitalGainsLedgerView()
+                    ToolkitTab.PROPERTY_LTCG -> PropertyLtcgView()
+                    ToolkitTab.FORM_10E_RELIEF -> Form10EReliefView(pan = pan)
+                    ToolkitTab.ITR_U_UPDATED_RETURN -> ItrUView()
                     ToolkitTab.ADVANCE_TAX_RADAR -> AdvanceTaxRadarView(pan = pan, totalTaxLiability = taxLiability, tdsPaid = tdsClaimed)
                     ToolkitTab.LTCG_HARVESTING -> LtcgHarvestingRadarView()
                     ToolkitTab.STATEMENT_EXPORTER -> BankReadyStatementView(pan = pan, grossSalary = grossSalary, taxLiability = taxLiability, tdsClaimed = tdsClaimed)
@@ -1346,4 +1359,588 @@ private fun CapitalGainsLedgerView() {
         }
     }
 }
+
+// ============================================================================
+// 7. PRE-JULY 23, 2024 PROPERTY LTCG DUAL-OPTION INDEXATION (SEC 112(1)(a))
+// ============================================================================
+@Composable
+private fun PropertyLtcgView() {
+    var saleConsiderationText by remember { mutableStateOf("12000000") } // ₹1.2 Cr
+    var actualCostText by remember { mutableStateOf("3500000") } // ₹35 Lakhs
+    var sec54ReinvestmentText by remember { mutableStateOf("2000000") } // ₹20 Lakhs
+    var acquisitionFy by remember { mutableStateOf("2012-13") }
+    var acquiredBeforeJuly2024 by remember { mutableStateOf(true) }
+
+    val input = remember(saleConsiderationText, actualCostText, sec54ReinvestmentText, acquisitionFy, acquiredBeforeJuly2024) {
+        PropertySaleInput(
+            acquisitionDateType = if (acquiredBeforeJuly2024) PropertyLtcgIndexationEngine.PropertyAcquisitionDate.BEFORE_JULY_23_2024 else PropertyLtcgIndexationEngine.PropertyAcquisitionDate.ON_OR_AFTER_JULY_23_2024,
+            acquisitionFinancialYear = acquisitionFy,
+            saleFinancialYear = "2025-26",
+            actualCostOfAcquisitionRupees = actualCostText.toLongOrNull() ?: 0L,
+            saleConsiderationRupees = saleConsiderationText.toLongOrNull() ?: 0L,
+            section54ReinvestmentRupees = sec54ReinvestmentText.toLongOrNull() ?: 0L
+        )
+    }
+
+    val result = remember(input) {
+        PropertyLtcgIndexationEngine.computePropertyLtcg(input)
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Hero Recommendation Card
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 1.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Recommended Grandfathered Path", style = MaterialTheme.typography.labelSmall, color = EnterpriseTeal700)
+                            Text(
+                                text = "Final Tax: ₹${"%,d".format(result.finalTaxPayableWithCess)}",
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            )
+                        }
+                        if (result.taxSavingsByGrandfathering > 0L) {
+                            StatutoryBadge(
+                                text = "Saves ₹${"%,d".format(result.taxSavingsByGrandfathering)}",
+                                tone = BadgeTone.SUCCESS
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = result.recommendedOption,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = Slate700
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "Finance (No. 2) Act 2024 allows resident individuals selling property acquired before July 23, 2024 to choose whichever option results in LOWER tax.",
+                        style = TextStyle(fontSize = 11.sp, color = Slate600)
+                    )
+                }
+            }
+        }
+
+        // Side-by-Side Comparison Table
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Statutory Dual-Option Showdown (Sec 112(1)(a) Proviso)",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            colors = CardDefaults.cardColors(containerColor = Slate100)
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text("Option 1: 12.5% Flat", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                Text("Without Indexation", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                Spacer(Modifier.height(6.dp))
+                                Text("Cost: ₹${"%,d".format(input.actualCostOfAcquisitionRupees)}", style = TextStyle(fontSize = 11.sp))
+                                Text("Gain: ₹${"%,d".format(result.netGainOption1Unindexed)}", style = TextStyle(fontSize = 11.sp))
+                                Spacer(Modifier.height(4.dp))
+                                Text("Tax: ₹${"%,d".format(result.taxOption1Unindexed12_5Pct)}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
+                            }
+                        }
+
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            colors = CardDefaults.cardColors(containerColor = EmeraldSuccessBg)
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text("Option 2: 20.0% with CII", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                                Text("Cost Inflation Index", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                Spacer(Modifier.height(6.dp))
+                                Text("Indexed Cost: ₹${"%,d".format(result.indexedCostOfAcquisition)}", style = TextStyle(fontSize = 11.sp))
+                                Text("Gain: ₹${"%,d".format(result.netGainOption2Indexed)}", style = TextStyle(fontSize = 11.sp))
+                                Spacer(Modifier.height(4.dp))
+                                Text("Tax: ₹${"%,d".format(result.taxOption2Indexed20Pct)}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Inputs
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Property Particulars",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = saleConsiderationText,
+                            onValueChange = { saleConsiderationText = it },
+                            label = { Text("Sale Consideration (₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                        OutlinedTextField(
+                            value = actualCostText,
+                            onValueChange = { actualCostText = it },
+                            label = { Text("Cost of Acquisition (₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = sec54ReinvestmentText,
+                            onValueChange = { sec54ReinvestmentText = it },
+                            label = { Text("Sec 54 Reinvestment (₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                        OutlinedTextField(
+                            value = acquisitionFy,
+                            onValueChange = { acquisitionFy = it },
+                            label = { Text("Acquisition FY (e.g. 2012-13)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Acquired Before July 23, 2024:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                            Text("Enables grandfathered 20% CII indexation option", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                        }
+                        Switch(
+                            checked = acquiredBeforeJuly2024,
+                            onCheckedChange = { acquiredBeforeJuly2024 = it },
+                            colors = SwitchDefaults.colors(checkedThumbColor = EnterpriseTeal600)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// 8. SECTION 89(1) SALARY ARREARS RELIEF & FORM 10E COMPILER
+// ============================================================================
+@Composable
+private fun Form10EReliefView(pan: String) {
+    var normalSalaryText by remember { mutableStateOf("1500000") } // ₹15 Lakhs
+    var arrearsText by remember { mutableStateOf("300000") } // ₹3 Lakhs arrears
+    var pastFyIncomeText by remember { mutableStateOf("900000") } // ₹9 Lakhs
+    var pastFyTaxText by remember { mutableStateOf("96200") } // ₹96,200
+    var pastAyYear by remember { mutableStateOf("2024-25") }
+    var copyStatusMessage by remember { mutableStateOf<String?>(null) }
+    val clipboardManager = LocalClipboardManager.current
+
+    val input = remember(normalSalaryText, arrearsText, pastFyIncomeText, pastFyTaxText, pastAyYear) {
+        Section89ComputationInput(
+            receiptAssessmentYear = "2026-27",
+            currentYearNormalSalaryExcludingArrears = normalSalaryText.toLongOrNull() ?: 0L,
+            totalArrearsReceivedInCurrentYear = arrearsText.toLongOrNull() ?: 0L,
+            accrualYears = listOf(
+                AccrualYearParticulars(
+                    assessmentYear = pastAyYear,
+                    originalTotalIncome = pastFyIncomeText.toLongOrNull() ?: 0L,
+                    originalTaxPaid = pastFyTaxText.toLongOrNull() ?: 0L,
+                    arrearsAllocatedToThisYear = arrearsText.toLongOrNull() ?: 0L
+                )
+            )
+        )
+    }
+
+    val result = remember(input) {
+        Section89ArrearsReliefCalculator.computeRelief(input, pan)
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Hero Relief Card
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 1.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Section 89(1) Arrears Tax Relief", style = MaterialTheme.typography.labelSmall, color = EnterpriseTeal700)
+                            Text(
+                                text = "₹${"%,d".format(result.reliefAllowableUnderSection89)}",
+                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            )
+                        }
+                        StatutoryBadge(text = "Rule 21AA Compliant", tone = BadgeTone.SUCCESS)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Relief equalizes the tax spike caused by receiving lump-sum arrears in the current year instead of the accrual years.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Slate700
+                    )
+                }
+            }
+        }
+
+        // Calculation Breakdown
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Relief Computation Breakdown (Table A)",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("1. Incremental Tax in Current Year (Diff A):", style = MaterialTheme.typography.bodySmall)
+                        Text("₹${"%,d".format(result.incrementalTaxInReceiptYear)}", style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold))
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("2. Incremental Tax in Accrual Year(s) (Diff B):", style = MaterialTheme.typography.bodySmall)
+                        Text("₹${"%,d".format(result.totalIncrementalTaxInAccrualYears)}", style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold))
+                    }
+                    Divider(Modifier.padding(vertical = 6.dp), thickness = 0.5.dp, color = Slate200)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("NET SECTION 89(1) RELIEF (A - B):", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                        Text(
+                            "₹${"%,d".format(result.reliefAllowableUnderSection89)}",
+                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = EmeraldSuccess, fontSize = 13.sp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Inputs & Form 10E JSON Export
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Salary & Arrears Parameters",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = normalSalaryText,
+                            onValueChange = { normalSalaryText = it },
+                            label = { Text("Current Salary excl. Arrears (₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                        OutlinedTextField(
+                            value = arrearsText,
+                            onValueChange = { arrearsText = it },
+                            label = { Text("Arrears Received in Current FY (₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = pastFyIncomeText,
+                            onValueChange = { pastFyIncomeText = it },
+                            label = { Text("Accrual Year Total Income (₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                        OutlinedTextField(
+                            value = pastFyTaxText,
+                            onValueChange = { pastFyTaxText = it },
+                            label = { Text("Accrual Year Tax Paid (₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Mandatory Form 10E Electronic Filing", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                        Button(
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(result.form10EJsonPayload))
+                                copyStatusMessage = "Form 10E JSON copied! Upload on e-filing portal before filing ITR."
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text("📋 Copy Form 10E JSON", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                        }
+                    }
+
+                    if (copyStatusMessage != null) {
+                        Spacer(Modifier.height(6.dp))
+                        StatutoryBadge(text = copyStatusMessage!!, tone = BadgeTone.SUCCESS)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// 9. UPDATED RETURN (ITR-U U/S 139(8A) & SECTION 140B)
+// ============================================================================
+@Composable
+private fun ItrUView() {
+    var additionalIncomeText by remember { mutableStateOf("400000") } // ₹4 Lakhs
+    var monthsElapsedText by remember { mutableStateOf("8") } // 8 months (25% rate)
+    var interestText by remember { mutableStateOf("15000") } // ₹15,000
+
+    val input = remember(additionalIncomeText, monthsElapsedText, interestText) {
+        ItrUInput(
+            relevantAssessmentYear = "2024-25",
+            additionalIncomeDeclaredRupees = additionalIncomeText.toLongOrNull() ?: 0L,
+            monthsElapsedFromEndOfAy = monthsElapsedText.toIntOrNull() ?: 0,
+            interest234A = interestText.toLongOrNull() ?: 0L
+        )
+    }
+
+    val result = remember(input) {
+        ItrUAdditionalTaxCalculator.computeItrU(input)
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Hero Card
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 1.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Total Section 140B Outflow", style = MaterialTheme.typography.labelSmall, color = EnterpriseTeal700)
+                            Text(
+                                text = "₹${"%,d".format(result.totalPayableUnderSection140B)}",
+                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            )
+                        }
+                        StatutoryBadge(
+                            text = result.timeWindow.label.take(28) + "...",
+                            tone = if (result.isEligibleToFileItrU) BadgeTone.WARNING else BadgeTone.DANGER
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = result.eligibilityRemark,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Slate700
+                    )
+                }
+            }
+        }
+
+        // Section 140B Tax Breakdown
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Section 140B Statutory Outflow Ledger",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    val rows = listOf(
+                        Pair("Tax on Additional Income", result.taxPlusCess),
+                        Pair("Statutory Interest u/s 234A/B/C", result.totalStatutoryInterest),
+                        Pair("Base for Section 140B Calculation", result.taxAndInterestBaseFor140B),
+                        Pair("Section 140B Additional Tax Surcharge (${(result.timeWindow.surchargePercent * 100).toInt()}%)", result.additionalTaxSurcharge140B),
+                        Pair("TOTAL STATUTORY PAYABLE U/S 140B", result.totalPayableUnderSection140B)
+                    )
+
+                    rows.forEach { (label, amt) ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(label, style = MaterialTheme.typography.bodySmall)
+                            Text("₹${"%,d".format(amt)}", style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold))
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+                    Divider(color = Slate200, thickness = 0.5.dp)
+                    Spacer(Modifier.height(6.dp))
+
+                    Text(
+                        text = "Deposit Challan 280 under: ${result.challan280MinorHead}",
+                        style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = IndigoStatutory)
+                    )
+                }
+            }
+        }
+
+        // Inputs
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = 0.5.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "ITR-U Assessment Parameters",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = additionalIncomeText,
+                            onValueChange = { additionalIncomeText = it },
+                            label = { Text("Additional Income (₹)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                        OutlinedTextField(
+                            value = monthsElapsedText,
+                            onValueChange = { monthsElapsedText = it },
+                            label = { Text("Months from End of AY") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 

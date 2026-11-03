@@ -34,12 +34,15 @@
 - **Instant Aadhaar OTP e-Verification u/s 140A:** Fetches OTP and completes verification entirely within the app, generating the official 15-digit ITR-V acknowledgement number without requiring external browser logins.
 - **Ephemeral Session Security:** Auth tokens and session cookies are cryptographically wiped from RAM within 500ms of transaction completion per DPDP Act Section 12(3).
 
-### 4. 🛠️ Smart Tax Toolkit (6 Value-Add Industry Tools)
+### 4. 🛠️ Smart Tax Toolkit (9 Value-Add Industry Tools)
 - **HRA Exemption Maximizer & Rent Receipt Generator (Rule 2A):** Real-time Least-of-3 calculation (Actual HRA, Rent minus 10% Basic, 50%/40% Metro cap) with mandatory Landlord PAN alerts (>₹1L/year) and 1-tap 12-month revenue-stamped rent receipt pack generation for employer HR.
-- **CTC Salary Restructuring & Flexi-Benefits Optimizer (Section 80CCD(2), Rule 3):** Simulates employer corporate NPS up to 14% of Basic (exempt in BOTH New and Old Regimes), broadband/telecom (Rule 3(7)(ix)), books & periodicals (Sec 10(14)(i)), and food coupons (Rule 3(7)(iii)) to save ₹30,000 to ₹1,50,000+ in taxes with 1-tap HR payroll proposal letter generation.
+- **CTC Salary Restructuring & Flexi-Benefits Optimizer (Section 80CCD(2), Rule 3):** Simulates employer corporate NPS up to 14% of Basic (exempt in BOTH New and Old Regimes), broadband/telecom (Rule 3(7)(ix)), books & periodicals (Sec 10(14)(i)), and food coupons (Rule 3(7)(iii)) to save ₹30,00,000 CTC earners ₹30,000 to ₹1,50,000+ in taxes with 1-tap HR proposal letter generation.
 - **Multi-Broker Capital Gains & 8-Year Loss Carry-Forward Ledger (Schedule CG, CYLA & CFL):** Computes Finance (No. 2) Act 2024 rates (STCG 111A @ 20%, LTCG 112A @ 12.5% >₹1.25L), intra-head set-off u/s 70/71, and 8-year historical loss bucket tracking with Section 139(1) timely filing verification.
 - **Advance Tax Radar & Instant Challan 280 UPI Assistant (Sections 208, 234B, 234C):** Monitors the ₹10,000 net liability threshold, quarterly milestone countdowns (15%, 45%, 75%, 100%), interest penalty avoidance calculator, and pre-filled Challan 280 (Major Head 0021, Minor Head 100/300) with NPCI UPI intent strings.
 - **March 31 Equity LTCG Tax-Harvesting Radar (Section 112A):** Tracks annual ₹1,25,000 tax-free LTCG headroom, automated profit-booking recommendations before March 31, and STCG short-term loss harvesting.
+- **Pre-July 23, 2024 Property LTCG Dual-Option Indexation Engine (Sec 112(1)(a) Second Proviso):** Automatically runs a side-by-side comparison between 12.5% unindexed and 20.0% CII-indexed tax rates for real estate acquired before July 23, 2024, choosing the lowest tax liability and enforcing Section 54 ₹10 Crore caps.
+- **Section 89(1) Salary Arrears Relief Calculator & Form 10E Compiler (Rule 21AA):** Equalizes tax spikes caused by multi-year arrears received in the current year and auto-compiles electronic Form 10E JSON to prevent automatic CPC Section 143(1) disallowances.
+- **Updated Return (ITR-U u/s 139(8A) & Section 140B) Additional Tax Calculator:** Computes statutory 25% (within 12 months) and 50% (between 12 and 24 months) additional tax surcharges on omitted income to resolve compliance gaps safely before scrutiny.
 - **Bank-Ready "Statement of Total Income" Exporter:** Formats formal bank-grade ITR summaries with tamper-evident SHA-256 seal for Home Loans, Car Loans, and Visa applications.
 
 ### 5. 📊 Tax Intelligence & Visual Analytics Suite
@@ -107,6 +110,10 @@ The application enforces a strict directed acyclic graph (DAG) across modules wi
                               - SmallBusinessAuditAndPresumptiveEngine
                               - NonResidentTaxAndResidencyEngine
                               - Form10IeaBusinessRegimeEngine
+                              - Section89ArrearsReliefCalculator
+                              - ItrUAdditionalTaxCalculator
+                              - PropertyLtcgIndexationEngine
+                              - UniversalBrokerPnLParser
                               - PreFilingAuditEngine
                               - HomeLoanAndDeductionCalculator
                               - HraAndInterestEngine

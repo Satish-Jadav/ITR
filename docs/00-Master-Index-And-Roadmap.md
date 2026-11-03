@@ -36,3 +36,31 @@ This master index provides the consolidated architecture, product specifications
 | **Phase 1 (MVP)** | Weeks 1 – 6 | Salaried & Freelance Zero-Friction Filing | `ITR-1 (Sahaj)`, `ITR-4 (Sugam - 44ADA/44AD)` | **₹0** (Assisted WebView + On-Device `AICore`) |
 | **Phase 2 (Scale)** | Weeks 7 – 12 | Investors, Account Aggregator & UPI Tax Pay | `ITR-2`, `Schedule CG`, `Schedule 112A`, `CYLA/BFLA/CFL`, `Challan 280` | AA per-consent fee (or CAMS PDF local parse at ₹0) |
 | **Phase 3 (Moat)** | Weeks 13 – 18 | Foreign RSUs, Vernacular AI Copilot & Revisions | `Schedule FA`, `Form 67`, `Sec 139(5) Revised`, `ITR-U`, `EN/HI/GU` Notice AI | **₹0** (Bundled SBI TTBR DB + On-Device `AICore`) |
+
+---
+
+## 4. Master Feature Extension & Work Package Architecture (WP-01 to WP-10)
+
+### 4.1 Module-by-Module Audit: Baseline vs. Extensions
+- **`:core:model`**: Unified immutable data structures (`ScheduleItChallanEntry`, `HousePropertyInput`, `AdvanceTaxQuarterlyPayments`, `CapitalGainsPortfolioInput`, `PropertySaleInput`, `Section89ComputationInput`, `ItrUInput`).
+- **`:core:tax-engine`**: Pure-JVM statutory sub-engines (`DeterministicIndianTaxEngine`, `DeterministicReconciler`, `SalaryRestructuringOptimizer`, `CapitalGainsAndLossLedgerEngine`, `SmallBusinessAuditAndPresumptiveEngine`, `NonResidentTaxAndResidencyEngine`, `Form10IeaBusinessRegimeEngine`, `Section89ArrearsReliefCalculator`, `ItrUAdditionalTaxCalculator`, `PropertyLtcgIndexationEngine`, `UniversalBrokerPnLParser`, `PreFilingAuditEngine`).
+- **`:core:database`**: 13-table Room schema with SQLCipher 4.5.4 hardware AES-256-GCM encryption, seed CII 2001-2026 table, ISIN FMV 2018 benchmark seeds, and SBI TTBR foreign exchange lookup.
+- **`:core:security`**: UIDAI Aadhaar Verhoeff checksum byte scrubber (`"[Aadhaar Redacted]"`), DPDP Act Section 12(3) 1-tap vault shredder (DOD 5220.22-M 3-pass overwrite), and hardware-backed StrongBox Keystore.
+- **`:feature:pdf-unlocker`**: PdfBox-Android with 15-permutation silent unlocker, TRACES Form 16/26AS regex parser, and domestic broker P&L parser.
+- **`:feature:ai-extractor`**: Google Android AICore (Gemini Nano) running strictly at `temperature = 0.0f` and `topK = 1` for natural-language chat ingestion and multi-lingual notice explanation (`en-IN`, `hi-IN`, `gu-IN`), protected by deterministic post-AI math sanity firewall.
+- **`:feature:portal-bridge`**: Ephemeral portal bridge with domain allowlisting, NPCI UPI Challan 280 intent launcher, and 500ms cookie/DOM destruction.
+- **`:feature:aa-aggregator`**: RBI Account Aggregator in-memory ephemeral decryptor (Curve25519 + HKDF-SHA256 + AES-GCM + RAM wipe).
+- **`:app`**: Jetpack Compose 4-Tap Filing Spine, Smart Tax Toolkit (9 interactive tools), Dual-Region NRI suite, Small Business Audit Suite, and Section 140 statutory acknowledgement gate.
+
+### 4.2 10-Work Package Sequential Matrix
+1. **WP-01 (Domain Models & Tax Sub-Engines):** Consolidate shared domain models into `:core:model` and implement Rule 2A, Rule 119A, Section 207(2), Schedule HP, Section 44ADA, and Section 234C sub-engines.
+2. **WP-02 (Capital Gains & Real Estate Second Proviso):** Multi-broker capital gains ledger, 8-year loss carry forward, and Section 112(1)(a) pre-July 23, 2024 dual-option indexation.
+3. **WP-03 (Salary Restructuring & Flexi-Benefits):** Section 80CCD(2) employer NPS up to 14% of Basic, Rule 3 telephony, Section 10(14)(i) books, and auto-generated HR proposals.
+4. **WP-04 (Small Business & Section 44AB/AD/ADA Audit Suite):** 5% cash ratio analyzer (₹1 Cr vs ₹10 Cr), Form 3CD disallowance scanner (43B(h), 40A(3), 40(a)(ia)), and CA handover pack.
+5. **WP-05 (Dual-Region Section 6 Residency & NRI Suite):** Section 6 stay calculator, Section 10(4)(ii) NRE/FCNR 100% tax exemption, NRO 30% TDS credit reclaimer, and DTAA Form 10F compiler.
+6. **WP-06 (Dual-Regime & Form 10-IEA Business Governance):** Section 115BAC opt-out engine, 1-time lifetime switch-back lock-in debarment tracker, and CBDT Form 10-IEA JSON compiler.
+7. **WP-07 (Section 89 Arrears Relief & Form 10E Compiler):** Multi-year salary arrears tax equalizer and Rule 21AA electronic Form 10E schema compiler.
+8. **WP-08 (Updated Return ITR-U u/s 140B Additional Tax Engine):** 25% / 50% additional tax windows, 24-month statutory deadline gate, and compliance defense tracker.
+9. **WP-09 (Universal Broker P&L & Trade Ingestion):** Zerodha, Groww, Angel One CSV parsers into Schedule 111A, 112A, and F&O ICAI turnover.
+10. **WP-10 (Full Compose UI Integration & Hardened Verification):** 9-tool Smart Tax Toolkit Compose screen, Dual-Region NRI screen, Small Business Audit screen, and 24-vector golden test suites.
+
