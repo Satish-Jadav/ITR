@@ -1334,3 +1334,19 @@ Operates as a pure-JVM deterministic allocation engine to legally minimize emplo
 - Statutory opt-out management under Section 115BAC(3) and Rule 21AGA.
 - Enforces mandatory Form 10-IEA requirement for ITR-3 and ITR-4 taxpayers opting into the Old Regime.
 - Tracks 1-time lifetime switch-back lock-in debarment and compiles CBDT-compliant JSON payloads.
+
+6.7 Section 89(1) Arrears Relief & Form 10E Engine (`Section89ArrearsReliefCalculator.kt`)
+- Deterministic calculation of tax relief on salary arrears under Section 89(1).
+- Rule 21AA automated Form 10E compiler preventing CPC Section 143(1) automated disallowances.
+
+6.8 Updated Return (ITR-U u/s 139(8A) & 140B) Additional Tax Engine (`ItrUAdditionalTaxCalculator.kt`)
+- Deterministic 25% (<=12 months) and 50% (12-24 months) additional tax computation u/s 140B.
+- Statutory eligibility verification and defense penalty mitigation tracker.
+
+6.9 Pre-July 23, 2024 Property LTCG Dual-Option Indexation Engine (`PropertyLtcgIndexationEngine.kt`)
+- Second Proviso to Section 112(1)(a) dual-option calculation (12.5% unindexed vs 20% CII indexed) for real estate acquired prior to July 23, 2024.
+- 25-Year Cost Inflation Index lookup and Section 54/54F ₹10 Crore reinvestment ceiling enforcement.
+
+6.10 Universal Multi-Broker Tax P&L Parser (`UniversalBrokerPnLParser.kt`)
+- Deterministic CSV parser for Zerodha Console, Groww, Angel One trade reports.
+- Classifies Schedule 111A, 112A, and computes ICAI absolute turnover for F&O derivatives u/s 44AB.

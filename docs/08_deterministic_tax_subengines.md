@@ -768,3 +768,41 @@ Statutory framework under Section 115BAC(3) and Rule 21AGA (Notification 43/2023
 - Business & Professional Taxpayers (ITR-3 / ITR-4): The New Regime under Section 115BAC(1A) is the statutory default. Opting out to the Old Regime requires mandatory electronic filing of Form 10-IEA on or before the Section 139(1) due date (July 31 for non-audit, October 31 for tax audit).
 - 1-Time Lifetime Lock-In Rule: Business taxpayers opting out to Old Regime are granted strictly ONE lifetime opportunity to re-enter the New Regime. Once re-entered, they are permanently debarred from choosing the Old Regime while having business income.
 - Compiles CBDT schema-compliant Form 10-IEA JSON payloads with acknowledgement number mapping for Schedule 115BAC.
+
+11. Section 89(1) Salary Arrears Tax Relief Calculator & Form 10E Compiler (`Section89ArrearsReliefCalculator`)
+Statutory framework under Section 89(1) and Rule 21AA of the Income-tax Rules, 1962:
+- When an employee receives salary in arrears or advance, the progressive tax slabs cause an artificial spike in the year of receipt. Section 89(1) equalizes the tax by computing:
+  `Relief = max(0, Incremental Tax in Receipt Year - Sum of Incremental Taxes in Accrual Years)`
+- Rule 21AA Mandatory Compliance Gate:
+  Form 10E must be furnished electronically on the e-filing portal before filing the ITR; otherwise, CPC automated processing automatically disallows Section 89 relief under Section 143(1)(a)(ii).
+- Compiles CBDT schema-compliant Annexure I Form 10E JSON payloads ready for portal upload or API dispatch.
+
+12. Updated Return (ITR-U u/s 139(8A) & Section 140B) Additional Tax Engine (`ItrUAdditionalTaxCalculator`)
+Statutory framework under Section 139(8A) and Section 140B of the Income-tax Act, 1961:
+- Eligibility Windows:
+  - Within 12 months from the end of the relevant Assessment Year: 25% additional tax surcharge on (tax + statutory interest u/s 234A/B/C).
+  - Between 12 and 24 months from the end of the relevant Assessment Year: 50% additional tax surcharge on (tax + statutory interest u/s 234A/B/C).
+  - Beyond 24 months: Return is statutorily time-barred.
+- Statutory Restrictions:
+  ITR-U cannot be filed if it results in a refund, increases an existing refund, or reduces overall tax liability. It serves as a compliance defense window to rectify missed income disclosures before detection.
+
+13. Pre-July 23, 2024 Property LTCG Dual-Option Indexation Engine (`PropertyLtcgIndexationEngine`)
+Statutory framework under the Second Proviso to Section 112(1)(a) introduced by Finance (No. 2) Act, 2024:
+- For immovable property (land or building) acquired prior to July 23, 2024 by a resident Individual or HUF:
+  Taxpayers possess the statutory right to calculate tax under BOTH options and pay the LOWER liability:
+  - Option 1: 12.5% tax without indexation benefits.
+  - Option 2: 20.0% tax with Cost Inflation Index (CII) indexation benefits.
+- 25-Year Cost Inflation Index (CII) Table:
+  Seed database spans FY 2001-02 (CII 100) through FY 2025-26 (CII 376).
+- Section 54 / 54F Reinvestment Cap:
+  Enforces the statutory ceiling of ₹10 Crores (₹10,00,00,000) on capital gains reinvestment exemptions introduced by Finance Act 2023.
+
+14. Universal Multi-Broker Tax P&L & Trade Ingestion Engine (`UniversalBrokerPnLParser`)
+Statutory reconciliation architecture:
+- Ingests CSV trade and tax reports from leading Indian brokerages (Zerodha Console, Groww, Angel One, Upstox, Dhan).
+- Classifies trade rows into:
+  - Schedule 111A: Short-term listed equity gains/losses taxed at 20.0%.
+  - Schedule 112A: Long-term listed equity gains/losses taxed at 12.5% above ₹1.25 Lakh exemption.
+  - Schedule CFL / CYLA: Unabsorbed short-term and long-term capital losses.
+  - F&O Absolute Turnover: Applies the ICAI Guidance Note methodology (sum of absolute profit and loss per trade) to determine Section 44AB business turnover thresholds.
+

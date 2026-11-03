@@ -236,5 +236,117 @@ class AdvancedIndustryTaxFeaturesTestSuite {
         assertTrue(barredDecision.lockInWarning.contains("STATUTORY PROHIBITION"))
         assertEquals("DEBARRED", barredDecision.schedule115BacAckCode)
     }
+
+    @Test
+    fun testSection89ArrearsRelief_EqualizesTaxAndGeneratesForm10E() {
+        val input = in.zerotax.core.taxengine.advanced.Section89ArrearsReliefCalculator.Section89ComputationInput(
+            receiptAssessmentYear = "2026-27",
+            currentYearNormalSalaryExcludingArrears = 1200000L,
+            totalArrearsReceivedInCurrentYear = 300000L,
+            accrualYears = listOf(
+                in.zerotax.core.taxengine.advanced.Section89ArrearsReliefCalculator.AccrualYearParticulars(
+                    assessmentYear = "2024-25",
+                    originalTotalIncome = 700000L,
+                    originalTaxPaid = 25000L,
+                    arrearsAllocatedToThisYear = 300000L
+                )
+            ),
+            isNewRegimeInReceiptYear = true
+        )
+
+        val result = in.zerotax.core.taxengine.advanced.Section89ArrearsReliefCalculator.computeSection89Relief(input, "ABCDE1234F")
+
+        assertEquals(1200000L, result.currentYearIncomeWithoutArrears)
+        assertEquals(1500000L, result.currentYearIncomeWithArrears)
+        assertTrue(result.currentYearTaxWithArrears >= result.currentYearTaxWithoutArrears)
+        assertTrue(result.eligibleSection89ReliefRupees >= 0L)
+        assertTrue(result.form10EJsonPayload.contains("Form10E"))
+        assertTrue(result.form10EJsonPayload.contains("ABCDE1234F"))
+        assertTrue(result.cpcRejectionWarning.contains("Rule 21AA"))
+    }
+
+    @Test
+    fun testItrUAdditionalTaxCalculator_Calculates25And50PercentSurcharge() {
+        // Case 1: Within 12 months (25% Additional Tax)
+        val inputWithin12m = in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator.ItrUInput(
+            relevantAssessmentYear = "2024-25",
+            additionalIncomeDeclaredRupees = 500000L,
+            monthsElapsedFromEndOfAy = 8,
+            interest234A = 5000L,
+            interest234B = 5000L
+        )
+        val resultWithin12m = in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator.computeItrUAdditionalTax(inputWithin12m)
+        assertTrue(resultWithin12m.isEligibleToFileItrU)
+        assertEquals(in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator.ItrUTimeWindow.WITHIN_12_MONTHS, resultWithin12m.timeWindow)
+        // Additional tax surcharge must be exactly 25% of (Tax + Interest)
+        val expected25Surcharge = (resultWithin12m.taxAndInterestBaseFor140B * 0.25).toLong()
+        assertEquals(expected25Surcharge, resultWithin12m.additionalTaxSurcharge140B)
+        assertEquals(resultWithin12m.taxAndInterestBaseFor140B + expected25Surcharge, resultWithin12m.totalPayableUnderSection140B)
+
+        // Case 2: Between 12 and 24 months (50% Additional Tax)
+        val inputBetween12And24m = inputWithin12m.copy(monthsElapsedFromEndOfAy = 18)
+        val resultBetween12And24m = in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator.computeItrUAdditionalTax(inputBetween12And24m)
+        assertTrue(resultBetween12And24m.isEligibleToFileItrU)
+        assertEquals(in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator.ItrUTimeWindow.BETWEEN_12_AND_24_MONTHS, resultBetween12And24m.timeWindow)
+        val expected50Surcharge = (resultBetween12And24m.taxAndInterestBaseFor140B * 0.50).toLong()
+        assertEquals(expected50Surcharge, resultBetween12And24m.additionalTaxSurcharge140B)
+
+        // Case 3: Beyond 24 months (Statutorily barred)
+        val inputBarred = inputWithin12m.copy(monthsElapsedFromEndOfAy = 28)
+        val resultBarred = in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator.computeItrUAdditionalTax(inputBarred)
+        assertFalse(resultBarred.isEligibleToFileItrU)
+        assertEquals(in.zerotax.core.taxengine.advanced.ItrUAdditionalTaxCalculator.ItrUTimeWindow.TIME_BARRED, resultBarred.timeWindow)
+    }
+
+    @Test
+    fun testPropertyLtcgIndexation_DualOptionComparisonUnderSecondProviso() {
+        val propertyInput = in.zerotax.core.taxengine.advanced.PropertyLtcgIndexationEngine.PropertySaleInput(
+            acquisitionDateType = in.zerotax.core.taxengine.advanced.PropertyLtcgIndexationEngine.PropertyAcquisitionDate.BEFORE_JULY_23_2024,
+            acquisitionFinancialYear = "2012-13",
+            saleFinancialYear = "2025-26",
+            actualCostOfAcquisitionRupees = 3000000L, // ₹30 Lakhs
+            saleConsiderationRupees = 10000000L,      // ₹1 Crore
+            transferExpensesRupees = 100000L,        // ₹1 Lakh
+            section54ReinvestmentRupees = 120000000L // ₹12 Crores (exceeds ₹10 Cr statutory cap)
+        )
+
+        val result = in.zerotax.core.taxengine.advanced.PropertyLtcgIndexationEngine.computeDualOptionPropertyLtcg(propertyInput)
+
+        // Section 54 must be clamped to ₹10 Crores
+        assertEquals(100000000L, result.section54ExemptionClaimed)
+        assertTrue(result.statutoryNotes.any { it.contains("capped at ₹10 Crores") })
+
+        // Check indexation math: 2012-13 CII = 200, 2025-26 CII = 376
+        // Indexed cost = 30L * (376 / 200) = 56.4L
+        val unindexedCost = 3000000L
+        val testNo54Input = propertyInput.copy(section54ReinvestmentRupees = 0L)
+        val testNo54Result = in.zerotax.core.taxengine.advanced.PropertyLtcgIndexationEngine.computeDualOptionPropertyLtcg(testNo54Input)
+
+        assertEquals(5640000L, testNo54Result.option2Indexed.indexedCostOfAcquisition)
+        assertTrue(testNo54Result.option1Unindexed.netTaxPayableWithCess > 0L)
+        assertTrue(testNo54Result.option2Indexed.netTaxPayableWithCess > 0L)
+        assertNotNull(testNo54Result.recommendedOption)
+    }
+
+    @Test
+    fun testUniversalBrokerPnLParser_ParsesZerodhaAndGrowwCsv() {
+        val sampleCsv = """
+            Symbol,ISIN,TradeType,Quantity,BuyPrice,SellPrice,PnL
+            INFY,INE009A01021,EQ,100,1400,1600,20000
+            TCS,INE467B01029,EQ,50,3800,3500,-15000
+            NIFTY24DEC24000CE,,FNO,1,150,220,7000
+        """.trimIndent()
+
+        val parsed = in.zerotax.core.taxengine.advanced.UniversalBrokerPnLParser.parseBrokerCsv(sampleCsv)
+
+        assertEquals(3, parsed.rowCountParsed)
+        // Capital gains: INFY +20k, TCS -15k
+        assertEquals(20000L, parsed.totalStcg111AGains)
+        assertEquals(15000L, parsed.totalStcl111ALosses)
+        // F&O derivative: 7000 profit, absolute turnover = abs(7000) = 7000
+        assertEquals(7000L, parsed.totalFnoAbsoluteTurnover)
+        assertEquals(7000L, parsed.totalFnoNetProfitOrLoss)
+    }
 }
+
 
