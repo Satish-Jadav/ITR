@@ -33,4 +33,29 @@ class UidaiAadhaarVerhoeffScrubberTest {
         val masked = UidaiAadhaarVerhoeffScrubber.maskAadhaar("234567890123")
         assertEquals("XXXX-XXXX-0123", masked)
     }
+
+    @Test
+    fun `16 digit UIDAI Virtual ID is scrubbed and masked correctly`() {
+        val vid = "1234 5678 9012 3456"
+        val sampleText = "Taxpayer verified via e-KYC VID 1234 5678 9012 3456 on ITD portal."
+        val scrubbed = UidaiAadhaarVerhoeffScrubber.scrubAllAadhaarAndVirtualIdDigits(sampleText)
+
+        assertFalse(scrubbed.contains(vid))
+        assertTrue(scrubbed.contains("[VID Redacted]"))
+
+        val maskedVid = UidaiAadhaarVerhoeffScrubber.maskVirtualId("1234567890123456")
+        assertEquals("XXXX-XXXX-XXXX-3456", maskedVid)
+    }
+
+    @Test
+    fun `DpdpVaultShredder performs secure cryptographic erasure on target file`() {
+        val tempFile = java.io.File.createTempFile("zero_tax_test_shred", ".db")
+        tempFile.writeText("SENSITIVE FINANCIAL DATA: PAN=ABCDE1234F, SALARY=2500000")
+        assertTrue(tempFile.exists())
+        assertTrue(tempFile.length() > 0)
+
+        DpdpVaultShredder.performCryptographicErasure(tempFile)
+
+        assertFalse(tempFile.exists(), "File should be completely erased after shredding")
+    }
 }

@@ -16,6 +16,7 @@ import java.security.SecureRandom
  */
 object UidaiAadhaarVerhoeffScrubber {
     private val CANDIDATE_REGEX = Regex("""\b([2-9]\d{3})[\s\-]?(\d{4})[\s\-]?(\d{4})\b""")
+    private val VID_REGEX = Regex("""\b(\d{4})[\s\-]?(\d{4})[\s\-]?(\d{4})[\s\-]?(\d{4})\b""")
 
     private val dTable = arrayOf(
         intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), intArrayOf(1, 2, 3, 4, 0, 6, 7, 8, 9, 5),
@@ -38,6 +39,16 @@ object UidaiAadhaarVerhoeffScrubber {
             if (passesVerhoeffChecksum(raw) || !strictChecksumOnly) "[Aadhaar Redacted]" else match.value
         }
 
+    fun scrubAllAadhaarAndVirtualIdDigits(input: String, strictChecksumOnly: Boolean = false): String {
+        // First scrub 16-digit Virtual ID (VID) patterns
+        val vidScrubbed = VID_REGEX.replace(input) { match ->
+            val raw = match.groupValues[1] + match.groupValues[2] + match.groupValues[3] + match.groupValues[4]
+            if (raw.length == 16) "[VID Redacted]" else match.value
+        }
+        // Then scrub 12-digit Aadhaar patterns
+        return scrubAllAadhaarDigits(vidScrubbed, strictChecksumOnly)
+    }
+
     fun passesVerhoeffChecksum(digits: String): Boolean {
         if (digits.length != 12 || !digits.all { it.isDigit() }) return false
         var c = 0
@@ -50,7 +61,10 @@ object UidaiAadhaarVerhoeffScrubber {
         return if (cleaned.length >= 12) "XXXX-XXXX-${cleaned.takeLast(4)}" else "XXXX-XXXX-XXXX"
     }
 
-    // TODO(Phase-2): Add Virtual ID (16-digit VID) pattern redaction for UIDAI e-KYC XML/PDF imports.
+    fun maskVirtualId(vid: String): String {
+        val cleaned = vid.filter { it.isDigit() }
+        return if (cleaned.length >= 16) "XXXX-XXXX-XXXX-${cleaned.takeLast(4)}" else "XXXX-XXXX-XXXX-XXXX"
+    }
 }
 
 object DpdpVaultShredder {

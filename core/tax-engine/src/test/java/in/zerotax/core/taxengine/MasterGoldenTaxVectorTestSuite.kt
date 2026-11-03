@@ -286,4 +286,149 @@ class MasterGoldenTaxVectorTestSuite {
             assertTrue(taxImpact.netCashTaxSaved > 50_000L)
         }
     }
+
+    @Nested
+    @DisplayName("Pre-Filing 6-Gate Audit Shield Tests")
+    inner class PreFilingAuditShieldTests {
+        @Test
+        fun `audit return passes with 100 score and low risk when all gates clear`() {
+            val salarySummary = ReconciledSalarySummary(
+                employers = listOf(
+                    EmployerSalarySource(
+                        employerTan = "BLRM01234D",
+                        employerName = "Infosys",
+                        grossSalary = 1200000L,
+                        sec16DeductionsClaimedInDoc = 75000L,
+                        netTaxableSalaryInDoc = 1125000L,
+                        tdsReported = 50000L
+                    )
+                ),
+                aggregateGrossSalary = 1200000L,
+                aggregateSec10Exemptions = 0L,
+                aggregateNetTaxableSalary = 1125000L,
+                aggregateTdsAllowed = 50000L,
+                totalDiscrepancyAmount = 0L
+            )
+            val computation = RegimeComputationResult(
+                regime = TaxRegime.NEW_REGIME_115BAC,
+                grossTotalIncome = 1200000L,
+                standardDeduction = 75000L,
+                totalChapterVIADeductions = 0L,
+                netTaxableNormalIncomeRounded288A = 1125000L,
+                netTaxableSpecialRateIncome = 0L,
+                baseSlabTaxOnNormalIncome = 50000L,
+                specialRateTax111AAnd112A = 0L,
+                rebate87A = 0L,
+                marginalRelief87A = 0L,
+                taxAfterRebateAndRelief = 50000L,
+                surchargeAfterMarginalRelief = 0L,
+                healthAndEducationCess = 2000L,
+                totalTaxLiabilityRounded288B = 52000L
+            )
+            val bank = in.zerotax.core.model.BankAccountDetails(
+                bankName = "State Bank of India",
+                accountNumber = "123456789012",
+                ifscCode = "SBIN0001234",
+                accountType = "SAVINGS",
+                isPreValidated = true,
+                isDesignatedForRefund = true
+            )
+
+            val report = PreFilingAuditEngine.auditReturn(salarySummary, computation, bank, hasOverridesWithoutProof = false)
+
+            assertEquals(100, report.auditScorePercentage)
+            assertEquals(in.zerotax.core.model.NoticeRiskLevel.LOW_RISK_SAFE, report.riskLevel)
+            assertTrue(report.canFileDirectly)
+            assertTrue(report.noticeProtectionGuarantee.contains("< 0.1%"))
+        }
+
+        @Test
+        fun `audit return flags TDS mismatch and unvalidated bank account`() {
+            val summaryWithMismatch = ReconciledSalarySummary(
+                employers = emptyList(),
+                aggregateGrossSalary = 1000000L,
+                aggregateSec10Exemptions = 0L,
+                aggregateNetTaxableSalary = 925000L,
+                aggregateTdsAllowed = 20000L,
+                totalDiscrepancyAmount = 15000L // ₹15,000 TDS mismatch
+            )
+            val computation = RegimeComputationResult(
+                regime = TaxRegime.NEW_REGIME_115BAC,
+                grossTotalIncome = 1000000L,
+                standardDeduction = 75000L,
+                totalChapterVIADeductions = 0L,
+                netTaxableNormalIncomeRounded288A = 925000L,
+                netTaxableSpecialRateIncome = 0L,
+                baseSlabTaxOnNormalIncome = 30000L,
+                specialRateTax111AAnd112A = 0L,
+                rebate87A = 0L,
+                marginalRelief87A = 0L,
+                taxAfterRebateAndRelief = 30000L,
+                surchargeAfterMarginalRelief = 0L,
+                healthAndEducationCess = 1200L,
+                totalTaxLiabilityRounded288B = 31200L
+            )
+
+            val report = PreFilingAuditEngine.auditReturn(summaryWithMismatch, computation, bankAccount = null)
+
+            assertFalse(report.gates.first { it.gateNumber == 1 }.isPassed) // Gate 1 fails
+            assertFalse(report.gates.first { it.gateNumber == 5 }.isPassed) // Gate 5 fails (bank null)
+            assertTrue(report.auditScorePercentage < 100)
+        }
+    }
+
+    @Nested
+    @DisplayName("Schedule FA Foreign Asset & Calendar Year Engine Tests")
+    inner class ScheduleFaCalendarYearTests {
+        @Test
+        fun `compiles Schedule FA Table A3 entries with SBI TTBR conversion`() {
+            val holdings = listOf(
+                ForeignEquityHolding(
+                    companyName = "Alphabet Inc (GOOGL)",
+                    countryCode = "2", // USA
+                    dateOfAcquisitionEpochDay = 19000L,
+                    peakValueUsd = 10000.0,
+                    closingValueUsd = 9500.0,
+                    grossDividendsUsd = 200.0,
+                    grossSalesProceedsUsd = 1000.0
+                )
+            )
+
+            val tableA3 = ScheduleFaCalendarYearEngine.compileScheduleFaEntries(
+                holdings = holdings,
+                sbiTtbrClosingDateRate = 85.0,
+                sbiTtbrPeakDateRate = 86.0
+            )
+
+            assertEquals(1, tableA3.size)
+            val row = tableA3.first()
+            assertEquals("Alphabet Inc (GOOGL)", row.entityName)
+            assertEquals("2", row.countryCode)
+            assertEquals(860000L, row.peakValueInr) // 10,000 * 86.0
+            assertEquals(807500L, row.closingValueInr) // 9,500 * 85.0
+            assertEquals(17000L, row.grossDividendsPaidInr) // 200 * 85.0
+            assertEquals(85000L, row.proceedsFromSaleInr) // 1000 * 85.0
+        }
+    }
+
+    @Nested
+    @DisplayName("Smart Deductions Catalog Statutory Coverage Tests")
+    inner class SmartDeductionsCatalogTests {
+        @Test
+        fun `catalog includes statutory specs for all major sections with accurate limits`() {
+            val specs = SmartDeductionsCatalog.ALL_DEDUCTION_SPECS
+
+            val sec80C = specs.firstOrNull { it.sectionCode.contains("80C") }
+            assertNotNull(sec80C)
+            assertEquals(150000L, sec80C!!.maxLimitRupees)
+
+            val sec24b = specs.firstOrNull { it.sectionCode == "24(b)" }
+            assertNotNull(sec24b)
+            assertEquals(200000L, sec24b!!.maxLimitRupees)
+
+            val sec80D = specs.firstOrNull { it.sectionCode.contains("80D") }
+            assertNotNull(sec80D)
+            assertTrue(sec80D!!.maxLimitRupees >= 25000L)
+        }
+    }
 }

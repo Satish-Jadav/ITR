@@ -115,4 +115,21 @@ class ConversationalTaxFilingBotTest {
         assertEquals(0L, bot.snapshot.estimatedTaxLiability)
         assertEquals("New Regime (Default u/s 115BAC)", bot.snapshot.recommendedRegime)
     }
+
+    @Test
+    fun testConversationalBotInterceptionQueriesAndStatutoryReviewLock() {
+        val bot = ConversationalTaxFilingBot()
+
+        // Test querying about regime showdown
+        val regimeQueryResponses = bot.processUserMessage("Which regime is better?")
+        assertTrue(regimeQueryResponses.any { it.isAdvisorTip })
+        assertTrue(regimeQueryResponses.any { it.text.contains("115BAC") || it.text.contains("Regime") })
+
+        // Test querying 80D limits
+        val healthQueryResponses = bot.processUserMessage("What are the 80D limits?")
+        assertTrue(healthQueryResponses.any { it.text.contains("Section 80D") })
+
+        // Verify that step did not prematurely advance during informational query
+        assertEquals(ChatStep.WELCOME, bot.currentStep)
+    }
 }
