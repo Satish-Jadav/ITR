@@ -277,11 +277,12 @@ fun ConversationalFilingChatScreen(
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // Live Real-Time Return Snapshot Card with Dual-Regime Optimizer
+            // Live Real-Time Return Snapshot Card with Dual-Regime Optimizer & Fluid Resizing
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                 shape = RoundedCornerShape(4.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
@@ -346,25 +347,67 @@ fun ConversationalFilingChatScreen(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                items(messages) { msg ->
-                    ChatBubbleItem(message = msg)
-                    Spacer(Modifier.height(8.dp))
+                items(
+                    items = messages,
+                    key = { it.id }
+                ) { msg ->
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(tween(220)) + slideInVertically(tween(250)) { it / 4 }
+                    ) {
+                        Column {
+                            ChatBubbleItem(message = msg)
+                            Spacer(Modifier.height(8.dp))
+                        }
+                    }
                 }
 
                 if (isBotThinking) {
                     item {
-                        Row(
-                            modifier = Modifier.padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), color = EnterpriseTeal600, strokeWidth = 2.dp)
-                            Spacer(Modifier.width(8.dp))
-                            Text("ZeroTax is assembling return schedules...", style = TextStyle(fontSize = 11.sp, color = Slate500))
-                        }
+                        PulsingTypingIndicator()
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PulsingTypingIndicator() {
+    val infiniteTransition = rememberInfiniteTransition(label = "TypingDots")
+    val alpha1 by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(tween(550, easing = LinearEasing), repeatMode = RepeatMode.Reverse),
+        label = "dot1"
+    )
+    val alpha2 by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(tween(550, delayMillis = 180, easing = LinearEasing), repeatMode = RepeatMode.Reverse),
+        label = "dot2"
+    )
+    val alpha3 by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(tween(550, delayMillis = 360, easing = LinearEasing), repeatMode = RepeatMode.Reverse),
+        label = "dot3"
+    )
+
+    Row(
+        modifier = Modifier.padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(EnterpriseTeal600.copy(alpha = alpha1)))
+        Spacer(Modifier.width(4.dp))
+        Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(EnterpriseTeal600.copy(alpha = alpha2)))
+        Spacer(Modifier.width(4.dp))
+        Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(EnterpriseTeal600.copy(alpha = alpha3)))
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = "ZeroTax is assembling return schedules...",
+            style = TextStyle(fontSize = 11.sp, color = Slate500, fontWeight = FontWeight.Medium)
+        )
     }
 }
 

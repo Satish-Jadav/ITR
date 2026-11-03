@@ -60,6 +60,16 @@ fun PreFilingAuditView(
         )
     }
 
+    var isScoreAnimated by remember { mutableStateOf(false) }
+    LaunchedEffect(auditReport.auditScorePercentage) {
+        isScoreAnimated = true
+    }
+    val animatedScoreProgress by animateFloatAsState(
+        targetValue = if (isScoreAnimated) (auditReport.auditScorePercentage.toFloat() / 100f) else 0f,
+        animationSpec = tween(750, easing = FastOutSlowInEasing),
+        label = "AuditScoreProgressAnim"
+    )
+
     var isCopilotSheetVisible by remember { mutableStateOf(false) }
     var selectedLocale by remember { mutableStateOf(SupportedVernacularLocale.ENGLISH_IN) }
     var currentExplanation by remember { mutableStateOf<CopilotExplanation?>(null) }
@@ -220,6 +230,16 @@ fun PreFilingAuditView(
                         }
 
                         Spacer(Modifier.height(10.dp))
+                        LinearProgressIndicator(
+                            progress = { animatedScoreProgress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = if (auditReport.riskLevel == NoticeRiskLevel.LOW_RISK_SAFE) EmeraldSuccess else IndigoStatutory,
+                            trackColor = Slate200
+                        )
+                        Spacer(Modifier.height(8.dp))
                         Text(
                             text = auditReport.noticeProtectionGuarantee,
                             style = MaterialTheme.typography.bodySmall,
@@ -241,7 +261,8 @@ fun PreFilingAuditView(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                     shape = RoundedCornerShape(4.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = CardDefaults.outlinedCardBorder().copy(

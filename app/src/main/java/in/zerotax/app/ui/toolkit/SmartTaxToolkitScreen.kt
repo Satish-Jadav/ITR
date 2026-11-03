@@ -124,13 +124,23 @@ fun SmartTaxToolkitScreen(
                 }
             }
 
-            // Tab Content
-            Box(
+            // Tab Content with Smooth Horizontal Slide & Fade Transitions
+            AnimatedContent(
+                targetState = selectedTab,
+                transitionSpec = {
+                    val isForward = targetState.ordinal > initialState.ordinal
+                    (slideInHorizontally(tween(280, easing = FastOutSlowInEasing)) { if (isForward) it / 3 else -it / 3 } +
+                            fadeIn(tween(220))).togetherWith(
+                        slideOutHorizontally(tween(220, easing = FastOutSlowInEasing)) { if (isForward) -it / 3 else it / 3 } +
+                                fadeOut(tween(180))
+                    )
+                },
+                label = "ToolkitTabTransition",
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
-            ) {
-                when (selectedTab) {
+            ) { tab ->
+                when (tab) {
                     ToolkitTab.HRA_OPTIMIZER -> HraOptimizerView(pan = pan, grossSalary = grossSalary)
                     ToolkitTab.CTC_OPTIMIZER -> CtcRestructuringView(grossSalary = grossSalary)
                     ToolkitTab.CAPITAL_GAINS_LEDGER -> CapitalGainsLedgerView()
