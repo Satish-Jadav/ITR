@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import in.zerotax.app.ui.components.*
+import in.zerotax.app.ui.audit.PreFilingAuditView
 import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
 import in.zerotax.app.ui.portal.PortalAssistantScreen
 import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
@@ -54,6 +55,7 @@ fun ZeroTaxFourTapSpineScaffold(
     var showPortalAssistant by remember { mutableStateOf(false) }
     var showAisTransactions by remember { mutableStateOf(false) }
     var showDeductionsAdvisor by remember { mutableStateOf(false) }
+    var showPreFilingAudit by remember { mutableStateOf(false) }
 
     if (showPortalAssistant) {
         PortalAssistantScreen(
@@ -79,6 +81,27 @@ fun ZeroTaxFourTapSpineScaffold(
         SmartDeductionsAdvisorScreen(
             onBack = { showDeductionsAdvisor = false },
             onApplyDeductions = { showDeductionsAdvisor = false }
+        )
+        return
+    }
+
+    if (showPreFilingAudit) {
+        PreFilingAuditView(
+            salarySummary = uiState.salarySummary,
+            computation = uiState.newRegimeResult,
+            bankAccount = in.zerotax.core.model.BankAccountDetails(
+                bankName = "State Bank of India",
+                accountNumber = "••••••••1234",
+                ifscCode = "SBIN0001234",
+                accountType = "SAVINGS",
+                isRefundAccount = true,
+                isPreValidated = true
+            ),
+            onBack = { showPreFilingAudit = false },
+            onProceedToFiling = {
+                showPreFilingAudit = false
+                showPortalAssistant = true
+            }
         )
         return
     }
@@ -189,6 +212,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         oldRebate87A = uiState.oldRegimeResult.rebate87A,
                         selectedForm = uiState.formRoutingDecision.selectedForm.name.replace("_", "-"),
                         onOpenDeductionsAdvisor = { showDeductionsAdvisor = true },
+                        onRunAudit = { showPreFilingAudit = true },
                         onBack = { viewModel.onNavigateToTap(OnboardingTap.Tap3NudgeCards) },
                         onLaunchPortalAssistant = { showPortalAssistant = true },
                         onFileReturn = { viewModel.onNavigateToTap(null) }
@@ -199,6 +223,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         uiState = uiState,
                         onOpenDeductionsAdvisor = { showDeductionsAdvisor = true },
                         onOpenAisTransactions = { showAisTransactions = true },
+                        onRunAudit = { showPreFilingAudit = true },
                         onLaunchPortalAssistant = { showPortalAssistant = true },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
@@ -684,6 +709,7 @@ private fun Stage4RegimeShowdown(
     oldRebate87A: Long,
     selectedForm: String,
     onOpenDeductionsAdvisor: () -> Unit,
+    onRunAudit: () -> Unit,
     onBack: () -> Unit,
     onLaunchPortalAssistant: () -> Unit,
     onFileReturn: () -> Unit
@@ -724,6 +750,17 @@ private fun Stage4RegimeShowdown(
             modifier = Modifier.fillMaxWidth().height(38.dp)
         ) {
             Text("💡 Optimize Old Regime Deductions (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+        }
+
+        Spacer(Modifier.height(6.dp))
+
+        OutlinedButton(
+            onClick = onRunAudit,
+            shape = RoundedCornerShape(4.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldSuccess),
+            modifier = Modifier.fillMaxWidth().height(38.dp)
+        ) {
+            Text("🛡️ Pre-Filing Audit & Notice Risk Shield (100% Score)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
         }
 
         Spacer(Modifier.height(10.dp))
@@ -792,6 +829,7 @@ private fun ProWorkspaceView(
     uiState: in.zerotax.app.viewmodel.ZeroTaxUiState,
     onOpenDeductionsAdvisor: () -> Unit,
     onOpenAisTransactions: () -> Unit,
+    onRunAudit: () -> Unit,
     onLaunchPortalAssistant: () -> Unit,
     onShredVault: () -> Unit
 ) {
@@ -887,6 +925,15 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("Smart Deductions & Life-Events (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelMedium)
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = onRunAudit,
+                                        shape = RoundedCornerShape(4.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldSuccess),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("🛡️ Run 6-Gate Pre-Filing Audit & CPC Refund Tracker", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }

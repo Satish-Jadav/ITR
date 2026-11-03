@@ -262,3 +262,40 @@ data class TaxableIncomeImpact(
     val taxAfterHomeLoan: Long,
     val netCashTaxSaved: Long
 )
+
+@Serializable
+enum class NoticeRiskLevel(val label: String) {
+    LOW_RISK_SAFE("Low Risk (Notice-Proof)"),
+    MODERATE_CAUTION("Moderate (Check Evidence)"),
+    HIGH_RISK_SCRUTINY("High Scrutiny Risk")
+}
+
+@Serializable
+data class AuditGateResult(
+    val gateNumber: Int,
+    val gateTitle: String,
+    val description: String,
+    val isPassed: Boolean,
+    val statutoryRef: String,
+    val recommendation: String
+)
+
+@Serializable
+data class PreFilingAuditReport(
+    val auditScorePercentage: Int,
+    val riskLevel: NoticeRiskLevel,
+    val gates: List<AuditGateResult>,
+    val canFileDirectly: Boolean,
+    val noticeProtectionGuarantee: String
+)
+
+@Serializable
+data class CpcRefundTimelineStatus(
+    val acknowledgmentNumber: String,
+    val returnFiledTimestamp: String,
+    val isEVerified: Boolean,
+    val cpcProcessingStatus: String,
+    val expectedRefundDays: String,
+    val designatedBankMasked: String,
+    val refundAmount: Long
+)
