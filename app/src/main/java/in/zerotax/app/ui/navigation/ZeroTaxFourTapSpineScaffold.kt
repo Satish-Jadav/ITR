@@ -1144,7 +1144,27 @@ private fun ProWorkspaceView(
                             Spacer(Modifier.height(10.dp))
                         }
 
-                        items(uiState.auditTrail) { audit ->
+                        item {
+                            LaunchedEffect(Unit) {
+                                viewModel.loadAuditTrailLazy()
+                            }
+                        }
+
+                        if (uiState.lazyAuditTrail is in.zerotax.core.model.LazyLoadState.Loading) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                }
+                            }
+                        }
+
+                        items(
+                            items = uiState.auditTrail,
+                            key = { it.auditId }
+                        ) { audit ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()

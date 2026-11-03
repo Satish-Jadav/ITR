@@ -80,6 +80,31 @@ class ItdTransactionFetcher {
     }
 
     /**
+     * Lazily fetches paged AIS / TIS transaction records for high-performance lazy loading.
+     * Prevents large JSON allocation spikes and enables smooth recycling in Compose LazyColumn.
+     */
+    suspend fun fetchAisTransactionsPaged(
+        pan: String,
+        page: Int = 1,
+        pageSize: Int = 2,
+        assessmentYear: String = "2026-27"
+    ): Result<Pair<List<AisTransactionRecord>, Boolean>> = withContext(Dispatchers.IO) {
+        val allResult = fetchAisTransactions(pan, assessmentYear)
+        if (allResult.isFailure) {
+            return@withContext Result.failure(allResult.exceptionOrNull() ?: Exception("Unknown error"))
+        }
+        val all = allResult.getOrNull() ?: emptyList()
+        val startIndex = (page - 1) * pageSize
+        if (startIndex >= all.size) {
+            return@withContext Result.success(Pair(emptyList(), false))
+        }
+        val endIndex = minOf(startIndex + pageSize, all.size)
+        val pagedList = all.subList(startIndex, endIndex)
+        val hasMore = endIndex < all.size
+        Result.success(Pair(pagedList, hasMore))
+    }
+
+    /**
      * Synthesizes smart transaction nudges and automatic tax-saving suggestions
      * based on fetched AIS records and taxpayer profile.
      */

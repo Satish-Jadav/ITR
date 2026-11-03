@@ -47,6 +47,9 @@ fun SmartTransactionSuggestionsView(
     val copilot = remember { OnDeviceTaxCopilot(context) }
 
     var isLoading by remember { mutableStateOf(true) }
+    var isLoadingMore by remember { mutableStateOf(false) }
+    var currentPage by remember { mutableStateOf(1) }
+    var hasMorePages by remember { mutableStateOf(true) }
     var transactions by remember { mutableStateOf<List<AisTransactionRecord>>(emptyList()) }
     var smartNudges by remember { mutableStateOf<List<SmartTransactionNudge>>(emptyList()) }
     var showForm60Dialog by remember { mutableStateOf(false) }
@@ -64,13 +67,32 @@ fun SmartTransactionSuggestionsView(
     var isForm60Applied by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        val result = fetcher.fetchAisTransactions(pan)
+        val result = fetcher.fetchAisTransactionsPaged(pan = pan, page = 1, pageSize = 2)
         if (result.isSuccess) {
-            val list = result.getOrNull() ?: emptyList()
+            val (list, more) = result.getOrNull() ?: Pair(emptyList(), false)
             transactions = list
+            hasMorePages = more
             smartNudges = fetcher.generateSmartNudges(list)
         }
         isLoading = false
+    }
+
+    val loadNextPage: () -> Unit = {
+        if (!isLoadingMore && hasMorePages) {
+            scope.launch {
+                isLoadingMore = true
+                val nextPage = currentPage + 1
+                val result = fetcher.fetchAisTransactionsPaged(pan = pan, page = nextPage, pageSize = 2)
+                if (result.isSuccess) {
+                    val (list, more) = result.getOrNull() ?: Pair(emptyList(), false)
+                    transactions = transactions + list
+                    currentPage = nextPage
+                    hasMorePages = more
+                    smartNudges = fetcher.generateSmartNudges(transactions)
+                }
+                isLoadingMore = false
+            }
+        }
     }
 
     Scaffold(
@@ -226,7 +248,11 @@ fun SmartTransactionSuggestionsView(
                     Spacer(Modifier.height(8.dp))
                 }
 
-                items(transactions) { tx ->
+                items(
+                    items = transactions,
+                    key = { it.transactionId },
+                    contentType = { it.category }
+                ) { tx ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -286,6 +312,26 @@ fun SmartTransactionSuggestionsView(
                                         tone = BadgeTone.STATUTORY
                                     )
                                 }
+                            }
+                        }
+                    }
+                }
+
+                if (hasMorePages) {
+                    item {
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = loadNextPage,
+                            modifier = Modifier.fillMaxWidth().height(42.dp),
+                            enabled = !isLoadingMore,
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            if (isLoadingMore) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Lazy Loading Next Batch...", style = MaterialTheme.typography.labelMedium)
+                            } else {
+                                Text("⚡ Lazy Load More Transactions (Page ${currentPage + 1})", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                             }
                         }
                     }

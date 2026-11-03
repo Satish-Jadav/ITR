@@ -46,6 +46,7 @@ data class ZeroTaxUiState(
     val formRoutingDecision: FormRoutingDecision,
     val salarySummary: ReconciledSalarySummary,
     val auditTrail: List<AuditEntryUiModel> = emptyList(),
+    val lazyAuditTrail: LazyLoadState<List<AuditEntryUiModel>> = LazyLoadState.Uninitialized,
     val isVaultShredded: Boolean = false
 )
 
@@ -90,15 +91,8 @@ class ZeroTaxViewModel : ViewModel() {
                 oldRegimeResult = DeterministicIndianTaxEngine.computeOldRegime(initialInput),
                 formRoutingDecision = initialRouting,
                 salarySummary = initialSummary,
-                auditTrail = listOf(
-                    AuditEntryUiModel(
-                        auditId = "AUD-INIT-001",
-                        eventCategory = "VAULT_INITIALIZATION",
-                        description = "Hardware StrongBox Master Key initialized for PAN ABCDE1234F",
-                        warningTextHashSha256 = CanonicalWarningHasher.computeSha256("INITIAL_HARDWARE_KEYSTORE_BINDING"),
-                        timestampFormatted = "14:57:27 IST"
-                    )
-                )
+                auditTrail = emptyList(),
+                lazyAuditTrail = LazyLoadState.Uninitialized
             )
         )
     }
@@ -136,6 +130,35 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun onSelectWorkspaceTab(tab: WorkspaceTab) {
         _uiState.update { it.copy(selectedWorkspaceTab = tab) }
+        if (tab == WorkspaceTab.SmartTaxVaultAndCopilot || tab == WorkspaceTab.PrivacyAndSettings) {
+            loadAuditTrailLazy()
+        }
+    }
+
+    /**
+     * Lazily loads the audit trail entries on-demand when the user views the Audit Vault or Privacy tab.
+     * Prevents eager keystore/disk operations during application launch.
+     */
+    fun loadAuditTrailLazy() {
+        if (_uiState.value.lazyAuditTrail is LazyLoadState.Success) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(lazyAuditTrail = LazyLoadState.Loading) }
+            val initialAudit = listOf(
+                AuditEntryUiModel(
+                    auditId = "AUD-INIT-001",
+                    eventCategory = "VAULT_INITIALIZATION",
+                    description = "Hardware StrongBox Master Key initialized for PAN ABCDE1234F",
+                    warningTextHashSha256 = CanonicalWarningHasher.computeSha256("INITIAL_HARDWARE_KEYSTORE_BINDING"),
+                    timestampFormatted = "14:57:27 IST"
+                )
+            )
+            _uiState.update {
+                it.copy(
+                    lazyAuditTrail = LazyLoadState.Success(initialAudit),
+                    auditTrail = initialAudit
+                )
+            }
+        }
     }
 
     fun onStatutoryOverrideConfirmed(
