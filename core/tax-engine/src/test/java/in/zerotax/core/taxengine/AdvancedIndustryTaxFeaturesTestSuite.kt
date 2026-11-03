@@ -165,5 +165,76 @@ class AdvancedIndustryTaxFeaturesTestSuite {
         assertEquals(in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.AuditVerdict.EXEMPT_BELOW_TURNOVER_THRESHOLD, report.verdict)
         assertFalse(report.isTaxAuditMandatory)
     }
+
+    @Test
+    fun testNonResidentTaxAndResidencyEngine_Section6AndNreExemption() {
+        // Case 1: NRI - 80 days in India, citizen visiting India
+        val nriInput = in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.ResidencyEvaluationInput(
+            daysInIndiaCurrentFy = 80,
+            daysInIndiaPast4Fys = 150,
+            isIndianCitizenOrPersonOfIndianOrigin = true,
+            isVisitingIndia = true,
+            totalIndianIncomeExcludingForeignRupees = 500000L
+        )
+        val decision = in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.evaluateResidency(nriInput)
+        assertEquals(in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.ResidencyStatus.NON_RESIDENT_INDIAN, decision.status)
+        assertFalse(decision.isGlobalIncomeTaxableInIndia)
+        assertTrue(decision.isEligibleForNreTaxExemption)
+        assertFalse(decision.isEligibleForSection44AD)
+
+        // Case 2: NRI Portfolio Calculation with NRE Interest 100% Tax-Free
+        val portfolio = in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.NriTaxPortfolioInput(
+            residencyStatus = decision.status,
+            nreAccountInterestRupees = 300000L, // ₹3L NRE interest (Tax-free u/s 10(4))
+            fcnrDepositInterestRupees = 100000L, // ₹1L FCNR interest (Tax-free u/s 10(4))
+            nroAccountInterestRupees = 200000L, // ₹2L NRO interest (30% TDS)
+            foreignSourcedIncomeRupees = 5000000L, // ₹50L Foreign salary (Exempt in India)
+            dtaaCountry = "United States",
+            dtaaTreatyRatePercent = 15.0
+        )
+        val result = in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.computeNriTax(portfolio, "ABCDE1234F")
+
+        assertEquals(5000000L, result.grossForeignIncomeExcludedFromIndia)
+        assertEquals(300000L, result.nreInterestExemptUnderSec10_4)
+        assertEquals(100000L, result.fcnrInterestExemptUnderSec10_4)
+        assertEquals(200000L, result.taxableIndianIncome)
+        assertTrue(result.nroTdsDeductedAt30Percent > 0L)
+        assertTrue(result.form10FMarkdown.contains("FORM NO. 10F"))
+    }
+
+    @Test
+    fun testForm10IeaBusinessRegimeEngine_BusinessOptOutAnd1TimeLockIn() {
+        // Case 1: Business taxpayer opting out of New Regime to Old Regime
+        val optOutInput = in.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine.Form10IeaInput(
+            pan = "AABBC1234D",
+            taxpayerName = "Vikram Sharma",
+            filingReason = in.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine.Form10IeaFilingReason.OPT_OUT_OF_NEW_REGIME,
+            hasOptedBackInLifetimeBefore = false
+        )
+        val decision = in.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine.processForm10Iea(
+            hasBusinessOrProfessionIncome = true,
+            chosenRegimeIsOld = true,
+            input = optOutInput,
+            requiresTaxAudit = false
+        )
+        assertTrue(decision.isForm10IeaMandatory)
+        assertTrue(decision.isEligibleToOptOut)
+        assertEquals("31 July 2026", decision.statutoryFilingDeadline)
+        assertTrue(decision.cbdtJsonPayload.contains("Form 10-IEA"))
+        assertTrue(decision.cbdtJsonPayload.contains("115BAC(3)"))
+
+        // Case 2: Taxpayer previously opted back in lifetime - permanently barred from Old Regime
+        val barredInput = optOutInput.copy(hasOptedBackInLifetimeBefore = true)
+        val barredDecision = in.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine.processForm10Iea(
+            hasBusinessOrProfessionIncome = true,
+            chosenRegimeIsOld = true,
+            input = barredInput,
+            requiresTaxAudit = false
+        )
+        assertTrue(barredDecision.isForm10IeaMandatory)
+        assertFalse(barredDecision.isEligibleToOptOut)
+        assertTrue(barredDecision.lockInWarning.contains("STATUTORY PROHIBITION"))
+        assertEquals("DEBARRED", barredDecision.schedule115BacAckCode)
+    }
 }
 

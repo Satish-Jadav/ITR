@@ -1321,3 +1321,16 @@ Operates as a pure-JVM deterministic allocation engine to legally minimize emplo
 - Section 44AD / 44ADA Presumptive profit calculator (6% digital, 8% cash, 50% professional) with Section 44AD(4) 5-year lock-in debarment check.
 - Form 3CD disallowance diagnostics: Automatically adds back Section 43B(h) MSME overdue payments (>45 days), Section 40A(3) cash expenses (>₹10,000/day), Section 40(a)(ia) 30% TDS non-deduction, and Section 43B unpaid statutory dues.
 - 1-Tap CA Pre-Audit Handover Dossier generator to eliminate audit prep friction between small business clients and their practicing Chartered Accountants.
+
+
+6.5 Dual-Region Residency Engine & NRI Compliance Suite (`NonResidentTaxAndResidencyEngine.kt`)
+- Full statutory automation for domestic residents (ROR) and Non-Resident Indians (NRI/RNOR).
+- Section 6 stay evaluator: Evaluates 182-day, 60-day, and 120-day visiting rules to deterministically classify tax residency.
+- NRE & FCNR tax vault: 100% tax exemption u/s 10(4)(ii) for NRE savings and FCNR deposits.
+- NRO 30% TDS reclaimer: Computes Section 195 withholding reconciliation against domestic slab rates.
+- DTAA Section 90 / 90A relief and electronic Form 10F self-declaration generator.
+
+6.6 Dual-Regime & Form 10-IEA Business Governance (`Form10IeaBusinessRegimeEngine.kt`)
+- Statutory opt-out management under Section 115BAC(3) and Rule 21AGA.
+- Enforces mandatory Form 10-IEA requirement for ITR-3 and ITR-4 taxpayers opting into the Old Regime.
+- Tracks 1-time lifetime switch-back lock-in debarment and compiles CBDT-compliant JSON payloads.

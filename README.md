@@ -59,7 +59,17 @@
 - **Form 3CD Statutory Disallowances Pre-Audit Scanner:** Flags and adds back Section 43B(h) MSME overdue payments (>45 days), Section 40A(3) single-day cash expenses (>₹10,000), Section 40(a)(ia) 30% TDS non-deduction, and Section 43B unpaid statutory liabilities.
 - **Chartered Accountant Handover Pack:** 1-tap exports a structured pre-audit compliance dossier (trial balance, 5% cash ratio, disallowances) to streamline CA tax audit sign-off and shield small business clients against Section 271B penalties.
 
-### 8. ⚖️ Comprehensive Statutory Legal Framework & Cloud Crash Resilience
+### 8. 🌍 Dual-Region NRI & Cross-Border Tax Suite
+- **Section 6 Physical Presence Calculator:** Deterministically evaluates the 182-day, 60-day (+365 days in 4 years), and 120-day (visiting citizens with Indian income > ₹15L) rules, plus Section 6(1A) deemed residency to classify taxpayers as ROR, RNOR, or Non-Resident Indian (NRI).
+- **100% Foreign Income Exclusion:** Automatically exempts global/foreign-sourced income from Indian taxation for NRIs and RNORs.
+- **Section 10(4)(ii) Tax-Free Interest Vault:** Grants 100% tax exemption on interest earned in Non-Resident External (NRE) savings/FD accounts and FCNR foreign currency deposits.
+- **NRO 30% TDS Reclaimer & DTAA Section 90 Relief:** Reconciles Section 195 withholding on NRO accounts against domestic slab rates and generates electronic **Form 10F** self-declarations for claiming beneficial bilateral treaty rates.
+
+### 9. 📋 Dual-Regime & Form 10-IEA Business Governance
+- **Statutory Regime Switching under Section 115BAC(3):** Salaried filers switch regimes directly in ITR-1/2, while business/professional filers (ITR-3/4) wanting to opt out into the Old Regime are provided with the mandatory CBDT **Form 10-IEA** generator before the Section 139(1) due date.
+- **1-Time Lifetime Lock-In Safeguard:** Tracks the statutory rule barring taxpayers who have switched back to the New Regime from ever re-entering the Old Regime while holding business income.
+
+### 10. ⚖️ Comprehensive Statutory Legal Framework & Cloud Crash Resilience
 - **Statutory Self-Declaration u/s 140:** Taxpayers solemnly declare return authenticity, acknowledging Section 277 penal consequences (up to 7 years imprisonment) and Section 270A penalties (50% to 200%).
 - **Non-Advisory Platform Disclaimer:** Clarifies that ZeroTax is an automated client-side software utility, NOT a Chartered Accountant firm (CA Act 1949), legal practice, or SEBI RIA.
 - **Cloud Crash-Resilience State Retention Manager (`CloudBackupSyncManager`):** Forward-compatible with remote cloud backup APIs (`/api/v1/tax/backup-sync`). Maintains an encrypted, zero-knowledge local journal and synchronizes session state so that if the Android OS terminates the app or the device shuts down, the user's return draft is safely recovered.
@@ -95,6 +105,8 @@ The application enforces a strict directed acyclic graph (DAG) across modules wi
                               - SalaryRestructuringOptimizer
                               - CapitalGainsAndLossLedgerEngine
                               - SmallBusinessAuditAndPresumptiveEngine
+                              - NonResidentTaxAndResidencyEngine
+                              - Form10IeaBusinessRegimeEngine
                               - PreFilingAuditEngine
                               - HomeLoanAndDeductionCalculator
                               - HraAndInterestEngine
