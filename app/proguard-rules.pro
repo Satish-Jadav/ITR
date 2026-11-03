@@ -17,10 +17,29 @@
 -keep class in.zerotax.core.model.** { *; }
 -keep class in.zerotax.core.security.** { *; }
 
-# Remove Android Log calls in release builds for zero telemetry leakage
+# Remove Android Log calls in release builds for zero telemetry leakage & size minimization
 -assumenosideeffects class android.util.Log {
     public static int v(...);
     public static int d(...);
     public static int i(...);
     public static int w(...);
 }
+
+# R8 Full Mode Aggressive Size Optimizations
+-optimizationpasses 5
+-allowaccessmodification
+-repackageclasses ''
+
+# Kotlin Metadata & Coroutine Debugger Stripping (Saves ~1.5MB)
+-dontwarn kotlin.**
+-dontwarn kotlinx.coroutines.**
+-assumenosideeffects class kotlinx.coroutines.DebugKt {
+    public static boolean getDEBUG();
+}
+
+# Jetpack Compose Size Hardening
+-dontwarn androidx.compose.**
+-keepclassmembers class androidx.compose.ui.platform.AndroidComposeView {
+    *** getText();
+}
+

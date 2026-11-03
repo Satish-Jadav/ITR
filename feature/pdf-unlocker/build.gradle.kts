@@ -28,4 +28,5 @@ dependencies {
     implementation(project(":core:tax-engine"))
     implementation("com.tom_roush:pdfbox-android:2.0.27.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    testImplementation("junit:junit:4.13.2")
 }
