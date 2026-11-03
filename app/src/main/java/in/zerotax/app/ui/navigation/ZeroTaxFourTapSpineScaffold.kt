@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import in.zerotax.app.ui.components.*
+import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
 import in.zerotax.app.ui.portal.PortalAssistantScreen
 import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
 import in.zerotax.app.ui.theme.*
@@ -52,6 +53,7 @@ fun ZeroTaxFourTapSpineScaffold(
     var showSection270ADialog by remember { mutableStateOf(false) }
     var showPortalAssistant by remember { mutableStateOf(false) }
     var showAisTransactions by remember { mutableStateOf(false) }
+    var showDeductionsAdvisor by remember { mutableStateOf(false) }
 
     if (showPortalAssistant) {
         PortalAssistantScreen(
@@ -69,6 +71,14 @@ fun ZeroTaxFourTapSpineScaffold(
         SmartTransactionSuggestionsView(
             pan = uiState.pan,
             onBack = { showAisTransactions = false }
+        )
+        return
+    }
+
+    if (showDeductionsAdvisor) {
+        SmartDeductionsAdvisorScreen(
+            onBack = { showDeductionsAdvisor = false },
+            onApplyDeductions = { showDeductionsAdvisor = false }
         )
         return
     }
@@ -162,6 +172,7 @@ fun ZeroTaxFourTapSpineScaffold(
 
                     OnboardingTap.Tap3NudgeCards -> Stage3Reconciliation(
                         grossSalary = uiState.grossSalaryRupees,
+                        onOpenDeductionsAdvisor = { showDeductionsAdvisor = true },
                         onSimulateOverride = { showSection270ADialog = true },
                         onBack = { viewModel.onNavigateToTap(OnboardingTap.Tap2LiveDiscovery) },
                         onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap4RegimeShowdown) }
@@ -177,6 +188,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         newRebate87A = uiState.newRegimeResult.rebate87A,
                         oldRebate87A = uiState.oldRegimeResult.rebate87A,
                         selectedForm = uiState.formRoutingDecision.selectedForm.name.replace("_", "-"),
+                        onOpenDeductionsAdvisor = { showDeductionsAdvisor = true },
                         onBack = { viewModel.onNavigateToTap(OnboardingTap.Tap3NudgeCards) },
                         onLaunchPortalAssistant = { showPortalAssistant = true },
                         onFileReturn = { viewModel.onNavigateToTap(null) }
@@ -185,6 +197,7 @@ fun ZeroTaxFourTapSpineScaffold(
                     null -> ProWorkspaceView(
                         selectedTab = uiState.selectedWorkspaceTab,
                         uiState = uiState,
+                        onOpenDeductionsAdvisor = { showDeductionsAdvisor = true },
                         onOpenAisTransactions = { showAisTransactions = true },
                         onLaunchPortalAssistant = { showPortalAssistant = true },
                         onShredVault = { viewModel.onShredVaultData() }
@@ -534,6 +547,7 @@ private fun Stage2DocumentDiscovery(
 @Composable
 private fun Stage3Reconciliation(
     grossSalary: Long,
+    onOpenDeductionsAdvisor: () -> Unit,
     onSimulateOverride: () -> Unit,
     onBack: () -> Unit,
     onProceed: () -> Unit
@@ -580,6 +594,41 @@ private fun Stage3Reconciliation(
                 EnterpriseLedgerRow(label = "TDS Claimed in Form 16", amount = 60_000L)
                 EnterpriseLedgerRow(label = "TDS Deposited in Form 26AS", amount = 60_000L)
                 EnterpriseLedgerRow(label = "Unreflected Discrepancy", amount = 0L, isHighlighted = true)
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        // Smart Deductions & Life Events Advisor Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onOpenDeductionsAdvisor() },
+            shape = RoundedCornerShape(4.dp),
+            colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+            border = CardDefaults.outlinedCardBorder().copy(
+                width = 0.75.dp,
+                brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600.copy(alpha = 0.4f))
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Smart Deductions & Life-Events Advisor",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "Running Home Loan (Sec 24b/80C), 80D Health, NPS 80CCD, or Tuition Fees? Tap to discover deductions and document holders.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = EnterpriseTeal800
+                    )
+                }
+                StatutoryBadge(text = "Advisor →", tone = BadgeTone.SUCCESS)
             }
         }
 
@@ -634,6 +683,7 @@ private fun Stage4RegimeShowdown(
     newRebate87A: Long,
     oldRebate87A: Long,
     selectedForm: String,
+    onOpenDeductionsAdvisor: () -> Unit,
     onBack: () -> Unit,
     onLaunchPortalAssistant: () -> Unit,
     onFileReturn: () -> Unit
@@ -666,7 +716,17 @@ private fun Stage4RegimeShowdown(
             oldRebate87A = oldRebate87A
         )
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
+
+        OutlinedButton(
+            onClick = onOpenDeductionsAdvisor,
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.fillMaxWidth().height(38.dp)
+        ) {
+            Text("💡 Optimize Old Regime Deductions (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+        }
+
+        Spacer(Modifier.height(10.dp))
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -730,6 +790,7 @@ private fun Stage4RegimeShowdown(
 private fun ProWorkspaceView(
     selectedTab: WorkspaceTab,
     uiState: in.zerotax.app.viewmodel.ZeroTaxUiState,
+    onOpenDeductionsAdvisor: () -> Unit,
     onOpenAisTransactions: () -> Unit,
     onLaunchPortalAssistant: () -> Unit,
     onShredVault: () -> Unit
@@ -818,6 +879,14 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("Inspect AIS Transactions & Form 60 KYC Profile", style = MaterialTheme.typography.labelMedium)
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = onOpenDeductionsAdvisor,
+                                        shape = RoundedCornerShape(4.dp),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("Smart Deductions & Life-Events (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelMedium)
                                     }
                                 }
                             }

@@ -198,3 +198,40 @@ data class SmartTransactionNudge(
     val category: AisCategory,
     val isApplied: Boolean = true
 )
+
+@Serializable
+enum class DeductionRegimeScope {
+    OLD_REGIME_ONLY,
+    BOTH_REGIMES
+}
+
+@Serializable
+enum class LifeEventTag(val label: String, val icon: String) {
+    HOME_LOAN("Running Home Loan", "🏠"),
+    HEALTH_INSURANCE("Health Insurance & Checkup", "🏥"),
+    NPS_INVESTMENT("NPS / Pension Scheme", "📈"),
+    EDUCATION_LOAN("Higher Education Loan", "🎓"),
+    CHILDREN_FEES("Children School Fees", "🎒"),
+    RENT_NO_HRA("Paying Rent (No HRA)", "🔑"),
+    CHARITABLE_DONATION("Charity / Donations", "🤝"),
+    EV_CAR_LOAN("Electric Vehicle Loan", "⚡"),
+    SAVINGS_INTEREST("Bank Savings Interest", "🏦"),
+    DISABLED_DEPENDENT("Medical Care / Disability", "♿")
+}
+
+@Serializable
+data class StatutoryDeductionSpec(
+    val sectionCode: String,
+    val statutoryRef: String,
+    val lifeEventTag: LifeEventTag,
+    val deductionTitle: String,
+    val maxLimitRupees: Long,
+    val regimeScope: DeductionRegimeScope,
+    val documentHolder: String,
+    val requiredDocumentName: String,
+    val whereToFetchInstructions: String,
+    val howItAppliesExplanation: String,
+    val defaultEligibleAmount: Long = 0L,
+    val isSelected: Boolean = false,
+    val userClaimedAmount: Long = 0L
+)
