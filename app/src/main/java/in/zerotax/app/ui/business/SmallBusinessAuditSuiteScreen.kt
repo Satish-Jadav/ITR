@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import in.zerotax.app.ui.components.*
 import in.zerotax.app.ui.theme.*
+import in.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine
+import in.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine.Form10IeaFilingReason
+import in.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine.Form10IeaInput
 import in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine
 import in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.BusinessType
 import in.zerotax.core.taxengine.advanced.SmallBusinessAuditAndPresumptiveEngine.BusinessFinancialsInput
@@ -50,6 +53,10 @@ fun SmallBusinessAuditSuiteScreen(
     var cashOver10kText by remember { mutableStateOf("0") }
     var expensesWithoutTdsText by remember { mutableStateOf("0") }
     var unpaidStatutoryDuesText by remember { mutableStateOf("0") }
+
+    // Form 10-IEA Regime Governance
+    var chosenRegimeIsOld by remember { mutableStateOf(false) }
+    var hasOptedBackInLifetimeBefore by remember { mutableStateOf(false) }
 
     var copyStatusMessage by remember { mutableStateOf<String?>(null) }
     val clipboardManager = LocalClipboardManager.current
@@ -81,6 +88,20 @@ fun SmallBusinessAuditSuiteScreen(
 
     val report = remember(input) {
         SmallBusinessAuditAndPresumptiveEngine.evaluateBusinessAudit(input)
+    }
+
+    val form10IeaDecision = remember(chosenRegimeIsOld, hasOptedBackInLifetimeBefore, report.isTaxAuditMandatory) {
+        Form10IeaBusinessRegimeEngine.processForm10Iea(
+            hasBusinessOrProfessionIncome = true,
+            chosenRegimeIsOld = chosenRegimeIsOld,
+            input = Form10IeaInput(
+                pan = pan,
+                taxpayerName = "Taxpayer",
+                filingReason = Form10IeaFilingReason.OPT_OUT_OF_NEW_REGIME,
+                hasOptedBackInLifetimeBefore = hasOptedBackInLifetimeBefore
+            ),
+            requiresTaxAudit = report.isTaxAuditMandatory
+        )
     }
 
     Scaffold(
@@ -485,6 +506,107 @@ fun SmallBusinessAuditSuiteScreen(
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                 )
+                            }
+                        }
+                    }
+                }
+
+                // Form 10-IEA Business Regime Governance Card
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            width = 0.5.dp,
+                            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Form 10-IEA: Business Tax Regime Governance",
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                )
+                                StatutoryBadge(
+                                    text = "Sec 115BAC(3)",
+                                    tone = if (chosenRegimeIsOld) BadgeTone.WARNING else BadgeTone.SUCCESS
+                                )
+                            }
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                text = "Under Finance Act 2023/2024, New Regime is default. Taxpayers with business income wishing to opt out into Old Regime MUST file Form 10-IEA on or before ${form10IeaDecision.statutoryFilingDeadline}.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Slate600
+                            )
+
+                            Spacer(Modifier.height(10.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("Opt Out of New Regime into Old Regime:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                    Text("Requires electronic submission of Form 10-IEA", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                }
+                                Switch(
+                                    checked = chosenRegimeIsOld,
+                                    onCheckedChange = { chosenRegimeIsOld = it },
+                                    colors = SwitchDefaults.colors(checkedThumbColor = AmberWarning)
+                                )
+                            }
+
+                            if (chosenRegimeIsOld) {
+                                Spacer(Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("1-Time Lifetime Lock-In Check:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                        Text("Have you ever switched back to New Regime previously?", style = TextStyle(fontSize = 10.sp, color = CrimsonDanger))
+                                    }
+                                    Switch(
+                                        checked = hasOptedBackInLifetimeBefore,
+                                        onCheckedChange = { hasOptedBackInLifetimeBefore = it },
+                                        colors = SwitchDefaults.colors(checkedThumbColor = CrimsonDanger)
+                                    )
+                                }
+
+                                Spacer(Modifier.height(10.dp))
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (form10IeaDecision.isEligibleToOptOut) AmberWarningBg else CrimsonDangerBg
+                                    )
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Text(
+                                            text = form10IeaDecision.lockInWarning,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                }
+
+                                if (form10IeaDecision.isEligibleToOptOut) {
+                                    Spacer(Modifier.height(10.dp))
+                                    Button(
+                                        onClick = {
+                                            clipboardManager.setText(AnnotatedString(form10IeaDecision.cbdtJsonPayload))
+                                            copyStatusMessage = "Form 10-IEA JSON copied! File on e-filing portal before ${form10IeaDecision.statutoryFilingDeadline}."
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                                        modifier = Modifier.fillMaxWidth().height(38.dp)
+                                    ) {
+                                        Text("📋 Copy Form 10-IEA CBDT JSON Payload", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                                    }
+                                }
                             }
                         }
                     }

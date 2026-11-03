@@ -746,3 +746,25 @@ Statutory architecture under Income-tax Act, 1961 for Small Businesses, Contract
   - Clause 21(a) / Section 40(a)(ia): 30% disallowance on contractor, commission, or professional fees where TDS was not deducted or deposited before the Section 139(1) due date.
   - Clause 26 / Section 43B: Disallowance of unpaid statutory liabilities (GST, EPF, ESIC, bonus) not cleared before the ITR filing due date.
 - CA Handover Package: Auto-compiles the pre-audit working trial balance, disallowance schedule, and Form 3CB-3CD draft pack for immediate submission to the Chartered Accountant.
+
+
+9. Dual-Region Residency & Non-Resident Indian Engine (`NonResidentTaxAndResidencyEngine`)
+Statutory architecture under Income-tax Act, 1961 for Residents and NRIs:
+- Section 6(1) & 6(6) Physical Presence Determination:
+  - Basic 182-day rule and 60-day + 365-day rule.
+  - Indian citizen / PIO visiting India: 120-day threshold if Indian income > ₹15 Lakhs (Finance Act 2020), else 182-day threshold.
+  - Section 6(1A) Deemed Resident rule for stateless citizens with Indian income > ₹15 Lakhs (treated as RNOR).
+  - Classifies taxpayer into Resident and Ordinarily Resident (ROR), Resident but Not Ordinarily Resident (RNOR), or Non-Resident Indian (NRI).
+- Statutory Exclusions for NRIs:
+  - Global / foreign sourced income is 100% exempt from Indian tax.
+  - Section 10(4)(ii): Interest on Non-Resident External (NRE) savings/fixed deposits and FCNR deposits is 100% tax-free.
+  - Non-Resident Ordinary (NRO) accounts: Reconciles 30% (+ cess) TDS deducted under Section 195 against actual slab rates.
+  - Section 90 / 90A DTAA Relief & Electronic Form 10F Generator: Computes beneficial treaty tax withholding and generates electronic Form 10F self-declarations.
+  - NRI Ineligibility Protections: Bars NRIs from opting for Section 44AD presumptive taxation (restricted to Resident Individuals/Partnerships under Section 44AD(1)).
+
+10. Dual-Regime & Form 10-IEA Business Governance Engine (`Form10IeaBusinessRegimeEngine`)
+Statutory framework under Section 115BAC(3) and Rule 21AGA (Notification 43/2023):
+- Salaried taxpayers (ITR-1 / ITR-2) exercise regime choice annually on the ITR utility without separate filings.
+- Business & Professional Taxpayers (ITR-3 / ITR-4): The New Regime under Section 115BAC(1A) is the statutory default. Opting out to the Old Regime requires mandatory electronic filing of Form 10-IEA on or before the Section 139(1) due date (July 31 for non-audit, October 31 for tax audit).
+- 1-Time Lifetime Lock-In Rule: Business taxpayers opting out to Old Regime are granted strictly ONE lifetime opportunity to re-enter the New Regime. Once re-entered, they are permanently debarred from choosing the Old Regime while having business income.
+- Compiles CBDT schema-compliant Form 10-IEA JSON payloads with acknowledgement number mapping for Schedule 115BAC.

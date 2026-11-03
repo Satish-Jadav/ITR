@@ -29,6 +29,7 @@ import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
 import in.zerotax.app.ui.insights.TaxVisualizerAndAnalyticsScreen
 import in.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
 import in.zerotax.app.ui.notice.TaxNoticeDefenseAssistantScreen
+import in.zerotax.app.ui.nri.DualRegionNriComplianceScreen
 import in.zerotax.app.ui.portal.PortalAssistantScreen
 import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
 import in.zerotax.app.ui.toolkit.SmartTaxToolkitScreen
@@ -69,6 +70,15 @@ fun ZeroTaxFourTapSpineScaffold(
     var showAnalyticsScreen by remember { mutableStateOf(false) }
     var showNoticeDefense by remember { mutableStateOf(false) }
     var showBusinessAudit by remember { mutableStateOf(false) }
+    var showNriSuite by remember { mutableStateOf(false) }
+
+    if (showNriSuite) {
+        DualRegionNriComplianceScreen(
+            pan = uiState.pan,
+            onBack = { showNriSuite = false }
+        )
+        return
+    }
 
     if (showBusinessAudit) {
         SmallBusinessAuditSuiteScreen(
@@ -180,7 +190,8 @@ fun ZeroTaxFourTapSpineScaffold(
                 onOpenToolkit = { showTaxToolkit = true },
                 onOpenAnalytics = { showAnalyticsScreen = true },
                 onOpenNotices = { showNoticeDefense = true },
-                onOpenBusinessAudit = { showBusinessAudit = true }
+                onOpenBusinessAudit = { showBusinessAudit = true },
+                onOpenNriSuite = { showNriSuite = true }
             )
         },
         bottomBar = {
@@ -300,6 +311,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         onOpenAnalytics = { showAnalyticsScreen = true },
                         onOpenNotices = { showNoticeDefense = true },
                         onOpenBusinessAudit = { showBusinessAudit = true },
+                        onOpenNriSuite = { showNriSuite = true },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
                 }
@@ -939,6 +951,7 @@ private fun ProWorkspaceView(
     onOpenAnalytics: () -> Unit = {},
     onOpenNotices: () -> Unit = {},
     onOpenBusinessAudit: () -> Unit = {},
+    onOpenNriSuite: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
     var isShreddingInProgress by remember { mutableStateOf(false) }
@@ -1087,6 +1100,15 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("🏢 Small Business Tax Audit & Presumptive Suite (Sec 44AB/AD & Form 3CD)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = onOpenNriSuite,
+                                        shape = RoundedCornerShape(4.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("🌍 Dual-Region NRI & DTAA Compliance Suite (Sec 6, 10(4), Form 10F)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }
