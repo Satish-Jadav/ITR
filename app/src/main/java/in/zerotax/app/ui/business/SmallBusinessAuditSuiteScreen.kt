@@ -194,7 +194,9 @@ fun SmallBusinessAuditSuiteScreen(
                 item {
                     val isMandatory = report.isTaxAuditMandatory
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isMandatory) AmberWarningBg else EmeraldSuccessBg
                         ),

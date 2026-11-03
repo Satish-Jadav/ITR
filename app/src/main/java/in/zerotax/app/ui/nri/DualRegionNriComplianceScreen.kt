@@ -131,7 +131,9 @@ fun DualRegionNriComplianceScreen(
             // Section 6 Residency Verdict Hero Card
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                     colors = CardDefaults.cardColors(
                         containerColor = if (residencyDecision.status == ResidencyStatus.NON_RESIDENT_INDIAN) EnterpriseTeal50 else IndigoStatutoryBg
                     ),
@@ -214,7 +216,9 @@ fun DualRegionNriComplianceScreen(
             // Section 6 Physical Presence Calculator Inputs
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = CardDefaults.outlinedCardBorder().copy(
                         width = 0.5.dp,
@@ -292,7 +296,9 @@ fun DualRegionNriComplianceScreen(
             // NRE / FCNR Tax-Free Vault & NRO 30% TDS Reclaimer
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = CardDefaults.outlinedCardBorder().copy(
                         width = 0.5.dp,
@@ -402,7 +408,9 @@ fun DualRegionNriComplianceScreen(
             // DTAA Relief Section 90 & Electronic Form 10F Generator
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
                     border = CardDefaults.outlinedCardBorder().copy(
                         width = 0.5.dp,
