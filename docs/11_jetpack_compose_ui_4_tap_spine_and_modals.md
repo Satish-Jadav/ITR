@@ -1,4 +1,4 @@
-﻿11 — Jetpack Compose UI ("4-Tap Spine", Smart PAN Input, Section 270A Modal & DPDP Shredder)
+11 — Jetpack Compose UI ("4-Tap Spine", Smart PAN Input, Section 270A Modal & DPDP Shredder)
 1. Auto-Switching Smart PAN Input & Statutory Section 270A Override Modal (:app)
 The Compose UI implements the Smart PAN Keyboard (automatically switching between uppercase letters for positions 1–5, numeric digits for positions 6–9, and an uppercase check letter for position 10, while validating the 4th character 'P') alongside the mandatory Section 270A Penalty Risk Warning Dialog.
 
@@ -779,3 +779,49 @@ Privacy Shield -> "Shred Local Tax Vault"
 Confirmation in destructive action modal (DPDP Act Sec 12(3)).
 Deletes StrongBox Keystore alias and overwrites DB/WAL/SHM/PDF files with SecureRandom in <300ms.
 
+
+FilingTierSelectorCard
+Tier Badge Click / Auto-Detect
+Allows 1-tap switching between Sahaj Simple, Growth & Investor, and Enterprise Audit Shield.
+Drives dynamic view pruning in ZeroTaxFourTapSpineScaffold.
+TaxPaymentAndChallanHubModal
+"Pay Tax / Record Challan 280"
+Multi-channel payment (UPI, NetBanking, RTGS/NEFT, OTC) + Challan receipt validator (7-digit BSR, 5-digit Serial).
+Validates Challan 280 and auto-injects ScheduleItChallanEntry into Schedule IT of return.
+
+---
+
+## 6. Plan-Based UI Engine (`FilingTierMode`) & Tax Payment & Challan 280 Hub
+
+### 6.1 Plan-Based Usability Architecture
+To maximize usability across all taxpayer segments, ZeroTax provides a plan-based tier architecture governed by `FilingTierMode`:
+
+| Tier | Target Persona & Criteria | Visible Features | Statutory Forms |
+| :--- | :--- | :--- | :--- |
+| **`SAHAJ_SIMPLE`** (🌱) | Salaried & Pensioners under ₹20L with single/dual Form 16, bank interest, and 1 house property. | Clean 1-tap refund spine, simplified deductions (80C, 80D), instant e-verification. Strips all business/audit noise. | ITR-1 (Sahaj) |
+| **`INVESTOR_PRO`** (📈) | Stocks, Mutual Funds, Crypto, Freelancers, Consultants (Sec 44ADA), or income ₹20L–₹50L. | Capital gains ledger (111A/112A), Sec 44ADA presumptive profit slider, dual-regime break-even optimizer, Chapter VI-A deductions catalog. | ITR-2, ITR-4 (Sugam) |
+| **`ENTERPRISE_AUDIT`** (🛡️) | Big Money, HNIs, Gross Income > ₹50L, Turnover > ₹1 Cr, Foreign Assets (RSUs/ESPPs). | Enterprise Audit Shield, Section 44AB CA dossier generator, 3-way Form 26AS/AIS/TRACES discrepancy reconciliation radar, Schedule FA Black Money Act compliance. | ITR-2, ITR-3, Section 44AB CA Dossier |
+
+The app automatically suggests the ideal tier via `FilingTierMode.autoDetectTier(grossIncome, hasCapitalGains, hasPresumptiveBusiness, hasForeignAssets, hasAuditExposure)`, while presenting the user with an interactive `FilingTierSelectorCard` to switch at any moment.
+
+### 6.2 Universal Tax Payment & Challan 280 Hub (`TaxPaymentAndChallanHubModal`)
+ZeroTax handles all statutory payment conditions under CBDT TIN 2.0:
+1. **Advance Tax (Minor Head 100 u/s 208)**: Triggered when estimated net tax payable exceeds ₹10,000 (with Section 207(2) statutory exemption for Senior Citizens without business income). Tracks quarterly installments (15% Jun 15, 45% Sep 15, 75% Dec 15, 100% Mar 15).
+2. **Self-Assessment Tax (Minor Head 300 u/s 140A)**: Payable prior to return submission. Displays exact itemized liabilities (tax slab, Section 234A/B/C interest, 4% Health & Education cess) less TDS/TCS and advance tax credits.
+3. **Regular Assessment Tax (Minor Head 400 u/s 143(1)/144)**: Discharges statutory tax demand notices.
+
+**Supported Payment Channels (`TaxPaymentChannel`)**:
+- **Instant UPI (`UPI_INSTANT`)**: Direct deep-linking to UPI apps (Google Pay, PhonePe, Paytm, BHIM) with zero surcharge and real-time generation of CIN & Challan 280.
+- **Retail & Corporate NetBanking (`NET_BANKING`)**: Seamless TIN 2.0 bank gateway redirect.
+- **Debit Card Gateway (`DEBIT_CARD`)**: Instant payment via authorized debit cards.
+- **RTGS / NEFT Virtual Account Mandate (`RTGS_NEFT`)**: For large tax settlements (> ₹1 Lakh) from any domestic or foreign bank branch.
+- **Over-The-Counter (`OVER_THE_COUNTER`)**: Pre-filled Challan 280 payment slip generation for physical cheque/cash deposit at bank branches.
+
+**Schedule IT Auto-Injection**:
+The built-in Challan Validator verifies:
+- 7-digit BSR Code format
+- 5-digit Challan Serial Number format
+- Valid deposit date in ISO format
+- Paid amount matching required liability
+
+Upon validation, the payment is automatically committed into `ScheduleItChallanEntry` and reflected in the active tax calculation, immediately zeroing out balance tax payable and unlocking final submission.

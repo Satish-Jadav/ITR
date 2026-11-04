@@ -222,7 +222,109 @@ enum class LifeEventTag(val label: String, val icon: String) {
     CHARITABLE_DONATION("Charity / Donations", "🤝"),
     EV_CAR_LOAN("Electric Vehicle Loan", "⚡"),
     SAVINGS_INTEREST("Bank Savings Interest", "🏦"),
-    DISABLED_DEPENDENT("Medical Care / Disability", "♿")
+    DISABLED_DEPENDENT("Medical Care / Disability", "♿"),
+    SELF_DISABILITY("Self-Disability (Sec 80U)", "🧑‍🦽"),
+    CRITICAL_ILLNESS("Specified Chronic Illness (80DDB)", "💊"),
+    POLITICAL_DONATION("Political & Scientific Donation (80GGC/GGA)", "🏛️"),
+    SENIOR_DEPOSITS("Senior Citizen Savings & FDs (80TTB)", "👴")
+}
+
+/**
+ * Plan-based user experience tiers tailored for taxpayers from small-money simple salaried to multi-crore enterprise audit.
+ */
+@Serializable
+enum class FilingTierMode(
+    val title: String,
+    val subtitle: String,
+    val targetPersona: String,
+    val badgeIcon: String,
+    val recommendedItrForms: List<ItrFormType>
+) {
+    SAHAJ_SIMPLE(
+        title = "Sahaj Simple",
+        subtitle = "Salaried & Pensioners (Under ₹50L)",
+        targetPersona = "Single/dual Form 16, interest, 1 house property. 1-tap instant refund filing.",
+        badgeIcon = "🌱",
+        recommendedItrForms = listOf(ItrFormType.ITR_1_SAHAJ)
+    ),
+    INVESTOR_PRO(
+        title = "Growth & Investor",
+        subtitle = "Stocks, MFs, Freelancers & 44ADA",
+        targetPersona = "Capital gains (111A/112A), Sec 44ADA consulting, multiple properties, deductions optimization.",
+        badgeIcon = "📈",
+        recommendedItrForms = listOf(ItrFormType.ITR_2, ItrFormType.ITR_4_SUGAM)
+    ),
+    ENTERPRISE_AUDIT(
+        title = "Enterprise Audit Shield",
+        subtitle = "Big Money, HNIs, Sec 44AB & RSUs",
+        targetPersona = "Turnover > ₹1 Cr, Schedule FA foreign assets, Black Money Act protection, 3-way discrepancy radar, CA dossier.",
+        badgeIcon = "🛡️",
+        recommendedItrForms = listOf(ItrFormType.ITR_2, ItrFormType.ITR_3, ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
+    );
+
+    companion object {
+        fun autoDetectTier(
+            grossIncome: Long,
+            hasCapitalGains: Boolean,
+            hasPresumptiveBusiness: Boolean,
+            hasForeignAssets: Boolean,
+            hasAuditExposure: Boolean
+        ): FilingTierMode {
+            return when {
+                hasForeignAssets || hasAuditExposure || grossIncome > 50_00_000L -> ENTERPRISE_AUDIT
+                hasCapitalGains || hasPresumptiveBusiness || grossIncome > 20_00_000L -> INVESTOR_PRO
+                else -> SAHAJ_SIMPLE
+            }
+        }
+    }
+}
+
+/**
+ * Available payment channels for discharging tax liabilities under CBDT TIN 2.0 system.
+ */
+@Serializable
+enum class TaxPaymentChannel(
+    val title: String,
+    val description: String,
+    val processingTime: String,
+    val statutoryFee: String,
+    val iconEmoji: String
+) {
+    UPI_INSTANT(
+        title = "Instant UPI (GPay / PhonePe / BHIM / Paytm)",
+        description = "0% transaction charges. Instant Challan 280 receipt generated with CIN & BSR code.",
+        processingTime = "Instant (Real-time)",
+        statutoryFee = "₹0 (Zero Surcharge)",
+        iconEmoji = "⚡"
+    ),
+    NET_BANKING(
+        title = "Retail / Corporate NetBanking",
+        description = "Direct payment through authorized banks via CBDT TIN 2.0 gateway.",
+        processingTime = "5-10 minutes",
+        statutoryFee = "₹0 (Selected banks)",
+        iconEmoji = "🏦"
+    ),
+    DEBIT_CARD(
+        title = "Debit Card Gateway",
+        description = "Payment via authorized bank debit cards on the e-Filing portal.",
+        processingTime = "Instant",
+        statutoryFee = "Bank nominal charges",
+        iconEmoji = "💳"
+    ),
+    RTGS_NEFT(
+        title = "RTGS / NEFT (Virtual Account Mandate)",
+        description = "For large tax payments (> ₹1 Lakh) from any scheduled/foreign bank using generated Mandate.",
+        processingTime = "Same-day RTGS",
+        statutoryFee = "Standard RBI NEFT/RTGS",
+        iconEmoji = "🏛️"
+    ),
+    OVER_THE_COUNTER(
+        title = "Over-The-Counter (Cash / Cheque / DD)",
+        description = "Generate pre-filled Challan 280 mandate slip and pay at designated bank branches.",
+        processingTime = "1-2 business days",
+        statutoryFee = "Free",
+        iconEmoji = "📝"
+    )
 }
 
 @Serializable
