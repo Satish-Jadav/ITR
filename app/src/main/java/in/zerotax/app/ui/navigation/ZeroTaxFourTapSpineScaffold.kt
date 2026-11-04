@@ -1,9 +1,10 @@
-﻿package `in`.zerotax.app.ui.navigation
+package `in`.zerotax.app.ui.navigation
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -312,6 +313,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         onOpenNotices = { showNoticeDefense = true },
                         onOpenBusinessAudit = { showBusinessAudit = true },
                         onOpenNriSuite = { showNriSuite = true },
+                        onLoadAuditTrail = { viewModel.loadAuditTrailLazy() },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
                 }
@@ -952,6 +954,7 @@ private fun ProWorkspaceView(
     onOpenNotices: () -> Unit = {},
     onOpenBusinessAudit: () -> Unit = {},
     onOpenNriSuite: () -> Unit = {},
+    onLoadAuditTrail: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
     var isShreddingInProgress by remember { mutableStateOf(false) }
@@ -1117,6 +1120,9 @@ private fun ProWorkspaceView(
                 }
 
                 WorkspaceTab.SmartTaxVaultAndCopilot -> {
+                    LaunchedEffect(Unit) {
+                        onLoadAuditTrail()
+                    }
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         item {
                             Card(
@@ -1142,12 +1148,6 @@ private fun ProWorkspaceView(
                                 }
                             }
                             Spacer(Modifier.height(10.dp))
-                        }
-
-                        item {
-                            LaunchedEffect(Unit) {
-                                viewModel.loadAuditTrailLazy()
-                            }
                         }
 
                         if (uiState.lazyAuditTrail is `in`.zerotax.core.model.LazyLoadState.Loading) {

@@ -54,6 +54,25 @@ value class Rupee(val amount: Long) : Comparable<Rupee> {
 
     companion object {
         val ZERO = Rupee(0L)
+
+        /**
+         * Formats a raw Long rupee amount according to the Indian numbering system (e.g. 1,50,000).
+         * Does not prefix the ₹ currency symbol so that callers can interpolate "₹${Rupee.formatInr(val)}".
+         */
+        fun formatInr(amount: Long): String {
+            if (amount == 0L) return "0"
+            val isNegative = amount < 0
+            val absAmount = kotlin.math.abs(amount)
+            val formatted = if (absAmount < 1000) {
+                absAmount.toString()
+            } else {
+                val lastThree = absAmount.toString().takeLast(3)
+                val remaining = absAmount.toString().dropLast(3)
+                val chunked = remaining.reversed().chunked(2).joinToString(",").reversed()
+                "$chunked,$lastThree"
+            }
+            return if (isNegative) "-$formatted" else formatted
+        }
     }
 }
 

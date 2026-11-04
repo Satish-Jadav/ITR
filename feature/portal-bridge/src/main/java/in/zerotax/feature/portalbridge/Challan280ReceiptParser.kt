@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.feature.portalbridge
+package `in`.zerotax.feature.portalbridge
 
 import android.content.Context
 import android.content.Intent
@@ -21,27 +21,5 @@ object Challan280ReceiptParser {
         val amt = AMT_REGEX.find(pdfText)?.groupValues?.get(1)?.replace(",", "")?.toLongOrNull() ?: 0L
 
         return Result.success(ScheduleItChallanEntry(bsr, "${d.groupValues[3]}-${d.groupValues[2]}-${d.groupValues[1]}", serial, amt))
-    }
-}
-
-object UpiChallan280IntentLauncher {
-    /**
-     * Launches UPI Intent to pay self-assessment tax Challan 280 (Major Head 0021, Minor Head 300).
-     */
-    fun createUpiPaymentIntent(
-        taxAmountRupees: Long,
-        pan: String,
-        assessmentYear: String
-    ): Intent {
-        val note = "ITR Self Assessment Tax $assessmentYear PAN $pan"
-        val upiUri = Uri.parse("upi://pay").buildUpon()
-            .appendQueryParameter("pa", "incometax@sbi")
-            .appendQueryParameter("pn", "Income Tax Department")
-            .appendQueryParameter("am", taxAmountRupees.toString())
-            .appendQueryParameter("cu", "INR")
-            .appendQueryParameter("tn", note)
-            .build()
-
-        return Intent(Intent.ACTION_VIEW, upiUri)
     }
 }

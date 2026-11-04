@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.feature.portalbridge
+package `in`.zerotax.feature.portalbridge
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -24,10 +24,10 @@ class Challan280ReceiptParserTest {
         assertTrue(result.isSuccess)
 
         val entry = result.getOrThrow()
-        assertEquals("0002145", entry.bsrCode)
+        assertEquals("0002145", entry.bsrCode7Digits)
         assertEquals("2026-07-15", entry.dateOfDepositIso)
-        assertEquals("01429", entry.challanSerialNumber)
-        assertEquals(24500L, entry.taxPaidRupees)
+        assertEquals("01429", entry.challanSerialNumber5Digits)
+        assertEquals(24500L, entry.taxAmountPaidRupees)
     }
 
     @Test

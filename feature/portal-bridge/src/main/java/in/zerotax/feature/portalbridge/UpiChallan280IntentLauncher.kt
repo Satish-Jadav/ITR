@@ -22,6 +22,17 @@ object UpiChallan280IntentLauncher {
     private val CIN_REGEX = Regex("""^\d{5}$""")
     private val PAN_REGEX = Regex("""^[A-Z]{5}[0-9]{4}[A-Z]$""")
 
+    fun buildUpiPaymentUriString(
+        pan: String,
+        amountRupees: Long,
+        assessmentYear: String = "2026-27",
+        taxType: ChallanTaxType = ChallanTaxType.SELF_ASSESSMENT_TAX,
+        merchantVpa: String = "incometax@sbi"
+    ): String {
+        val note = "ITD-CHALLAN280-AY$assessmentYear-PAN$pan-M${taxType.minorHead}"
+        return "upi://pay?pa=$merchantVpa&pn=Income+Tax+Department&mc=9311&tr=ITR_${pan}&tn=$note&am=$amountRupees&cu=INR"
+    }
+
     fun buildUpiPaymentUri(
         pan: String,
         amountRupees: Long,
@@ -29,18 +40,7 @@ object UpiChallan280IntentLauncher {
         taxType: ChallanTaxType = ChallanTaxType.SELF_ASSESSMENT_TAX,
         merchantVpa: String = "incometax@sbi"
     ): Uri {
-        val note = "ITD-CHALLAN280-AY$assessmentYear-PAN$pan-M${taxType.minorHead}"
-        return Uri.Builder()
-            .scheme("upi")
-            .authority("pay")
-            .appendQueryParameter("pa", merchantVpa)
-            .appendQueryParameter("pn", "Income Tax Department")
-            .appendQueryParameter("mc", "9311") // Govt tax payment MCC
-            .appendQueryParameter("tr", "ITR_${pan}_${System.currentTimeMillis()}")
-            .appendQueryParameter("tn", note)
-            .appendQueryParameter("am", amountRupees.toString())
-            .appendQueryParameter("cu", "INR")
-            .build()
+        return Uri.parse(buildUpiPaymentUriString(pan, amountRupees, assessmentYear, taxType, merchantVpa))
     }
 
     fun launchUpiPaymentIntent(context: Context, upiUri: Uri): Result<Unit> {
@@ -50,6 +50,20 @@ object UpiChallan280IntentLauncher {
             }
             context.startActivity(intent)
         }
+    }
+
+    fun createUpiPaymentIntent(
+        taxAmountRupees: Long,
+        pan: String,
+        assessmentYear: String
+    ): Intent {
+        val upiUri = buildUpiPaymentUri(
+            pan = pan,
+            amountRupees = taxAmountRupees,
+            assessmentYear = assessmentYear,
+            taxType = ChallanTaxType.SELF_ASSESSMENT_TAX
+        )
+        return Intent(Intent.ACTION_VIEW, upiUri)
     }
 
     fun validateChallanReceipt(
