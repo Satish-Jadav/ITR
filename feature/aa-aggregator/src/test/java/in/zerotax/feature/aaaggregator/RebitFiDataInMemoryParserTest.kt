@@ -47,3 +47,4 @@ class RebitFiDataInMemoryParserTest {
         assertEquals(ConsentLifeCycleState.REVOKED_BY_USER, manager.activeConsents.value.first().state)
     }
 }
+

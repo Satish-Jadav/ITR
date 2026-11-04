@@ -31,3 +31,4 @@ object ScopedFlagSecureHelper {
         activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 }
+

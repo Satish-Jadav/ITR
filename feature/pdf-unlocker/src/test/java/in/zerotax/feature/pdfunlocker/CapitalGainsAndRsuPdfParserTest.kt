@@ -48,3 +48,4 @@ class CapitalGainsAndRsuPdfParserTest {
         assertEquals(100.0, report.rsuLots.first().sharesVested, 0.01)
     }
 }
+
