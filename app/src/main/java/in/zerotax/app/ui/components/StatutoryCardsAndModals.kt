@@ -22,14 +22,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.model.FilingTierMode
 import `in`.zerotax.core.model.InstitutionPdfPasswordRegistry
 import `in`.zerotax.core.model.InstitutionPdfPasswordRule
 import `in`.zerotax.core.model.Rupee
+import `in`.zerotax.core.model.ScheduleItChallanEntry
+import `in`.zerotax.core.model.TaxPaymentChannel
+import `in`.zerotax.feature.portalbridge.ChallanTaxType
+import `in`.zerotax.feature.portalbridge.UpiChallan280IntentLauncher
 
 @Composable
 fun DpdpSection6MultilingualConsentCard(
@@ -576,6 +583,411 @@ fun Section87AMarginalReliefExplainerCard(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Actual Tax Payable", style = MaterialTheme.typography.labelSmall, color = Slate900)
                     Text("₹${Rupee.formatInr(finalTaxBeforeCess)}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Plan-based UI Tier Selector enabling tailored workflows:
+ * - Sahaj Simple: Zero-jargon, 1-tap filing for salaried / small money
+ * - Growth & Investor: Capital gains, 44ADA, and deductions optimizer
+ * - Enterprise Audit Shield: Big money, HNI, Schedule FA, and Section 44AB audit
+ */
+@Composable
+fun FilingTierSelectorCard(
+    currentTier: FilingTierMode,
+    recommendedTier: FilingTierMode,
+    onTierSelected: (FilingTierMode) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(currentTier.badgeIcon, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Filing Experience: ${currentTier.title}",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                    )
+                }
+                if (currentTier == recommendedTier) {
+                    StatutoryBadge(text = "AUTO-MATCHED", tone = BadgeTone.SUCCESS)
+                } else {
+                    StatutoryBadge(text = "CUSTOM TIER", tone = BadgeTone.NEUTRAL)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 3-Tier Selector Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                FilingTierMode.entries.forEach { tier ->
+                    val isSelected = currentTier == tier
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onTierSelected(tier) },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                        ),
+                        border = if (isSelected) {
+                            CardDefaults.outlinedCardBorder().copy(width = 1.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
+                        } else CardDefaults.outlinedCardBorder().copy(width = 0.5.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(tier.badgeIcon, fontSize = 14.sp)
+                            Text(
+                                text = tier.title,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Slate700
+                                ),
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "${currentTier.subtitle} — ${currentTier.targetPersona}",
+                style = MaterialTheme.typography.bodySmall,
+                color = Slate600
+            )
+        }
+    }
+}
+
+/**
+ * Comprehensive Tax Payment & Challan 280 Hub covering all payment conditions (Advance Tax, Self-Assessment,
+ * Demand Assessment) across all official payment channels (UPI, NetBanking, Debit Card, RTGS/NEFT, Over-the-Counter).
+ */
+@Composable
+fun TaxPaymentAndChallanHubModal(
+    pan: String,
+    taxPayableRupees: Long,
+    assessmentYear: String = "2026-27",
+    onDismiss: () -> Unit,
+    onRecordChallan: (ScheduleItChallanEntry) -> Unit
+) {
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
+
+    var selectedTaxType by remember {
+        mutableStateOf(if (taxPayableRupees > 10_000L) ChallanTaxType.ADVANCE_TAX else ChallanTaxType.SELF_ASSESSMENT_TAX)
+    }
+    var selectedChannel by remember { mutableStateOf(TaxPaymentChannel.UPI_INSTANT) }
+    var paymentAmountInput by remember { mutableStateOf(if (taxPayableRupees > 0L) taxPayableRupees.toString() else "10000") }
+
+    // Challan 280 Verification States
+    var showReceiptVerification by remember { mutableStateOf(false) }
+    var bsrCodeInput by remember { mutableStateOf("") }
+    var challanSerialInput by remember { mutableStateOf("") }
+    var depositDateInput by remember { mutableStateOf("2026-03-15") }
+    var verificationError by remember { mutableStateOf<String?>(null) }
+    var isVerificationSuccess by remember { mutableStateOf(false) }
+
+    val amountLong = paymentAmountInput.filter { it.isDigit() }.toLongOrNull() ?: taxPayableRupees
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.92f)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("💳", fontSize = 18.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                "Tax Payment & Challan 280 Hub",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Text(
+                                "PAN: $pan • Major Head 0021",
+                                style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Slate500)
+                            )
+                        }
+                    }
+                    IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Slate500)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // 1. Payment Condition / Head
+                    item {
+                        Text("1. Select Payment Condition & Head:", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                            ChallanTaxType.entries.forEach { type ->
+                                FilterChip(
+                                    selected = selectedTaxType == type,
+                                    onClick = { selectedTaxType = type },
+                                    label = { Text(type.description, fontSize = 11.sp) }
+                                )
+                            }
+                        }
+                    }
+
+                    // 2. Amount Input
+                    item {
+                        OutlinedTextField(
+                            value = paymentAmountInput,
+                            onValueChange = { paymentAmountInput = it.filter { ch -> ch.isDigit() } },
+                            label = { Text("Tax Amount to Pay (₹)") },
+                            prefix = { Text("₹ ", fontWeight = FontWeight.Bold) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    // 3. Payment Channels
+                    item {
+                        Text("2. Choose Payment Method (CBDT TIN 2.0 Authorized):", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        Spacer(modifier = Modifier.height(6.dp))
+                        TaxPaymentChannel.entries.forEach { channel ->
+                            val isSelected = selectedChannel == channel
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 3.dp)
+                                    .clickable { selectedChannel = channel },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isSelected) EnterpriseTeal50 else Slate50
+                                ),
+                                border = if (isSelected) {
+                                    CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600))
+                                } else CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate200))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(channel.iconEmoji, fontSize = 18.sp)
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = channel.title,
+                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                                        )
+                                        Text(
+                                            text = "${channel.description} • Fee: ${channel.statutoryFee}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Slate600
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 4. Action Button for Channel
+                    item {
+                        when (selectedChannel) {
+                            TaxPaymentChannel.UPI_INSTANT -> {
+                                Button(
+                                    onClick = {
+                                        val uri = UpiChallan280IntentLauncher.buildUpiPaymentUri(
+                                            pan = pan,
+                                            amountRupees = amountLong,
+                                            assessmentYear = assessmentYear,
+                                            taxType = selectedTaxType
+                                        )
+                                        UpiChallan280IntentLauncher.launchUpiPaymentIntent(context, uri)
+                                        showReceiptVerification = true
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("⚡ Launch UPI App (GPay / PhonePe / Paytm)")
+                                }
+                            }
+                            TaxPaymentChannel.NET_BANKING, TaxPaymentChannel.DEBIT_CARD -> {
+                                Button(
+                                    onClick = {
+                                        uriHandler.openUri("https://eportal.incometax.gov.in/iec/foservices/#/e-pay-tax-prelogin/user-details")
+                                        showReceiptVerification = true
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("🏦 Open e-Filing Portal TIN 2.0 Gateway")
+                                }
+                            }
+                            TaxPaymentChannel.RTGS_NEFT -> {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = AmberWarningBg),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Text("RTGS / NEFT Mandate Instructions:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
+                                        Text(
+                                            "1. Login to eportal.incometax.gov.in -> e-Pay Tax -> Create New Challan.\n2. Choose 'RTGS/NEFT' to generate your unique Virtual Account Number (VAN) starting with 'ITD...'.\n3. Transfer ₹${Rupee.formatInr(amountLong)} via your bank NetBanking RTGS to this VAN.",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                }
+                            }
+                            TaxPaymentChannel.OVER_THE_COUNTER -> {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = Slate100),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Text("Over-The-Counter (Cheque / Cash) Instructions:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
+                                        Text(
+                                            "Generate Form CRN Challan 280 on the e-Filing portal, print the physical mandate form, and present it with Cheque/DD at any authorized bank branch (SBI, HDFC, ICICI, PNB).",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 5. Challan Receipt Validator & Schedule IT Auto-Injector
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Record Paid Challan to Return (Schedule IT)", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                                    StatutoryBadge(text = "CBDT Verified", tone = BadgeTone.STATUTORY)
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    "Enter the BSR code & Challan Serial Number from your payment receipt to offset your return tax liability:",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Slate600
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedTextField(
+                                        value = bsrCodeInput,
+                                        onValueChange = { bsrCodeInput = it.take(7) },
+                                        label = { Text("BSR Code (7 Digits)") },
+                                        placeholder = { Text("0002134") },
+                                        modifier = Modifier.weight(1f),
+                                        singleLine = true
+                                    )
+                                    OutlinedTextField(
+                                        value = challanSerialInput,
+                                        onValueChange = { challanSerialInput = it.take(5) },
+                                        label = { Text("Challan No (5 Digits)") },
+                                        placeholder = { Text("01234") },
+                                        modifier = Modifier.weight(1f),
+                                        singleLine = true
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                OutlinedTextField(
+                                    value = depositDateInput,
+                                    onValueChange = { depositDateInput = it },
+                                    label = { Text("Date of Deposit (YYYY-MM-DD)") },
+                                    placeholder = { Text("2026-03-15") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true
+                                )
+
+                                if (verificationError != null) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(verificationError!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                                }
+
+                                if (isVerificationSuccess) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text("✓ Challan 280 verified & added to Schedule IT!", color = EmeraldSuccess, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Button(
+                                    onClick = {
+                                        val validation = UpiChallan280IntentLauncher.validateChallanReceipt(
+                                            bsrCode = bsrCodeInput,
+                                            challanSerialNo = challanSerialInput,
+                                            depositDateIso = depositDateInput,
+                                            pan = pan,
+                                            amountRupees = amountLong
+                                        )
+                                        if (validation.isValid) {
+                                            verificationError = null
+                                            isVerificationSuccess = true
+                                            val entry = ScheduleItChallanEntry(
+                                                bsrCode7Digits = bsrCodeInput,
+                                                challanSerialNumber5Digits = challanSerialInput,
+                                                dateOfDepositIso = depositDateInput,
+                                                taxAmountPaidRupees = amountLong
+                                            )
+                                            onRecordChallan(entry)
+                                        } else {
+                                            verificationError = validation.errors.firstOrNull() ?: "Invalid Challan"
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(6.dp)
+                                ) {
+                                    Text("Verify & Save to Schedule IT")
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -43,6 +43,11 @@ data class ZeroTaxUiState(
     val isBiometricUnlocked: Boolean = true,
     val citizenCategory: CitizenCategory = CitizenCategory.REGULAR_BELOW_60,
     val showPasswordCheatsheet: Boolean = false,
+    val filingTierMode: FilingTierMode = FilingTierMode.SAHAJ_SIMPLE,
+    val recommendedTierMode: FilingTierMode = FilingTierMode.SAHAJ_SIMPLE,
+    val challanPayments: List<ScheduleItChallanEntry> = emptyList(),
+    val totalTaxPaidViaChallan: Long = 0L,
+    val showTaxPaymentHub: Boolean = false,
     val newRegimeResult: RegimeComputationResult,
     val oldRegimeResult: RegimeComputationResult,
     val formRoutingDecision: FormRoutingDecision,
@@ -133,6 +138,26 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun onTogglePasswordCheatsheet(show: Boolean) {
         _uiState.update { it.copy(showPasswordCheatsheet = show) }
+    }
+
+    fun onFilingTierChanged(tier: FilingTierMode) {
+        _uiState.update { it.copy(filingTierMode = tier) }
+    }
+
+    fun onToggleTaxPaymentHub(show: Boolean) {
+        _uiState.update { it.copy(showTaxPaymentHub = show) }
+    }
+
+    fun onRecordChallanPayment(entry: ScheduleItChallanEntry) {
+        val updated = _uiState.value.challanPayments + entry
+        val totalPaid = updated.sumOf { it.taxAmountPaidRupees }
+        _uiState.update {
+            it.copy(
+                challanPayments = updated,
+                totalTaxPaidViaChallan = totalPaid
+            )
+        }
+        recompute()
     }
 
     fun onNavigateToTap(tap: OnboardingTap?) {
@@ -254,12 +279,21 @@ class ZeroTaxViewModel : ViewModel() {
         )
         val summary = DeterministicReconciler.reconcileSalaries(updatedSources, initial26AsTds)
 
+        val autoTier = FilingTierMode.autoDetectTier(
+            grossIncome = current.grossSalaryRupees,
+            hasCapitalGains = false,
+            hasPresumptiveBusiness = current.hasPresumptive44ADA,
+            hasForeignAssets = current.foreignAssetsDeclared,
+            hasAuditExposure = current.presumptiveGross44ADA > 1_00_00_000L
+        )
+
         _uiState.update {
             it.copy(
                 newRegimeResult = newResult,
                 oldRegimeResult = oldResult,
                 formRoutingDecision = routing,
-                salarySummary = summary
+                salarySummary = summary,
+                recommendedTierMode = autoTier
             )
         }
     }

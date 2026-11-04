@@ -24,10 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.model.Rupee
+import `in`.zerotax.feature.portalbridge.ChallanTaxType
+import `in`.zerotax.feature.portalbridge.UpiChallan280IntentLauncher
 import `in`.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine
 import `in`.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine.BroughtForwardLoss
 import `in`.zerotax.core.taxengine.advanced.CapitalGainsAndLossLedgerEngine.CapitalGainsPortfolioInput
@@ -497,8 +500,18 @@ private fun AdvanceTaxRadarView(
                     EnterpriseLedgerRow(label = "Type of Payment", statutoryRef = if (requiresAdvanceTax) "100 (Advance Tax)" else "300 (Self-Assessment)", amount = 0L)
                     EnterpriseLedgerRow(label = "Payable Amount", amount = if (netAssessedTax > 0) netAssessedTax else 10_000L, isHighlighted = true)
                     Spacer(Modifier.height(12.dp))
+                    val context = LocalContext.current
+                    val payableAmount = if (netAssessedTax > 0) netAssessedTax else 10_000L
                     Button(
-                        onClick = { /* Launches UPI intent or ITD portal payment */ },
+                        onClick = {
+                            val uri = UpiChallan280IntentLauncher.buildUpiPaymentUri(
+                                pan = pan,
+                                amountRupees = payableAmount,
+                                assessmentYear = "2026-27",
+                                taxType = if (requiresAdvanceTax) ChallanTaxType.ADVANCE_TAX else ChallanTaxType.SELF_ASSESSMENT_TAX
+                            )
+                            UpiChallan280IntentLauncher.launchUpiPaymentIntent(context, uri)
+                        },
                         shape = RoundedCornerShape(4.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                         modifier = Modifier.fillMaxWidth().height(42.dp)

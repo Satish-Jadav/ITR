@@ -40,7 +40,9 @@ import `in`.zerotax.feature.portalbridge.CloudBackupSyncManager
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
 import `in`.zerotax.core.model.CitizenCategory
+import `in`.zerotax.core.model.FilingTierMode
 import `in`.zerotax.core.model.Rupee
+import kotlin.math.max
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -76,6 +78,7 @@ fun ZeroTaxFourTapSpineScaffold(
     var showBusinessAudit by remember { mutableStateOf(false) }
     var showNriSuite by remember { mutableStateOf(false) }
     var showPasswordCheatsheetModal by remember { mutableStateOf(false) }
+    var showTaxPaymentHub by remember { mutableStateOf(false) }
 
     if (showNriSuite) {
         DualRegionNriComplianceScreen(
@@ -301,6 +304,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         selectedForm = uiState.formRoutingDecision.selectedForm.name.replace("_", "-"),
                         onOpenDeductionsAdvisor = { showDeductionsAdvisor = true },
                         onRunAudit = { showPreFilingAudit = true },
+                        onOpenTaxPaymentHub = { showTaxPaymentHub = true },
                         onBack = { viewModel.onNavigateToTap(OnboardingTap.Tap3NudgeCards) },
                         onLaunchPortalAssistant = { showPortalAssistant = true },
                         onFileReturn = { viewModel.onNavigateToTap(null) }
@@ -309,6 +313,8 @@ fun ZeroTaxFourTapSpineScaffold(
                     null -> ProWorkspaceView(
                         selectedTab = uiState.selectedWorkspaceTab,
                         uiState = uiState,
+                        onTierSelected = { viewModel.onFilingTierChanged(it) },
+                        onOpenTaxPaymentHub = { showTaxPaymentHub = true },
                         onOpenDeductionsAdvisor = { showDeductionsAdvisor = true },
                         onOpenAisTransactions = { showAisTransactions = true },
                         onRunAudit = { showPreFilingAudit = true },
@@ -339,6 +345,20 @@ fun ZeroTaxFourTapSpineScaffold(
             if (showPasswordCheatsheetModal) {
                 InstitutionPdfPasswordCheatsheetModal(
                     onDismiss = { showPasswordCheatsheetModal = false }
+                )
+            }
+
+            if (showTaxPaymentHub) {
+                val netPayable = max(0L, uiState.newRegimeResult.totalTaxLiabilityRounded288B - uiState.salarySummary.aggregateTdsAllowed - uiState.totalTaxPaidViaChallan)
+                TaxPaymentAndChallanHubModal(
+                    pan = uiState.pan,
+                    taxPayableRupees = netPayable,
+                    assessmentYear = uiState.assessmentYear,
+                    onDismiss = { showTaxPaymentHub = false },
+                    onRecordChallan = { entry ->
+                        viewModel.onRecordChallanPayment(entry)
+                        showTaxPaymentHub = false
+                    }
                 )
             }
 
@@ -894,6 +914,7 @@ private fun Stage4RegimeShowdown(
     selectedForm: String,
     onOpenDeductionsAdvisor: () -> Unit,
     onRunAudit: () -> Unit,
+    onOpenTaxPaymentHub: () -> Unit,
     onBack: () -> Unit,
     onLaunchPortalAssistant: () -> Unit,
     onFileReturn: () -> Unit
@@ -979,6 +1000,18 @@ private fun Stage4RegimeShowdown(
             }
         }
 
+        if (newRegimeTax > 0L) {
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = onOpenTaxPaymentHub,
+                shape = RoundedCornerShape(4.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
+                modifier = Modifier.fillMaxWidth().height(42.dp)
+            ) {
+                Text("💳 Pay Tax via Instant UPI / Challan 280 (Zero Fee)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+            }
+        }
+
         Spacer(Modifier.weight(1f))
 
         Row(
@@ -1011,6 +1044,8 @@ private fun Stage4RegimeShowdown(
 private fun ProWorkspaceView(
     selectedTab: WorkspaceTab,
     uiState: `in`.zerotax.app.viewmodel.ZeroTaxUiState,
+    onTierSelected: (FilingTierMode) -> Unit,
+    onOpenTaxPaymentHub: () -> Unit,
     onOpenDeductionsAdvisor: () -> Unit,
     onOpenAisTransactions: () -> Unit,
     onRunAudit: () -> Unit,
@@ -1069,6 +1104,15 @@ private fun ProWorkspaceView(
                 WorkspaceTab.FilingAndRefundHub -> {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         item {
+                            FilingTierSelectorCard(
+                                currentTier = uiState.filingTierMode,
+                                recommendedTier = uiState.recommendedTierMode,
+                                onTierSelected = onTierSelected
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
+
+                        item {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(4.dp),
@@ -1093,7 +1137,18 @@ private fun ProWorkspaceView(
                                         amount = uiState.salarySummary.aggregateTdsAllowed - uiState.newRegimeResult.totalTaxLiabilityRounded288B,
                                         isHighlighted = true
                                     )
-                                    Spacer(Modifier.height(14.dp))
+
+                                    Spacer(Modifier.height(12.dp))
+                                    Button(
+                                        onClick = onOpenTaxPaymentHub,
+                                        shape = RoundedCornerShape(4.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    ) {
+                                        Text("💳 Tax Payment & Challan 280 Hub (UPI / TIN 2.0 / RTGS)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                                    }
+
+                                    Spacer(Modifier.height(8.dp))
                                     Button(
                                         onClick = onLaunchPortalAssistant,
                                         shape = RoundedCornerShape(4.dp),
@@ -1110,14 +1165,67 @@ private fun ProWorkspaceView(
                                     ) {
                                         Text("Inspect AIS Transactions & Form 60 KYC Profile", style = MaterialTheme.typography.labelMedium)
                                     }
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onOpenDeductionsAdvisor,
-                                        shape = RoundedCornerShape(4.dp),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("Smart Deductions & Life-Events (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelMedium)
+
+                                    // Dynamic Tier-Tailored Action Buttons
+                                    if (uiState.filingTierMode != FilingTierMode.SAHAJ_SIMPLE) {
+                                        Spacer(Modifier.height(8.dp))
+                                        OutlinedButton(
+                                            onClick = onOpenDeductionsAdvisor,
+                                            shape = RoundedCornerShape(4.dp),
+                                            modifier = Modifier.fillMaxWidth().height(42.dp)
+                                        ) {
+                                            Text("Smart Deductions & Life-Events (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelMedium)
+                                        }
+                                        Spacer(Modifier.height(8.dp))
+                                        OutlinedButton(
+                                            onClick = onOpenToolkit,
+                                            shape = RoundedCornerShape(4.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = IndigoStatutory),
+                                            modifier = Modifier.fillMaxWidth().height(42.dp)
+                                        ) {
+                                            Text("🛠️ Smart Tax Toolkit (HRA, Advance Tax, LTCG Harvesting)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                        }
+                                        Spacer(Modifier.height(8.dp))
+                                        OutlinedButton(
+                                            onClick = onOpenAnalytics,
+                                            shape = RoundedCornerShape(4.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldSuccess),
+                                            modifier = Modifier.fillMaxWidth().height(42.dp)
+                                        ) {
+                                            Text("📊 Tax Intelligence (Income Flow, 3-Way Radar, Calendar)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                        }
                                     }
+
+                                    if (uiState.filingTierMode == FilingTierMode.ENTERPRISE_AUDIT) {
+                                        Spacer(Modifier.height(8.dp))
+                                        OutlinedButton(
+                                            onClick = onOpenBusinessAudit,
+                                            shape = RoundedCornerShape(4.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = IndigoStatutory),
+                                            modifier = Modifier.fillMaxWidth().height(42.dp)
+                                        ) {
+                                            Text("🏢 Small Business Tax Audit & Presumptive Suite (Sec 44AB/AD & Form 3CD)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                        }
+                                        Spacer(Modifier.height(8.dp))
+                                        OutlinedButton(
+                                            onClick = onOpenNriSuite,
+                                            shape = RoundedCornerShape(4.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
+                                            modifier = Modifier.fillMaxWidth().height(42.dp)
+                                        ) {
+                                            Text("🌍 Dual-Region NRI & DTAA Compliance Suite (Sec 6, 10(4), Form 10F)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                        }
+                                        Spacer(Modifier.height(8.dp))
+                                        OutlinedButton(
+                                            onClick = onOpenNotices,
+                                            shape = RoundedCornerShape(4.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = AmberWarning),
+                                            modifier = Modifier.fillMaxWidth().height(42.dp)
+                                        ) {
+                                            Text("🛡️ Tax Notice Defense & Rectification (Sec 143(1), 139(9), 154, 245)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                        }
+                                    }
+
                                     Spacer(Modifier.height(8.dp))
                                     OutlinedButton(
                                         onClick = onRunAudit,
@@ -1135,51 +1243,6 @@ private fun ProWorkspaceView(
                                         modifier = Modifier.fillMaxWidth().height(42.dp)
                                     ) {
                                         Text("🤖 Conversational Filing Chatbot (TaxBuddy Style)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onOpenToolkit,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = IndigoStatutory),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("🛠️ Smart Tax Toolkit (HRA, Advance Tax, LTCG Harvesting)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onOpenAnalytics,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldSuccess),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("📊 Tax Intelligence (Income Flow, 3-Way Radar, Calendar)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onOpenNotices,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = AmberWarning),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("🛡️ Tax Notice Defense & Rectification (Sec 143(1), 139(9), 154, 245)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onOpenBusinessAudit,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = IndigoStatutory),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("🏢 Small Business Tax Audit & Presumptive Suite (Sec 44AB/AD & Form 3CD)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onOpenNriSuite,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("🌍 Dual-Region NRI & DTAA Compliance Suite (Sec 6, 10(4), Form 10F)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }

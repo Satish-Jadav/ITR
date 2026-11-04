@@ -170,3 +170,19 @@ To eliminate taxpayer friction, confusion, and accidental non-compliance, ZeroTa
 5. **Section 87A Marginal Relief Visualizer (`Section87AMarginalReliefExplainerCard`)**:
    - Transparently calculates and explains marginal relief under Section 115BAC proviso for incomes between ₹7,00,000 and ₹7,27,777.
    - Proves mathematically to taxpayers how the proviso prevents the cliff-edge tax spike, saving up to ₹25,000 in excess tax liability.
+
+6. **Plan-Based Usability Tier Engine (`FilingTierMode` & `FilingTierSelectorCard`)**:
+   - Auto-detection across three taxpayer archetypes:
+     - `SAHAJ_SIMPLE` (Pure salaried and pensioners under ₹20L with single Form 16 and interest income). Provides a distraction-free, 1-tap fast-track refund filing experience.
+     - `INVESTOR_PRO` (Stocks, mutual funds, capital gains 111A/112A, presumptive freelance consultants u/s 44ADA, and deductions optimizer).
+     - `ENTERPRISE_AUDIT` (HNIs with gross income > ₹50L, turnover > ₹1 Cr, Schedule FA foreign assets, Section 44AB CA audit shield, and 3-way discrepancy radar).
+   - Allows users to switch views with 1 tap, ensuring simple filers are never overwhelmed by audit forms while high-net-worth individuals retain audit-grade tools.
+
+7. **Universal Tax Payment & Challan 280 Hub (`TaxPaymentAndChallanHubModal`)**:
+   - Multi-channel statutory payment gateway supporting UPI Instant (GPay / PhonePe / Paytm / BHIM) with zero surcharge, NetBanking, Debit Card, RTGS/NEFT Virtual Account mandates for large tax payments (> ₹1 Lakh), and Over-the-Counter bank slips.
+   - Handles all statutory tax liability conditions: Advance Tax (Minor Head 100 u/s 208) with installment calendar, Self-Assessment Tax (Minor Head 300 u/s 140A), and Regular Assessment Demand (Minor Head 400 u/s 143(1)/144).
+   - Integrated Challan 280 validator verifying 7-digit BSR code, 5-digit Challan Serial Number, and deposit date with auto-injection into Schedule IT of the return.
+
+8. **Complete Chapter VI-A Statutory Deductions Directory (`SmartDeductionsCatalog`)**:
+   - Full statutory coverage of all 16 Chapter VI-A deduction codes: 80C, 80CCC, 80CCD(1), 80CCD(1B), 80CCD(2), 80D, 80DD, 80DDB, 80E, 80EEA, 80EEB, 80G, 80GG, 80GGA, 80GGC, 80TTA, 80TTB, and 80U.
+   - Actionable instructions for every deduction: issuing authorities (CMO, research associations, banks, insurers), statutory limits, and required document forms (Form 10-I, Form 10-IA, Form 16A, RPwD certificates).
