@@ -1,4 +1,4 @@
-﻿13 — Production Readiness Checklist, R8 Security Hardening & GitHub Actions CI/CD Pipeline (CA & Legal Counsel Sign-Off Edition)
+13 — Production Readiness Checklist, R8 Security Hardening & GitHub Actions CI/CD Pipeline (CA & Legal Counsel Sign-Off Edition)
 1. GitHub Actions CI/CD Pipeline Specification (.github/workflows/zerotax-ci.yml)
 The automated build pipeline runs across every pull request and release branch to guarantee zero regressions in tax math (GTV-01..18 and ECV-01..06), strict adherence to the pure-JVM :core:tax-engine architectural firewall, UIDAI Aadhaar redaction verification, and static analysis security checks.
 
@@ -141,3 +141,32 @@ Principal Android Architect & Staff TPM
 Certified strict multi-module Gradle DAG isolation (zero Android/LLM imports in :core:tax-engine), SQLCipher 4.5.x + StrongBox AES-256-GCM encryption-at-rest, FLAG_SECURE screen protection, R8 full-mode obfuscation & log stripping, and automated GitHub Actions CI enforcement.
 APPROVED FOR PRODUCTION
 
+
+
+## 6. User-Friendliness, Proactive Guidance & Error-Proofing Audit Controls
+To eliminate taxpayer friction, confusion, and accidental non-compliance, ZeroTax-Local incorporates five proactive user-friendliness gates:
+
+1. **Real-Time PAN 4th-Character Entity Decoder (`PanEntityDecoder`)**:
+   - Immediately decodes the 4th character ('P' for Individual, 'H' for HUF, 'C' for Company, 'F' for Firm, 'T' for Trust).
+   - Dynamically badges form eligibility (ITR-1 / ITR-2 / ITR-4) and verifies Section 87A rebate applicability (individuals only; HUFs/corporates excluded).
+   - Warns users entering non-individual PANs that ZeroTax-Local is dedicated to personal and presumptive filings before they invest time in data entry.
+
+2. **Age Bracket & Senior Citizen Slab Exemption Selector (`CitizenCategoryAgeSelector`)**:
+   - Direct toggling of age categories (<60 Regular, 60–79 Senior Citizen, 80+ Super Senior Citizen).
+   - Dynamically updates the statutory basic exemption limit in Old Regime (₹2,50,000 / ₹3,00,000 / ₹5,00,000) and displays verified Section 80D & Section 80TTB enhanced interest deduction limits (up to ₹50,000).
+
+3. **Institution PDF Password Registry & Cheatsheet (`InstitutionPdfPasswordRegistry`)**:
+   - Built-in cheatsheet of official deterministic password patterns across TRACES Form 16, ITD AIS/TIS, e-Aadhaar, HDFC Bank, SBI, ICICI Bank, Axis Bank, Kotak, and CAMS/KFintech CAS.
+   - Eliminates failed password attempts and user frustration during document import.
+
+4. **Interactive 5-Point Pre-Submission Safety Checklist (`PreSubmissionSafetyChecklistCard`)**:
+   - 5 mandatory verification gates before final return transmission:
+     1. Direct Refund Bank Account (valid 11-char IFSC, verified ECS status).
+     2. Aadhaar-PAN Linkage acknowledgment u/s 139AA.
+     3. Section 205 Employer TDS Discrepancy protection.
+     4. Mandatory Landlord PAN verification (if rent > ₹1,00,000 u/s Circular 08/2013).
+     5. Schedule FA / Black Money Act foreign asset disclosure confirmation.
+
+5. **Section 87A Marginal Relief Visualizer (`Section87AMarginalReliefExplainerCard`)**:
+   - Transparently calculates and explains marginal relief under Section 115BAC proviso for incomes between ₹7,00,000 and ₹7,27,777.
+   - Proves mathematically to taxpayers how the proviso prevents the cliff-edge tax spike, saving up to ₹25,000 in excess tax liability.

@@ -216,6 +216,20 @@ private fun IncomeFlowVisualizerView(
                 isHighlighted = true
             )
 
+            // Section 87A Marginal Relief Explainer if in the relief corridor (₹7.0L to ₹7.277L)
+            if (netTaxableIncome in 7_00_001L..7_27_777L) {
+                Spacer(Modifier.height(12.dp))
+                val excess: Long = netTaxableIncome - 7_00_000L
+                val rawTax: Long = 25_000L + (excess * 10L / 100L)
+                val relief: Long = rawTax - excess
+                Section87AMarginalReliefExplainerCard(
+                    taxableIncome = netTaxableIncome,
+                    taxBeforeRelief = rawTax,
+                    marginalReliefAmount = relief,
+                    finalTaxBeforeCess = excess
+                )
+            }
+
             Spacer(Modifier.height(16.dp))
 
             // Progressive Tax Brackets (AY 2026-27 Meter)

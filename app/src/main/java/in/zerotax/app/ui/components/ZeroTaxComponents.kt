@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.navigation.OnboardingTap
 import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.model.CitizenCategory
+import `in`.zerotax.core.model.PanEntityDecoder
+import `in`.zerotax.core.model.PanEntityType
 import `in`.zerotax.core.model.Rupee
 
 enum class BadgeTone {
@@ -310,63 +313,198 @@ fun SmartIndividualPanField(
     modifier: Modifier = Modifier,
     isReadOnly: Boolean = false
 ) {
+    val decoded = remember(panValue) { PanEntityDecoder.decode(panValue) }
     val dynamicKeyboardType = if (panValue.length in 5..8) KeyboardType.NumberPassword else KeyboardType.Ascii
-    val isFourthCharInvalid = panValue.length >= 4 && panValue[3] != 'P'
     val isComplete = panValue.length == 10
+    val isNonPersonal = panValue.length >= 4 && !decoded.entityType.isSupportedInPersonalSuite
 
-    OutlinedTextField(
-        value = panValue,
-        onValueChange = { raw ->
-            if (!isReadOnly) {
-                val up = raw.uppercase().take(10)
-                val valid = up.indices.all { i -> if (i in 5..8) up[i].isDigit() else up[i].isLetter() }
-                if (valid) onPanChanged(up)
-            }
-        },
-        readOnly = isReadOnly,
-        label = { Text("Permanent Account Number (PAN)", style = MaterialTheme.typography.bodyMedium) },
-        placeholder = { Text("ABCDE1234F", style = TextStyle(fontFamily = FontFamily.Monospace, color = Slate400)) },
-        supportingText = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                if (isFourthCharInvalid) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = panValue,
+            onValueChange = { raw ->
+                if (!isReadOnly) {
+                    val up = raw.uppercase().take(10)
+                    val valid = up.indices.all { i -> if (i in 5..8) up[i].isDigit() else up[i].isLetter() }
+                    if (valid) onPanChanged(up)
+                }
+            },
+            readOnly = isReadOnly,
+            label = { Text("Permanent Account Number (PAN)", style = MaterialTheme.typography.bodyMedium) },
+            placeholder = { Text("ABCDE1234F", style = TextStyle(fontFamily = FontFamily.Monospace, color = Slate400)) },
+            trailingIcon = {
+                if (isComplete && decoded.isValidFormat) {
+                    Text("✓", color = EmeraldSuccess, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(end = 8.dp))
+                }
+            },
+            supportingText = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    if (isNonPersonal) {
+                        Text(
+                            "${decoded.entityType.title} detected (Personal suite is for 'P' or 'H')",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else if (panValue.length >= 5) {
+                        Text(
+                            "Entity: ${decoded.entityType.title} • Surname Initial: '${decoded.surnameInitial}'",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Slate600
+                        )
+                    } else {
+                        Text(
+                            "Alphanumeric structure: 5 letters, 4 digits, 1 letter",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Slate500
+                        )
+                    }
                     Text(
-                        "4th character must be 'P' for Individual Taxpayer",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                } else {
-                    Text(
-                        "Alphanumeric structure: 5 letters, 4 digits, 1 letter",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Slate500
+                        "${panValue.length}/10",
+                        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Slate500)
                     )
                 }
+            },
+            isError = isNonPersonal,
+            textStyle = TextStyle(
+                fontFamily = FontFamily.Monospace,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.sp
+            ),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Characters,
+                autoCorrectEnabled = false,
+                keyboardType = dynamicKeyboardType,
+                imeAction = ImeAction.Done
+            ),
+            shape = RoundedCornerShape(4.dp),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Real-time Entity & Eligibility Status Badges
+        if (panValue.length >= 4) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                when (decoded.entityType) {
+                    PanEntityType.INDIVIDUAL -> {
+                        StatutoryBadge(text = "👤 Individual Taxpayer", tone = BadgeTone.SUCCESS)
+                        StatutoryBadge(text = "ITR-1 / ITR-2 / ITR-4 Eligible", tone = BadgeTone.STATUTORY)
+                        if (isComplete) {
+                            StatutoryBadge(text = "Sec 87A Rebate Eligible", tone = BadgeTone.SUCCESS)
+                        }
+                    }
+                    PanEntityType.HUF -> {
+                        StatutoryBadge(text = "👨‍👩‍👧‍👦 HUF Entity", tone = BadgeTone.NEUTRAL)
+                        StatutoryBadge(text = "ITR-2 / ITR-3 Eligible", tone = BadgeTone.STATUTORY)
+                    }
+                    else -> {
+                        StatutoryBadge(text = "⚠️ ${decoded.entityType.title}", tone = BadgeTone.WARNING)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Visual selector for Taxpayer Age Bracket and Citizen Category,
+ * dynamically updating the statutory basic exemption limits (₹2.5L / ₹3.0L / ₹5.0L) under Old Regime
+ * and unlocking Section 80TTB interest deductions for Senior Citizens.
+ */
+@Composable
+fun CitizenCategoryAgeSelector(
+    selectedCategory: CitizenCategory,
+    onCategoryChanged: (CitizenCategory) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+        border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    "${panValue.length}/10",
-                    style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Slate500)
+                    text = "Age Category & Basic Exemption",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                )
+                val exemptionText = when (selectedCategory) {
+                    CitizenCategory.REGULAR_BELOW_60 -> "₹2.5L Exemption (Old Regime)"
+                    CitizenCategory.SENIOR_60_TO_79 -> "₹3.0L Exemption (Old Regime)"
+                    CitizenCategory.SUPER_SENIOR_80_PLUS -> "₹5.0L Exemption (Old Regime)"
+                }
+                StatutoryBadge(
+                    text = exemptionText,
+                    tone = if (selectedCategory == CitizenCategory.REGULAR_BELOW_60) BadgeTone.NEUTRAL else BadgeTone.SUCCESS
                 )
             }
-        },
-        isError = isFourthCharInvalid,
-        textStyle = TextStyle(
-            fontFamily = FontFamily.Monospace,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = 1.sp
-        ),
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Characters,
-            autoCorrectEnabled = false,
-            keyboardType = dynamicKeyboardType,
-            imeAction = ImeAction.Done
-        ),
-        shape = RoundedCornerShape(4.dp),
-        singleLine = true,
-        modifier = modifier.fillMaxWidth()
-    )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val options = listOf(
+                    Triple(CitizenCategory.REGULAR_BELOW_60, "< 60 Yrs", "Normal"),
+                    Triple(CitizenCategory.SENIOR_60_TO_79, "60-79 Yrs", "Senior"),
+                    Triple(CitizenCategory.SUPER_SENIOR_80_PLUS, "80+ Yrs", "Super Senior")
+                )
+                options.forEach { (cat, ageLabel, roleLabel) ->
+                    val isSelected = selectedCategory == cat
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onCategoryChanged(cat) },
+                        shape = RoundedCornerShape(6.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                        ),
+                        border = if (isSelected) {
+                            CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
+                        } else CardDefaults.outlinedCardBorder().copy(width = 0.5.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = roleLabel,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Slate600
+                                )
+                            )
+                            Text(
+                                text = ageLabel,
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                        }
+                    }
+                }
+            }
+            if (selectedCategory != CitizenCategory.REGULAR_BELOW_60) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "✓ Enhanced Section 80D limit (₹50,000) & Section 80TTB interest deduction (up to ₹50,000) auto-applied.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = EmeraldSuccess
+                )
+            }
+        }
+    }
 }
 
 @Composable

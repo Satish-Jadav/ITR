@@ -2,6 +2,8 @@ package `in`.zerotax.app.ui.navigation
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,6 +39,7 @@ import `in`.zerotax.app.ui.toolkit.SmartTaxToolkitScreen
 import `in`.zerotax.feature.portalbridge.CloudBackupSyncManager
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
+import `in`.zerotax.core.model.CitizenCategory
 import `in`.zerotax.core.model.Rupee
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -72,6 +75,7 @@ fun ZeroTaxFourTapSpineScaffold(
     var showNoticeDefense by remember { mutableStateOf(false) }
     var showBusinessAudit by remember { mutableStateOf(false) }
     var showNriSuite by remember { mutableStateOf(false) }
+    var showPasswordCheatsheetModal by remember { mutableStateOf(false) }
 
     if (showNriSuite) {
         DualRegionNriComplianceScreen(
@@ -263,6 +267,9 @@ fun ZeroTaxFourTapSpineScaffold(
                     OnboardingTap.Tap1IdentityConsent -> Stage1IdentityConsent(
                         pan = uiState.pan,
                         onPanChanged = { viewModel.onPanChanged(it) },
+                        citizenCategory = uiState.citizenCategory,
+                        onCitizenCategoryChanged = { viewModel.onCitizenCategoryChanged(it) },
+                        onOpenPasswordCheatsheet = { showPasswordCheatsheetModal = true },
                         onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap2LiveDiscovery) },
                         onOpenChatbot = { showChatbotFiling = true }
                     )
@@ -329,6 +336,12 @@ fun ZeroTaxFourTapSpineScaffold(
                 )
             }
 
+            if (showPasswordCheatsheetModal) {
+                InstitutionPdfPasswordCheatsheetModal(
+                    onDismiss = { showPasswordCheatsheetModal = false }
+                )
+            }
+
             if (showSection270ADialog) {
                 Section270AStatutoryOverrideDialog(
                     fieldName = "Reported Gross Salary",
@@ -359,10 +372,13 @@ fun ZeroTaxFourTapSpineScaffold(
 private fun Stage1IdentityConsent(
     pan: String,
     onPanChanged: (String) -> Unit,
+    citizenCategory: CitizenCategory,
+    onCitizenCategoryChanged: (CitizenCategory) -> Unit,
+    onOpenPasswordCheatsheet: () -> Unit,
     onProceed: () -> Unit,
     onOpenChatbot: () -> Unit = {}
 ) {
-    val isPanValid = pan.length == 10 && pan[3] == 'P'
+    val isPanValid = pan.length == 10 && (pan[3] == 'P' || pan[3] == 'H')
     var isVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -372,6 +388,7 @@ private fun Stage1IdentityConsent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         AnimatedVisibility(
@@ -404,7 +421,56 @@ private fun Stage1IdentityConsent(
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
+
+        // Age Category & Statutory Basic Exemption Selector
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(tween(400, delayMillis = 150)) + slideInVertically(tween(400, delayMillis = 150)) { it / 3 }
+        ) {
+            CitizenCategoryAgeSelector(
+                selectedCategory = citizenCategory,
+                onCategoryChanged = onCitizenCategoryChanged
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Institution PDF Password Cheatsheet Quick Helper
+        OutlinedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onOpenPasswordCheatsheet() },
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.outlinedCardColors(containerColor = Slate50)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("🔑", fontSize = 16.sp)
+                    Spacer(Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = "PDF Password Cheatsheet & Guide",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                        )
+                        Text(
+                            text = "Form 16, AIS, e-Aadhaar, HDFC, SBI & ICICI password formulas",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Slate600
+                        )
+                    }
+                }
+                StatutoryBadge(text = "VIEW HINTS", tone = BadgeTone.NEUTRAL)
+            }
+        }
+
+        Spacer(Modifier.height(14.dp))
 
         AnimatedVisibility(
             visible = isVisible,
@@ -439,7 +505,7 @@ private fun Stage1IdentityConsent(
             }
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(20.dp))
 
         OutlinedButton(
             onClick = onOpenChatbot,
@@ -470,6 +536,8 @@ private fun Stage1IdentityConsent(
                 style = MaterialTheme.typography.labelLarge
             )
         }
+
+        Spacer(Modifier.height(16.dp))
     }
 }
 

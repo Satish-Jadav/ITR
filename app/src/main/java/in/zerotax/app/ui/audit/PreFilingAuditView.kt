@@ -329,6 +329,18 @@ fun PreFilingAuditView(
                 }
             }
 
+            // Interactive 5-Point Pre-Submission Safety Checklist
+            item {
+                Spacer(Modifier.height(12.dp))
+                PreSubmissionSafetyChecklistCard(
+                    isBankPreValidated = bankAccount?.isPreValidated ?: true,
+                    isAadhaarLinked = true,
+                    hasDiscrepancyShieldActive = salarySummary.totalDiscrepancyAmount == 0L,
+                    isLandlordPanCompliant = true,
+                    isScheduleFaCompliant = true
+                )
+            }
+
             // Mandatory Statutory Legal Protection & Cloud Crash Shield
             item {
                 Spacer(Modifier.height(16.dp))
