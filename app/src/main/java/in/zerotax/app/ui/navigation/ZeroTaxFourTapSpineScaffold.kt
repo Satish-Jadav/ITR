@@ -1,4 +1,4 @@
-package in.zerotax.app.ui.navigation
+﻿package `in`.zerotax.app.ui.navigation
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -21,22 +21,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import in.zerotax.app.ui.components.*
-import in.zerotax.app.ui.audit.PreFilingAuditView
-import in.zerotax.app.ui.business.SmallBusinessAuditSuiteScreen
-import in.zerotax.app.ui.chat.ConversationalFilingChatScreen
-import in.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
-import in.zerotax.app.ui.insights.TaxVisualizerAndAnalyticsScreen
-import in.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
-import in.zerotax.app.ui.notice.TaxNoticeDefenseAssistantScreen
-import in.zerotax.app.ui.nri.DualRegionNriComplianceScreen
-import in.zerotax.app.ui.portal.PortalAssistantScreen
-import in.zerotax.app.ui.portal.SmartTransactionSuggestionsView
-import in.zerotax.app.ui.toolkit.SmartTaxToolkitScreen
-import in.zerotax.feature.portalbridge.CloudBackupSyncManager
-import in.zerotax.app.ui.theme.*
-import in.zerotax.app.viewmodel.ZeroTaxViewModel
-import in.zerotax.core.model.Rupee
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.audit.PreFilingAuditView
+import `in`.zerotax.app.ui.business.SmallBusinessAuditSuiteScreen
+import `in`.zerotax.app.ui.chat.ConversationalFilingChatScreen
+import `in`.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
+import `in`.zerotax.app.ui.insights.TaxVisualizerAndAnalyticsScreen
+import `in`.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
+import `in`.zerotax.app.ui.notice.TaxNoticeDefenseAssistantScreen
+import `in`.zerotax.app.ui.nri.DualRegionNriComplianceScreen
+import `in`.zerotax.app.ui.portal.PortalAssistantScreen
+import `in`.zerotax.app.ui.portal.SmartTransactionSuggestionsView
+import `in`.zerotax.app.ui.toolkit.SmartTaxToolkitScreen
+import `in`.zerotax.feature.portalbridge.CloudBackupSyncManager
+import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
+import `in`.zerotax.core.model.Rupee
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -162,7 +162,7 @@ fun ZeroTaxFourTapSpineScaffold(
         PreFilingAuditView(
             salarySummary = uiState.salarySummary,
             computation = uiState.newRegimeResult,
-            bankAccount = in.zerotax.core.model.BankAccountDetails(
+            bankAccount = `in`.zerotax.core.model.BankAccountDetails(
                 bankName = "State Bank of India",
                 accountNumber = "••••••••1234",
                 ifscCode = "SBIN0001234",
@@ -940,7 +940,7 @@ private fun Stage4RegimeShowdown(
 @Composable
 private fun ProWorkspaceView(
     selectedTab: WorkspaceTab,
-    uiState: in.zerotax.app.viewmodel.ZeroTaxUiState,
+    uiState: `in`.zerotax.app.viewmodel.ZeroTaxUiState,
     onOpenDeductionsAdvisor: () -> Unit,
     onOpenAisTransactions: () -> Unit,
     onRunAudit: () -> Unit,
@@ -1150,7 +1150,7 @@ private fun ProWorkspaceView(
                             }
                         }
 
-                        if (uiState.lazyAuditTrail is in.zerotax.core.model.LazyLoadState.Loading) {
+                        if (uiState.lazyAuditTrail is `in`.zerotax.core.model.LazyLoadState.Loading) {
                             item {
                                 Box(
                                     modifier = Modifier.fillMaxWidth().padding(24.dp),

@@ -1,4 +1,4 @@
-package in.zerotax.core.model
+package `in`.zerotax.core.model
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

@@ -1,4 +1,4 @@
-package in.zerotax.app.ui.portal
+﻿package `in`.zerotax.app.ui.portal
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -26,22 +26,22 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import in.zerotax.app.ui.components.*
-import in.zerotax.app.ui.theme.*
-import in.zerotax.core.model.AadhaarVerificationResult
-import in.zerotax.core.model.BankAccountDetails
-import in.zerotax.core.model.DirectFilingSubmissionResult
-import in.zerotax.core.model.FilingSection
-import in.zerotax.core.model.ReconciledSalarySummary
-import in.zerotax.core.model.Rupee
-import in.zerotax.core.model.TaxRegime
-import in.zerotax.core.model.TaxpayerDeclaration
-import in.zerotax.core.taxengine.calculator.RegimeComputationResult
-import in.zerotax.core.taxengine.compiler.CbdtItr1JsonCompiler
-import in.zerotax.feature.aiextractor.CopilotExplanation
-import in.zerotax.feature.aiextractor.OnDeviceTaxCopilot
-import in.zerotax.feature.aiextractor.SupportedVernacularLocale
-import in.zerotax.feature.portalbridge.ItdDirectFilingClient
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.model.AadhaarVerificationResult
+import `in`.zerotax.core.model.BankAccountDetails
+import `in`.zerotax.core.model.DirectFilingSubmissionResult
+import `in`.zerotax.core.model.FilingSection
+import `in`.zerotax.core.model.ReconciledSalarySummary
+import `in`.zerotax.core.model.Rupee
+import `in`.zerotax.core.model.TaxRegime
+import `in`.zerotax.core.model.TaxpayerDeclaration
+import `in`.zerotax.core.taxengine.calculator.RegimeComputationResult
+import `in`.zerotax.core.taxengine.compiler.CbdtItr1JsonCompiler
+import `in`.zerotax.feature.aiextractor.CopilotExplanation
+import `in`.zerotax.feature.aiextractor.OnDeviceTaxCopilot
+import `in`.zerotax.feature.aiextractor.SupportedVernacularLocale
+import `in`.zerotax.feature.portalbridge.ItdDirectFilingClient
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

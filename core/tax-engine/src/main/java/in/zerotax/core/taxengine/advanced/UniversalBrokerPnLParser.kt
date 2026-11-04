@@ -1,4 +1,4 @@
-package in.zerotax.core.taxengine.advanced
+package `in`.zerotax.core.taxengine.advanced
 
 import kotlin.math.abs
 import kotlin.math.max
@@ -27,12 +27,10 @@ object UniversalBrokerPnLParser {
     )
 
     fun parseBrokerCsv(csvContent: String): ParsedTradeSummary {
-        val lines = csvContent.lines().filter { it.isNotBlank() }
+        val lines = csvContent.lines().map { it.trim() }.filter { it.isNotBlank() }
         if (lines.isEmpty()) return ParsedTradeSummary()
 
         var broker = "Generic Indian Broker"
-        val header = lines.firstOrNull { it.contains("ISIN", ignoreCase = true) || it.contains("Symbol", ignoreCase = true) } ?: lines.first()
-
         if (csvContent.contains("Zerodha", ignoreCase = true) || csvContent.contains("tradingsymbol", ignoreCase = true)) {
             broker = "Zerodha Console"
         } else if (csvContent.contains("Groww", ignoreCase = true)) {
@@ -40,6 +38,13 @@ object UniversalBrokerPnLParser {
         } else if (csvContent.contains("Angel", ignoreCase = true)) {
             broker = "Angel One"
         }
+
+        val headerIndex = lines.indexOfFirst { it.contains("ISIN", ignoreCase = true) || it.contains("Symbol", ignoreCase = true) || it.contains("PnL", ignoreCase = true) }
+        val headerLine = if (headerIndex >= 0) lines[headerIndex] else lines.first()
+        val headers = headerLine.split(",").map { it.trim().replace("\"", "").lowercase() }
+
+        val pnlCol = headers.indexOfFirst { it == "pnl" || it.contains("profit") || it.contains("gain") }.let { if (it >= 0) it else headers.lastIndex }
+        val typeCol = headers.indexOfFirst { it.contains("type") }
 
         var stcg = 0L
         var stcl = 0L
@@ -49,17 +54,20 @@ object UniversalBrokerPnLParser {
         var fnoPnl = 0L
         var parsedRows = 0
 
-        for (line in lines) {
-            val tokens = line.split(",").map { it.trim().replace("\"", "").replace("₹", "").replace(",", "") }
+        val dataLines = if (headerIndex >= 0) lines.drop(headerIndex + 1) else lines
+        for (line in dataLines) {
+            val tokens = line.split(",").map { it.trim().replace("\"", "").replace("₹", "").replace(" ", "") }
             if (tokens.size < 4) continue
 
-            // Heuristic detection of P&L row
-            val pnlVal = tokens.mapNotNull { it.toDoubleOrNull()?.toLong() }.firstOrNull() ?: continue
-            val isLongTerm = line.contains("Long", ignoreCase = true) || line.contains("LTCG", ignoreCase = true) || line.contains("112A", ignoreCase = true)
-            val isFno = line.contains("F&O", ignoreCase = true) || line.contains("FUT", ignoreCase = true) || line.contains("OPT", ignoreCase = true)
+            val pnlToken = if (pnlCol in tokens.indices) tokens[pnlCol] else tokens.last()
+            val pnlVal = pnlToken.toLongOrNull() ?: continue
+
+            val tradeType = if (typeCol in tokens.indices) tokens[typeCol].uppercase() else ""
+            val isFno = tradeType.contains("FNO") || tradeType.contains("F&O") || tradeType.contains("FUT") || tradeType.contains("OPT") || line.contains("FNO", ignoreCase = true)
+            val isLongTerm = tradeType.contains("LTCG") || tradeType.contains("LONG") || line.contains("LTCG", ignoreCase = true)
 
             if (isFno) {
-                fnoTurnover += abs(pnlVal) // ICAI Absolute turnover
+                fnoTurnover += abs(pnlVal)
                 fnoPnl += pnlVal
                 parsedRows++
             } else if (isLongTerm) {
@@ -78,7 +86,7 @@ object UniversalBrokerPnLParser {
             totalLtcl112ALosses = ltcl,
             totalFnoAbsoluteTurnover = fnoTurnover,
             totalFnoNetProfitOrLoss = fnoPnl,
-            rowCountParsed = max(1, parsedRows),
+            rowCountParsed = parsedRows,
             detectedBroker = broker
         )
     }

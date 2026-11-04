@@ -1,4 +1,4 @@
-package in.zerotax.core.taxengine.advanced
+package `in`.zerotax.core.taxengine.advanced
 
 import kotlin.math.max
 import kotlin.math.roundToLong
@@ -50,6 +50,8 @@ object ItrUAdditionalTaxCalculator {
         val totalPayableUnderSection140B: Long,
         val challan280MinorHead: String // Minor Head 390 (Self Assessment / Updated Return)
     )
+
+    fun computeItrUAdditionalTax(input: ItrUInput): ItrUResult = computeItrU(input)
 
     fun computeItrU(input: ItrUInput): ItrUResult {
         val window = when {

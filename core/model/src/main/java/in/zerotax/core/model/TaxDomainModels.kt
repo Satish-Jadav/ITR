@@ -1,4 +1,4 @@
-package in.zerotax.core.model
+package `in`.zerotax.core.model
 
 import kotlinx.serialization.Serializable
 
@@ -69,7 +69,13 @@ data class EmployerSalarySource(
     val sec10Exemptions: Long,
     val sec16DeductionsClaimedInDoc: Long,
     val netTaxableSalaryInDoc: Long,
-    val tdsReported: Long
+    val tdsReported: Long,
+    val sec80C: Long = 0L,
+    val sec80CCD1B: Long = 0L,
+    val sec80CCD2EmployerNps: Long = 0L,
+    val sec80D: Long = 0L,
+    val exemptHra10_13A: Long = 0L,
+    val basicPlusDa: Long = 0L
 )
 
 @Serializable
@@ -298,4 +304,127 @@ data class CpcRefundTimelineStatus(
     val expectedRefundDays: String,
     val designatedBankMasked: String,
     val refundAmount: Long
+)
+
+@Serializable
+enum class ResidenceCityCategory {
+    METRO_50_PERCENT,
+    NON_METRO_40_PERCENT
+}
+
+@Serializable
+enum class PropertyType {
+    SELF_OCCUPIED,
+    LET_OUT,
+    DEEMED_LET_OUT
+}
+
+@Serializable
+data class HousePropertyInput(
+    val propertyType: PropertyType = PropertyType.SELF_OCCUPIED,
+    val annualRentReceived: Long = 0L,
+    val municipalTaxesPaid: Long = 0L,
+    val homeLoanInterestSec24b: Long = 0L,
+    val coOwnerPercentage: Double = 100.0,
+    val tenantPan: String? = null
+)
+
+@Serializable
+data class AdvanceTaxQuarterlyPayments(
+    val q1UptoJune15: Long = 0L,
+    val q2UptoSeptember15: Long = 0L,
+    val q3UptoDecember15: Long = 0L,
+    val q4UptoMarch15: Long = 0L
+)
+
+@Serializable
+data class CapitalGainsWindfallDates(
+    val quarter1UptoJune15: Long = 0L,
+    val quarter2UptoSep15: Long = 0L,
+    val quarter3UptoDec15: Long = 0L,
+    val quarter4UptoMar15: Long = 0L,
+    val quarter5Mar16ToMar31: Long = 0L
+)
+
+@Serializable
+data class Equity112ALot(
+    val isin: String,
+    val acquisitionDateEpochDay: Long,
+    val actualCostTotal: Long,
+    val fmvJan31_2018Total: Long,
+    val saleConsiderationTotal: Long,
+    val transferExpenses: Long = 0L
+)
+
+@Serializable
+data class ImmovablePropertyLtcgLot(
+    val acquiredBeforeJuly23_2024: Boolean,
+    val purchaseCostRupees: Long,
+    val improvementCostRupees: Long = 0L,
+    val acquisitionFyCii: Int,
+    val transferFyCii: Int,
+    val saleConsiderationOrStampValue50C: Long,
+    val transferExpenses: Long = 0L,
+    val section54ReinvestmentExemption: Long = 0L
+)
+
+@Serializable
+data class ForeignEquityLotInput(
+    val lotId: String,
+    val companyName: String,
+    val companyAddress: String = "",
+    val countryCodeCbdt: String = "2",
+    val zipCode: String = "",
+    val acquireDateIso: String,
+    val sharesVestedOrBought: Double,
+    val sharesSoldDuringCalendarYear: Double = 0.0,
+    val acquisitionPricePerShareUsd: Double,
+    val peakSharePriceDuringHoldingPeriodUsd: Double = 0.0,
+    val peakSharePriceDateIso: String = "",
+    val dec31ClosingSharePriceUsd: Double = 0.0,
+    val grossDividendsReceivedUsd: Double = 0.0,
+    val grossSaleProceedsUsd: Double = 0.0
+)
+
+@Serializable
+data class SftAndTcs206CEntry(
+    val sectionOrSftCode: String,
+    val description: String,
+    val reportingEntity: String,
+    val transactionDateIso: String,
+    val grossAmount: Long,
+    val taxCollectedOrPaid: Long = 0L
+)
+
+@Serializable
+data class RegimeComputationResult(
+    val regime: TaxRegime,
+    val grossTotalIncome: Long,
+    val standardDeduction: Long,
+    val totalChapterVIADeductions: Long,
+    val netTaxableNormalIncomeRounded288A: Long,
+    val netTaxableSpecialRateIncome: Long,
+    val baseSlabTaxOnNormalIncome: Long,
+    val specialRateTax111AAnd112A: Long,
+    val rebate87A: Long,
+    val marginalRelief87A: Long,
+    val taxAfterRebateAndRelief: Long,
+    val surchargeAfterMarginalRelief: Long,
+    val healthAndEducationCess: Long,
+    val totalTaxLiabilityRounded288B: Long
+)
+
+@Serializable
+data class DualRegimeComparison(
+    val newRegimeResult: RegimeComputationResult,
+    val oldRegimeResult: RegimeComputationResult,
+    val recommendedRegime: TaxRegime,
+    val taxDifferenceRupees: Long,
+    val breakEvenAdditionalDeductionForOldRegime: Long,
+    val unused80CCD2EmployerNpsHeadroom: Long,
+    val unused80DPreventiveCheckup5kHeadroom: Long,
+    val seniorParentsUninsuredMedical80DHeadroom: Long,
+    val unused80CHeadroom: Long,
+    val unused80CCD1BHeadroom: Long,
+    val actionableNudges: List<String>
 )

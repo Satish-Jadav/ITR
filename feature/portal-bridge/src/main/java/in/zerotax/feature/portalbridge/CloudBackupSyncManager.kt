@@ -1,7 +1,7 @@
-package in.zerotax.feature.portalbridge
+﻿package `in`.zerotax.feature.portalbridge
 
 import android.content.Context
-import in.zerotax.core.security.CanonicalWarningHasher
+import `in`.zerotax.core.security.CanonicalWarningHasher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject

@@ -1,4 +1,4 @@
-package in.zerotax.feature.portalbridge
+package `in`.zerotax.feature.portalbridge
 
 import android.annotation.SuppressLint
 import android.webkit.CookieManager
@@ -202,6 +202,88 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                 _state.value = PortalBridgeState.AutoFillCompleted(fieldsCount)
             }
         }
+
+        @JavascriptInterface
+        fun onCpcStatusPolled(ackNo: String, statusText: String, refundAmount: Long) {
+            scope.launch(Dispatchers.Main) {
+                // Post-filing CPC processing status callback
+            }
+        }
+    }
+
+    fun injectCbdtJsonUploadScript(webView: WebView, cbdtJsonString: String) {
+        val escapedJson = JSONObject.quote(cbdtJsonString)
+        val script = """
+            (function() {
+                try {
+                    const jsonStr = $escapedJson;
+                    const fileInput = document.querySelector('input[type="file"]') || document.querySelector('input[name="file"]');
+                    if (fileInput) {
+                        const blob = new Blob([jsonStr], { type: 'application/json' });
+                        const file = new File([blob], 'ITR_Filing.json', { type: 'application/json' });
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        fileInput.files = dt.files;
+                        fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        window.ZeroTaxBridge.onAutoFillComplete(1);
+                    }
+                } catch(e) {
+                    console.error('CBDT JSON Injection error', e);
+                }
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(script, null)
+    }
+
+    fun injectAadhaarOtpVerificationScript(webView: WebView, otp6Digits: String) {
+        val script = """
+            (function() {
+                try {
+                    const otpInput = document.querySelector('input[name*="otp" i]') || document.querySelector('input[id*="otp" i]');
+                    if (otpInput) {
+                        otpInput.value = '$otp6Digits';
+                        otpInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        otpInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        const submitBtn = document.querySelector('button[type="submit"]') || document.querySelector('button.e-verify-btn');
+                        if (submitBtn) submitBtn.click();
+                    }
+                } catch(e) {
+                    console.error('OTP verification script error', e);
+                }
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(script, null)
+    }
+
+    fun injectAisDiscrepancyFeedbackScript(webView: WebView, feedbackNote: String) {
+        val escaped = JSONObject.quote(feedbackNote)
+        val script = """
+            (function() {
+                try {
+                    const feedbackArea = document.querySelector('textarea[name*="feedback" i]');
+                    if (feedbackArea) {
+                        feedbackArea.value = $escaped;
+                        feedbackArea.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                } catch(e) {}
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(script, null)
+    }
+
+    fun injectPollCpcProcessingStatusScript(webView: WebView, ackNo: String) {
+        val script = """
+            (function() {
+                try {
+                    const statusRow = document.querySelector('tr[data-ack="$ackNo"]') || document.querySelector('.cpc-status-card');
+                    if (statusRow) {
+                        const text = statusRow.innerText || '';
+                        window.ZeroTaxBridge.onCpcStatusPolled('$ackNo', text, 0);
+                    }
+                } catch(e) {}
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(script, null)
     }
 
     private fun triggerOfflineFallback(reason: String) {

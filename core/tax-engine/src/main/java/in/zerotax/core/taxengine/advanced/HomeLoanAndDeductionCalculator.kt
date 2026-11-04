@@ -1,7 +1,7 @@
-package in.zerotax.core.taxengine.advanced
+package `in`.zerotax.core.taxengine.advanced
 
-import in.zerotax.core.model.HomeLoanTaxImpact
-import in.zerotax.core.model.TaxableIncomeImpact
+import `in`.zerotax.core.model.HomeLoanTaxImpact
+import `in`.zerotax.core.model.TaxableIncomeImpact
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
@@ -46,7 +46,7 @@ object HomeLoanAndDeductionCalculator {
 
         // Annual interest = outstanding principal * annual interest rate
         val rawAnnualInterest = (estimatedPrincipalOutstanding * (annualInterestRatePercent / 100.0)).roundToLong()
-        val annualInterest = minOf(rawAnnualInterest, (annualEmiPaid * 0.70).toLong())
+        val annualInterest = minOf(rawAnnualInterest, (annualEmiPaid * 0.58).toLong())
         val annualPrincipal = maxOf(0L, annualEmiPaid - annualInterest)
 
         // Apply statutory ceiling

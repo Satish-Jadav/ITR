@@ -1,4 +1,4 @@
-package in.zerotax.app.ui.nri
+﻿package `in`.zerotax.app.ui.nri
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -22,13 +22,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import in.zerotax.app.ui.components.*
-import in.zerotax.app.ui.theme.*
-import in.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine
-import in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine
-import in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.ResidencyEvaluationInput
-import in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.ResidencyStatus
-import in.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.NriTaxPortfolioInput
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.taxengine.advanced.Form10IeaBusinessRegimeEngine
+import `in`.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine
+import `in`.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.ResidencyEvaluationInput
+import `in`.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.ResidencyStatus
+import `in`.zerotax.core.taxengine.advanced.NonResidentTaxAndResidencyEngine.NriTaxPortfolioInput
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

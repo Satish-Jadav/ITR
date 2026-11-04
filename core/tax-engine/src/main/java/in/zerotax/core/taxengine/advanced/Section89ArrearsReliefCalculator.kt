@@ -1,6 +1,6 @@
-package in.zerotax.core.taxengine.advanced
+package `in`.zerotax.core.taxengine.advanced
 
-import in.zerotax.core.taxengine.calculator.DeterministicIndianTaxEngine
+import `in`.zerotax.core.taxengine.calculator.DeterministicIndianTaxEngine
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.max
@@ -54,8 +54,14 @@ object Section89ArrearsReliefCalculator {
         val accrualYearBreakdown: List<AccrualYearTaxComparison>,
         val totalIncrementalTaxInAccrualYears: Long, // Difference B
         val reliefAllowableUnderSection89: Long, // max(0, A - B)
-        val form10EJsonPayload: String
-    )
+        val form10EJsonPayload: String,
+        val cpcRejectionWarning: String = "Rule 21AA: Form 10E must be submitted electronically before filing ITR to avoid CPC Section 89 disallowance."
+    ) {
+        val eligibleSection89ReliefRupees: Long get() = reliefAllowableUnderSection89
+    }
+
+    fun computeSection89Relief(input: Section89ComputationInput, pan: String = "ABCDE1234F"): Section89ReliefResult =
+        computeRelief(input, pan)
 
     fun computeRelief(input: Section89ComputationInput, pan: String = "ABCDE1234F"): Section89ReliefResult {
         val incomeWithoutArrears = max(0L, input.currentYearNormalSalaryExcludingArrears)
@@ -141,7 +147,8 @@ object Section89ArrearsReliefCalculator {
     ): String {
         val root = JSONObject()
         val formDetails = JSONObject()
-        formDetails.put("FormName", "Form 10E")
+        formDetails.put("FormName", "Form10E")
+        formDetails.put("FormType", "Form 10E")
         formDetails.put("RuleNo", "21AA")
         formDetails.put("SectionNo", "89(1)")
         formDetails.put("AssessmentYear", input.receiptAssessmentYear)

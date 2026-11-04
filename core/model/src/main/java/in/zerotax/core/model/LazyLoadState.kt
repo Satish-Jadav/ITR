@@ -1,4 +1,4 @@
-package in.zerotax.core.model
+package `in`.zerotax.core.model
 
 /**
  * Lightweight, generic Lazy-Loading state container for deferred on-demand data retrieval.

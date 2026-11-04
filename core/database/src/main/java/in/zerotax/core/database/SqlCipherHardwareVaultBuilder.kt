@@ -1,4 +1,4 @@
-package in.zerotax.core.database
+package `in`.zerotax.core.database
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
@@ -25,7 +25,9 @@ object SqlCipherHardwareVaultBuilder {
 
     fun build(context: Context): ZeroTaxVaultDatabase {
         val passphrase = getOrCreateWrappedPassphrase(context)
-        val factory = SupportFactory(passphrase, null, true)
+        val factory = SupportFactory(passphrase.copyOf(), null, true)
+        // Memory hardening: Immediately wipe local passphrase byte array
+        passphrase.fill(0)
 
         return Room.databaseBuilder(
             context.applicationContext,
@@ -45,6 +47,13 @@ object SqlCipherHardwareVaultBuilder {
                 }
             })
             .build()
+    }
+
+    fun createCipherForBiometricAuth(): Cipher {
+        val hardwareKey = getOrCreateHardwareKey()
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.ENCRYPT_MODE, hardwareKey)
+        return cipher
     }
 
     @Synchronized

@@ -1,14 +1,18 @@
-package in.zerotax.core.taxengine.calculator
+package `in`.zerotax.core.taxengine.calculator
 
-import in.zerotax.core.model.AssessmentYearProfile
-import in.zerotax.core.model.CitizenCategory
-import in.zerotax.core.model.DonationCategory
-import in.zerotax.core.model.Section80GDonationInput
-import in.zerotax.core.model.TaxRegime
+import `in`.zerotax.core.model.AssessmentYearProfile
+import `in`.zerotax.core.model.CitizenCategory
+import `in`.zerotax.core.model.DonationCategory
+import `in`.zerotax.core.model.DualRegimeComparison
+import `in`.zerotax.core.model.RegimeComputationResult
+import `in`.zerotax.core.model.Section80GDonationInput
+import `in`.zerotax.core.model.TaxRegime
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToLong
+
+typealias RegimeComputationResult = `in`.zerotax.core.model.RegimeComputationResult
 
 data class TaxpayerFinancialInput(
     val citizenCategory: CitizenCategory = CitizenCategory.REGULAR_BELOW_60,
@@ -33,23 +37,6 @@ data class TaxpayerFinancialInput(
     val netTaxableStcg111ARupees: Long = 0L,
     val netTaxableLtcg112ARupees: Long = 0L,
     val assessmentYearProfile: AssessmentYearProfile = AssessmentYearProfile.AY_2025_26
-)
-
-data class RegimeComputationResult(
-    val regime: TaxRegime,
-    val grossTotalIncome: Long,
-    val standardDeduction: Long,
-    val totalChapterVIADeductions: Long,
-    val netTaxableNormalIncomeRounded288A: Long,
-    val netTaxableSpecialRateIncome: Long,
-    val baseSlabTaxOnNormalIncome: Long,
-    val specialRateTax111AAnd112A: Long,
-    val rebate87A: Long,
-    val marginalRelief87A: Long,
-    val taxAfterRebateAndRelief: Long,
-    val surchargeAfterMarginalRelief: Long,
-    val healthAndEducationCess: Long,
-    val totalTaxLiabilityRounded288B: Long
 )
 
 object DeterministicIndianTaxEngine {
@@ -91,24 +78,45 @@ object DeterministicIndianTaxEngine {
             }
         )
 
-        val stcgTax = (input.netTaxableStcg111ARupees * 0.20).roundToLong()
-        val ltcgTax = (max(0L, input.netTaxableLtcg112ARupees - SEC_112A_EXEMPT_THRESHOLD) * 0.125).roundToLong()
-        val specialTax = stcgTax + ltcgTax
-
-        val rebateThreshold87A = if (input.assessmentYearProfile == AssessmentYearProfile.AY_2026_27) 12_00_000L else NEW_REGIME_87A_THRESHOLD
-        val maxRebate87A = if (input.assessmentYearProfile == AssessmentYearProfile.AY_2026_27) 60_000L else NEW_REGIME_87A_MAX_REBATE
-        val rebate87A = if (input.isResidentIndividual && totalIncome288A <= rebateThreshold87A) {
-            min(baseNormalTax + stcgTax, maxRebate87A)
+        // Basic Exemption Absorption (Proviso to Sec 111A & 112A)
+        val basicExemptionLimit = if (input.assessmentYearProfile == AssessmentYearProfile.AY_2026_27) 4_00_000L else 3_00_000L
+        var unexhaustedExemption = if (input.isResidentIndividual && normalTaxable288A < basicExemptionLimit) {
+            basicExemptionLimit - normalTaxable288A
         } else 0L
 
-        val normalTaxAfterRebate = max(0L, baseNormalTax + stcgTax - rebate87A)
+        val stcgAbsorbed = min(input.netTaxableStcg111ARupees, unexhaustedExemption)
+        val effectiveStcg = input.netTaxableStcg111ARupees - stcgAbsorbed
+        unexhaustedExemption -= stcgAbsorbed
+
+        val rawLtcgAboveThreshold = max(0L, input.netTaxableLtcg112ARupees - SEC_112A_EXEMPT_THRESHOLD)
+        val ltcgAbsorbed = min(rawLtcgAboveThreshold, unexhaustedExemption)
+        val effectiveLtcgAboveThreshold = rawLtcgAboveThreshold - ltcgAbsorbed
+
+        val stcgTax = (effectiveStcg * 0.20).roundToLong()
+        val ltcgTax = (effectiveLtcgAboveThreshold * 0.125).roundToLong()
+        val specialTax = stcgTax + ltcgTax
+
+        // Statutory Sec 87A Rebate: Strictly barred against Special Rate incomes (Sec 111A & 112A)
+        val rebateThreshold87A = if (input.assessmentYearProfile == AssessmentYearProfile.AY_2026_27) 12_00_000L else NEW_REGIME_87A_THRESHOLD
+        val maxRebate87A = if (input.assessmentYearProfile == AssessmentYearProfile.AY_2026_27) 60_000L else NEW_REGIME_87A_MAX_REBATE
+        val rebate87A = if (input.isResidentIndividual && normalTaxable288A <= rebateThreshold87A) {
+            min(baseNormalTax, maxRebate87A)
+        } else 0L
+
+        val normalTaxAfterRebate = max(0L, baseNormalTax - rebate87A)
         val marginalRelief87A = if (input.isResidentIndividual && normalTaxable288A > rebateThreshold87A) {
             val excessOverThreshold = normalTaxable288A - rebateThreshold87A
             if (normalTaxAfterRebate > excessOverThreshold) normalTaxAfterRebate - excessOverThreshold else 0L
         } else 0L
 
-        val totalTaxBeforeSurcharge = normalTaxAfterRebate - marginalRelief87A + ltcgTax
-        val surcharge = computeSurchargeWithMarginalRelief(totalIncome288A, totalTaxBeforeSurcharge, true)
+        val netNormalTax = max(0L, normalTaxAfterRebate - marginalRelief87A)
+        val totalTaxBeforeSurcharge = netNormalTax + specialTax
+        val surcharge = computeSurchargeWithMarginalRelief(
+            totalIncome = totalIncome288A,
+            normalTax = netNormalTax,
+            specialTax = specialTax,
+            isNewRegime = true
+        )
         val cess = ((totalTaxBeforeSurcharge + surcharge) * 0.04).roundToLong()
         val finalTax288B = roundToNearestTen(totalTaxBeforeSurcharge + surcharge + cess)
 
@@ -178,18 +186,37 @@ object DeterministicIndianTaxEngine {
             )
         )
 
-        val stcgTax = (input.netTaxableStcg111ARupees * 0.15).roundToLong()
-        val ltcgTax = (max(0L, input.netTaxableLtcg112ARupees - 1_00_000L) * 0.10).roundToLong()
+        // Basic Exemption Absorption (Proviso to Sec 111A & 112A)
+        var unexhausted = if (input.isResidentIndividual && normalTaxable288A < exemptionLimit) {
+            exemptionLimit - normalTaxable288A
+        } else 0L
+
+        val stcgAbsorbed = min(input.netTaxableStcg111ARupees, unexhausted)
+        val effectiveStcg = input.netTaxableStcg111ARupees - stcgAbsorbed
+        unexhausted -= stcgAbsorbed
+
+        val rawLtcgAboveThreshold = max(0L, input.netTaxableLtcg112ARupees - 1_00_000L)
+        val ltcgAbsorbed = min(rawLtcgAboveThreshold, unexhausted)
+        val effectiveLtcgAboveThreshold = rawLtcgAboveThreshold - ltcgAbsorbed
+
+        val stcgTax = (effectiveStcg * 0.15).roundToLong()
+        val ltcgTax = (effectiveLtcgAboveThreshold * 0.10).roundToLong()
         val specialTax = stcgTax + ltcgTax
 
         val rebate87A = if (input.isResidentIndividual && totalIncome288A <= OLD_REGIME_87A_THRESHOLD) {
-            min(baseNormalTax + stcgTax, OLD_REGIME_87A_MAX_REBATE)
+            min(baseNormalTax, OLD_REGIME_87A_MAX_REBATE)
         } else 0L
 
-        val taxAfterRebate = max(0L, baseNormalTax + specialTax - rebate87A)
-        val surcharge = computeSurchargeWithMarginalRelief(totalIncome288A, taxAfterRebate, false)
-        val cess = ((taxAfterRebate + surcharge) * 0.04).roundToLong()
-        val finalTax288B = roundToNearestTen(taxAfterRebate + surcharge + cess)
+        val normalTaxAfterRebate = max(0L, baseNormalTax - rebate87A)
+        val totalTaxBeforeSurcharge = normalTaxAfterRebate + specialTax
+        val surcharge = computeSurchargeWithMarginalRelief(
+            totalIncome = totalIncome288A,
+            normalTax = normalTaxAfterRebate,
+            specialTax = specialTax,
+            isNewRegime = false
+        )
+        val cess = ((totalTaxBeforeSurcharge + surcharge) * 0.04).roundToLong()
+        val finalTax288B = roundToNearestTen(totalTaxBeforeSurcharge + surcharge + cess)
 
         return RegimeComputationResult(
             regime = TaxRegime.OLD_REGIME,
@@ -202,11 +229,137 @@ object DeterministicIndianTaxEngine {
             specialRateTax111AAnd112A = specialTax,
             rebate87A = rebate87A,
             marginalRelief87A = 0L,
-            taxAfterRebateAndRelief = taxAfterRebate,
+            taxAfterRebateAndRelief = totalTaxBeforeSurcharge,
             surchargeAfterMarginalRelief = surcharge,
             healthAndEducationCess = cess,
             totalTaxLiabilityRounded288B = finalTax288B
         )
+    }
+
+    fun compareRegimes(input: TaxpayerFinancialInput): DualRegimeComparison {
+        val newResult = computeNewRegime(input)
+        val oldResult = computeOldRegime(input)
+        val recommended = if (newResult.totalTaxLiabilityRounded288B <= oldResult.totalTaxLiabilityRounded288B) {
+            TaxRegime.NEW_REGIME_115BAC
+        } else {
+            TaxRegime.OLD_REGIME
+        }
+        val taxDiff = abs(newResult.totalTaxLiabilityRounded288B - oldResult.totalTaxLiabilityRounded288B)
+
+        var breakEvenDeduction = 0L
+        if (newResult.totalTaxLiabilityRounded288B < oldResult.totalTaxLiabilityRounded288B) {
+            var low = 0L
+            var high = 20_00_000L
+            var ans = high
+            while (low <= high) {
+                val mid = (low + high) / 2
+                val testOld = computeOldRegime(input.copy(
+                    section80CInvestments = input.section80CInvestments + mid
+                ))
+                if (testOld.totalTaxLiabilityRounded288B <= newResult.totalTaxLiabilityRounded288B) {
+                    ans = mid
+                    high = mid - 1
+                } else {
+                    low = mid + 1
+                }
+            }
+            breakEvenDeduction = ans
+        }
+
+        val max80CCD2 = (input.basicPlusDaForNps * 0.14).roundToLong()
+        val unused80CCD2 = max(0L, max80CCD2 - input.section80CCD2EmployerNps)
+        val unusedPreventive = if (input.section80DSelfAndFamily < 25_000L) min(5_000L, 25_000L - input.section80DSelfAndFamily) else 0L
+        val unusedSeniorMedical = max(0L, 50_000L - input.section80DParentsSenior)
+        val unused80C = max(0L, 1_50_000L - input.section80CInvestments)
+        val unused80CCD1B = max(0L, 50_000L - input.section80CCD1BSelfNps)
+
+        val nudges = mutableListOf<String>()
+        if (recommended == TaxRegime.NEW_REGIME_115BAC) {
+            if (unused80CCD2 > 0L) {
+                nudges.add("Opt into Section 80CCD(2) Corporate NPS via your employer for up to ₹$unused80CCD2 tax-free deduction in the New Regime.")
+            }
+            if (breakEvenDeduction > 0L) {
+                nudges.add("You would need ₹$breakEvenDeduction in additional Chapter VI-A / HRA deductions for the Old Regime to match the New Regime.")
+            }
+        } else {
+            if (unused80C > 0L) {
+                nudges.add("You have ₹$unused80C unused Section 80C headroom (ELSS, PPF, Term Insurance).")
+            }
+            if (unusedPreventive > 0L) {
+                nudges.add("Claim up to ₹$unusedPreventive for Preventive Health Checkups under Section 80D(2A) without medical policy.")
+            }
+            if (unusedSeniorMedical > 0L) {
+                nudges.add("Claim up to ₹$unusedSeniorMedical under Section 80D(2)(d) for medical bills of senior citizen uninsured parents.")
+            }
+            if (unused80CCD1B > 0L) {
+                nudges.add("Invest up to ₹$unused80CCD1B in voluntary Tier 1 NPS for exclusive Section 80CCD(1B) deduction.")
+            }
+        }
+
+        return DualRegimeComparison(
+            newRegimeResult = newResult,
+            oldRegimeResult = oldResult,
+            recommendedRegime = recommended,
+            taxDifferenceRupees = taxDiff,
+            breakEvenAdditionalDeductionForOldRegime = breakEvenDeduction,
+            unused80CCD2EmployerNpsHeadroom = unused80CCD2,
+            unused80DPreventiveCheckup5kHeadroom = unusedPreventive,
+            seniorParentsUninsuredMedical80DHeadroom = unusedSeniorMedical,
+            unused80CHeadroom = unused80C,
+            unused80CCD1BHeadroom = unused80CCD1B,
+            actionableNudges = nudges
+        )
+    }
+
+    // Convenience delegates for sub-engines and simulators
+    fun computeNewRegimeTaxAY2026_27(
+        grossTotalIncome: Long,
+        standardDeduction: Long = 75_000L,
+        section80CCD2: Long = 0L
+    ): RegimeComputationResult {
+        val input = if (standardDeduction == 0L) {
+            TaxpayerFinancialInput(
+                grossSalary = 0L,
+                savingsBankInterest = max(0L, grossTotalIncome - section80CCD2),
+                assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+            )
+        } else {
+            TaxpayerFinancialInput(
+                grossSalary = grossTotalIncome,
+                section80CCD2EmployerNps = section80CCD2,
+                basicPlusDaForNps = if (section80CCD2 > 0) (section80CCD2 / 0.14).roundToLong() else 0L,
+                assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+            )
+        }
+        return computeNewRegime(input)
+    }
+
+    fun computeOldRegimeTaxAY2026_27(
+        grossTotalIncome: Long,
+        standardDeduction: Long = 50_000L,
+        section80C: Long = 0L,
+        section80D: Long = 0L,
+        section80TTA: Long = 0L,
+        section24bHomeLoanInterest: Long = 0L
+    ): RegimeComputationResult {
+        val input = if (standardDeduction == 0L) {
+            val netNormal = max(0L, grossTotalIncome - section80C - section80D - section80TTA - section24bHomeLoanInterest)
+            TaxpayerFinancialInput(
+                grossSalary = 0L,
+                savingsBankInterest = netNormal,
+                assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+            )
+        } else {
+            TaxpayerFinancialInput(
+                grossSalary = grossTotalIncome,
+                selfOccupiedHomeLoanInterestSec24b = section24bHomeLoanInterest,
+                savingsBankInterest = section80TTA,
+                section80CInvestments = section80C,
+                section80DSelfAndFamily = section80D,
+                assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+            )
+        }
+        return computeOldRegime(input)
     }
 
     fun computeSection80GDeduction(donations: List<Section80GDonationInput>, adjustedGti: Long): Long {
@@ -230,20 +383,32 @@ object DeterministicIndianTaxEngine {
         return noLimitDeduction + allowed100Qualifying + allowed50Qualifying
     }
 
-    private fun computeSurchargeWithMarginalRelief(totalIncome: Long, baseTax: Long, isNewRegime: Boolean): Long {
+    private fun computeSurchargeWithMarginalRelief(
+        totalIncome: Long,
+        normalTax: Long,
+        specialTax: Long,
+        isNewRegime: Boolean
+    ): Long {
         if (totalIncome <= 50_00_000L) return 0L
-        val (threshold, rate, prevRate) = when {
+        val (threshold, normalRate, prevRate) = when {
             totalIncome <= 1_00_00_000L -> Triple(50_00_000L, 0.10, 0.00)
             totalIncome <= 2_00_00_000L -> Triple(1_00_00_000L, 0.15, 0.10)
             totalIncome <= 5_00_00_000L -> Triple(2_00_00_000L, 0.25, 0.15)
             else -> Triple(5_00_00_000L, if (isNewRegime) 0.25 else 0.37, 0.25)
         }
-        val rawSurcharge = (baseTax * rate).roundToLong()
+
+        // Proviso to Finance Act: Capped at 15% on Capital Gains (111A, 112A) and Dividends
+        val specialSurchargeRate = min(normalRate, 0.15)
+        val rawSurcharge = (normalTax * normalRate).roundToLong() + (specialTax * specialSurchargeRate).roundToLong()
+        val baseTax = normalTax + specialTax
         val totalTaxWithSurcharge = baseTax + rawSurcharge
         val excessIncomeOverThreshold = totalIncome - threshold
+
+        // Marginal relief calculation
         val taxAtThreshold = baseTax - (excessIncomeOverThreshold * 0.30).roundToLong()
-        val surchargeAtThreshold = (taxAtThreshold * prevRate).roundToLong()
+        val surchargeAtThreshold = (taxAtThreshold * min(prevRate, 0.15)).roundToLong()
         val maxPayableUnderMarginalRelief = taxAtThreshold + surchargeAtThreshold + excessIncomeOverThreshold
+
         return if (totalTaxWithSurcharge > maxPayableUnderMarginalRelief) {
             max(0L, maxPayableUnderMarginalRelief - baseTax)
         } else rawSurcharge
