@@ -99,3 +99,4 @@ class OnDeviceReceiptAnd80GExtractor(
         ExtractedDonation80G(name, pan, arn, amount, isCash, category, eligible)
     }
 }
+

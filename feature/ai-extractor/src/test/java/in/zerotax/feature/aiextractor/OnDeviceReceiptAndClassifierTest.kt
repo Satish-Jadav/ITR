@@ -78,3 +78,4 @@ class OnDeviceReceiptAndClassifierTest {
         assertEquals(TaxDeductionCategory.SAVINGS_ACCOUNT_INTEREST, results[2].detectedCategory)
     }
 }
+
