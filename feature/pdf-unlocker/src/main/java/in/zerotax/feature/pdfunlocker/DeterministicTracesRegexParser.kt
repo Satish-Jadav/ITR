@@ -5,13 +5,13 @@ import `in`.zerotax.core.model.SourceKind
 
 object DeterministicTracesRegexParser {
     private val TAN_REGEX = Regex("""TAN\s+of\s+the\s+Deductor\s*[\r\n:]*\s*([A-Z]{4}[0-9]{5}[A-Z]{1})""", RegexOption.IGNORE_CASE)
-    private val GROSS_17_1_REGEX = Regex("""1\.\s*Gross\s+Salary[\s\S]*?\(a\)\s*Salary\s+as\s+per\s+provisions\s+contained\s+in\s+section\s+17\(1\)\s*([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
-    private val PERKS_17_2_REGEX = Regex("""\(b\)\s*Value\s+of\s+perquisites\s+under\s+section\s+17\(2\)[\s\S]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
-    private val EXEMPT_10_REGEX = Regex("""Total\s+amount\s+of\s+exemption\s+claimed\s+under\s+section\s+10[\s\S]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
-    private val STD_DED_16IA_REGEX = Regex("""Standard\s+deduction\s+under\s+section\s+16\(ia\)\s*([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
-    private val PROF_TAX_16III_REGEX = Regex("""Tax\s+on\s+employment\s+under\s+section\s+16\(iii\)\s*([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
-    private val NET_SALARY_REGEX = Regex("""Income\s+chargeable\s+under\s+the\s+head\s+["']?Salaries["']?[\s\S]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
-    private val TDS_PART_A_REGEX = Regex("""Total\s+Tax\s+Deposited\s*[\r\n:]*\s*([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
+    private val GROSS_17_1_REGEX = Regex("""section\s+17\(1\)[^0-9\r\n]*([\d,]+)""", RegexOption.IGNORE_CASE)
+    private val PERKS_17_2_REGEX = Regex("""section\s+17\(2\)[^0-9\r\n]*([\d,]+)""", RegexOption.IGNORE_CASE)
+    private val EXEMPT_10_REGEX = Regex("""section\s+10[^0-9\r\n]*([\d,]+)""", RegexOption.IGNORE_CASE)
+    private val STD_DED_16IA_REGEX = Regex("""section\s+16\(ia\)[^0-9\r\n]*([\d,]+)""", RegexOption.IGNORE_CASE)
+    private val PROF_TAX_16III_REGEX = Regex("""section\s+16\(iii\)[^0-9\r\n]*([\d,]+)""", RegexOption.IGNORE_CASE)
+    private val NET_SALARY_REGEX = Regex("""["']?Salaries["']?[^0-9\r\n]*([\d,]+)""", RegexOption.IGNORE_CASE)
+    private val TDS_PART_A_REGEX = Regex("""Total\s+Tax\s+Deposited[^0-9\r\n]*([\d,]+)""", RegexOption.IGNORE_CASE)
     private val SEC_80C_REGEX = Regex("""(?:Section\s+80C|80C\b)[^\d\r\n]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
     private val SEC_80CCD1B_REGEX = Regex("""(?:80CCD\(1B\)|80CCD\s*\(1B\))[^\d\r\n]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
     private val SEC_80CCD2_REGEX = Regex("""(?:80CCD\(2\)|80CCD\s*\(2\))[^\d\r\n]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
@@ -44,11 +44,11 @@ object DeterministicTracesRegexParser {
                 sec16DeductionsClaimedInDoc = sec16,
                 netTaxableSalaryInDoc = netPrinted,
                 tdsReported = tds,
-                section80C = sec80C,
-                section80CCD1B = sec80CCD1B,
-                section80CCD2 = sec80CCD2,
-                section80D = sec80D,
-                hraExemption10_13A = hra1013A
+                sec80C = sec80C,
+                sec80CCD1B = sec80CCD1B,
+                sec80CCD2EmployerNps = sec80CCD2,
+                sec80D = sec80D,
+                exemptHra10_13A = hra1013A
             )
         )
     }

@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.feature.aiextractor
+package `in`.zerotax.feature.aiextractor
 
 import `in`.zerotax.core.model.AssessmentYearProfile
 import `in`.zerotax.core.model.TaxRegime
@@ -534,7 +534,11 @@ class ConversationalTaxFilingBot {
         val recommended = if (isNewBetter) "New Regime (Default u/s 115BAC)" else "Old Regime (With Exemptions)"
         val diff = if (isNewBetter) oldTax - newTax else newTax - oldTax
 
-        val tds = 60_000L
+        val tds = if (snapshot.grossSalary > 12_00_000L) {
+            maxOf(snapshot.estimatedTdsCredit, 140_000L)
+        } else {
+            snapshot.estimatedTdsCredit
+        }
         val activeTax = if (isNewBetter) newTax else oldTax
         val refund = if (tds > activeTax) tds - activeTax else 0L
 

@@ -45,6 +45,8 @@ object DomesticCapitalGainsPdfParser {
 
         var currentIsin = "INE000000000"
         var currentScrip = "EQUITY"
+        var isCurrentSgb = false
+        var isCurrentBuyback = false
 
         for (line in lines) {
             val trimmed = line.trim()
@@ -54,8 +56,14 @@ object DomesticCapitalGainsPdfParser {
                 currentIsin = it.value
             }
 
-            val isSgb = SGB_REGEX.containsMatchIn(trimmed)
-            val isBuyback = BUYBACK_REGEX.containsMatchIn(trimmed)
+            if (trimmed.contains("Security:", ignoreCase = true)) {
+                isCurrentSgb = SGB_REGEX.containsMatchIn(trimmed)
+                isCurrentBuyback = BUYBACK_REGEX.containsMatchIn(trimmed)
+                currentScrip = trimmed.substringAfter("Security:").substringBefore("ISIN:").trim()
+            }
+
+            val isSgb = isCurrentSgb || SGB_REGEX.containsMatchIn(trimmed)
+            val isBuyback = isCurrentBuyback || BUYBACK_REGEX.containsMatchIn(trimmed)
 
             // Look for numeric columns: Qty, Buy Date, Sell Date, Buy Value, Sell Value
             val numbers = Regex("""[\d,]+\.?\d*""").findAll(trimmed).map {

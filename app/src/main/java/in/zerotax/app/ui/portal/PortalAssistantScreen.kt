@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.portal
+package `in`.zerotax.app.ui.portal
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -291,14 +291,15 @@ fun PortalAssistantScreen(
                                     standardDeduction = 75_000L,
                                     totalChapterVIADeductions = 0L,
                                     netTaxableNormalIncomeRounded288A = netTaxableSalary,
+                                    netTaxableSpecialRateIncome = 0L,
                                     baseSlabTaxOnNormalIncome = 60_000L,
+                                    specialRateTax111AAnd112A = 0L,
                                     rebate87A = 60_000L,
                                     marginalRelief87A = 0L,
                                     taxAfterRebateAndRelief = 0L,
                                     surchargeAfterMarginalRelief = 0L,
                                     healthAndEducationCess = 0L,
-                                    totalTaxLiabilityRounded288B = 0L,
-                                    effectiveTaxRatePercentage = 0.0
+                                    totalTaxLiabilityRounded288B = 0L
                                 )
                                 val cbdtJson = CbdtItr1JsonCompiler.compileItr1Json(
                                     pan = pan,
@@ -488,7 +489,7 @@ fun PortalAssistantScreen(
                             }
                             Spacer(Modifier.height(6.dp))
                             Text(
-                                text = currentExplanation!!.explanation,
+                                text = currentExplanation!!.plainLanguageSummary,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Slate800
                             )

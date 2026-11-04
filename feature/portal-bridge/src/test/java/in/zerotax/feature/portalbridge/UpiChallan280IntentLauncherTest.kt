@@ -7,19 +7,18 @@ class UpiChallan280IntentLauncherTest {
 
     @Test
     fun testBuildUpiPaymentUri_GeneratesValidParameters() {
-        val uri = UpiChallan280IntentLauncher.buildUpiPaymentUri(
+        val uriString = UpiChallan280IntentLauncher.buildUpiPaymentUriString(
             pan = "ABCDE1234F",
             amountRupees = 25000L,
             assessmentYear = "2026-27",
             taxType = ChallanTaxType.SELF_ASSESSMENT_TAX
         )
 
-        assertEquals("upi", uri.scheme)
-        assertEquals("pay", uri.authority)
-        assertEquals("25000", uri.getQueryParameter("am"))
-        assertEquals("INR", uri.getQueryParameter("cu"))
-        assertTrue(uri.getQueryParameter("tn")!!.contains("ABCDE1234F"))
-        assertTrue(uri.getQueryParameter("tn")!!.contains("M300"))
+        assertTrue(uriString.startsWith("upi://pay"))
+        assertTrue(uriString.contains("am=25000"))
+        assertTrue(uriString.contains("cu=INR"))
+        assertTrue(uriString.contains("ABCDE1234F"))
+        assertTrue(uriString.contains("M300"))
     }
 
     @Test

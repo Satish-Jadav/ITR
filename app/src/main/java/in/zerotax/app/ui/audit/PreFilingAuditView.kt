@@ -1,6 +1,7 @@
-﻿package `in`.zerotax.app.ui.audit
+package `in`.zerotax.app.ui.audit
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -565,7 +566,7 @@ fun PreFilingAuditView(
                             }
                             Spacer(Modifier.height(6.dp))
                             Text(
-                                text = currentExplanation!!.explanation,
+                                text = currentExplanation!!.plainLanguageSummary,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Slate800
                             )

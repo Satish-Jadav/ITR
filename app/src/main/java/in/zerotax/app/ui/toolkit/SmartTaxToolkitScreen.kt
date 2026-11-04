@@ -1,6 +1,8 @@
-﻿package `in`.zerotax.app.ui.toolkit
+package `in`.zerotax.app.ui.toolkit
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

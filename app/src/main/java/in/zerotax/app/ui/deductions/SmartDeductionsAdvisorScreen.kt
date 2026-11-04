@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.deductions
+package `in`.zerotax.app.ui.deductions
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -711,7 +711,7 @@ fun SmartDeductionsAdvisorScreen(
                             }
                             Spacer(Modifier.height(6.dp))
                             Text(
-                                text = currentExplanation!!.explanation,
+                                text = currentExplanation!!.plainLanguageSummary,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Slate800
                             )
