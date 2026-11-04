@@ -13,6 +13,20 @@
 
 ## 🏆 Key Features & Architectural Capabilities
 
+### 🌟 All 12 Master Work Packages Fully Implemented (AY 2026-27 Production Baseline)
+- **WP-01 (Core Engine & Rebates):** Fixed Sec 87A rebate special-rate exclusion (never offsets Sec 111A/112A), implemented Proviso to Sec 111A/112A Unexhausted Basic Exemption Absorption, 15% surcharge ceiling on CG/dividends, and dual-regime breakeven optimization.
+- **WP-02 (Statutory Sub-Engines):** Multi-property `Schedule HP` (2 self-occupied houses u/s 23(2), 1/5th pre-EMI interest u/s 24(b), co-ownership split u/s 26, ₹2L Sec 71(3A) cap), Presumptive trio (`44ADA` 50%, `44AD` 6%/8%, `44AE`), Rule 2A Landlord PAN gate (>₹1L rent), Rule 119A(b) ₹100 truncation, Sec 207 Senior Citizen 234B immunity, Sec 234C 12%/36% safe harbors, and full 22-section Chapter VI-A (`80C` to `80U`).
+- **WP-03 (3-Way Reconciler & Credits):** 7-head reconciliation (`reconcileInterestAndDividends`), high-water mark, Sec 57(i) 20% dividend expense cap, TCS 206C(1G)/(1F) credit sweeper, Rule 9D EPF taxable interest split (>₹2.5L), Sec 64(1A) minor child clubbing with ₹1,500 exemption, and Sec 205 employer TDS discrepancy notice generator.
+- **WP-04 (Advanced Capital Gains & Revision):** Pre-July 23, 2024 property LTCG indexation comparison (12.5% vs 20% CII=376), Sec 54/54EC/54F + CGAS 1988 planner, Secs 70/71/74 loss set-off matrix, Sec 115BBH VDA 30% flat tax, Sec 46A buyback loss, Sec 47(viic) SGB exemption, Schedule FA Table A3 LOT-level valuation with weekend/holiday TTBR rollback, and ITR-U 25%/50% additional tax windows.
+- **WP-05 (CBDT JSON Compilers & Gates):** Category 'A' 6-defect pre-submission gate, Prior-year ITR / Prefill JSON importer, Schedule FSI/TR & Form 67 compiler, and full 24-vector test suite (`GTV-01..18` and `ECV-01..06`).
+- **WP-06 (13-Table Encrypted Vault & Hardware Security):** 13 Room tables with 25-yr CII seed (`2001-02` to `2025-26` = 376), Jan 31 2018 ISIN FMV benchmarks, 10-yr SBI TTBR rates, RAM passphrase zeroing, 16-digit UIDAI VID scrubbing, hardware ECDSA audit signing, and pre-shred AA revocation hook.
+- **WP-07 (PDF Unlocker & Parsers):** Bank customer-ID / account password permutations, Form 16 Part B Chapter VI-A extraction, CAMS/KFintech/Zerodha CAS parser, E*TRADE/Schwab/1042-S parser, and offline CA computation PDF exporter.
+- **WP-08 (On-Device AI Extractor):** Form 16 Part B parser, Rent / 80D / 80G Form 10BE receipt extractor, 25-row batch bank narration classifier, and 6 Indic vernacular locales (`en-IN`, `hi-IN`, `gu-IN`, `mr-IN`, `ta-IN`, `te-IN`).
+- **WP-09 (RBI Account Aggregator):** In-memory ReBIT Sahamati `DEPOSIT` and `MUTUAL_FUNDS`/`EQUITIES` parser with volatile RAM zeroing and 1-tap FIP consent revocation manager.
+- **WP-10 (Portal Bridge & UPI Challan 280):** Deep-link builder (`upi://pay` Major 0021 / Minor 300) with BSR/CIN validation, 1-tap CBDT JSON upload, Aadhaar OTP e-Verify bridge, AIS feedback submitter, and post-filing CPC status poller.
+- **WP-11 (Jetpack Compose UI & Security):** `IndianCurrencyFormatter`, 5-minute scoped `FLAG_SECURE` override helper, DPDP Section 6 multilingual consent card, cropped PDF disambiguation card, Section 205 employer TDS shield card, and presumptive slider.
+- **WP-12 (CI/CD Pipeline):** Multi-branch GitHub Actions CI workflow triggering on `master`, `main`, and `release/*`.
+
 ### 1. 🤖 TaxBuddy-Style Conversational Filing Chatbot
 - **Interactive Natural-Language Ingestion:** Chat naturally to share your salary, job switches, home loan EMIs, health insurance, NPS, and bank accounts without dealing with complicated tax schedules.
 - **In-Flight Tax Q&A Interception:** Ask questions like *"Which regime is better?"*, *"Can I claim both HRA and Home Loan?"*, *"What are the 80D limits?"*, or *"How to save more tax?"* and receive instant CA-grade answers with statutory citations.

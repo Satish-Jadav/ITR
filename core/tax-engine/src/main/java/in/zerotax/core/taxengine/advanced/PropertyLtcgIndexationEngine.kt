@@ -1,4 +1,4 @@
-package in.zerotax.core.taxengine.advanced
+package `in`.zerotax.core.taxengine.advanced
 
 import kotlin.math.max
 import kotlin.math.min
@@ -47,6 +47,24 @@ object PropertyLtcgIndexationEngine {
         val section54ReinvestmentRupees: Long = 0L
     )
 
+    data class PropertyOptionDetails(
+        val indexedCostOfAcquisition: Long = 0L,
+        val netGain: Long = 0L,
+        val taxPayableBase: Long = 0L,
+        val netTaxPayableWithCess: Long = 0L
+    )
+
+    data class DualOptionPropertyLtcgResult(
+        val isEligibleForGrandfatheredOption: Boolean,
+        val section54ExemptionClaimed: Long,
+        val statutoryNotes: List<String>,
+        val option1Unindexed: PropertyOptionDetails,
+        val option2Indexed: PropertyOptionDetails,
+        val recommendedOption: String,
+        val finalTaxPayableWithCess: Long,
+        val taxSavingsByGrandfathering: Long
+    )
+
     data class DualOptionTaxComparison(
         val isEligibleForGrandfatheredOption: Boolean,
         val indexedCostOfAcquisition: Long,
@@ -61,6 +79,37 @@ object PropertyLtcgIndexationEngine {
         val finalTaxPayableWithCess: Long,
         val taxSavingsByGrandfathering: Long
     )
+
+    fun computeDualOptionPropertyLtcg(input: PropertySaleInput): DualOptionPropertyLtcgResult {
+        val base = computePropertyLtcg(input)
+        val notes = mutableListOf<String>()
+        if (input.section54ReinvestmentRupees > SECTION_54_CAP_RUPEES) {
+            notes.add("Section 54 reinvestment exemption capped at ₹10 Crores pursuant to Finance Act cap.")
+        }
+        val opt1 = PropertyOptionDetails(
+            indexedCostOfAcquisition = input.actualCostOfAcquisitionRupees,
+            netGain = base.netGainOption1Unindexed,
+            taxPayableBase = (base.netGainOption1Unindexed * 0.125).roundToLong(),
+            netTaxPayableWithCess = base.taxOption1Unindexed12_5Pct
+        )
+        val opt2 = PropertyOptionDetails(
+            indexedCostOfAcquisition = base.indexedCostOfAcquisition,
+            netGain = base.netGainOption2Indexed,
+            taxPayableBase = (base.netGainOption2Indexed * 0.20).roundToLong(),
+            netTaxPayableWithCess = base.taxOption2Indexed20Pct
+        )
+        val clampedSec54 = min(SECTION_54_CAP_RUPEES, max(0L, input.section54ReinvestmentRupees))
+        return DualOptionPropertyLtcgResult(
+            isEligibleForGrandfatheredOption = base.isEligibleForGrandfatheredOption,
+            section54ExemptionClaimed = clampedSec54,
+            statutoryNotes = notes,
+            option1Unindexed = opt1,
+            option2Indexed = opt2,
+            recommendedOption = base.recommendedOption,
+            finalTaxPayableWithCess = base.finalTaxPayableWithCess,
+            taxSavingsByGrandfathering = base.taxSavingsByGrandfathering
+        )
+    }
 
     fun computePropertyLtcg(input: PropertySaleInput): DualOptionTaxComparison {
         val ciiSale = CII_TABLE[input.saleFinancialYear] ?: 376

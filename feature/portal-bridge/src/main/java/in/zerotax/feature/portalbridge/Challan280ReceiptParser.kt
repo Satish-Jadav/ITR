@@ -1,9 +1,9 @@
-package in.zerotax.feature.portalbridge
+﻿package `in`.zerotax.feature.portalbridge
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import in.zerotax.core.model.ScheduleItChallanEntry
+import `in`.zerotax.core.model.ScheduleItChallanEntry
 
 object Challan280ReceiptParser {
     private val BSR_REGEX = Regex("""BSR\s*Code\s*[:\-]?\s*(\d{7})""", RegexOption.IGNORE_CASE)

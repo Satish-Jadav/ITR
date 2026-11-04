@@ -1,4 +1,4 @@
-package in.zerotax.app.ui.chat
+﻿package `in`.zerotax.app.ui.chat
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -22,12 +22,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import in.zerotax.app.ui.components.*
-import in.zerotax.app.ui.theme.*
-import in.zerotax.core.model.Rupee
-import in.zerotax.feature.aiextractor.ChatSender
-import in.zerotax.feature.aiextractor.ChatStep
-import in.zerotax.feature.aiextractor.ConversationalTaxFilingBot
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.model.Rupee
+import `in`.zerotax.feature.aiextractor.ChatSender
+import `in`.zerotax.feature.aiextractor.ChatStep
+import `in`.zerotax.feature.aiextractor.ConversationalTaxFilingBot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -412,7 +412,7 @@ private fun PulsingTypingIndicator() {
 }
 
 @Composable
-private fun ChatBubbleItem(message: in.zerotax.feature.aiextractor.ChatMessage) {
+private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage) {
     val isBot = message.sender == ChatSender.BOT
 
     Row(
@@ -508,11 +508,11 @@ private fun ChatBubbleItem(message: in.zerotax.feature.aiextractor.ChatMessage) 
 private fun sendMessage(
     userText: String,
     bot: ConversationalTaxFilingBot,
-    messages: List<in.zerotax.feature.aiextractor.ChatMessage>,
-    onUpdateMessages: (List<in.zerotax.feature.aiextractor.ChatMessage>) -> Unit,
+    messages: List<`in`.zerotax.feature.aiextractor.ChatMessage>,
+    onUpdateMessages: (List<`in`.zerotax.feature.aiextractor.ChatMessage>) -> Unit,
     onThinkingChanged: (Boolean) -> Unit
 ) {
-    val userMsg = in.zerotax.feature.aiextractor.ChatMessage(
+    val userMsg = `in`.zerotax.feature.aiextractor.ChatMessage(
         sender = ChatSender.USER,
         text = userText
     )

@@ -1,4 +1,4 @@
-package in.zerotax.feature.aiextractor
+package `in`.zerotax.feature.aiextractor
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
@@ -7,7 +7,10 @@ import kotlinx.coroutines.withContext
 enum class SupportedVernacularLocale(val code: String, val displayName: String) {
     ENGLISH_IN("en-IN", "English (India)"),
     HINDI_IN("hi-IN", "हिन्दी (Hindi)"),
-    GUJARATI_IN("gu-IN", "ગુજરાતી (Gujarati)")
+    GUJARATI_IN("gu-IN", "ગુજરાતી (Gujarati)"),
+    MARATHI_IN("mr-IN", "मराठी (Marathi)"),
+    TAMIL_IN("ta-IN", "தமிழ் (Tamil)"),
+    TELUGU_IN("te-IN", "తెలుగు (Telugu)")
 }
 
 class TokenLockedVernacularExplainer(

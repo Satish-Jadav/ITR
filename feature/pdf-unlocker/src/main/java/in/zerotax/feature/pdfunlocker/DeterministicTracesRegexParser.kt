@@ -1,7 +1,7 @@
-package in.zerotax.feature.pdfunlocker
+package `in`.zerotax.feature.pdfunlocker
 
-import in.zerotax.core.model.EmployerSalarySource
-import in.zerotax.core.model.SourceKind
+import `in`.zerotax.core.model.EmployerSalarySource
+import `in`.zerotax.core.model.SourceKind
 
 object DeterministicTracesRegexParser {
     private val TAN_REGEX = Regex("""TAN\s+of\s+the\s+Deductor\s*[\r\n:]*\s*([A-Z]{4}[0-9]{5}[A-Z]{1})""", RegexOption.IGNORE_CASE)
@@ -12,6 +12,11 @@ object DeterministicTracesRegexParser {
     private val PROF_TAX_16III_REGEX = Regex("""Tax\s+on\s+employment\s+under\s+section\s+16\(iii\)\s*([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
     private val NET_SALARY_REGEX = Regex("""Income\s+chargeable\s+under\s+the\s+head\s+["']?Salaries["']?[\s\S]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
     private val TDS_PART_A_REGEX = Regex("""Total\s+Tax\s+Deposited\s*[\r\n:]*\s*([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
+    private val SEC_80C_REGEX = Regex("""(?:Section\s+80C|80C\b)[^\d\r\n]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
+    private val SEC_80CCD1B_REGEX = Regex("""(?:80CCD\(1B\)|80CCD\s*\(1B\))[^\d\r\n]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
+    private val SEC_80CCD2_REGEX = Regex("""(?:80CCD\(2\)|80CCD\s*\(2\))[^\d\r\n]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
+    private val SEC_80D_REGEX = Regex("""(?:Section\s+80D|80D\b)[^\d\r\n]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
+    private val SEC_10_13A_REGEX = Regex("""(?:10\(13A\)|House\s+Rent\s+Allowance)[^\d\r\n]*?([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
 
     fun parseStandardTracesForm16(fullText: String): Result<EmployerSalarySource> {
         val tan = TAN_REGEX.find(fullText)?.groupValues?.get(1)?.uppercase()
@@ -23,8 +28,12 @@ object DeterministicTracesRegexParser {
         val netPrinted = extractLong(NET_SALARY_REGEX, fullText)
         val tds = extractLong(TDS_PART_A_REGEX, fullText)
 
-        // TODO(Phase-2): Extract CAMS/KFintech/Zerodha/Groww ISIN-level Capital Gains tables for Schedule 112A.
-        // TODO(Phase-3): Add E*TRADE / Charles Schwab / Fidelity RSU vest lot & Form 1042-S dividend table parser.
+        val sec80C = extractLong(SEC_80C_REGEX, fullText)
+        val sec80CCD1B = extractLong(SEC_80CCD1B_REGEX, fullText)
+        val sec80CCD2 = extractLong(SEC_80CCD2_REGEX, fullText)
+        val sec80D = extractLong(SEC_80D_REGEX, fullText)
+        val hra1013A = extractLong(SEC_10_13A_REGEX, fullText)
+
         return Result.success(
             EmployerSalarySource(
                 employerTan = tan,
@@ -34,7 +43,12 @@ object DeterministicTracesRegexParser {
                 sec10Exemptions = sec10,
                 sec16DeductionsClaimedInDoc = sec16,
                 netTaxableSalaryInDoc = netPrinted,
-                tdsReported = tds
+                tdsReported = tds,
+                section80C = sec80C,
+                section80CCD1B = sec80CCD1B,
+                section80CCD2 = sec80CCD2,
+                section80D = sec80D,
+                hraExemption10_13A = hra1013A
             )
         )
     }

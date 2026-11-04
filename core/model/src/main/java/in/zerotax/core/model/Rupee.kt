@@ -1,4 +1,4 @@
-package in.zerotax.core.model
+package `in`.zerotax.core.model
 
 import kotlinx.serialization.Serializable
 import java.text.DecimalFormat

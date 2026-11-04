@@ -1,4 +1,4 @@
-package in.zerotax.core.model
+package `in`.zerotax.core.model
 
 import kotlinx.serialization.Serializable
 
@@ -27,6 +27,13 @@ data class TaxpayerRoutingProfile(
     val grossReceipts44ADARupees: Long = 0L,
     val cashReceiptsPercentage44ADA: Double = 0.0,
     val declaredProfitPercentage44ADA: Double = 50.0,
+    val hasPresumptiveBusiness44AD: Boolean = false,
+    val grossReceipts44ADRupees: Long = 0L,
+    val cashReceiptsPercentage44AD: Double = 0.0,
+    val declaredProfitPercentage44AD: Double = 6.0,
+    val hasPresumptiveGoodsCarriage44AE: Boolean = false,
+    val goodsVehicleCount44AE: Int = 0,
+    val hasVirtualDigitalAssets115BBH: Boolean = false,
     val hasRegularBusinessOrIntradaySpeculativeOrFnO: Boolean = false,
     val requiresStatutoryAudit44AB: Boolean = false
 )

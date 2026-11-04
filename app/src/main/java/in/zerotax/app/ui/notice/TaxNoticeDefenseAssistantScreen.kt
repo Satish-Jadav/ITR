@@ -1,4 +1,4 @@
-package in.zerotax.app.ui.notice
+﻿package `in`.zerotax.app.ui.notice
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -22,8 +22,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import in.zerotax.app.ui.components.*
-import in.zerotax.app.ui.theme.*
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.theme.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 

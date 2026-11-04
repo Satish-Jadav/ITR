@@ -1,4 +1,4 @@
-package in.zerotax.app.ui.legal
+﻿package `in`.zerotax.app.ui.legal
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -22,10 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import in.zerotax.app.ui.components.BadgeTone
-import in.zerotax.app.ui.components.StatutoryBadge
-import in.zerotax.app.ui.theme.*
-import in.zerotax.core.security.CanonicalWarningHasher
+import `in`.zerotax.app.ui.components.BadgeTone
+import `in`.zerotax.app.ui.components.StatutoryBadge
+import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.security.CanonicalWarningHasher
 import java.time.Instant
 
 /**

@@ -1,12 +1,12 @@
-package in.zerotax.feature.aiextractor
+package `in`.zerotax.feature.aiextractor
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
-import in.zerotax.core.model.EmployerSalarySource
-import in.zerotax.core.model.SourceKind
-import in.zerotax.core.security.UidaiAadhaarVerhoeffScrubber
-import in.zerotax.core.taxengine.reconciliation.DeterministicReconciler
+import `in`.zerotax.core.model.EmployerSalarySource
+import `in`.zerotax.core.model.SourceKind
+import `in`.zerotax.core.security.UidaiAadhaarVerhoeffScrubber
+import `in`.zerotax.core.taxengine.reconciliation.DeterministicReconciler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -73,7 +73,12 @@ class OnDeviceForm16AiExtractor(
                 sec10Exemptions = sec10,
                 sec16DeductionsClaimedInDoc = sec16,
                 netTaxableSalaryInDoc = printedNet,
-                tdsReported = json.optLong("tds_reported", 0L)
+                tdsReported = json.optLong("tds_reported", 0L),
+                section80C = json.optLong("section_80c", 0L),
+                section80CCD1B = json.optLong("section_80ccd_1b", 0L),
+                section80CCD2 = json.optLong("section_80ccd_2", 0L),
+                section80D = json.optLong("section_80d", 0L),
+                hraExemption10_13A = json.optLong("exempt_hra_sec10_13a", 0L)
             )
 
             // Strict ±₹5 Math Sanity Firewall check

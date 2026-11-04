@@ -1,15 +1,17 @@
-package in.zerotax.core.taxengine.routing
+package `in`.zerotax.core.taxengine.routing
 
-import in.zerotax.core.model.FormRoutingDecision
-import in.zerotax.core.model.ItrFormType
-import in.zerotax.core.model.ResidentialStatus
-import in.zerotax.core.model.TaxpayerRoutingProfile
+import `in`.zerotax.core.model.FormRoutingDecision
+import `in`.zerotax.core.model.ItrFormType
+import `in`.zerotax.core.model.ResidentialStatus
+import `in`.zerotax.core.model.TaxpayerRoutingProfile
 
 object DeterministicItrFormRouter {
     private const val ITR_1_AND_4_INCOME_CAP = 50_00_000L
     private const val AGRI_INCOME_CAP_ITR1_4 = 5_000L
     private const val SEC_44ADA_STANDARD_LIMIT = 50_00_000L
     private const val SEC_44ADA_ENHANCED_DIGITAL_LIMIT = 75_00_000L
+    private const val SEC_44AD_STANDARD_LIMIT = 2_00_00_000L
+    private const val SEC_44AD_ENHANCED_DIGITAL_LIMIT = 3_00_00_000L
     private const val LTCG_112A_EXEMPT_THRESHOLD = 1_25_000L
 
     fun routeTaxpayer(profile: TaxpayerRoutingProfile): FormRoutingDecision {
@@ -25,10 +27,34 @@ object DeterministicItrFormRouter {
             )
         }
 
+        // Section 44ADA Presumptive Profession Audit Floor (50%)
         if (profile.hasPresumptiveProfession44ADA && profile.declaredProfitPercentage44ADA < 50.0) {
             reasons.add("SEC_44ADA_PROFIT_BELOW_50_PERCENT_REQUIRES_AUDIT")
             return FormRoutingDecision(
                 selectedForm = ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB,
+                routingReasonCodes = reasons,
+                requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
+            )
+        }
+
+        // Section 44AD Presumptive Business Audit Floor (6% digital / 8% cash)
+        val min44AdDeemedRate = if (profile.cashReceiptsPercentage44AD <= 5.0) 6.0 else 8.0
+        if (profile.hasPresumptiveBusiness44AD && profile.declaredProfitPercentage44AD < min44AdDeemedRate) {
+            reasons.add("SEC_44AD_PROFIT_BELOW_${min44AdDeemedRate.toInt()}_PERCENT_REQUIRES_AUDIT")
+            return FormRoutingDecision(
+                selectedForm = ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB,
+                routingReasonCodes = reasons,
+                requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
+            )
+        }
+
+        // Section 44AE Goods Carriage Vehicle Cap (10 Vehicles)
+        if (profile.hasPresumptiveGoodsCarriage44AE && profile.goodsVehicleCount44AE > 10) {
+            reasons.add("SEC_44AE_VEHICLES_EXCEED_10_REQUIRES_ITR3")
+            return FormRoutingDecision(
+                selectedForm = ItrFormType.ITR_3,
                 routingReasonCodes = reasons,
                 requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
                 requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
@@ -41,8 +67,15 @@ object DeterministicItrFormRouter {
             SEC_44ADA_STANDARD_LIMIT
         }
 
+        val max44AdTurnover = if (profile.cashReceiptsPercentage44AD <= 5.0) {
+            SEC_44AD_ENHANCED_DIGITAL_LIMIT
+        } else {
+            SEC_44AD_STANDARD_LIMIT
+        }
+
         if (profile.hasRegularBusinessOrIntradaySpeculativeOrFnO ||
-            (profile.hasPresumptiveProfession44ADA && profile.grossReceipts44ADARupees > max44AdaTurnover)
+            (profile.hasPresumptiveProfession44ADA && profile.grossReceipts44ADARupees > max44AdaTurnover) ||
+            (profile.hasPresumptiveBusiness44AD && profile.grossReceipts44ADRupees > max44AdTurnover)
         ) {
             reasons.add("BUSINESS_OR_PROFESSION_REQUIRES_ITR3")
             return FormRoutingDecision(
@@ -52,6 +85,10 @@ object DeterministicItrFormRouter {
                 requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
             )
         }
+
+        val hasAnyPresumptive = profile.hasPresumptiveProfession44ADA ||
+                profile.hasPresumptiveBusiness44AD ||
+                profile.hasPresumptiveGoodsCarriage44AE
 
         val disqualifiedFromSimpleForms = mutableListOf<String>()
         if (profile.residentialStatus != ResidentialStatus.RESIDENT_ORDINARILY_RESIDENT) {
@@ -83,22 +120,29 @@ object DeterministicItrFormRouter {
         ) {
             disqualifiedFromSimpleForms.add("TAXABLE_CAPITAL_GAINS_REQUIRES_SCHEDULE_CG")
         }
+        if (profile.hasVirtualDigitalAssets115BBH) {
+            disqualifiedFromSimpleForms.add("VDA_CRYPTO_REQUIRES_SCHEDULE_VDA")
+        }
 
         if (disqualifiedFromSimpleForms.isNotEmpty()) {
-            val targetForm = if (profile.hasPresumptiveProfession44ADA) ItrFormType.ITR_3 else ItrFormType.ITR_2
+            val targetForm = if (hasAnyPresumptive) ItrFormType.ITR_3 else ItrFormType.ITR_2
             return FormRoutingDecision(
                 selectedForm = targetForm,
                 routingReasonCodes = disqualifiedFromSimpleForms,
                 requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome &&
-                    profile.residentialStatus == ResidentialStatus.RESIDENT_ORDINARILY_RESIDENT,
+                        profile.residentialStatus == ResidentialStatus.RESIDENT_ORDINARILY_RESIDENT,
                 requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
             )
         }
 
-        return if (profile.hasPresumptiveProfession44ADA) {
+        return if (hasAnyPresumptive) {
+            val presumptiveReasons = mutableListOf<String>()
+            if (profile.hasPresumptiveProfession44ADA) presumptiveReasons.add("PRESUMPTIVE_44ADA_WITHIN_ELIGIBLE_LIMITS")
+            if (profile.hasPresumptiveBusiness44AD) presumptiveReasons.add("PRESUMPTIVE_44AD_WITHIN_ELIGIBLE_LIMITS")
+            if (profile.hasPresumptiveGoodsCarriage44AE) presumptiveReasons.add("PRESUMPTIVE_44AE_WITHIN_ELIGIBLE_LIMITS")
             FormRoutingDecision(
                 selectedForm = ItrFormType.ITR_4_SUGAM,
-                routingReasonCodes = listOf("PRESUMPTIVE_44ADA_WITHIN_ELIGIBLE_LIMITS"),
+                routingReasonCodes = presumptiveReasons,
                 requiresScheduleFA = false,
                 requiresScheduleAL = false
             )

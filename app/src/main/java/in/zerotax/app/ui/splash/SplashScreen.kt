@@ -1,4 +1,4 @@
-package in.zerotax.app.ui.splash
+﻿package `in`.zerotax.app.ui.splash
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import in.zerotax.app.ui.theme.*
+import `in`.zerotax.app.ui.theme.*
 import kotlinx.coroutines.delay
 
 @Composable

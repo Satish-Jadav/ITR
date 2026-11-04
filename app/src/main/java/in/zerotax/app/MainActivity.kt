@@ -1,4 +1,4 @@
-package in.zerotax.app
+﻿package `in`.zerotax.app
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import in.zerotax.app.ui.navigation.ZeroTaxFourTapSpineScaffold
-import in.zerotax.app.ui.splash.SplashScreen
-import in.zerotax.app.ui.theme.ZeroTaxTheme
+import `in`.zerotax.app.ui.navigation.ZeroTaxFourTapSpineScaffold
+import `in`.zerotax.app.ui.splash.SplashScreen
+import `in`.zerotax.app.ui.theme.ZeroTaxTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

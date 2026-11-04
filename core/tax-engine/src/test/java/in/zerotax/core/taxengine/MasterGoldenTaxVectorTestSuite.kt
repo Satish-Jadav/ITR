@@ -1,20 +1,29 @@
-package in.zerotax.core.taxengine
+package `in`.zerotax.core.taxengine
 
-import in.zerotax.core.model.AssessmentYearProfile
-import in.zerotax.core.model.CitizenCategory
-import in.zerotax.core.model.EmployerSalarySource
-import in.zerotax.core.model.FormRoutingDecision
-import in.zerotax.core.model.ItrFormType
-import in.zerotax.core.model.ReconciledSalarySummary
-import in.zerotax.core.model.ResidentialStatus
-import in.zerotax.core.model.SourceKind
-import in.zerotax.core.model.TaxRegime
-import in.zerotax.core.model.TaxpayerRoutingProfile
-import in.zerotax.core.taxengine.advanced.*
-import in.zerotax.core.taxengine.calculator.*
-import in.zerotax.core.taxengine.compiler.CbdtItr1JsonCompiler
-import in.zerotax.core.taxengine.reconciliation.*
-import in.zerotax.core.taxengine.routing.DeterministicItrFormRouter
+import `in`.zerotax.core.model.AssessmentYearProfile
+import `in`.zerotax.core.model.CitizenCategory
+import `in`.zerotax.core.model.EmployerSalarySource
+import `in`.zerotax.core.model.FormRoutingDecision
+import `in`.zerotax.core.model.ItrFormType
+import `in`.zerotax.core.model.ReconciledSalarySummary
+import `in`.zerotax.core.model.ResidentialStatus
+import `in`.zerotax.core.model.SourceKind
+import `in`.zerotax.core.model.TaxRegime
+import `in`.zerotax.core.model.TaxpayerRoutingProfile
+import `in`.zerotax.core.model.Equity112ALot
+import `in`.zerotax.core.model.ImmovablePropertyLtcgLot
+import `in`.zerotax.core.model.ForeignEquityLotInput
+import `in`.zerotax.core.model.DonationCategory
+import `in`.zerotax.core.model.Section80GDonationInput
+import `in`.zerotax.core.taxengine.foreignassets.SbiTtbrLookupRepository
+import `in`.zerotax.core.taxengine.foreignassets.ScheduleFaCalendarYearEngine
+import `in`.zerotax.core.taxengine.revision.ItrUWindow
+import `in`.zerotax.core.taxengine.revision.RevisionAndHarvestingEngine
+import `in`.zerotax.core.taxengine.advanced.*
+import `in`.zerotax.core.taxengine.calculator.*
+import `in`.zerotax.core.taxengine.compiler.CbdtItr1JsonCompiler
+import `in`.zerotax.core.taxengine.reconciliation.*
+import `in`.zerotax.core.taxengine.routing.DeterministicItrFormRouter
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -294,13 +303,19 @@ class MasterGoldenTaxVectorTestSuite {
         fun `audit return passes with 100 score and low risk when all gates clear`() {
             val salarySummary = ReconciledSalarySummary(
                 employers = listOf(
-                    EmployerSalarySource(
+                    `in`.zerotax.core.model.EmployerReconciliationItem(
                         employerTan = "BLRM01234D",
                         employerName = "Infosys",
+                        selectedSourceKind = SourceKind.FORM_16,
                         grossSalary = 1200000L,
-                        sec16DeductionsClaimedInDoc = 75000L,
-                        netTaxableSalaryInDoc = 1125000L,
-                        tdsReported = 50000L
+                        sec10Exemptions = 0L,
+                        sec16Deductions = 75000L,
+                        netSalary = 1125000L,
+                        tdsReportedInSource = 50000L,
+                        tdsIn26As = 50000L,
+                        tdsAllowed = 50000L,
+                        hasDiscrepancy = false,
+                        unreflectedTdsAmount = 0L
                     )
                 ),
                 aggregateGrossSalary = 1200000L,
@@ -325,19 +340,19 @@ class MasterGoldenTaxVectorTestSuite {
                 healthAndEducationCess = 2000L,
                 totalTaxLiabilityRounded288B = 52000L
             )
-            val bank = in.zerotax.core.model.BankAccountDetails(
+            val bank = `in`.zerotax.core.model.BankAccountDetails(
                 bankName = "State Bank of India",
                 accountNumber = "123456789012",
                 ifscCode = "SBIN0001234",
                 accountType = "SAVINGS",
                 isPreValidated = true,
-                isDesignatedForRefund = true
+                isRefundAccount = true
             )
 
             val report = PreFilingAuditEngine.auditReturn(salarySummary, computation, bank, hasOverridesWithoutProof = false)
 
             assertEquals(100, report.auditScorePercentage)
-            assertEquals(in.zerotax.core.model.NoticeRiskLevel.LOW_RISK_SAFE, report.riskLevel)
+            assertEquals(`in`.zerotax.core.model.NoticeRiskLevel.LOW_RISK_SAFE, report.riskLevel)
             assertTrue(report.canFileDirectly)
             assertTrue(report.noticeProtectionGuarantee.contains("< 0.1%"))
         }
@@ -429,6 +444,328 @@ class MasterGoldenTaxVectorTestSuite {
             val sec80D = specs.firstOrNull { it.sectionCode.contains("80D") }
             assertNotNull(sec80D)
             assertTrue(sec80D!!.maxLimitRupees >= 25000L)
+        }
+    }
+
+    @Nested
+    @DisplayName("GTV-01 through GTV-18 Master Golden Test Vectors")
+    inner class MasterGoldenVectors {
+
+        private fun baseInput(
+            assessmentYearProfile: AssessmentYearProfile = AssessmentYearProfile.AY_2025_26,
+            citizenCategory: CitizenCategory = CitizenCategory.REGULAR_BELOW_60,
+            grossSalary: Long = 0L,
+            savingsBankInterest: Long = 0L,
+            fixedDepositInterest: Long = 0L,
+            section80CInvestments: Long = 0L,
+            section80DSelfAndFamily: Long = 0L,
+            section80CCD2EmployerNps: Long = 0L,
+            basicPlusDaForNps: Long = 0L,
+            netTaxableLtcg112ARupees: Long = 0L
+        ) = TaxpayerFinancialInput(
+            citizenCategory = citizenCategory,
+            isResidentIndividual = true,
+            grossSalary = grossSalary,
+            exemptHraAndAllowancesSec10 = 0L,
+            professionalTaxSec16iii = 0L,
+            selfOccupiedHomeLoanInterestSec24b = 0L,
+            savingsBankInterest = savingsBankInterest,
+            fixedDepositInterest = fixedDepositInterest,
+            familyPensionReceived = 0L,
+            section80CInvestments = section80CInvestments,
+            section80DSelfAndFamily = section80DSelfAndFamily,
+            section80DParentsSenior = 0L,
+            section80CCD1BSelfNps = 0L,
+            section80CCD2EmployerNps = section80CCD2EmployerNps,
+            basicPlusDaForNps = basicPlusDaForNps,
+            isCentralOrStateGovtEmployee = false,
+            donations80G = emptyList(),
+            presumptiveGrossReceipts44ADA = 0L,
+            presumptiveDeclaredProfitRatePercent = 50.0,
+            netTaxableStcg111ARupees = 0L,
+            netTaxableLtcg112ARupees = netTaxableLtcg112ARupees,
+            assessmentYearProfile = assessmentYearProfile
+        )
+
+        @Test
+        fun `GTV-01 New Regime Sec 87A Rebate ceiling at 7L for AY 2025-26`() {
+            val input = baseInput(
+                assessmentYearProfile = AssessmentYearProfile.AY_2025_26,
+                grossSalary = 7_75_000L
+            )
+            val result = DeterministicIndianTaxEngine.computeNewRegime(input)
+            assertEquals(75_000L, result.standardDeduction)
+            assertEquals(7_00_000L, result.netTaxableNormalIncomeRounded288A)
+            assertEquals(20_000L, result.baseSlabTaxOnNormalIncome)
+            assertEquals(20_000L, result.rebate87A)
+            assertEquals(0L, result.totalTaxLiabilityRounded288B)
+        }
+
+        @Test
+        fun `GTV-02 New Regime Sec 87A Marginal Relief at 7_10L for AY 2025-26`() {
+            val input = baseInput(
+                assessmentYearProfile = AssessmentYearProfile.AY_2025_26,
+                grossSalary = 7_85_000L
+            )
+            val result = DeterministicIndianTaxEngine.computeNewRegime(input)
+            assertEquals(7_10_000L, result.netTaxableNormalIncomeRounded288A)
+            assertEquals(21_000L, result.baseSlabTaxOnNormalIncome)
+            assertEquals(11_000L, result.marginalRelief87A)
+            assertEquals(10_000L, result.taxAfterRebateAndRelief)
+            assertEquals(400L, result.healthAndEducationCess)
+            assertEquals(10_400L, result.totalTaxLiabilityRounded288B)
+        }
+
+        @Test
+        fun `GTV-03 New Regime Sec 87A Enhanced Rebate ceiling at 12L for AY 2026-27`() {
+            val input = baseInput(
+                assessmentYearProfile = AssessmentYearProfile.AY_2026_27,
+                grossSalary = 12_75_000L
+            )
+            val result = DeterministicIndianTaxEngine.computeNewRegime(input)
+            assertEquals(75_000L, result.standardDeduction)
+            assertEquals(12_00_000L, result.netTaxableNormalIncomeRounded288A)
+            assertEquals(60_000L, result.baseSlabTaxOnNormalIncome)
+            assertEquals(60_000L, result.rebate87A)
+            assertEquals(0L, result.totalTaxLiabilityRounded288B)
+        }
+
+        @Test
+        fun `GTV-04 New Regime Sec 87A Marginal Relief at 12_10L for AY 2026-27`() {
+            val input = baseInput(
+                assessmentYearProfile = AssessmentYearProfile.AY_2026_27,
+                grossSalary = 12_85_000L
+            )
+            val result = DeterministicIndianTaxEngine.computeNewRegime(input)
+            assertEquals(12_10_000L, result.netTaxableNormalIncomeRounded288A)
+            assertEquals(61_500L, result.baseSlabTaxOnNormalIncome)
+            assertEquals(51_500L, result.marginalRelief87A)
+            assertEquals(10_000L, result.taxAfterRebateAndRelief)
+            assertEquals(400L, result.healthAndEducationCess)
+            assertEquals(10_400L, result.totalTaxLiabilityRounded288B)
+        }
+
+        @Test
+        fun `GTV-05 Multi-Employer TAN De-Duplication and Single Std Deduction`() {
+            val sources = listOf(
+                EmployerSalarySource("MUMT11111A", "Emp 1", SourceKind.FORM_16, 9_00_000L, 0L, 75_000L, 8_25_000L, 45_000L),
+                EmployerSalarySource("BLRI22222B", "Emp 2", SourceKind.FORM_16, 11_00_000L, 0L, 75_000L, 10_25_000L, 75_000L),
+                EmployerSalarySource("MUMT11111A", "Emp 1 AIS", SourceKind.AIS_TDS_192, 9_00_000L, 0L, 0L, 9_00_000L, 45_000L)
+            )
+            val reconciled = DeterministicReconciler.reconcileSalaries(
+                sources = sources,
+                form26AsTdsByTan = mapOf("MUMT11111A" to 45_000L, "BLRI22222B" to 75_000L)
+            )
+            assertEquals(20_00_000L, reconciled.aggregateGrossSalary)
+            val result = DeterministicIndianTaxEngine.computeNewRegime(
+                baseInput(grossSalary = reconciled.aggregateGrossSalary)
+            )
+            assertEquals(75_000L, result.standardDeduction)
+            assertEquals(19_25_000L, result.netTaxableNormalIncomeRounded288A)
+        }
+
+        @Test
+        fun `GTV-06 Senior Citizen Sec 80TTB 50000 deduction on Savings and FD interest`() {
+            val input = baseInput(
+                citizenCategory = CitizenCategory.SENIOR_60_TO_79,
+                grossSalary = 6_50_000L,
+                savingsBankInterest = 15_000L,
+                fixedDepositInterest = 42_000L,
+                section80CInvestments = 1_50_000L,
+                section80DSelfAndFamily = 50_000L
+            )
+            val result = DeterministicIndianTaxEngine.computeOldRegime(input)
+            assertEquals(50_000L, result.standardDeduction)
+            assertEquals(6_57_000L, result.grossTotalIncome)
+            assertEquals(2_50_000L, result.totalChapterVIADeductions)
+            assertEquals(4_07_000L, result.netTaxableNormalIncomeRounded288A)
+            assertEquals(0L, result.totalTaxLiabilityRounded288B)
+        }
+
+        @Test
+        fun `GTV-07 New Regime Sec 80CCD2 Employer NPS 14 pct deduction`() {
+            val input = baseInput(
+                grossSalary = 16_75_000L,
+                basicPlusDaForNps = 10_00_000L,
+                section80CCD2EmployerNps = 1_40_000L
+            )
+            val result = DeterministicIndianTaxEngine.computeNewRegime(input)
+            assertEquals(75_000L, result.standardDeduction)
+            assertEquals(16_00_000L, result.grossTotalIncome)
+            assertEquals(1_40_000L, result.totalChapterVIADeductions)
+            assertEquals(14_60_000L, result.netTaxableNormalIncomeRounded288A)
+        }
+
+        @Test
+        fun `GTV-08 Section 87A Rebate never offsets Section 112A LTCG tax under Section 112A(6)`() {
+            val input = baseInput(
+                assessmentYearProfile = AssessmentYearProfile.AY_2025_26,
+                grossSalary = 4_75_000L,
+                netTaxableLtcg112ARupees = 2_25_000L
+            )
+            val result = DeterministicIndianTaxEngine.computeNewRegime(input)
+            assertEquals(5_000L, result.rebate87A)
+            assertEquals(12_500L, result.specialRateTax111AAnd112A)
+            assertEquals(13_000L, result.totalTaxLiabilityRounded288B)
+        }
+
+        @Test
+        fun `GTV-09 Sec 112A Grandfathering Dip prevents artificial loss`() {
+            val equityLot = Equity112ALot(
+                isin = "INE002A01018",
+                acquisitionDateEpochDay = 16500L, // Prior to Jan 31, 2018 (17562L)
+                actualCostTotal = 2_00_000L,
+                fmvJan31_2018Total = 5_50_000L,
+                saleConsiderationTotal = 4_80_000L,
+                transferExpenses = 0L
+            )
+            val gain = CapitalGainsAndForeignAssetEngine.computeGrandfathered112AGain(equityLot)
+            assertEquals(0L, gain)
+        }
+
+        @Test
+        fun `GTV-10 Pre-July 23 2024 Immovable Property LTCG compares 12_5 pct unindexed vs 20 pct CII 376 indexed`() {
+            val propertyLot = ImmovablePropertyLtcgLot(
+                acquiredBeforeJuly23_2024 = true,
+                purchaseCostRupees = 50_00_000L,
+                improvementCostRupees = 0L,
+                acquisitionFyCii = 254,
+                transferFyCii = 376,
+                saleConsiderationOrStampValue50C = 80_00_000L,
+                transferExpenses = 0L,
+                section54ReinvestmentExemption = 0L
+            )
+            val comparison = CapitalGainsAndForeignAssetEngine.computeImmovablePropertyLtcgTax(propertyLot)
+            assertEquals(3_75_000L, comparison.taxAt12Point5PercentNoIndexation)
+            assertEquals(1_19_685L, comparison.taxAt20PercentWithIndexation)
+            assertEquals(1_19_685L, comparison.optimalTaxPayableForResidentIndividual)
+        }
+
+        @Test
+        fun `GTV-11 Capital Loss Matrix blocks LTCL against STCG and carries forward`() {
+            val summary = CapitalGainsAndForeignAssetEngine.applyCapitalLossSetOff(
+                currentYearStcg = 3_00_000L,
+                currentYearStcl = 0L,
+                currentYearLtcg = 0L,
+                currentYearLtcl = 1_80_000L,
+                broughtForwardStcl = 50_000L,
+                broughtForwardLtcl = 0L
+            )
+            assertEquals(2_50_000L, summary.netTaxableStcg15Or20Percent)
+            assertEquals(1_80_000L, summary.carriedForwardLtclToNext8Years)
+        }
+
+        @Test
+        fun `GTV-12 Section 80G disallows cash donations above 2000 and caps qualifying donations at 10 pct of AGTI`() {
+            val donations = listOf(
+                Section80GDonationInput("AAATC1234A", 5_000L, 0L, DonationCategory.FIFTY_PERCENT_NO_LIMIT),
+                Section80GDonationInput("AAATC5678B", 0L, 1_50_000L, DonationCategory.FIFTY_PERCENT_WITH_10PCT_CAP)
+            )
+            val allowed80G = DeterministicIndianTaxEngine.computeSection80GDeduction(
+                donations = donations,
+                adjustedGti = 10_00_000L
+            )
+            assertEquals(50_000L, allowed80G)
+        }
+
+        @Test
+        fun `GTV-13 Surcharge Marginal Relief just above 50L threshold`() {
+            val input50L = baseInput(grossSalary = 50_75_000L)
+            val input51L = baseInput(grossSalary = 51_75_000L)
+            val res50L = DeterministicIndianTaxEngine.computeNewRegime(input50L)
+            val res51L = DeterministicIndianTaxEngine.computeNewRegime(input51L)
+            assertEquals(51_00_000L, res51L.netTaxableNormalIncomeRounded288A)
+            val incrementalTaxPlusSurcharge = (res51L.taxAfterRebateAndRelief + res51L.surchargeAfterMarginalRelief) - res50L.taxAfterRebateAndRelief
+            assertEquals(1_00_000L, incrementalTaxPlusSurcharge)
+        }
+
+        @Test
+        fun `GTV-14 Rule 119A rounds down unpaid principal to nearest 100 and exempts Senior Citizens under Section 207`() {
+            val regularBreakdown = HraAndInterestEngine.computeStatutoryInterestAndLateFee(
+                totalTaxLiabilityAfterCess = 85_689L,
+                totalTdsAndTcsCredit = 40_000L,
+                advanceTaxPaidByMarch31 = 0L,
+                monthsDelayedAfterDueDate234A = 0,
+                monthsFromApril1ToFilingMonth234B = 3,
+                netTaxableIncome = 12_00_000L,
+                isSeniorCitizenWithNoBusinessIncome = false
+            )
+            assertEquals(1_368L, regularBreakdown.interest234B)
+
+            val seniorBreakdown = HraAndInterestEngine.computeStatutoryInterestAndLateFee(
+                totalTaxLiabilityAfterCess = 85_689L,
+                totalTdsAndTcsCredit = 40_000L,
+                advanceTaxPaidByMarch31 = 0L,
+                monthsDelayedAfterDueDate234A = 0,
+                monthsFromApril1ToFilingMonth234B = 3,
+                netTaxableIncome = 12_00_000L,
+                isSeniorCitizenWithNoBusinessIncome = true
+            )
+            assertEquals(0L, seniorBreakdown.interest234B)
+        }
+
+        @Test
+        fun `GTV-15 Schedule FA Sunday vest date rolls back to Friday SBI TTBR`() {
+            val repo = object : SbiTtbrLookupRepository {
+                override fun getUsdTtbrOnOrBefore(isoDate: String): Double = when (isoDate) {
+                    "2025-03-16" -> 86.80 // Rolled back to Friday 2025-03-14
+                    "2025-08-14" -> 86.95
+                    else -> 85.65
+                }
+            }
+            val engine = ScheduleFaCalendarYearEngine(repo)
+            val row = engine.buildTableA3RowForLot(
+                lot = ForeignEquityLotInput(
+                    lotId = "LOT-1",
+                    companyName = "Alphabet Inc.",
+                    companyAddress = "1600 Amphitheatre Pkwy",
+                    zipCode = "94043",
+                    acquireDateIso = "2025-03-16",
+                    sharesVestedOrBought = 100.0,
+                    sharesSoldDuringCalendarYear = 0.0,
+                    acquisitionPricePerShareUsd = 150.0,
+                    peakSharePriceDuringHoldingPeriodUsd = 190.0,
+                    peakSharePriceDateIso = "2025-08-14",
+                    dec31ClosingSharePriceUsd = 175.0,
+                    grossDividendsReceivedUsd = 0.0,
+                    grossSaleProceedsUsd = 0.0
+                ),
+                calendarYear = 2025
+            )
+            assertEquals(13_02_000L, row.initialValueInr)
+        }
+
+        @Test
+        fun `GTV-16 Rule 128 Foreign Dividend TTBR rollback and Form 67 FTC cap`() {
+            val (grossDividendInr, allowableFtcInr) = CapitalGainsAndForeignAssetEngine.computeForm67ForeignTaxCredit(
+                foreignDividendUsd = 1_000.0,
+                foreignTaxWithheldUsd = 250.0,
+                precedingMonthEndSbiTtbr = 84.10,
+                indianEffectiveTaxRateOnTotalIncome = 0.2250
+            )
+            assertEquals(84_100L, grossDividendInr)
+            assertEquals(18_923L, allowableFtcInr)
+        }
+
+        @Test
+        fun `GTV-17 Updated Return ITR-U Sec 139 8A 25 pct additional tax within 12 months`() {
+            val itrUResult = RevisionAndHarvestingEngine.computeUpdatedReturnItrU(
+                baseAdditionalTax = 1_00_000L,
+                totalInterest234A_B_C = 20_000L,
+                filingWindow = ItrUWindow.WITHIN_12_MONTHS_FROM_AY_END
+            )
+            assertEquals(30_000L, itrUResult.additionalTaxUs140B)
+            assertEquals(1_50_000L, itrUResult.totalUpdatedReturnPayable)
+        }
+
+        @Test
+        fun `GTV-18 March LTCG Tax-Free Harvesting Radar detects 60000 headroom and saves 7500`() {
+            val (recommendedHarvest, taxSaved) = RevisionAndHarvestingEngine.computeMarchLtcgHarvestingHeadroom(
+                realizedLtcgSoFarRupees = 65_000L,
+                unrealizedLtcgAvailableRupees = 80_000L
+            )
+            assertEquals(60_000L, recommendedHarvest)
+            assertEquals(7_500L, taxSaved)
         }
     }
 }
