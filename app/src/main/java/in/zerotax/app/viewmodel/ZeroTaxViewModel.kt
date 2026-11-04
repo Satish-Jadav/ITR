@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.viewmodel
+package `in`.zerotax.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -41,6 +41,8 @@ data class ZeroTaxUiState(
     val hasPresumptive44ADA: Boolean = false,
     val foreignAssetsDeclared: Boolean = false,
     val isBiometricUnlocked: Boolean = true,
+    val citizenCategory: CitizenCategory = CitizenCategory.REGULAR_BELOW_60,
+    val showPasswordCheatsheet: Boolean = false,
     val newRegimeResult: RegimeComputationResult,
     val oldRegimeResult: RegimeComputationResult,
     val formRoutingDecision: FormRoutingDecision,
@@ -124,6 +126,15 @@ class ZeroTaxViewModel : ViewModel() {
         recompute()
     }
 
+    fun onCitizenCategoryChanged(category: CitizenCategory) {
+        _uiState.update { it.copy(citizenCategory = category) }
+        recompute()
+    }
+
+    fun onTogglePasswordCheatsheet(show: Boolean) {
+        _uiState.update { it.copy(showPasswordCheatsheet = show) }
+    }
+
     fun onNavigateToTap(tap: OnboardingTap?) {
         _uiState.update { it.copy(currentTap = tap) }
     }
@@ -204,7 +215,7 @@ class ZeroTaxViewModel : ViewModel() {
     private fun recompute() {
         val current = _uiState.value
         val input = TaxpayerFinancialInput(
-            citizenCategory = CitizenCategory.REGULAR_BELOW_60,
+            citizenCategory = current.citizenCategory,
             grossSalary = current.grossSalaryRupees,
             exemptHraAndAllowancesSec10 = current.exemptAllowancesSec10,
             professionalTaxSec16iii = current.professionalTaxSec16,
