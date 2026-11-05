@@ -10,6 +10,8 @@
 
 # PDFBox Android Parser
 -keep class com.tom_roush.pdfbox.** { *; }
+-dontwarn com.gemalto.jp2.**
+-dontwarn org.bouncycastle.**
 
 # On-Device Android AICore
 -keep class com.google.ai.edge.aicore.** { *; }
