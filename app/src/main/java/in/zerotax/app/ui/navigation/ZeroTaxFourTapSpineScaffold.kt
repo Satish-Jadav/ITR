@@ -922,16 +922,18 @@ private fun Stage2DocumentDiscovery(
 
                 Spacer(Modifier.height(10.dp))
 
-                // Quick Salary Chips for Real-Time Simulation
+                // Quick Salary Chips for Real-Time Simulation (Responsive FlowRow wraps gracefully on S23 and all screen widths)
                 Text(
                     text = "Quick Presets (1-Tap Simulation):",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(6.dp))
-                Row(
+                @OptIn(ExperimentalLayoutApi::class)
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     val presets = listOf(
                         "₹7.5L" to 750_000L,
@@ -1170,8 +1172,12 @@ private fun Stage3Reconciliation(
                 ) {
                     Text(
                         text = "Employer TDS (TAN: ${employerTan.ifBlank { "BLRM01234D" }})",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.weight(1f, fill = false),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
+                    Spacer(Modifier.width(8.dp))
                     StatutoryBadge(text = "Live Reconciled", tone = BadgeTone.SUCCESS)
                 }
 
@@ -1429,8 +1435,12 @@ private fun Stage4RegimeShowdown(
                 ) {
                     Text(
                         text = "Filing Form Recommendation",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.weight(1f, fill = false),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
+                    Spacer(Modifier.width(8.dp))
                     StatutoryBadge(text = selectedForm, tone = BadgeTone.STATUTORY)
                 }
                 Spacer(Modifier.height(4.dp))

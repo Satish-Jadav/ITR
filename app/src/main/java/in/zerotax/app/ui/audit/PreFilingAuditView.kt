@@ -105,18 +105,22 @@ fun PreFilingAuditView(
                     Column {
                         Text(
                             text = "Pre-Filing Audit & Notice Risk Shield",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                         Text(
                             text = "6-Gate CPC Compliance Verification (ZeroTax AI Audit Engine)",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Slate500
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
+                        Text("←", style = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onSurface))
                     }
                 },
                 actions = {
@@ -151,21 +155,23 @@ fun PreFilingAuditView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
                         Text(
                             text = "Audit Verification Score",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Slate500
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
                         )
                         Text(
                             text = "${auditReport.auditScorePercentage}% Notice-Proof",
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
                         )
                     }
+                    Spacer(Modifier.width(10.dp))
                     Button(
                         onClick = {
                             if (!isLegalAcknowledgementSigned) {
@@ -175,14 +181,14 @@ fun PreFilingAuditView(
                             }
                         },
                         enabled = auditReport.canFileDirectly,
-                        shape = RoundedCornerShape(4.dp),
+                        shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (isLegalAcknowledgementSigned) EnterpriseTeal600 else AmberWarning
                         ),
                         modifier = Modifier.height(44.dp)
                     ) {
                         Text(
-                            text = if (isLegalAcknowledgementSigned) "Proceed to Direct Filing →" else "Review & Sign Legal Terms →",
+                            text = if (isLegalAcknowledgementSigned) "File Direct →" else "Review & Sign →",
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }

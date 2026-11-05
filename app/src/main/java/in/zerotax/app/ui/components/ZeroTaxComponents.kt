@@ -250,25 +250,34 @@ fun EnterpriseTopHeader(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .padding(vertical = 8.dp)
         ) {
+            // Blinkit-style Minimal Top Bar (Brand + Identity + Profile/Lock)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    ZeroTaxBrandLogo(size = 28.dp, showText = false)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    ZeroTaxBrandLogo(size = 24.dp, showText = false)
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "ZeroTax",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     )
                     Spacer(Modifier.width(6.dp))
-                    // Security dot
+                    // On-device security indicator dot
                     Box(
                         modifier = Modifier
-                            .size(6.dp)
+                            .size(7.dp)
                             .clip(CircleShape)
                             .background(if (isVaultEncrypted) EmeraldSuccess else AmberWarning)
                     )
@@ -276,302 +285,309 @@ fun EnterpriseTopHeader(
                     StatutoryBadge(text = "AY $assessmentYear", tone = BadgeTone.STATUTORY)
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (onOpenChatbot != null) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(EnterpriseTeal50)
-                                .border(0.5.dp, EnterpriseTeal600, RoundedCornerShape(4.dp))
-                                .clickable { onOpenChatbot() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (pan.isNotBlank()) {
+                        StatutoryBadge(text = pan, tone = BadgeTone.NEUTRAL)
+                    }
+
+                    if (onLockVault != null) {
+                        IconButton(
+                            onClick = onLockVault,
+                            modifier = Modifier.size(32.dp)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Lock Vault",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    if (userProfile != null) {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.clickable { onSignOut?.invoke() }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = userProfile.displayName.take(8),
+                                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Horizontally Scrollable Fast Actions Strip (Responsive on all screen sizes, never wraps or overflows)
+            androidx.compose.foundation.lazy.LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                if (onOpenChatbot != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = EnterpriseTeal50,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, EnterpriseTeal600),
+                            modifier = Modifier.clickable { onOpenChatbot() }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.SmartToy,
                                     contentDescription = null,
-                                    tint = EnterpriseTeal900,
+                                    tint = EnterpriseTeal800,
                                     modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(Modifier.width(4.dp))
-                                Text("Chat & File", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                                Spacer(Modifier.width(5.dp))
+                                Text("AI Copilot", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
                             }
                         }
-                        Spacer(Modifier.width(6.dp))
                     }
+                }
 
-                    if (onOpenToolkit != null) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(IndigoStatutoryBg)
-                                .border(0.5.dp, IndigoStatutory, RoundedCornerShape(4.dp))
-                                .clickable { onOpenToolkit() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                if (onOpenToolkit != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = IndigoStatutoryBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, IndigoStatutory),
+                            modifier = Modifier.clickable { onOpenToolkit() }
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.Build,
                                     contentDescription = null,
                                     tint = IndigoStatutory,
                                     modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(Modifier.width(4.dp))
+                                Spacer(Modifier.width(5.dp))
                                 Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
                             }
                         }
-                        Spacer(Modifier.width(6.dp))
                     }
+                }
 
-                    if (onOpenAnalytics != null) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(EmeraldSuccessBg)
-                                .border(0.5.dp, EmeraldSuccess, RoundedCornerShape(4.dp))
-                                .clickable { onOpenAnalytics() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                if (onOpenAnalytics != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = EmeraldSuccessBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, EmeraldSuccess),
+                            modifier = Modifier.clickable { onOpenAnalytics() }
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.BarChart,
                                     contentDescription = null,
                                     tint = EmeraldSuccess,
                                     modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(Modifier.width(4.dp))
+                                Spacer(Modifier.width(5.dp))
                                 Text("Insights", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                             }
                         }
-                        Spacer(Modifier.width(6.dp))
                     }
+                }
 
-                    if (onOpenNotices != null) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(AmberWarningBg)
-                                .border(0.5.dp, AmberWarning, RoundedCornerShape(4.dp))
-                                .clickable { onOpenNotices() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                if (onOpenNotices != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = AmberWarningBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, AmberWarning),
+                            modifier = Modifier.clickable { onOpenNotices() }
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.Security,
                                     contentDescription = null,
                                     tint = AmberWarning,
                                     modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(Modifier.width(4.dp))
+                                Spacer(Modifier.width(5.dp))
                                 Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AmberWarning))
                             }
                         }
-                        Spacer(Modifier.width(6.dp))
                     }
+                }
 
-                    if (onOpenBusinessAudit != null) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(IndigoStatutoryBg)
-                                .border(0.5.dp, IndigoStatutory, RoundedCornerShape(4.dp))
-                                .clickable { onOpenBusinessAudit() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                if (onOpenThinkLikeCa != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.clickable { onOpenThinkLikeCa() }
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Domain,
-                                    contentDescription = null,
-                                    tint = IndigoStatutory,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text("Business Audit", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
-                            }
-                        }
-                        Spacer(Modifier.width(6.dp))
-                    }
-
-                    if (onOpenNriSuite != null) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(EnterpriseTeal50)
-                                .border(0.5.dp, EnterpriseTeal600, RoundedCornerShape(4.dp))
-                                .clickable { onOpenNriSuite() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Public,
-                                    contentDescription = null,
-                                    tint = EnterpriseTeal900,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text("NRI Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
-                            }
-                        }
-                        Spacer(Modifier.width(6.dp))
-                    }
-
-                    if (onOpenCorporateSuite != null) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(EnterpriseTeal50)
-                                .border(0.5.dp, EnterpriseTeal600, RoundedCornerShape(4.dp))
-                                .clickable { onOpenCorporateSuite() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Apartment,
-                                    contentDescription = null,
-                                    tint = EnterpriseTeal900,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text("ITR-5/6/7", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
-                            }
-                        }
-                        Spacer(Modifier.width(6.dp))
-                    }
-
-                    if (pan.isNotBlank()) {
-                        Text(
-                            text = pan,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        )
-                        Spacer(Modifier.width(8.dp))
-                    }
-                    StatutoryBadge(
-                        text = "SQLCipher StrongBox",
-                        tone = BadgeTone.SUCCESS
-                    )
-
-                    if (onOpenTrustShield != null) {
-                        Spacer(Modifier.width(6.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(EnterpriseTeal50)
-                                .border(0.5.dp, EnterpriseTeal600, RoundedCornerShape(4.dp))
-                                .clickable { onOpenTrustShield() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.VerifiedUser,
-                                    contentDescription = null,
-                                    tint = EnterpriseTeal700,
-                                    modifier = Modifier.size(11.dp)
-                                )
-                                Spacer(Modifier.width(3.dp))
-                                Text("Trust Shield", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
-                            }
-                        }
-                    }
-
-                    if (onOpenThinkLikeCa != null) {
-                        Spacer(Modifier.width(6.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(EmeraldSuccessBg)
-                                .border(0.5.dp, EmeraldSuccess, RoundedCornerShape(4.dp))
-                                .clickable { onOpenThinkLikeCa() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.TrendingUp,
                                     contentDescription = null,
                                     tint = EmeraldSuccess,
-                                    modifier = Modifier.size(11.dp)
+                                    modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(Modifier.width(3.dp))
-                                Text("Think Like a CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                                Spacer(Modifier.width(5.dp))
+                                Text("Think Like CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
                             }
                         }
                     }
+                }
 
-                    if (onOpenCaPortal != null) {
-                        Spacer(Modifier.width(6.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(IndigoStatutoryBg)
-                                .border(0.5.dp, IndigoStatutory, RoundedCornerShape(4.dp))
-                                .clickable { onOpenCaPortal() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                if (onOpenCaPortal != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.clickable { onOpenCaPortal() }
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.AssignmentInd,
                                     contentDescription = null,
                                     tint = IndigoStatutory,
-                                    modifier = Modifier.size(11.dp)
-                                )
-                                Spacer(Modifier.width(3.dp))
-                                Text("CA Desk", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
-                            }
-                        }
-                    }
-
-                    if (onLockVault != null) {
-                        Spacer(Modifier.width(6.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(Slate100)
-                                .border(0.5.dp, Slate300, RoundedCornerShape(4.dp))
-                                .clickable { onLockVault() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    tint = Slate700,
-                                    modifier = Modifier.size(11.dp)
-                                )
-                                Spacer(Modifier.width(3.dp))
-                                Text("Lock", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate700))
-                            }
-                        }
-                    }
-
-                    if (userProfile != null) {
-                        Spacer(Modifier.width(6.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
-                                .clickable { onSignOut?.invoke() }
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.AccountCircle,
-                                    contentDescription = null,
                                     modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(Modifier.width(4.dp))
-                                Text(
-                                    text = userProfile.displayName.take(10),
-                                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                )
-                                Spacer(Modifier.width(4.dp))
+                                Spacer(Modifier.width(5.dp))
+                                Text("CA Desk", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                            }
+                        }
+                    }
+                }
+
+                if (onOpenBusinessAudit != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.clickable { onOpenBusinessAudit() }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
                                 Icon(
-                                    imageVector = Icons.Default.ExitToApp,
-                                    contentDescription = "Sign Out",
-                                    modifier = Modifier.size(11.dp)
+                                    imageVector = Icons.Default.Domain,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(13.dp)
                                 )
+                                Spacer(Modifier.width(5.dp))
+                                Text("Business Audit", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                            }
+                        }
+                    }
+                }
+
+                if (onOpenNriSuite != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.clickable { onOpenNriSuite() }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Public,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(Modifier.width(5.dp))
+                                Text("NRI Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                            }
+                        }
+                    }
+                }
+
+                if (onOpenCorporateSuite != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.clickable { onOpenCorporateSuite() }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Apartment,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(Modifier.width(5.dp))
+                                Text("Corporate Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                            }
+                        }
+                    }
+                }
+
+                if (onOpenTrustShield != null) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.clickable { onOpenTrustShield() }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.VerifiedUser,
+                                    contentDescription = null,
+                                    tint = EnterpriseTeal700,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(Modifier.width(5.dp))
+                                Text("Trust Shield", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
                             }
                         }
                     }
@@ -1257,24 +1273,41 @@ fun ZeroTaxTopAppBar(
     TopAppBar(
         modifier = modifier,
         title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                ZeroTaxBrandLogo(size = 28.dp, showText = false)
-                Spacer(Modifier.width(10.dp))
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ZeroTaxBrandLogo(size = 26.dp, showText = false)
+                Spacer(Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f, fill = false)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
                         )
                         if (badgeText != null) {
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(6.dp))
                             StatutoryBadge(text = badgeText, tone = badgeTone)
                         }
                     }
                     if (subtitle != null) {
                         Text(
                             text = subtitle,
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp
+                            ),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -1283,7 +1316,13 @@ fun ZeroTaxTopAppBar(
         navigationIcon = {
             if (onBack != null) {
                 IconButton(onClick = onBack) {
-                    Text("←", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = Slate800))
+                    Text(
+                        "←",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
                 }
             }
         },

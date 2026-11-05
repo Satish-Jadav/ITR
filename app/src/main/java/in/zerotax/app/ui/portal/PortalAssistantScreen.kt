@@ -142,13 +142,20 @@ fun PortalAssistantScreen(
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 text = "Direct In-App ITR Filing Suite",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
                         Text(
-                            text = "CBDT AY 2026-27 • 100% In-App (No Portal Login Needed)",
+                            text = "CBDT AY 2026-27 • 100% In-App (No External Login)",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Slate400
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                 },

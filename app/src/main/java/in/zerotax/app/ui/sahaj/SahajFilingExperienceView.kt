@@ -348,19 +348,31 @@ fun SahajFilingExperienceView(
                 // Old Regime Card
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Slate50,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Slate200),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Old Regime", fontWeight = FontWeight.Bold, color = Slate700, fontSize = 13.sp)
+                        Text(
+                            text = "Old Regime",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 13.sp
+                        )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = "₹${Rupee.formatInr(oldRegimeTax)}",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold, color = Slate600)
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                         Spacer(Modifier.height(2.dp))
-                        Text("Needs 80C/80D proofs", fontSize = 10.sp, color = Slate500)
+                        Text(
+                            text = "Needs 80C/80D proofs",
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        )
                     }
                 }
             }
