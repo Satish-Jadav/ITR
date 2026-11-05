@@ -1,15 +1,20 @@
-﻿package `in`.zerotax.feature.portalbridge
+package `in`.zerotax.feature.portalbridge
 
 import `in`.zerotax.core.model.AisCategory
 import `in`.zerotax.core.model.AisTransactionRecord
 import `in`.zerotax.core.model.CitizenCategory
 import `in`.zerotax.core.model.Form60ClientProfile
 import `in`.zerotax.core.model.SmartTransactionNudge
+import `in`.zerotax.core.security.logging.ZeroTaxLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 class ItdTransactionFetcher {
+
+    companion object {
+        private const val TAG = "ZeroTaxITDFetcher"
+    }
 
     /**
      * Fetches comprehensive AIS / TIS and Pre-fill transaction records directly
@@ -19,6 +24,8 @@ class ItdTransactionFetcher {
         pan: String,
         assessmentYear: String = "2026-27"
     ): Result<List<AisTransactionRecord>> = withContext(Dispatchers.IO) {
+        val maskedPan = "${pan.take(2)}***${pan.takeLast(2)}"
+        ZeroTaxLogger.i(TAG, "fetchAisTransactions: starting for PAN $maskedPan AY $assessmentYear")
         try {
             delay(600) // Direct TLS round-trip with eportal.incometax.gov.in/iec/foservices/ais
 
@@ -73,8 +80,10 @@ class ItdTransactionFetcher {
                 )
             )
 
+            ZeroTaxLogger.i(TAG, "fetchAisTransactions succeeded: retrieved ${transactions.size} records")
             Result.success(transactions)
         } catch (e: Exception) {
+            ZeroTaxLogger.e(TAG, "fetchAisTransactions failed for PAN $maskedPan: ${e.message}", e)
             Result.failure(e)
         }
     }
