@@ -27,27 +27,36 @@ object DeterministicItrFormRouter {
             )
         }
 
-        // Section 44ADA Presumptive Profession Audit Floor (50%)
+        // Gate 2B: Section 44ADA Presumptive Profession Audit Floor (50%)
+        // Sec 44ADA(4) triggers mandatory 44AB audit ONLY if total income > basic exemption limit!
         if (profile.hasPresumptiveProfession44ADA && profile.declaredProfitPercentage44ADA < 50.0) {
-            reasons.add("SEC_44ADA_PROFIT_BELOW_50_PERCENT_REQUIRES_AUDIT")
-            return FormRoutingDecision(
-                selectedForm = ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB,
-                routingReasonCodes = reasons,
-                requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
-                requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
-            )
+            if (profile.totalIncomeRupees > profile.basicExemptionLimit) {
+                reasons.add("SEC_44ADA_PROFIT_BELOW_50_PERCENT_REQUIRES_AUDIT")
+                return FormRoutingDecision(
+                    selectedForm = ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB,
+                    routingReasonCodes = reasons,
+                    requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                    requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
+                )
+            } else {
+                reasons.add("SEC_44ADA_SUB_THRESHOLD_PROFIT_EXEMPT_FROM_AUDIT")
+            }
         }
 
-        // Section 44AD Presumptive Business Audit Floor (6% digital / 8% cash)
+        // Gate 2B: Section 44AD Presumptive Business Audit Floor (6% digital / 8% cash)
         val min44AdDeemedRate = if (profile.cashReceiptsPercentage44AD <= 5.0) 6.0 else 8.0
         if (profile.hasPresumptiveBusiness44AD && profile.declaredProfitPercentage44AD < min44AdDeemedRate) {
-            reasons.add("SEC_44AD_PROFIT_BELOW_${min44AdDeemedRate.toInt()}_PERCENT_REQUIRES_AUDIT")
-            return FormRoutingDecision(
-                selectedForm = ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB,
-                routingReasonCodes = reasons,
-                requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
-                requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
-            )
+            if (profile.totalIncomeRupees > profile.basicExemptionLimit) {
+                reasons.add("SEC_44AD_PROFIT_BELOW_${min44AdDeemedRate.toInt()}_PERCENT_REQUIRES_AUDIT")
+                return FormRoutingDecision(
+                    selectedForm = ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB,
+                    routingReasonCodes = reasons,
+                    requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                    requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
+                )
+            } else {
+                reasons.add("SEC_44AD_SUB_THRESHOLD_PROFIT_EXEMPT_FROM_AUDIT")
+            }
         }
 
         // Section 44AE Goods Carriage Vehicle Cap (10 Vehicles)
@@ -115,6 +124,10 @@ object DeterministicItrFormRouter {
         if (profile.hasBroughtForwardOrCarriedForwardLosses) {
             disqualifiedFromSimpleForms.add("HAS_BROUGHT_OR_CARRIED_FORWARD_LOSSES")
         }
+        // Gate 12B: Current year capital loss disqualifies ITR-1 / ITR-4 to protect 8-year loss carry-forward
+        if (profile.hasAnyCurrentYearCapitalLoss) {
+            disqualifiedFromSimpleForms.add("CURRENT_YEAR_CAPITAL_LOSS_REQUIRES_SCHEDULE_CG")
+        }
         if (profile.hasOtherCapitalGains ||
             (profile.hasCapitalGainsOrLosses && profile.equity112ALtcgRupees > LTCG_112A_EXEMPT_THRESHOLD)
         ) {
@@ -131,7 +144,9 @@ object DeterministicItrFormRouter {
                 routingReasonCodes = disqualifiedFromSimpleForms,
                 requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome &&
                         profile.residentialStatus == ResidentialStatus.RESIDENT_ORDINARILY_RESIDENT,
-                requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
+                requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP,
+                requiresForm10IeaBeforeDueDate = hasAnyPresumptive,
+                isLockedIntoNewRegimePermanently = profile.hasPriorYearForm10IeaOptOut
             )
         }
 
@@ -144,14 +159,18 @@ object DeterministicItrFormRouter {
                 selectedForm = ItrFormType.ITR_4_SUGAM,
                 routingReasonCodes = presumptiveReasons,
                 requiresScheduleFA = false,
-                requiresScheduleAL = false
+                requiresScheduleAL = false,
+                requiresForm10IeaBeforeDueDate = true,
+                isLockedIntoNewRegimePermanently = profile.hasPriorYearForm10IeaOptOut
             )
         } else {
             FormRoutingDecision(
                 selectedForm = ItrFormType.ITR_1_SAHAJ,
                 routingReasonCodes = listOf("SALARIED_AND_OTHER_SOURCES_WITHIN_SAHAJ_LIMITS"),
                 requiresScheduleFA = false,
-                requiresScheduleAL = false
+                requiresScheduleAL = false,
+                requiresForm10IeaBeforeDueDate = false,
+                isLockedIntoNewRegimePermanently = false
             )
         }
     }

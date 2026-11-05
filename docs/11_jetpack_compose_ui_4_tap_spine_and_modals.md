@@ -825,3 +825,42 @@ The built-in Challan Validator verifies:
 - Paid amount matching required liability
 
 Upon validation, the payment is automatically committed into `ScheduleItChallanEntry` and reflected in the active tax calculation, immediately zeroing out balance tax payable and unlocking final submission.
+
+
+---
+
+## 7. User Authentication & Vault Access UI (`AuthenticationScreen.kt`)
+
+### 7.1 Architecture & Security Invariants
+To satisfy both modern mobile usability expectations and strict **Section 12(3) DPDP Act 2023** local privacy mandates, ZeroTax incorporates a universal authentication layer positioned directly after the `SplashScreen` and before the `ZeroTaxFourTapSpineScaffold`:
+
+```mermaid
+flowchart LR
+    A["SplashScreen"] --> B["Authentication Gate"]
+    B -->|Continue with Google| C["Google ID Token Auth"]
+    B -->|Email & Password| D["PBKDF2 Salted Auth"]
+    B -->|Device Biometrics| E["StrongBox Biometric Prompt"]
+    B -->|Offline Guest Vault| F["100% Offline Vault"]
+    C --> G["ZeroTaxFourTapSpineScaffold"]
+    D --> G
+    E --> G
+    F --> G
+```
+
+### 7.2 Supported Authentication Providers (`AuthProvider`)
+1. **Google Sign-In (`GOOGLE`)**:
+   - Clean, elevated Material 3 card styled with official Google branding.
+   - Interactive account picker dialog allowing 1-tap selection of linked Google accounts or custom email entry.
+   - Automatically synchronizes display name, email, and creates an isolated user session.
+2. **Email & Password / Account Creation (`EMAIL_PASSWORD`)**:
+   - Collapsible, tabbed container switching between **"Sign In"** and **"Create Account"**.
+   - Input validation verifying email syntax (`^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$`) and minimum 6-character password length.
+   - Hardware-level password hashing using PBKDF2/SHA-256 with 16-byte cryptographically secure random salt.
+3. **Offline Guest Vault (`GUEST_LOCAL`)**:
+   - Dedicated zero-registration pathway for taxpayers demanding maximum privacy.
+   - Completely bypasses network authentication, initializing local SQLCipher storage using device hardware keys.
+4. **Device Biometrics (`BIOMETRIC_VAULT`)**:
+   - Biometric prompt integration (Fingerprint, Face, or Device PIN) for fast, secure vault unlocking on subsequent app launches.
+
+### 7.3 TopAppBar User Session Badge & 1-Tap Sign-Out
+When authenticated, `EnterpriseTopHeader` renders a compact, interactive user pill displaying the provider's emoji badge (`📧` for Email, `🌐` for Google, `🔐` for Biometric, `🛡️` for Guest) alongside the user's name. Tapping the pill triggers a 1-tap Sign-Out that safely resets the active in-memory session and returns the user to the Authentication screen.

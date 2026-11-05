@@ -194,6 +194,8 @@ fun ZeroTaxFourTapSpineScaffold(
                 pan = uiState.pan,
                 assessmentYear = uiState.assessmentYear,
                 isVaultEncrypted = !uiState.isVaultShredded,
+                userProfile = (uiState.authSessionState as? `in`.zerotax.core.model.AuthSessionState.Authenticated)?.user,
+                onSignOut = { viewModel.signOut() },
                 onOpenChatbot = { showChatbotFiling = true },
                 onOpenToolkit = { showTaxToolkit = true },
                 onOpenAnalytics = { showAnalyticsScreen = true },
