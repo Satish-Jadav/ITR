@@ -38,7 +38,10 @@ data class TaxpayerRoutingProfile(
     val requiresStatutoryAudit44AB: Boolean = false,
     val basicExemptionLimit: Long = 3_00_000L,
     val hasAnyCurrentYearCapitalLoss: Boolean = false,
-    val hasPriorYearForm10IeaOptOut: Boolean = false
+    val hasPriorYearForm10IeaOptOut: Boolean = false,
+    val entityType: PanEntityType = PanEntityType.INDIVIDUAL,
+    val isLlp: Boolean = false,
+    val isTrustOrSection8Charitable: Boolean = false
 )
 
 @Serializable

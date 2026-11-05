@@ -2413,3 +2413,54 @@ Because the **New Income-tax Bill / Act, 2025** replaces the legacy section numb
 | **Return Filing, Belated, Revised & Updated Return (`ITR-U`)** | `Section 139(1)`, `139(4)`, `139(5)`, `139(8A)`, `140B` | `Clause 263` & `Clause 267` |
 | **Employer Unpaid TDS Demand Bar** | `Section 205` | `Clause 401` |
 | **Default Interest (`234A`, `234B`, `234C`) & Fee (`234F`)** | `Sections 234A, 234B, 234C, 234F` | `Clauses 423–428` |
+
+---
+
+## 28. Non-Individual Corporate & Institutional Tax Suite (ITR-5, ITR-6, ITR-7)
+
+### 28.1 Overview & Statutory Entity Classification
+While ITR-1 Sahaj, ITR-2, ITR-3, and ITR-4 Sugam serve individuals and Hindu Undivided Families (HUFs), ZeroTax delivers end-to-end statutory computation engines, deterministic routing, and specialized Jetpack Compose interactive calculators for Non-Individual entities:
+
+| ITR Form | Target Assessee Category | Governing Statutes & Special Provisions | Core Tax Engine Class |
+| :--- | :--- | :--- | :--- |
+| **ITR-5** | Partnership Firms, LLPs, AOPs, BOIs, Local Authorities, Artificial Juridical Persons | Section 40(b) Partner Remuneration & Interest Limits, Flat 30% Tax, 12% Surcharge (> ?1 Cr) with Marginal Relief, Section 115JC Alternate Minimum Tax (AMT @ 18.5%), Section 115JD AMT Credit | CorporateAndTrustTaxEngine.computeItr5FirmTax |
+| **ITR-6** | Domestic Companies & Foreign Companies | Section 115BAA (22% Concessional Rate for Domestic Co), Section 115BAB (15% New Mfg Co), Normal Provisions (25% if turnover <= ?400 Cr, else 30%), Section 115JB Minimum Alternate Tax (MAT @ 15% on Book Profits), Section 115JAA MAT Credit Carry-forward | CorporateAndTrustTaxEngine.computeItr6CorporateTax |
+| **ITR-7** | Charitable & Religious Trusts, NGOs, Political Parties, Scientific Research Entities | Section 11(1)(a) 15% Unconditional Accumulation, Section 11(1) 85% Mandatory Application to Charitable Purposes in India, Section 11(1)(d) Corpus Donation Exemption, Form 9A & Form 10 Accumulation, Section 13 Violations taxed at Maximum Marginal Rate (MMR 34.944%) u/s 115BBI, Section 13A Political Party 100% Exemption | CorporateAndTrustTaxEngine.computeItr7TrustTax |
+
+### 28.2 ITR-5: Partnership Firms & Limited Liability Partnerships (LLPs)
+1. **Section 40(b)(iv) Interest on Capital Ceiling:**
+   - Partner interest on capital is capped at **12% simple interest per annum**.
+   - Any payment in excess of 12% p.a. or not authorized by the partnership deed is disallowed and added back to book profits.
+2. **Section 40(b)(v) Working Partner Remuneration Cap:**
+   - On the first **?3,00,000 of book profit** (or in case of a loss): **?1,50,000 or 90% of book profit** (whichever is greater).
+   - On the balance of book profit: **60% of book profit**.
+   - Any excess remuneration paid is disallowed and taxed at the firm level.
+3. **Flat 30% Tax & Surcharge Marginal Relief:**
+   - Firm profits are taxed at a flat **30% + 4% cess = 31.20%**.
+   - Surcharge of **12%** applies if total income exceeds **?1 Crore**, subject to statutory marginal relief under the proviso to Section 112.
+4. **Section 115JC Alternate Minimum Tax (AMT):**
+   - Applies at **18.5%** on Adjusted Total Income. If AMT exceeds normal tax, the firm pays AMT and generates **Section 115JD AMT Credit** carry-forward for up to 15 assessment years.
+   - Note: Section 44AD(6) explicitly prohibits LLPs from presumptive taxation under Section 44AD/44ADA; all LLPs are deterministically routed to **ITR-5**.
+
+### 28.3 ITR-6: Domestic & Foreign Companies (Section 115BAA & MAT)
+1. **Section 115BAA (22% Concessional Corporate Tax):**
+   - Domestic companies can elect Section 115BAA to pay **22% base tax + 10% flat surcharge + 4% cess = 25.168% effective tax rate**.
+   - **Exemption from MAT:** Companies opting for Section 115BAA or 115BAB are statutorily exempt from Minimum Alternate Tax under Section 115JB(5A).
+2. **Section 115BAB (15% Concessional Rate for New Manufacturing):**
+   - Concessional rate of **15% base tax + 10% surcharge + 4% cess = 17.16% effective tax rate** for new manufacturing domestic companies incorporated on or after October 1, 2019.
+3. **Normal Corporate Tax & Section 115JB MAT:**
+   - For companies under normal provisions: 25% base tax (if turnover <= ?400 Cr in FY 2023-24) or 30%. Surcharge is 7% (> ?1 Cr) or 12% (> ?10 Cr).
+   - Subject to **Section 115JB MAT @ 15% on Book Profits**.
+   - If MAT > Normal Tax, MAT is payable and the difference generates **Section 115JAA MAT Credit** carry-forward for 15 years.
+
+### 28.4 ITR-7: Trusts, NGOs & Political Parties (Sections 11, 12, 13, 13A & 115BBI)
+1. **Section 11 & 12 Charitable Exemption Mandate:**
+   - **15% Unconditional Statutory Accumulation:** Section 11(1)(a) permits 15% of gross voluntary contributions and other income to be unconditionally accumulated.
+   - **85% Mandatory Application:** Remaining 85% must be applied to charitable or religious purposes in India during the previous year.
+   - **Form 9A (Deemed Application):** Unspent amounts can be deemed applied if applied in the subsequent year.
+   - **Form 10 (Accumulation up to 5 Years):** Amounts accumulated for a specific purpose for up to 5 years count toward the 85% requirement.
+   - **Section 11(1)(d) Corpus Donations:** Fully exempt from the 85% application requirement.
+2. **Section 13 Violations & Section 115BBI Tax at Maximum Marginal Rate (MMR):**
+   - Any private benefit to trustees/founders u/s 13(1)(c) or unapproved investment u/s 13(1)(d) violates exemption conditions and is taxed at the **Maximum Marginal Rate (30% + 12% surcharge + 4% cess = 34.944%)** under **Section 115BBI**.
+3. **Section 13A Political Parties:**
+   - 100% tax exemption on voluntary contributions subject to maintaining audited books of accounts and filing Form 24A with the Election Commission of India under Section 29C of the Representation of the People Act, 1951.

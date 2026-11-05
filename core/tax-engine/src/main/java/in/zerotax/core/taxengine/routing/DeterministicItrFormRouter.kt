@@ -2,6 +2,7 @@ package `in`.zerotax.core.taxengine.routing
 
 import `in`.zerotax.core.model.FormRoutingDecision
 import `in`.zerotax.core.model.ItrFormType
+import `in`.zerotax.core.model.PanEntityType
 import `in`.zerotax.core.model.ResidentialStatus
 import `in`.zerotax.core.model.TaxpayerRoutingProfile
 
@@ -17,7 +18,74 @@ object DeterministicItrFormRouter {
     fun routeTaxpayer(profile: TaxpayerRoutingProfile): FormRoutingDecision {
         val reasons = mutableListOf<String>()
 
+        // Non-Individual Entity Routing (ITR-5, ITR-6, ITR-7)
+        when (profile.entityType) {
+            PanEntityType.COMPANY -> {
+                val isCharitable = profile.isTrustOrSection8Charitable
+                val form = if (isCharitable) ItrFormType.ITR_7 else ItrFormType.ITR_6
+                val code = if (isCharitable) "SECTION_8_CHARITABLE_COMPANY_MANDATED_TO_FILE_ITR7" else "CORPORATE_BODY_MANDATED_TO_FILE_ITR6"
+                return FormRoutingDecision(
+                    selectedForm = form,
+                    routingReasonCodes = listOf(code),
+                    requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                    requiresScheduleAL = false
+                )
+            }
+            PanEntityType.TRUST -> {
+                return FormRoutingDecision(
+                    selectedForm = ItrFormType.ITR_7,
+                    routingReasonCodes = listOf("TRUST_OR_CHARITABLE_INSTITUTION_MANDATED_TO_FILE_ITR7"),
+                    requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                    requiresScheduleAL = false
+                )
+            }
+            PanEntityType.AOP, PanEntityType.BOI, PanEntityType.LOCAL_AUTHORITY -> {
+                return FormRoutingDecision(
+                    selectedForm = ItrFormType.ITR_5,
+                    routingReasonCodes = listOf("${profile.entityType.name}_MANDATED_TO_FILE_ITR5"),
+                    requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                    requiresScheduleAL = false
+                )
+            }
+            PanEntityType.ARTIFICIAL_JURIDICAL -> {
+                val form = if (profile.isTrustOrSection8Charitable) ItrFormType.ITR_7 else ItrFormType.ITR_5
+                val code = if (profile.isTrustOrSection8Charitable) "AJP_TRUST_MANDATED_TO_FILE_ITR7" else "ARTIFICIAL_JURIDICAL_PERSON_MANDATED_TO_FILE_ITR5"
+                return FormRoutingDecision(
+                    selectedForm = form,
+                    routingReasonCodes = listOf(code),
+                    requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                    requiresScheduleAL = false
+                )
+            }
+            PanEntityType.FIRM -> {
+                if (profile.isLlp) {
+                    return FormRoutingDecision(
+                        selectedForm = ItrFormType.ITR_5,
+                        routingReasonCodes = listOf("LLP_EXCLUDED_FROM_PRESUMPTIVE_MANDATED_TO_FILE_ITR5"),
+                        requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                        requiresScheduleAL = false
+                    )
+                }
+            }
+            else -> {
+                // Individual and HUF proceed with standard multi-gate routing
+            }
+        }
+
         if (profile.requiresStatutoryAudit44AB) {
+            val targetForm = when (profile.entityType) {
+                PanEntityType.FIRM -> ItrFormType.ITR_5
+                else -> ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB
+            }
+            if (targetForm != ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB) {
+                reasons.add("SEC_44AB_STATUTORY_AUDIT_ROUTED_TO_${targetForm.name}")
+                return FormRoutingDecision(
+                    selectedForm = targetForm,
+                    routingReasonCodes = reasons,
+                    requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                    requiresScheduleAL = false
+                )
+            }
             reasons.add("SEC_44AB_STATUTORY_AUDIT_REQUIRED")
             return FormRoutingDecision(
                 selectedForm = ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB,
@@ -86,9 +154,10 @@ object DeterministicItrFormRouter {
             (profile.hasPresumptiveProfession44ADA && profile.grossReceipts44ADARupees > max44AdaTurnover) ||
             (profile.hasPresumptiveBusiness44AD && profile.grossReceipts44ADRupees > max44AdTurnover)
         ) {
-            reasons.add("BUSINESS_OR_PROFESSION_REQUIRES_ITR3")
+            val targetForm = if (profile.entityType == PanEntityType.FIRM) ItrFormType.ITR_5 else ItrFormType.ITR_3
+            reasons.add("BUSINESS_OR_PROFESSION_REQUIRES_${targetForm.name}")
             return FormRoutingDecision(
-                selectedForm = ItrFormType.ITR_3,
+                selectedForm = targetForm,
                 routingReasonCodes = reasons,
                 requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
                 requiresScheduleAL = profile.totalIncomeRupees > ITR_1_AND_4_INCOME_CAP
@@ -138,7 +207,13 @@ object DeterministicItrFormRouter {
         }
 
         if (disqualifiedFromSimpleForms.isNotEmpty()) {
-            val targetForm = if (hasAnyPresumptive) ItrFormType.ITR_3 else ItrFormType.ITR_2
+            val targetForm = if (profile.entityType == PanEntityType.FIRM) {
+                ItrFormType.ITR_5
+            } else if (hasAnyPresumptive) {
+                ItrFormType.ITR_3
+            } else {
+                ItrFormType.ITR_2
+            }
             return FormRoutingDecision(
                 selectedForm = targetForm,
                 routingReasonCodes = disqualifiedFromSimpleForms,
@@ -162,6 +237,13 @@ object DeterministicItrFormRouter {
                 requiresScheduleAL = false,
                 requiresForm10IeaBeforeDueDate = true,
                 isLockedIntoNewRegimePermanently = profile.hasPriorYearForm10IeaOptOut
+            )
+        } else if (profile.entityType == PanEntityType.FIRM) {
+            FormRoutingDecision(
+                selectedForm = ItrFormType.ITR_5,
+                routingReasonCodes = listOf("PARTNERSHIP_FIRM_MANDATED_TO_FILE_ITR5"),
+                requiresScheduleFA = profile.holdsForeignAssetsOrForeignIncome,
+                requiresScheduleAL = false
             )
         } else {
             FormRoutingDecision(

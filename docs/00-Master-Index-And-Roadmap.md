@@ -36,6 +36,7 @@ This master index provides the consolidated architecture, product specifications
 | **Phase 1 (MVP)** | Weeks 1 – 6 | Salaried & Freelance Zero-Friction Filing | `ITR-1 (Sahaj)`, `ITR-4 (Sugam - 44ADA/44AD)` | **₹0** (Assisted WebView + On-Device `AICore`) |
 | **Phase 2 (Scale)** | Weeks 7 – 12 | Investors, Account Aggregator & UPI Tax Pay | `ITR-2`, `Schedule CG`, `Schedule 112A`, `CYLA/BFLA/CFL`, `Challan 280` | AA per-consent fee (or CAMS PDF local parse at ₹0) |
 | **Phase 3 (Moat)** | Weeks 13 – 18 | Foreign RSUs, Vernacular AI Copilot & Revisions | `Schedule FA`, `Form 67`, `Sec 139(5) Revised`, `ITR-U`, `EN/HI/GU` Notice AI | **₹0** (Bundled SBI TTBR DB + On-Device `AICore`) |
+| **Phase 4 (Enterprise)** | Weeks 19 – 24 | Corporate Entities, LLPs, Trusts & Institutional Audits | `ITR-5 (LLP/Firm Sec 40(b))`, `ITR-6 (Corporate Sec 115BAA/MAT)`, `ITR-7 (Trust Sec 11/12/13/13A/115BBI)` | **₹0** (Deterministic Local Pure-JVM Engine) |
 
 ---
 

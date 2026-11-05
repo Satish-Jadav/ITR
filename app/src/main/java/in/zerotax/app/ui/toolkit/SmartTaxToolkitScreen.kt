@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.corporate.CorporateAndTrustSuiteContent
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.model.Rupee
 import `in`.zerotax.feature.portalbridge.ChallanTaxType
@@ -66,7 +67,8 @@ enum class ToolkitTab(val label: String, val icon: String) {
     FORM_15G_15H("Form 15G/H Zero-TDS", "🛡️"),
     RESIDENTIAL_STATUS("NRI & Family Arbitrage", "🌐"),
     REFUND_AUDIT_244A("Refund 244A & GST", "⚖️"),
-    SCHEDULE_AL_WEALTH("Schedule AL & Wealth", "🏛️")
+    SCHEDULE_AL_WEALTH("Schedule AL & Wealth", "🏛️"),
+    CORPORATE_SUITE("ITR-5/6/7 Corporate", "🏢")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,6 +169,7 @@ fun SmartTaxToolkitScreen(
                     ToolkitTab.RESIDENTIAL_STATUS -> ResidentialStatusAndFamilyArbitrageView()
                     ToolkitTab.REFUND_AUDIT_244A -> RefundAuditAndGstView()
                     ToolkitTab.SCHEDULE_AL_WEALTH -> ScheduleAlAndWealthView()
+                    ToolkitTab.CORPORATE_SUITE -> CorporateAndTrustSuiteContent(pan = pan)
                 }
             }
         }

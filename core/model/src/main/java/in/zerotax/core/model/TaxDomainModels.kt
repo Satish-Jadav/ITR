@@ -15,6 +15,9 @@ enum class ItrFormType {
     ITR_4_SUGAM,
     ITR_2,
     ITR_3,
+    ITR_5,
+    ITR_6,
+    ITR_7,
     UNSUPPORTED_REQUIRES_CA_AUDIT_44AB
 }
 
