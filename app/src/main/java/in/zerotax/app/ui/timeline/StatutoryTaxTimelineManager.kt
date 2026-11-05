@@ -358,7 +358,7 @@ fun StatutoryReminderModal(
                             ) {
                                 Text(
                                     text = milestone.title,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                 )
                                 Text(
                                     text = milestone.dateText,

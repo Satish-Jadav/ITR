@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -174,12 +175,33 @@ fun StatutoryBadge(
     tone: BadgeTone = BadgeTone.NEUTRAL,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
     val (bgColor, textColor, borderColor) = when (tone) {
-        BadgeTone.SUCCESS -> Triple(EmeraldSuccessBg, EmeraldSuccess, EmeraldSuccess.copy(alpha = 0.3f))
-        BadgeTone.WARNING -> Triple(AmberWarningBg, AmberWarning, AmberWarning.copy(alpha = 0.3f))
-        BadgeTone.DANGER  -> Triple(CrimsonDangerBg, CrimsonDanger, CrimsonDanger.copy(alpha = 0.3f))
-        BadgeTone.STATUTORY -> Triple(IndigoStatutoryBg, IndigoStatutory, IndigoStatutory.copy(alpha = 0.3f))
-        BadgeTone.NEUTRAL -> Triple(Slate100, Slate700, Slate300)
+        BadgeTone.SUCCESS -> Triple(
+            if (isDark) EmeraldSuccessBgDark else EmeraldSuccessBg,
+            if (isDark) EnterpriseTeal300 else EmeraldSuccess,
+            EmeraldSuccess.copy(alpha = 0.3f)
+        )
+        BadgeTone.WARNING -> Triple(
+            if (isDark) AmberWarningBgDark else AmberWarningBg,
+            if (isDark) Color(0xFFFDE68A) else AmberWarning,
+            AmberWarning.copy(alpha = 0.3f)
+        )
+        BadgeTone.DANGER  -> Triple(
+            if (isDark) CrimsonDangerBgDark else CrimsonDangerBg,
+            if (isDark) Color(0xFFFCA5A5) else CrimsonDanger,
+            CrimsonDanger.copy(alpha = 0.3f)
+        )
+        BadgeTone.STATUTORY -> Triple(
+            if (isDark) IndigoStatutoryBgDark else IndigoStatutoryBg,
+            if (isDark) Color(0xFF93C5FD) else IndigoStatutory,
+            IndigoStatutory.copy(alpha = 0.3f)
+        )
+        BadgeTone.NEUTRAL -> Triple(
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+            MaterialTheme.colorScheme.outlineVariant
+        )
     }
 
     Box(
@@ -1001,12 +1023,13 @@ fun RegimeComparisonInstitutionalCard(
 ) {
     val taxDelta = oldRegimeTax - newRegimeTax
     val isNewBetter = taxDelta >= 0
+    val isDark = isSystemInDarkTheme()
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
     ) {
@@ -1017,11 +1040,11 @@ fun RegimeComparisonInstitutionalCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Statutory Regime Comparison (AY 2026-27)",
+                    text = "Regime Comparison (AY 2026-27)",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 StatutoryBadge(
-                    text = if (isNewBetter) "New Regime Optimal" else "Old Regime Optimal",
+                    text = if (isNewBetter) "New Regime Best" else "Old Regime Best",
                     tone = BadgeTone.SUCCESS
                 )
             }
@@ -1032,14 +1055,14 @@ fun RegimeComparisonInstitutionalCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(4.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    .padding(8.dp),
+                    .padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "NEW REGIME (115BAC)",
+                        text = "NEW REGIME",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -1059,9 +1082,9 @@ fun RegimeComparisonInstitutionalCard(
                         )
                     }
                     Text(
-                        text = if (newRebate87A > 0) "Includes Sec 87A: -${Rupee(newRebate87A)}" else "Std Ded: ₹75,000",
+                        text = if (newRebate87A > 0) "Includes Sec 87A rebate" else "Std Ded: ₹75,000",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Slate500
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -1079,7 +1102,7 @@ fun RegimeComparisonInstitutionalCard(
                     Text(
                         text = "OLD REGIME",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = Slate600
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(4.dp))
                     AnimatedContent(
@@ -1097,9 +1120,9 @@ fun RegimeComparisonInstitutionalCard(
                         )
                     }
                     Text(
-                        text = "Ch VI-A: ${Rupee(oldDeductions)}",
+                        text = "Deductions: ${Rupee(oldDeductions)}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Slate500
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -1108,28 +1131,39 @@ fun RegimeComparisonInstitutionalCard(
 
             // Net Benefit Callout
             val savingsText = if (isNewBetter) {
-                "Selecting New Regime saves ${Rupee(taxDelta)} under AY 2026-27 ₹12 Lakh threshold"
+                "Selecting New Regime saves ${Rupee(taxDelta)} under AY 2026-27 rules"
             } else {
-                "Selecting Old Regime saves ${Rupee(-taxDelta)} via itemized Chapter VI-A deductions"
+                "Selecting Old Regime saves ${Rupee(-taxDelta)} via itemized deductions"
+            }
+
+            val calloutBg = if (isNewBetter) {
+                if (isDark) EmeraldSuccessBgDark else EmeraldSuccessBg
+            } else {
+                if (isDark) IndigoStatutoryBgDark else IndigoStatutoryBg
+            }
+            val calloutText = if (isNewBetter) {
+                if (isDark) EnterpriseTeal300 else EmeraldSuccess
+            } else {
+                if (isDark) Color(0xFF93C5FD) else IndigoStatutory
             }
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(if (isNewBetter) EmeraldSuccessBg else IndigoStatutoryBg)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(calloutBg)
                     .border(
                         0.5.dp,
-                        if (isNewBetter) EmeraldSuccess.copy(alpha = 0.4f) else IndigoStatutory.copy(alpha = 0.4f),
-                        RoundedCornerShape(4.dp)
+                        calloutText.copy(alpha = 0.4f),
+                        RoundedCornerShape(8.dp)
                     )
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
             ) {
                 Text(
                     text = savingsText,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = if (isNewBetter) EmeraldSuccess else IndigoStatutory
+                        color = calloutText
                     )
                 )
             }

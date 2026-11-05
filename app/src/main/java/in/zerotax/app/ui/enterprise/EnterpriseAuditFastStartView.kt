@@ -117,14 +117,14 @@ fun EnterpriseAuditFastStartView(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = IndigoStatutory, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Chartered Accountant & Auditor Desk", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                        Text("Chartered Accountant & Auditor Desk", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                     }
                     StatutoryBadge(text = "Sec 44AB Ready", tone = BadgeTone.SUCCESS)
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = "Pair with your CA using an on-device 6-digit code for Form 3CD/3CA verification, or maximize your legal deductions to get a full refund.",
-                    style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 )
                 Spacer(Modifier.height(10.dp))
                 Row(
@@ -417,11 +417,11 @@ fun EnterpriseAuditFastStartView(
                     Icon(
                         imageVector = Icons.Default.CreditCard,
                         contentDescription = null,
-                        tint = Slate900,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text("Pay Challan 280", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                    Text("Pay Challan 280", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                 }
             }
 

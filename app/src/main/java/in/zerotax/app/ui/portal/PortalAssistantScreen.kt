@@ -506,7 +506,7 @@ fun PortalAssistantScreen(
                             Text(
                                 text = currentExplanation!!.plainLanguageSummary,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Slate800
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -514,7 +514,7 @@ fun PortalAssistantScreen(
                     Text(
                         text = "Select any question above to get an instant, plain-language statutory answer right here without leaving your filing session.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Slate500,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
                 }

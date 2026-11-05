@@ -440,13 +440,13 @@ fun SahajFilingExperienceView(
                         Icon(
                             imageVector = Icons.Default.AccountBalance,
                             contentDescription = null,
-                            tint = Slate700,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(Modifier.width(10.dp))
                         Column {
-                            Text("State Bank of India", fontWeight = FontWeight.Bold, color = Slate900, fontSize = 13.sp)
-                            Text("Account: ••••••••1234 • IFSC: SBIN0001234", color = Slate500, fontSize = 11.sp)
+                            Text("State Bank of India", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
+                            Text("Account: ••••••••1234 • IFSC: SBIN0001234", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         }
                     }
                     StatutoryBadge(text = "Primary Refund", tone = BadgeTone.SUCCESS)
@@ -469,13 +469,13 @@ fun SahajFilingExperienceView(
                     Icon(
                         imageVector = Icons.Default.CreditCard,
                         contentDescription = null,
-                        tint = Slate900,
+                        tint = PureWhite,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "Pay ₹${Rupee.formatInr(taxPayable)} Tax via Instant UPI / Challan 280",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = PureWhite)
                     )
                 }
             }

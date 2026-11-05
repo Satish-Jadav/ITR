@@ -132,4 +132,31 @@ class ConversationalTaxFilingBotTest {
         // Verify that step did not prematurely advance during informational query
         assertEquals(ChatStep.WELCOME, bot.currentStep)
     }
+
+    @Test
+    fun testParsingSalaryLpaAndDecimalNotation() {
+        // Test 1: 9.36lpa
+        val bot1 = ConversationalTaxFilingBot()
+        bot1.processUserMessage("Start Filing Return")
+        bot1.processUserMessage("9.36lpa")
+        assertEquals(936_000L, bot1.snapshot.grossSalary)
+
+        // Test 2: 9.36 lakh
+        val bot2 = ConversationalTaxFilingBot()
+        bot2.processUserMessage("Start Filing Return")
+        bot2.processUserMessage("9.36 lakh")
+        assertEquals(936_000L, bot2.snapshot.grossSalary)
+
+        // Test 3: 12.5 LPA
+        val bot3 = ConversationalTaxFilingBot()
+        bot3.processUserMessage("Start Filing Return")
+        bot3.processUserMessage("12.5 LPA")
+        assertEquals(1_250_000L, bot3.snapshot.grossSalary)
+
+        // Test 4: 1.5cr
+        val bot4 = ConversationalTaxFilingBot()
+        bot4.processUserMessage("Start Filing Return")
+        bot4.processUserMessage("1.5cr")
+        assertEquals(15_000_000L, bot4.snapshot.grossSalary)
+    }
 }

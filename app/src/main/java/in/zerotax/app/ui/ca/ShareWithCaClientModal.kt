@@ -52,7 +52,7 @@ fun ShareWithCaClientModal(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = PureWhite,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -63,8 +63,8 @@ fun ShareWithCaClientModal(
                 )
                 Spacer(Modifier.width(8.dp))
                 Column {
-                    Text("Share Return with Your CA / Auditor", fontWeight = FontWeight.Bold, color = Slate900, fontSize = 16.sp)
-                    Text("Secure Single-Use Pairing Code", style = TextStyle(fontSize = 11.sp, color = Slate500))
+                    Text("Share Return with Your CA / Auditor", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
+                    Text("Secure Single-Use Pairing Code", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
             }
         },
@@ -72,7 +72,7 @@ fun ShareWithCaClientModal(
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Provide this 6-digit code to your Chartered Accountant. They will enter it into their CA Verification Portal to review your schedules, verify Section 44AB books, and sign off on your return.",
-                    style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 12.sp)
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                 )
 
                 Spacer(Modifier.height(14.dp))
@@ -152,8 +152,8 @@ fun ShareWithCaClientModal(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Audit Verification Status", style = TextStyle(fontSize = 10.sp, color = Slate500))
-                            Text(auditStatus.label, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Slate900))
+                            Text("Audit Verification Status", style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                            Text(auditStatus.label, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                         }
                         val tone = when (auditStatus) {
                             ClientAuditStatus.APPROVED_SIGNED_OFF -> BadgeTone.SUCCESS

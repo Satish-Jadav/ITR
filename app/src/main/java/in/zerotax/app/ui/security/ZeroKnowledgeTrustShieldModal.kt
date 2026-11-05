@@ -3,6 +3,7 @@ package `in`.zerotax.app.ui.security
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -53,11 +55,11 @@ fun ZeroKnowledgeTrustShieldModal(
                 Column {
                     Text(
                         "Zero-Knowledge Hardware Vault",
-                        style = TextStyle(fontWeight = FontWeight.Bold, color = Slate900, fontSize = 16.sp)
+                        style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                     )
                     Text(
                         "100% On-Device End-to-End Encryption Guarantee",
-                        style = TextStyle(fontSize = 11.sp, color = Slate500)
+                        style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                 }
             }
@@ -71,14 +73,14 @@ fun ZeroKnowledgeTrustShieldModal(
             ) {
                 Text(
                     text = "As a modern privacy-first tax technology, ZeroTax is built on a mathematical zero-knowledge principle: We cannot see, store, or sell your financial data even if we wanted to.",
-                    style = MaterialTheme.typography.bodySmall.copy(color = Slate700, fontSize = 12.sp, lineHeight = 16.sp)
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 16.sp)
                 )
 
                 // Side-by-side Transparency Matrix
                 // 1. WHAT ZEROTAX SERVERS CAN SEE
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = EmeraldSuccessBg,
+                    color = if (isSystemInDarkTheme()) EmeraldSuccessBgDark else EmeraldSuccessBg,
                     border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess.copy(alpha = 0.5f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -88,7 +90,7 @@ fun ZeroKnowledgeTrustShieldModal(
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 "What ZeroTax Servers Can See: ABSOLUTELY NOTHING",
-                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Slate900)
+                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = if (isSystemInDarkTheme()) Color(0xFF6EE7B7) else EmeraldDark)
                             )
                         }
                         Spacer(Modifier.height(4.dp))
@@ -96,7 +98,7 @@ fun ZeroKnowledgeTrustShieldModal(
                             text = "• Zero financial numbers, salary, bank accounts, or PAN sent to our cloud.\n" +
                                    "• Zero telemetry or third-party behavioral ad trackers.\n" +
                                    "• Zero remote server databases storing your tax draft.",
-                            style = TextStyle(fontSize = 11.sp, color = Slate700, lineHeight = 16.sp)
+                            style = TextStyle(fontSize = 11.sp, color = if (isSystemInDarkTheme()) Slate200 else Slate700, lineHeight = 16.sp)
                         )
                     }
                 }
@@ -114,7 +116,7 @@ fun ZeroKnowledgeTrustShieldModal(
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 "What Stays On-Device & Hardware Encrypted",
-                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = EnterpriseTeal900)
+                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = if (isSystemInDarkTheme()) EnterpriseTeal200 else EnterpriseTeal900)
                             )
                         }
                         Spacer(Modifier.height(4.dp))
@@ -123,7 +125,7 @@ fun ZeroKnowledgeTrustShieldModal(
                                    "• Form 16, Bank Interest, AIS/26AS tax credits\n" +
                                    "• Encrypted under AES-256-GCM via Android StrongBox KeyStore\n" +
                                    "• Protected by device biometric signature (Fingerprint / Face ID).",
-                            style = TextStyle(fontSize = 11.sp, color = Slate700, lineHeight = 16.sp)
+                            style = TextStyle(fontSize = 11.sp, color = if (isSystemInDarkTheme()) Slate200 else Slate700, lineHeight = 16.sp)
                         )
                     }
                 }
@@ -131,23 +133,23 @@ fun ZeroKnowledgeTrustShieldModal(
                 // 3. SHARING WITH YOUR CA / AUDITOR
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Slate50,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Slate200),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.VpnKey, contentDescription = null, tint = Slate700, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.VpnKey, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 "When Sharing with Your CA",
-                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Slate900)
+                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
                             )
                         }
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = "A single-use 6-digit pairing code securely encrypts your audit dossier. Only your designated CA can decrypt it for review and sign-off.",
-                            style = TextStyle(fontSize = 11.sp, color = Slate600, lineHeight = 15.sp)
+                            style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 15.sp)
                         )
                     }
                 }
@@ -155,7 +157,7 @@ fun ZeroKnowledgeTrustShieldModal(
                 // 4. STATUTORY CONSENT & ACKNOWLEDGEMENT
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = Slate100,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.fillMaxWidth().clickable { dpdpConsentGiven = !dpdpConsentGiven }
                 ) {
                     Row(
@@ -170,7 +172,7 @@ fun ZeroKnowledgeTrustShieldModal(
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = "I acknowledge that my financial returns are encrypted 100% on my device and ZeroTax does not possess or store my unencrypted tax records.",
-                            style = TextStyle(fontSize = 10.sp, color = Slate800, lineHeight = 14.sp)
+                            style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurface, lineHeight = 14.sp)
                         )
                     }
                 }

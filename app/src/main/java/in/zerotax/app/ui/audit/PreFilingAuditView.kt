@@ -606,7 +606,7 @@ fun PreFilingAuditView(
                             Text(
                                 text = currentExplanation!!.plainLanguageSummary,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Slate800
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -614,7 +614,7 @@ fun PreFilingAuditView(
                     Text(
                         text = "Select any question above to learn how our 6-gate audit shield protects your return from CPC scrutiny notices.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Slate500,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
                 }

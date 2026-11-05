@@ -561,17 +561,44 @@ class ConversationalTaxFilingBot {
     }
 
     private fun parseCurrencyFromText(text: String, default: Long): Long {
-        val digits = text.filter { it.isDigit() }
-        if (digits.isBlank()) return default
-        val num = digits.toLongOrNull() ?: default
-        return when {
-            text.lowercase().contains("lakh") -> {
-                val floatPart = text.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 1.0
-                (floatPart * 100_000L).toLong()
-            }
-            num < 1000 && text.lowercase().contains("k") -> num * 1000L
-            else -> num
+        val clean = text.trim().lowercase().replace(",", "")
+
+        // 1. Check Crore: 1.5cr, 1.5 crore, 1.5crores
+        val crMatch = Regex("([0-9]+(?:\\.[0-9]+)?)\\s*(?:cr|crore|crores)").find(clean)
+        if (crMatch != null) {
+            val value = crMatch.groupValues[1].toDoubleOrNull() ?: 0.0
+            return (value * 10_000_000L).toLong()
         }
+
+        // 2. Check Lakhs / LPA: 9.36lpa, 9.36 lpa, 9.36l, 9.36 lac, 9.36 lakh, 9.36 lakhs
+        val lakhMatch = Regex("([0-9]+(?:\\.[0-9]+)?)\\s*(?:lpa|lakhs|lakh|lacs|lac|l\\b)").find(clean)
+        if (lakhMatch != null) {
+            val value = lakhMatch.groupValues[1].toDoubleOrNull() ?: 0.0
+            return (value * 100_000L).toLong()
+        }
+
+        // 3. Check Thousand / K: 50k, 50 thousand
+        val kMatch = Regex("([0-9]+(?:\\.[0-9]+)?)\\s*(?:k|thousand)").find(clean)
+        if (kMatch != null) {
+            val value = kMatch.groupValues[1].toDoubleOrNull() ?: 0.0
+            return (value * 1000L).toLong()
+        }
+
+        // 4. Check standalone decimal or integer: 936000 or 9.36
+        val numberMatch = Regex("([0-9]+(?:\\.[0-9]+)?)").find(clean)
+        if (numberMatch != null) {
+            val dbl = numberMatch.groupValues[1].toDoubleOrNull() ?: 0.0
+            // If user enters <= 100 with decimal (e.g. "9.36" or "12.5"), it's expressed in Lakhs
+            if (dbl > 0 && dbl <= 100.0 && clean.contains(".")) {
+                return (dbl * 100_000L).toLong()
+            }
+            if (dbl > 0 && dbl < 1000.0 && (clean.contains("l") || clean.contains("salary"))) {
+                return (dbl * 100_000L).toLong()
+            }
+            return dbl.toLong()
+        }
+
+        return default
     }
 
     private fun formatInr(amount: Long): String {
