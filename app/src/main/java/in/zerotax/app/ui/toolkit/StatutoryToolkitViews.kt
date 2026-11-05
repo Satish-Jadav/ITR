@@ -218,7 +218,7 @@ fun WhatIfScenarioSimulatorView(
                         Text(
                             text = result.naturalLanguageSummary,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = Slate800
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         Spacer(Modifier.height(8.dp))

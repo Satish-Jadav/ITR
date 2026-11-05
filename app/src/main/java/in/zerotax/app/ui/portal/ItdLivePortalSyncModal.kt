@@ -92,11 +92,11 @@ fun ItdLivePortalSyncModal(
                 Column {
                     Text(
                         "Live ITD Portal Sync",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     )
                     Text(
                         "Direct In-App Sync • Zero External Browser Needed",
-                        style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                     )
                 }
             }
@@ -247,14 +247,14 @@ fun ItdLivePortalSyncModal(
 
                             Text(
                                 text = currentStatusText,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             )
 
                             Spacer(Modifier.height(6.dp))
 
                             Text(
                                 text = "Securing direct TLS tunnel with eportal.incometax.gov.in and ais.insight.gov.in...",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                             )
                         }
                     }
@@ -297,7 +297,7 @@ fun ItdLivePortalSyncModal(
 
                             Spacer(Modifier.height(12.dp))
 
-                            Text("Discovered Records from ITD Portal:", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Slate800)
+                            Text("Discovered Records from ITD Portal:", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(Modifier.height(6.dp))
 
                             discoveredTransactions.take(3).forEach { txn ->
@@ -308,8 +308,8 @@ fun ItdLivePortalSyncModal(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(txn.reportingEntity, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = Slate900)
-                                        Text(txn.suggestedSchedule, color = Slate500, fontSize = 10.sp)
+                                        Text(txn.reportingEntity, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                                        Text(txn.suggestedSchedule, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
                                     }
                                     Text("₹${Rupee.formatInr(txn.grossAmount)}", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = EnterpriseTeal700)
                                 }

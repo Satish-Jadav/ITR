@@ -81,14 +81,14 @@ fun ThinkLikeACaAdvisorView(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 "Think Like a CA: Maximizer",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             )
                             Spacer(Modifier.width(8.dp))
                             StatutoryBadge(text = "Refund First", tone = BadgeTone.SUCCESS)
                         }
                         Text(
                             text = "Aggressive Legal Statutory Tax Planning u/s 87A",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         )
                     }
                 },
@@ -193,11 +193,11 @@ fun ThinkLikeACaAdvisorView(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text("TDS Prepaid by Employer:", style = TextStyle(fontSize = 10.sp, color = Slate600))
-                                    Text("₹${"%,d".format(report.baselineTdsPrepaid)}", style = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Slate800))
+                                    Text("TDS Prepaid by Employer:", style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text("₹${"%,d".format(report.baselineTdsPrepaid)}", style = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface))
                                 }
                                 Column(horizontalAlignment = Alignment.End) {
-                                    Text(if (report.optimizedRefundDue > 0) "Your Bank Account Refund:" else "Total Tax Saved:", style = TextStyle(fontSize = 10.sp, color = EnterpriseTeal900, fontWeight = FontWeight.Bold))
+                                    Text(if (report.optimizedRefundDue > 0) "Your Bank Account Refund:" else "Total Tax Saved:", style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold))
                                     Text(
                                         text = if (report.optimizedRefundDue > 0) "₹${"%,d".format(report.optimizedRefundDue)}" else "₹${"%,d".format(report.totalTaxSavedRupees)}",
                                         style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = EmeraldSuccess)
@@ -210,7 +210,7 @@ fun ThinkLikeACaAdvisorView(
 
                         Text(
                             text = report.executiveSummary,
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate700, fontSize = 11.sp)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         )
                     }
                 }
@@ -225,7 +225,7 @@ fun ThinkLikeACaAdvisorView(
                 ) {
                     Text(
                         "Deduction Avenues Discovered (${report.recommendations.size})",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate800)
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     )
                     if (selectedCategory != null) {
                         Text(
@@ -293,7 +293,7 @@ private fun DeductionOpportunityCard(
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = opportunity.title,
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate900),
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
                         maxLines = 1
                     )
                 }
@@ -306,15 +306,15 @@ private fun DeductionOpportunityCard(
 
             Text(
                 text = opportunity.legalExplanation,
-                style = MaterialTheme.typography.bodySmall.copy(color = Slate700, fontSize = 11.sp, lineHeight = 16.sp)
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, lineHeight = 16.sp)
             )
 
             Spacer(Modifier.height(10.dp))
 
             Surface(
                 shape = RoundedCornerShape(6.dp),
-                color = Slate50,
-                border = androidx.compose.foundation.BorderStroke(0.5.dp, Slate200),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -323,8 +323,8 @@ private fun DeductionOpportunityCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text("Max Eligible Claim", style = TextStyle(fontSize = 10.sp, color = Slate500))
-                        Text("₹${"%,d".format(opportunity.maxEligibleAmount)}", style = TextStyle(fontWeight = FontWeight.Bold, color = Slate800, fontSize = 12.sp))
+                        Text("Max Eligible Claim", style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                        Text("₹${"%,d".format(opportunity.maxEligibleAmount)}", style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp))
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text("Estimated Tax Saved", style = TextStyle(fontSize = 10.sp, color = EmeraldSuccess, fontWeight = FontWeight.SemiBold))

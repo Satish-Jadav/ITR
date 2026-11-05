@@ -462,17 +462,17 @@ fun SmartDeductionsAdvisorScreen(
                                         Spacer(Modifier.width(6.dp))
                                         Text(
                                             text = "Who Holds This: Lending Bank (SBI, HDFC, ICICI, LIC HFL, Axis)",
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate800)
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                         )
                                     }
                                     Spacer(Modifier.height(2.dp))
                                     Text(
                                         text = "Certificate: Annual Home Loan Provisional Interest & Principal Certificate",
-                                        style = MaterialTheme.typography.bodySmall.copy(color = Slate700)
+                                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     )
                                     Text(
                                         text = "How to Download: NetBanking > Loans > Tax Certificate (instant PDF download)",
-                                        style = TextStyle(fontSize = 11.sp, color = Slate600)
+                                        style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     )
                                 }
                             }
@@ -547,13 +547,13 @@ fun SmartDeductionsAdvisorScreen(
                                     Spacer(Modifier.width(6.dp))
                                     Text(
                                         text = "Who Holds This: ${spec.documentHolder}",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate800)
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                     )
                                 }
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     text = "Required Certificate: ${spec.requiredDocumentName}",
-                                    style = MaterialTheme.typography.bodySmall.copy(color = Slate700)
+                                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                                 Spacer(Modifier.height(2.dp))
                                 Text(
@@ -745,7 +745,7 @@ fun SmartDeductionsAdvisorScreen(
                             Text(
                                 text = currentExplanation!!.plainLanguageSummary,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Slate800
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -753,7 +753,7 @@ fun SmartDeductionsAdvisorScreen(
                     Text(
                         text = "Select any question above to learn how home loan interest, HRA, 80D, or NPS deductions apply to your return.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Slate500,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
                 }

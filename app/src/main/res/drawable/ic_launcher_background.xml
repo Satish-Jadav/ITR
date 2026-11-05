@@ -4,12 +4,30 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:pathData="M0,0h108v108h-108z"
-        android:fillColor="#090D16" />
-    <!-- Ambient Teal Glow at Center -->
-    <path
-        android:pathData="M54,54m-42,0a42,42 0 1,0 84,0a42,42 0 1,0 -84,0"
-        android:fillColor="#0F3836" />
-</vector>
 
+    <!-- Premium Dark Teal to Deep Midnight Gradient Background -->
+    <path android:pathData="M0,0h108v108h-108z">
+        <gradient
+            android:startX="54"
+            android:startY="0"
+            android:endX="54"
+            android:endY="108"
+            android:startColor="#0C3432"
+            android:endColor="#060E14"
+            android:type="linear" />
+    </path>
+
+    <!-- Subtle Centered Glow Aperture -->
+    <path android:pathData="M54,54m-42,0a42,42 0 1,0 84,0a42,42 0 1,0 -84,0">
+        <gradient
+            android:startX="54"
+            android:startY="54"
+            android:endX="96"
+            android:endY="96"
+            android:startColor="#1A4A46"
+            android:endColor="#00000000"
+            android:type="radial"
+            android:gradientRadius="42" />
+    </path>
+
+</vector>

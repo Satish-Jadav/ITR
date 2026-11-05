@@ -112,14 +112,14 @@ fun CaAuditorPortalScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 "CA & Auditor Verification Portal",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             )
                             Spacer(Modifier.width(8.dp))
                             StatutoryBadge(text = "ICAI Verified", tone = BadgeTone.SUCCESS)
                         }
                         Text(
                             text = "${caProfile.caName} • M.No: ${caProfile.membershipNumber}",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         )
                     }
                 },
@@ -216,11 +216,11 @@ fun CaAuditorPortalScreen(
                 ) {
                     Text(
                         "Client Assignments Awaiting Verification",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate800)
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     )
                     Text(
                         "${clientRoster.size} Active Returns",
-                        style = MaterialTheme.typography.labelSmall.copy(color = Slate500)
+                        style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                 }
             }
@@ -242,19 +242,19 @@ fun CaAuditorPortalScreen(
                 showPairClientDialog = false
                 pairingErrorMessage = null
             },
-            containerColor = PureWhite,
+            containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.VpnKey, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Attach Client via Pairing Code", fontWeight = FontWeight.Bold, color = Slate900, fontSize = 16.sp)
+                    Text("Attach Client via Pairing Code", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                 }
             },
             text = {
                 Column {
                     Text(
                         "Ask your client to open ZeroTax and tap 'Share with CA' to generate a single-use 6-digit secure pairing code (e.g. ZT-9481).",
-                        style = MaterialTheme.typography.bodySmall.copy(color = Slate600)
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                     Spacer(Modifier.height(14.dp))
                     OutlinedTextField(
@@ -368,8 +368,8 @@ private fun ClientAuditRosterCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(client.clientName, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate900))
-                    Text("PAN: ${client.clientPan} • Form: ${client.itrForm}", style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Slate600))
+                    Text(client.clientName, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
+                    Text("PAN: ${client.clientPan} • Form: ${client.itrForm}", style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 val (badgeTone: BadgeTone, statusText: String) = when (client.auditStatus) {
                     ClientAuditStatus.APPROVED_SIGNED_OFF -> Pair(BadgeTone.SUCCESS, "Signed Off")
@@ -385,8 +385,8 @@ private fun ClientAuditRosterCard(
 
             Surface(
                 shape = RoundedCornerShape(6.dp),
-                color = Slate50,
-                border = androidx.compose.foundation.BorderStroke(0.5.dp, Slate200),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -395,11 +395,11 @@ private fun ClientAuditRosterCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text("Gross Turnover / Total Receipts", style = TextStyle(fontSize = 10.sp, color = Slate500))
-                        Text("₹${"%,d".format(client.grossTurnoverOrIncome)}", style = TextStyle(fontWeight = FontWeight.Bold, color = Slate900, fontSize = 13.sp))
+                        Text("Gross Turnover / Total Receipts", style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                        Text("₹${"%,d".format(client.grossTurnoverOrIncome)}", style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp))
                     }
                     Column(horizontalAlignment = Alignment.End) {
-                        Text(if (client.isRefund) "Net Refund Due" else "Net Tax Payable", style = TextStyle(fontSize = 10.sp, color = Slate500))
+                        Text(if (client.isRefund) "Net Refund Due" else "Net Tax Payable", style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                         Text(
                             "₹${"%,d".format(client.taxPayableOrRefund)}",
                             style = TextStyle(fontWeight = FontWeight.Bold, color = if (client.isRefund) EmeraldSuccess else CrimsonDanger, fontSize = 13.sp)
@@ -457,14 +457,14 @@ private fun CaAuditReviewModal(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = PureWhite,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(24.dp))
                 Spacer(Modifier.width(8.dp))
                 Column {
-                    Text("Statutory Audit Review & Sign-Off", fontWeight = FontWeight.Bold, color = Slate900, fontSize = 16.sp)
-                    Text("${client.clientName} • PAN: ${client.clientPan}", style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Slate600))
+                    Text("Statutory Audit Review & Sign-Off", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
+                    Text("${client.clientName} • PAN: ${client.clientPan}", style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
             }
         },
@@ -472,25 +472,25 @@ private fun CaAuditReviewModal(
             Column(modifier = Modifier.fillMaxWidth()) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Slate50,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Slate200),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Audit Scope:", style = TextStyle(fontSize = 11.sp, color = Slate600))
-                            Text(client.auditType.title, style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate900))
+                            Text("Audit Scope:", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                            Text(client.auditType.title, style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Turnover Verified:", style = TextStyle(fontSize = 11.sp, color = Slate600))
-                            Text("₹${"%,d".format(client.grossTurnoverOrIncome)}", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate900))
+                            Text("Turnover Verified:", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                            Text("₹${"%,d".format(client.grossTurnoverOrIncome)}", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Assessment Year:", style = TextStyle(fontSize = 11.sp, color = Slate600))
-                            Text("AY 2026-27", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate900))
+                            Text("Assessment Year:", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                            Text("AY 2026-27", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Auditor M.No:", style = TextStyle(fontSize = 11.sp, color = Slate600))
+                            Text("Auditor M.No:", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                             Text(caProfile.membershipNumber, style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700))
                         }
                     }
@@ -498,18 +498,18 @@ private fun CaAuditReviewModal(
 
                 Spacer(Modifier.height(12.dp))
 
-                Text("Auditor Observations & Clause Notes:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate800))
+                Text("Auditor Observations & Clause Notes:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                 Spacer(Modifier.height(4.dp))
                 OutlinedTextField(
                     value = auditObservationsText,
                     onValueChange = { auditObservationsText = it },
                     modifier = Modifier.fillMaxWidth().height(90.dp),
-                    textStyle = TextStyle(fontSize = 12.sp, color = Slate800)
+                    textStyle = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                 )
 
                 Spacer(Modifier.height(10.dp))
 
-                Text("Draft UDIN (Unique Document Identification Number):", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate800))
+                Text("Draft UDIN (Unique Document Identification Number):", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                 Spacer(Modifier.height(4.dp))
                 OutlinedTextField(
                     value = draftUdin,

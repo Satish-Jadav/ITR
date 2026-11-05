@@ -1,6 +1,7 @@
 package `in`.zerotax.app.ui.auth
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,24 +14,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AssignmentInd
-import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.VerifiedUser
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,10 +30,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import `in`.zerotax.core.model.AuthProvider
-import `in`.zerotax.core.model.UserAuthProfile
+import `in`.zerotax.app.ui.components.ZeroTaxBrandLogo
 import `in`.zerotax.app.ui.security.ZeroKnowledgeTrustShieldModal
 import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.model.UserAuthProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,16 +47,19 @@ fun AuthenticationScreen(
     isLoading: Boolean = false,
     errorMessage: String? = null
 ) {
-    var isCaMode by remember { mutableStateOf(false) }
-    var caMembershipInput by remember { mutableStateOf("514289") }
-    var caPasswordInput by remember { mutableStateOf("••••••••") }
+    var showCaSection by remember { mutableStateOf(false) }
+    var showEmailLogin by remember { mutableStateOf(false) }
     var showTrustShieldModal by remember { mutableStateOf(false) }
-    var isSignUpMode by remember { mutableStateOf(false) }
+    var showGoogleAccountPicker by remember { mutableStateOf(false) }
+
     var emailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
     var fullNameInput by remember { mutableStateOf("") }
+    var isSignUpMode by remember { mutableStateOf(false) }
     var isPasswordVisible by remember { mutableStateOf(false) }
-    var showGoogleAccountPicker by remember { mutableStateOf(false) }
+
+    var caMembershipInput by remember { mutableStateOf("514289") }
+    var caPasswordInput by remember { mutableStateOf("••••••••") }
 
     val scrollState = rememberScrollState()
 
@@ -77,15 +71,45 @@ fun AuthenticationScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp, vertical = 20.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // App Brand Emblem & Sovereign Logo
-            `in`.zerotax.app.ui.components.ZeroTaxBrandLogo(size = 72.dp, showText = false)
+            // 1. Trust Pill Badge
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                modifier = Modifier.clickable { showTrustShieldModal = true }
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Shield,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = "100% Private On-Device • Free & Safe",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // 2. Brand & Welcome Title
+            ZeroTaxBrandLogo(size = 64.dp, showText = false)
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -100,296 +124,292 @@ fun AuthenticationScreen(
                     text = "Tax",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = `in`.zerotax.app.ui.theme.EnterpriseTeal600,
+                        color = EnterpriseTeal600,
                         letterSpacing = (-0.5).sp
                     )
                 )
             }
 
             Text(
-                text = "Private Indian Tax Vault & Compliance Suite",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = "File your tax return in 3 simple steps",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                ),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "No legal jargon. We calculate your highest refund automatically.",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
 
-            // Zero-Knowledge Trust Shield Badge (Clickable)
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                modifier = Modifier.clickable { showTrustShieldModal = true }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 3. Step-by-Step Overview (Progressive Disclosure Cards)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(14.dp)
+                StepPreviewCard(
+                    stepNumber = "1",
+                    icon = Icons.Default.Badge,
+                    title = "Your Basic Details",
+                    description = "Enter your PAN to check your eligible tax slabs."
+                )
+                StepPreviewCard(
+                    stepNumber = "2",
+                    icon = Icons.Default.Description,
+                    title = "Upload Form 16 or Salary",
+                    description = "Auto-extracts your earnings and TDS in seconds."
+                )
+                StepPreviewCard(
+                    stepNumber = "3",
+                    icon = Icons.Default.AutoGraph,
+                    title = "Compare & Maximize Refund",
+                    description = "Picks Old vs New Regime to save you the most tax."
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 4. Primary CTA: "Start Filing" (Zero friction, 1-tap entry!)
+            Button(
+                onClick = onSignInOfflineGuest,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = EnterpriseTeal600,
+                    contentColor = PureWhite
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+            ) {
+                Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "Start Filing Now (Free & Private)",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text = "100% On-Device Zero-Knowledge Vault • Trust Shield",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 5. Secondary: Google Sign In
+            OutlinedButton(
+                onClick = { showGoogleAccountPicker = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Public,
+                    contentDescription = null,
+                    tint = EnterpriseTeal600,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "Continue with Google (Optional Backup)",
+                    style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     )
+                )
+            }
+
+            // Error display if any
+            if (!errorMessage.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(text = errorMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Persona Selector: Taxpayer Login vs Auditor / CA Portal
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    .padding(3.dp)
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = if (!isCaMode) MaterialTheme.colorScheme.surface else androidx.compose.ui.graphics.Color.Transparent,
-                    modifier = Modifier.weight(1f).clickable { isCaMode = false }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = if (!isCaMode) EnterpriseTeal700 else Slate600, modifier = Modifier.size(15.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Taxpayer Login", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (!isCaMode) EnterpriseTeal900 else Slate600))
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = if (isCaMode) MaterialTheme.colorScheme.surface else androidx.compose.ui.graphics.Color.Transparent,
-                    modifier = Modifier.weight(1f).clickable { isCaMode = true }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = if (isCaMode) IndigoStatutory else Slate600, modifier = Modifier.size(15.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Auditor / CA Portal", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (isCaMode) IndigoStatutory else Slate600))
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Error Banner (if any)
-            if (!errorMessage.isNullOrBlank()) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = errorMessage,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
-                }
-            }
-
-            if (!isCaMode) {
-                // PRIMARY: Google Sign-In Button
-            OutlinedButton(
-                onClick = { showGoogleAccountPicker = true },
-                enabled = !isLoading,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outlineVariant
-                )
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Public,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Continue with Google",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Divider: "or with email"
+            // 6. Expandable Advanced Options (For CA / Email Users - hidden by default so new users aren't overwhelmed)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.Center
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f))
+                TextButton(
+                    onClick = { showEmailLogin = !showEmailLogin }
+                ) {
+                    Text(
+                        text = if (showEmailLogin) "Hide Email Login" else "Sign in with Email / Password",
+                        style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                }
+
                 Text(
-                    text = "  OR WITH EMAIL  ",
-                    style = MaterialTheme.typography.labelSmall,
+                    text = "•",
                     color = MaterialTheme.colorScheme.outline,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 4.dp)
                 )
-                HorizontalDivider(modifier = Modifier.weight(1f))
+
+                TextButton(
+                    onClick = { showCaSection = !showCaSection }
+                ) {
+                    Text(
+                        text = if (showCaSection) "Hide CA Portal" else "Tax Auditor / CA Portal",
+                        style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Sign In / Sign Up Card
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(18.dp)
+            // Expandable Email Login Form
+            AnimatedVisibility(visible = showEmailLogin) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
                 ) {
-                    // Sign In / Sign Up Toggle
-                    TabRow(
-                        selectedTabIndex = if (isSignUpMode) 1 else 0,
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                    ) {
-                        Tab(
-                            selected = !isSignUpMode,
-                            onClick = { isSignUpMode = false },
-                            text = { Text("Sign In", fontWeight = FontWeight.SemiBold) }
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = if (isSignUpMode) "Create an Account" else "Sign In with Email",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                         )
-                        Tab(
-                            selected = isSignUpMode,
-                            onClick = { isSignUpMode = true },
-                            text = { Text("Create Account", fontWeight = FontWeight.SemiBold) }
-                        )
-                    }
+                        Spacer(Modifier.height(10.dp))
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        if (isSignUpMode) {
+                            OutlinedTextField(
+                                value = fullNameInput,
+                                onValueChange = { fullNameInput = it },
+                                label = { Text("Full Name") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
 
-                    if (isSignUpMode) {
                         OutlinedTextField(
-                            value = fullNameInput,
-                            onValueChange = { fullNameInput = it },
-                            label = { Text("Full Name (as per PAN)") },
+                            value = emailInput,
+                            onValueChange = { emailInput = it },
+                            label = { Text("Email Address") },
                             singleLine = true,
-                            shape = RoundedCornerShape(10.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next
-                            )
+                            shape = RoundedCornerShape(10.dp)
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
 
-                    OutlinedTextField(
-                        value = emailInput,
-                        onValueChange = { emailInput = it },
-                        label = { Text("Email Address") },
-                        singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Next
-                        )
-                    )
+                        Spacer(Modifier.height(8.dp))
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = passwordInput,
-                        onValueChange = { passwordInput = it },
-                        label = { Text("Password (min 6 characters)") },
-                        singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                                Icon(
-                                    imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                    contentDescription = if (isPasswordVisible) "Hide password" else "Show password"
-                                )
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                if (emailInput.isNotBlank() && passwordInput.isNotBlank()) {
-                                    onSignInWithEmail(emailInput, passwordInput, isSignUpMode, fullNameInput)
+                        OutlinedTextField(
+                            value = passwordInput,
+                            onValueChange = { passwordInput = it },
+                            label = { Text("Password") },
+                            singleLine = true,
+                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                                    Icon(if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility, contentDescription = null)
                                 }
-                            }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp)
                         )
-                    )
 
-                    Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(Modifier.height(14.dp))
 
-                    Button(
-                        onClick = {
-                            onSignInWithEmail(emailInput, passwordInput, isSignUpMode, fullNameInput)
-                        },
-                        enabled = !isLoading && emailInput.isNotBlank() && passwordInput.length >= 6,
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
+                        Button(
+                            onClick = {
+                                onSignInWithEmail(emailInput, passwordInput, isSignUpMode, fullNameInput)
+                            },
+                            enabled = emailInput.isNotBlank() && passwordInput.isNotBlank() && !isLoading,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
+                        ) {
+                            Text(if (isSignUpMode) "Register & Continue" else "Sign In")
+                        }
+
+                        Spacer(Modifier.height(4.dp))
+
+                        TextButton(
+                            onClick = { isSignUpMode = !isSignUpMode },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
                             Text(
-                                text = if (isSignUpMode) "Create Free Account" else "Sign In with Email",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
+                                text = if (isSignUpMode) "Already have an account? Sign In" else "New user? Create Account",
+                                style = MaterialTheme.typography.labelSmall
                             )
+                        }
+                    }
+                }
+            }
+
+            // Expandable CA Auditor Portal Login Form
+            AnimatedVisibility(visible = showCaSection) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = IndigoStatutoryBg.copy(alpha = 0.6f)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, IndigoStatutory.copy(alpha = 0.3f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = IndigoStatutory, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Chartered Accountant / Auditor Portal", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = IndigoStatutory))
+                        }
+                        Spacer(Modifier.height(10.dp))
+
+                        OutlinedTextField(
+                            value = caMembershipInput,
+                            onValueChange = { caMembershipInput = it },
+                            label = { Text("ICAI 6-Digit Membership No.") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        Spacer(Modifier.height(8.dp))
+
+                        OutlinedTextField(
+                            value = caPasswordInput,
+                            onValueChange = { caPasswordInput = it },
+                            label = { Text("Auditor Portal Password") },
+                            singleLine = true,
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        Spacer(Modifier.height(14.dp))
+
+                        Button(
+                            onClick = onLaunchCaPortal,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = IndigoStatutory)
+                        ) {
+                            Text("Launch CA Auditor Suite")
                         }
                     }
                 }
@@ -397,154 +417,22 @@ fun AuthenticationScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Alternative: Offline Guest Vault & Biometrics
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                OutlinedButton(
-                    onClick = onSignInOfflineGuest,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Security,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Use Local Offline Vault (No Account Required)",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                TextButton(
-                    onClick = onBiometricUnlock,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Fingerprint,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Unlock with Device Biometrics (Fingerprint / PIN)",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
-            } else {
-                // Auditor / CA Dedicated Login Portal
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(IndigoStatutory))
-                ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = IndigoStatutory, modifier = Modifier.size(24.dp))
-                            Spacer(Modifier.width(10.dp))
-                            Column {
-                                Text("Auditor & Chartered Accountant Login", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
-                                Text("Statutory Audit Verification & UDIN Roster", style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp))
-                            }
-                        }
-
-                        Spacer(Modifier.height(16.dp))
-
-                        OutlinedTextField(
-                            value = caMembershipInput,
-                            onValueChange = { caMembershipInput = it },
-                            label = { Text("ICAI Membership Number (6 Digits)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        )
-
-                        Spacer(Modifier.height(12.dp))
-
-                        OutlinedTextField(
-                            value = caPasswordInput,
-                            onValueChange = { caPasswordInput = it },
-                            label = { Text("Auditor Password") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            visualTransformation = PasswordVisualTransformation()
-                        )
-
-                        Spacer(Modifier.height(16.dp))
-
-                        Button(
-                            onClick = onLaunchCaPortal,
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = IndigoStatutory),
-                            modifier = Modifier.fillMaxWidth().height(48.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Text("Sign In to CA Verification Portal", fontWeight = FontWeight.Bold)
-                            }
-                        }
-
-                        Spacer(Modifier.height(12.dp))
-
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = Slate100,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.Lock, contentDescription = null, tint = Slate600, modifier = Modifier.size(14.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    "Zero-Knowledge Protocol: Client tax packets are decrypted on-device using single-use pairing codes provided by your clients.",
-                                    style = TextStyle(fontSize = 10.sp, color = Slate600, lineHeight = 14.sp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Legal & DPDP Compliance Note
+            // Privacy and offline assurance badge at bottom
             Text(
-                text = "By signing in, you agree to local cryptographic processing under Section 12(3) of the Digital Personal Data Protection Act, 2023. ZeroTax does not sell or cloud-host your tax data.",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center,
-                lineHeight = 16.sp
+                text = "Zero Cloud Telemetry • No data is sold or stored without consent",
+                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        // Trust Shield Modal
         if (showTrustShieldModal) {
             ZeroKnowledgeTrustShieldModal(onDismiss = { showTrustShieldModal = false })
         }
 
-        // Google Account Quick Picker Dialog
+        // Google Account Picker Dialog
         if (showGoogleAccountPicker) {
             AlertDialog(
                 onDismissRequest = { showGoogleAccountPicker = false },
@@ -553,57 +441,54 @@ fun AuthenticationScreen(
                         Icon(
                             imageVector = Icons.Default.Public,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = EnterpriseTeal600,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Sign in with Google", fontWeight = FontWeight.Bold)
+                        Text("Sign In with Google", fontWeight = FontWeight.Bold)
                     }
                 },
                 text = {
                     Column {
                         Text(
-                            text = "Select a Google account to continue to ZeroTax-Local:",
+                            text = "Choose a Google account to securely backup your tax drafts:",
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Account Option 1
-                        GoogleAccountOption(
-                            email = "user@gmail.com",
-                            displayName = "Google Taxpayer",
-                            onClick = {
-                                showGoogleAccountPicker = false
-                                onSignInWithGoogle("user@gmail.com", "Google Taxpayer")
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showGoogleAccountPicker = false
+                                    onSignInWithGoogle("taxpayer@gmail.com", "Taxpayer")
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(EnterpriseTeal100),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("T", fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
+                                }
+                                Spacer(Modifier.width(12.dp))
+                                Column {
+                                    Text("Taxpayer", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+                                    Text("taxpayer@gmail.com", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
                             }
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Account Option 2 (Custom Entry)
-                        OutlinedTextField(
-                            value = emailInput,
-                            onValueChange = { emailInput = it },
-                            placeholder = { Text("Or enter work/personal Gmail") },
-                            singleLine = true,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        }
                     }
                 },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            val email = emailInput.ifBlank { "taxpayer@gmail.com" }
-                            val name = email.substringBefore("@").replaceFirstChar { it.uppercase() }
-                            showGoogleAccountPicker = false
-                            onSignInWithGoogle(email, name)
-                        }
-                    ) {
-                        Text("Sign In")
-                    }
-                },
-                dismissButton = {
                     TextButton(onClick = { showGoogleAccountPicker = false }) {
                         Text("Cancel")
                     }
@@ -613,50 +498,68 @@ fun AuthenticationScreen(
     }
 }
 
+/**
+ * Clean visual card for previewing each step in a friendly, approachable way.
+ */
 @Composable
-private fun GoogleAccountOption(
-    email: String,
-    displayName: String,
-    onClick: () -> Unit
+private fun StepPreviewCard(
+    stepNumber: String,
+    icon: ImageVector,
+    title: String,
+    description: String
 ) {
     Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+        shadowElevation = 0.5.dp,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(EnterpriseTeal50),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = displayName.take(1),
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = EnterpriseTeal700,
+                    modifier = Modifier.size(20.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
+
+            Spacer(Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = displayName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
+                    text = "STEP $stepNumber",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = EnterpriseTeal600,
+                        letterSpacing = 0.5.sp
+                    )
                 )
                 Text(
-                    text = email,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    lineHeight = 16.sp
                 )
             }
         }
     }
 }
-

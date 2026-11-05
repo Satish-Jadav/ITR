@@ -6,7 +6,7 @@ import android.security.keystore.KeyProperties
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import net.sqlcipher.database.SupportFactory
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -25,7 +25,7 @@ object SqlCipherHardwareVaultBuilder {
 
     fun build(context: Context): ZeroTaxVaultDatabase {
         val passphrase = getOrCreateWrappedPassphrase(context)
-        val factory = SupportFactory(passphrase.copyOf(), null, true)
+        val factory = SupportOpenHelperFactory(passphrase.copyOf(), null, true)
         // Memory hardening: Immediately wipe local passphrase byte array
         passphrase.fill(0)
 

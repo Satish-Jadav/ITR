@@ -150,7 +150,7 @@ fun ComprehensiveLegalAcknowledgementDialog(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 11.sp,
                                 lineHeight = 16.sp,
-                                color = Slate800
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         )
                     }

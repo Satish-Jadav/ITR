@@ -288,7 +288,7 @@ fun SugamPresumptiveFastStartView(
             ) {
                 Text(
                     text = "Estimated Tax Liability:",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 )
                 Text(
                     text = "₹${Rupee.formatInr(estimatedTax)}",
@@ -315,13 +315,13 @@ fun SugamPresumptiveFastStartView(
                     Icon(
                         imageVector = Icons.Default.CreditCard,
                         contentDescription = null,
-                        tint = Slate900,
+                        tint = PureWhite,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "Pay Advance Tax / Self-Assessment (Challan 280)",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = PureWhite)
                     )
                 }
             }

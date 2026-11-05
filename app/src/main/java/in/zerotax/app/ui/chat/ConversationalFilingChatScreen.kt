@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -181,7 +182,7 @@ fun ConversationalFilingChatScreen(
                                     Spacer(Modifier.width(4.dp))
                                     Text(
                                         text = prompt,
-                                        style = TextStyle(fontSize = 10.sp, color = Slate700, fontWeight = FontWeight.Medium)
+                                        style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
                                     )
                                 }
                             }
@@ -201,8 +202,8 @@ fun ConversationalFilingChatScreen(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(EnterpriseTeal50)
-                                        .border(0.75.dp, EnterpriseTeal600.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                                        .background(MaterialTheme.colorScheme.primaryContainer)
+                                        .border(0.75.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                                         .clickable {
                                             if (reply.contains("Review All Points")) {
                                                 syncChatToCloud()
@@ -227,7 +228,7 @@ fun ConversationalFilingChatScreen(
                                 ) {
                                     Text(
                                         text = reply,
-                                        style = TextStyle(fontSize = 12.sp, color = EnterpriseTeal900, fontWeight = FontWeight.SemiBold)
+                                        style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.SemiBold)
                                     )
                                 }
                             }
@@ -242,7 +243,7 @@ fun ConversationalFilingChatScreen(
                         OutlinedTextField(
                             value = inputText,
                             onValueChange = { inputText = it },
-                            placeholder = { Text("Type salary, EMI, deductions, or queries...", style = TextStyle(fontSize = 13.sp, color = Slate400)) },
+                            placeholder = { Text("Type salary, EMI, deductions, or queries...", style = TextStyle(fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))) },
                             singleLine = true,
                             shape = RoundedCornerShape(20.dp),
                             modifier = Modifier.weight(1f)
@@ -270,13 +271,13 @@ fun ConversationalFilingChatScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(if (inputText.isNotBlank()) EnterpriseTeal600 else Slate200),
+                                    .background(if (inputText.isNotBlank()) EnterpriseTeal600 else MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Send,
                                     contentDescription = "Send",
-                                    tint = PureWhite,
+                                    tint = if (inputText.isNotBlank()) PureWhite else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -309,24 +310,24 @@ fun ConversationalFilingChatScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Gross Income", style = MaterialTheme.typography.labelSmall, color = Slate500)
+                            Text("Gross Income", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 text = Rupee(currentSnapshot.grossSalary).toString(),
-                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                             )
                         }
                         Column {
-                            Text("Deductions Claimed", style = MaterialTheme.typography.labelSmall, color = Slate500)
+                            Text("Deductions Claimed", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 text = Rupee(currentSnapshot.totalDeductionsClaimed).toString(),
-                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = IndigoStatutory)
+                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (isSystemInDarkTheme()) Color(0xFF93C5FD) else IndigoStatutory)
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Net Refund Due", style = MaterialTheme.typography.labelSmall, color = Slate500)
+                            Text("Net Refund Due", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 text = Rupee(currentSnapshot.estimatedRefundDue).toString(),
-                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = EmeraldSuccess)
+                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (isSystemInDarkTheme()) EnterpriseTeal300 else EmeraldSuccess)
                             )
                         }
                     }
@@ -336,7 +337,7 @@ fun ConversationalFilingChatScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(3.dp))
-                            .background(EnterpriseTeal50)
+                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -345,19 +346,19 @@ fun ConversationalFilingChatScreen(
                             Icon(
                                 imageVector = Icons.Default.Star,
                                 contentDescription = null,
-                                tint = EnterpriseTeal900,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
                                 text = "Recommended: ${currentSnapshot.recommendedRegime}",
-                                style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                                style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
                             )
                         }
                         if (currentSnapshot.taxSavedByRecommendedRegime > 0) {
                             Text(
                                 text = "Saves ₹${Rupee.formatInr(currentSnapshot.taxSavedByRecommendedRegime)}",
-                                style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                                style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSystemInDarkTheme()) EnterpriseTeal300 else EmeraldSuccess)
                             )
                         }
                     }
@@ -430,7 +431,7 @@ private fun PulsingTypingIndicator() {
         Spacer(Modifier.width(8.dp))
         Text(
             text = "ZeroTax is assembling return schedules...",
-            style = TextStyle(fontSize = 11.sp, color = Slate500, fontWeight = FontWeight.Medium)
+            style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
         )
     }
 }
@@ -475,7 +476,7 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                 colors = CardDefaults.cardColors(
                     containerColor = when {
                         !isBot -> EnterpriseTeal600
-                        message.isAdvisorTip -> AmberWarningBg
+                        message.isAdvisorTip -> if (isSystemInDarkTheme()) AmberWarningBgDark else AmberWarningBg
                         else -> MaterialTheme.colorScheme.surface
                     }
                 ),
@@ -484,7 +485,7 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                     brush = androidx.compose.ui.graphics.SolidColor(
                         when {
                             !isBot -> EnterpriseTeal700
-                            message.isAdvisorTip -> AmberWarning
+                            message.isAdvisorTip -> if (isSystemInDarkTheme()) Color(0xFFFDE68A) else AmberWarning
                             else -> MaterialTheme.colorScheme.outlineVariant
                         }
                     )
@@ -499,7 +500,11 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                     Text(
                         text = message.text,
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = if (isBot) Slate800 else PureWhite
+                            color = when {
+                                !isBot -> PureWhite
+                                message.isAdvisorTip -> if (isSystemInDarkTheme()) Color(0xFFFDE68A) else AmberWarning
+                                else -> MaterialTheme.colorScheme.onSurface
+                            }
                         )
                     )
 
@@ -509,14 +514,20 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(3.dp))
-                                .background(if (isBot) EmeraldSuccessBg else PureWhite.copy(alpha = 0.2f))
+                                .background(
+                                    if (isBot) {
+                                        if (isSystemInDarkTheme()) EmeraldSuccessBgDark else EmeraldSuccessBg
+                                    } else PureWhite.copy(alpha = 0.2f)
+                                )
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
-                                    tint = if (isBot) EmeraldSuccess else PureWhite,
+                                    tint = if (isBot) {
+                                        if (isSystemInDarkTheme()) EnterpriseTeal300 else EmeraldSuccess
+                                    } else PureWhite,
                                     modifier = Modifier.size(11.dp)
                                 )
                                 Spacer(Modifier.width(4.dp))
@@ -526,7 +537,9 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                                         fontFamily = FontFamily.Monospace,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isBot) EmeraldSuccess else PureWhite
+                                        color = if (isBot) {
+                                            if (isSystemInDarkTheme()) EnterpriseTeal300 else EmeraldSuccess
+                                        } else PureWhite
                                     )
                                 )
                             }
@@ -538,7 +551,7 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
             Spacer(Modifier.height(2.dp))
             Text(
                 text = message.timestamp,
-                style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Slate400)
+                style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
         }
     }

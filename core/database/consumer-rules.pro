@@ -1,2 +1,3 @@
 -keep class net.sqlcipher.** { *; }
+-keep class net.zetetic.** { *; }
 -keep class in.zerotax.core.database.** { *; }

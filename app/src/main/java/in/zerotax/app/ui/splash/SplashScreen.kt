@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.splash
+package `in`.zerotax.app.ui.splash
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -41,11 +41,9 @@ fun SplashScreen(
 
     val verificationStages = remember {
         listOf(
-            "Verifying Android StrongBox TEE Keymaster...",
-            "Deriving AES-256-GCM hardware master key...",
-            "Mounting SQLCipher 4.5.4 zero-leak vault...",
-            "Arming UIDAI Aadhaar Verhoeff Scrubber...",
-            "Zero Cloud Telemetry Verified • Hardware Vault Ready"
+            "Setting up your private on-device vault...",
+            "Preparing statutory tax rules (AY 2026-27)...",
+            "Ready to file securely!"
         )
     }
 
@@ -63,20 +61,20 @@ fun SplashScreen(
     )
 
     val innerPulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f,
+        initialValue = 0.96f,
+        targetValue = 1.04f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
+            animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "InnerPulse"
     )
 
     val shieldGlowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.25f,
-        targetValue = 0.65f,
+        initialValue = 0.3f,
+        targetValue = 0.7f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1400, easing = FastOutSlowInEasing),
+            animation = tween(1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "ShieldGlow"
@@ -84,22 +82,19 @@ fun SplashScreen(
 
     val progressAnim = remember { Animatable(0f) }
 
-    // Sequential initialization simulation
     LaunchedEffect(Unit) {
         progressAnim.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 2200, easing = FastOutSlowInEasing)
+            animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing)
         )
     }
 
     LaunchedEffect(Unit) {
         for (i in verificationStages.indices) {
             stageIndex = i
-            delay(420)
+            delay(280)
         }
-        delay(350)
-        isReadyToExit = true
-        delay(250)
+        delay(150)
         onInitializationComplete()
     }
 
@@ -322,17 +317,17 @@ fun SplashScreen(
             }
         }
 
-        // Subdued bottom security boundary statement
+        // Reassuring privacy footnote
         Text(
-            text = "UIDAI §29 • DPDP Act §12(3) • Sec 115BAC Deterministic Engine",
+            text = "100% On-Device • Private & Encrypted",
             style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 9.sp,
-                color = Slate600
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = Slate500
             ),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
+                .padding(bottom = 24.dp)
         )
     }
 }

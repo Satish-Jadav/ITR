@@ -379,7 +379,7 @@ fun InstitutionPdfPasswordCheatsheetModal(
                                 ) {
                                     Text(
                                         text = rule.institutionName,
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                     )
                                     StatutoryBadge(
                                         text = rule.documentCategory,
@@ -539,17 +539,17 @@ private fun SafetyChecklistItem(
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = Slate900)
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 )
                 Text(
                     text = statutoryRef,
-                    style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = Slate500)
+                    style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
             Text(
                 text = description,
                 style = MaterialTheme.typography.labelSmall,
-                color = Slate600
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -617,15 +617,15 @@ fun Section87AMarginalReliefExplainerCard(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Standard Slab Tax", style = MaterialTheme.typography.labelSmall, color = Slate500)
-                    Text("₹${Rupee.formatInr(taxBeforeRelief)}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Slate700))
+                    Text("₹${Rupee.formatInr(taxBeforeRelief)}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Marginal Relief", style = MaterialTheme.typography.labelSmall, color = EmeraldSuccess)
                     Text("-₹${Rupee.formatInr(marginalReliefAmount)}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Actual Tax Payable", style = MaterialTheme.typography.labelSmall, color = Slate900)
-                    Text("₹${Rupee.formatInr(finalTaxBeforeCess)}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                    Text("Actual Tax Payable", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text("₹${Rupee.formatInr(finalTaxBeforeCess)}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                 }
             }
         }
@@ -664,7 +664,7 @@ fun FilingTierSelectorCard(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "Filing Experience: ${currentTier.title}",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     )
                 }
                 if (currentTier == recommendedTier) {
@@ -870,12 +870,12 @@ fun TaxPaymentAndChallanHubModal(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = channel.title,
-                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                         )
                                         Text(
                                             text = "${channel.description} • Fee: ${channel.statutoryFee}",
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = Slate600
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                 }
