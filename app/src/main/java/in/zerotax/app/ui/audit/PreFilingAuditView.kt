@@ -12,6 +12,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -114,13 +120,22 @@ fun PreFilingAuditView(
                 },
                 actions = {
                     TextButton(onClick = { isCopilotSheetVisible = true }) {
-                        Text(
-                            text = "✨ Ask Copilot",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                color = EnterpriseTeal600,
-                                fontWeight = FontWeight.Bold
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = EnterpriseTeal600,
+                                modifier = Modifier.size(16.dp)
                             )
-                        )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = "Ask Copilot",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    color = EnterpriseTeal600,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -212,7 +227,12 @@ fun PreFilingAuditView(
                                     .background(if (auditReport.riskLevel == NoticeRiskLevel.LOW_RISK_SAFE) EmeraldSuccess else IndigoStatutory),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("🛡️", fontSize = 18.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Security,
+                                    contentDescription = null,
+                                    tint = PureWhite,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
                             Spacer(Modifier.width(10.dp))
                             Column {
@@ -287,10 +307,11 @@ fun PreFilingAuditView(
                                         .background(if (gate.isPassed) EmeraldSuccess else CrimsonDanger),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        text = if (gate.isPassed) "✓" else "✕",
-                                        color = PureWhite,
-                                        style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Icon(
+                                        imageVector = if (gate.isPassed) Icons.Default.Check else Icons.Default.Close,
+                                        contentDescription = null,
+                                        tint = PureWhite,
+                                        modifier = Modifier.size(12.dp)
                                     )
                                 }
                                 Spacer(Modifier.width(8.dp))
@@ -364,7 +385,12 @@ fun PreFilingAuditView(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("⚖️", fontSize = 16.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Gavel,
+                                    contentDescription = null,
+                                    tint = IndigoStatutory,
+                                    modifier = Modifier.size(18.dp)
+                                )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
                                     text = "Statutory Legal Protection & Cloud Shield",
@@ -396,7 +422,7 @@ fun PreFilingAuditView(
                             modifier = Modifier.fillMaxWidth().height(40.dp)
                         ) {
                             Text(
-                                text = if (isLegalAcknowledgementSigned) "✓ View Signed Legal Terms & Cloud Sync Status" else "Review & Sign Statutory Terms (Mandatory) →",
+                                text = if (isLegalAcknowledgementSigned) "View Signed Legal Terms & Cloud Sync Status" else "Review & Sign Statutory Terms (Mandatory) →",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                             )
                         }

@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,7 +81,12 @@ fun ItdLivePortalSyncModal(
                         .background(EnterpriseTeal100),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("🔄", fontSize = 18.sp)
+                    Icon(
+                        imageVector = Icons.Default.Sync,
+                        contentDescription = null,
+                        tint = EnterpriseTeal700,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
                 Spacer(Modifier.width(10.dp))
                 Column {
@@ -122,7 +129,16 @@ fun ItdLivePortalSyncModal(
                                     .clickable { authMode = "AADHAAR_OTP" }
                             ) {
                                 Column(modifier = Modifier.padding(10.dp)) {
-                                    Text("⚡ Instant Aadhaar OTP", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = EnterpriseTeal900)
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Bolt,
+                                            contentDescription = null,
+                                            tint = EnterpriseTeal900,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("Instant Aadhaar OTP", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = EnterpriseTeal900)
+                                    }
                                     Text("No password needed", fontSize = 10.sp, color = Slate500)
                                 }
                             }
@@ -139,7 +155,16 @@ fun ItdLivePortalSyncModal(
                                     .clickable { authMode = "PORTAL_PASSWORD" }
                             ) {
                                 Column(modifier = Modifier.padding(10.dp)) {
-                                    Text("🔑 Portal Password", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = EnterpriseTeal900)
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.VpnKey,
+                                            contentDescription = null,
+                                            tint = EnterpriseTeal900,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("Portal Password", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = EnterpriseTeal900)
+                                    }
                                     Text("e-Filing password", fontSize = 10.sp, color = Slate500)
                                 }
                             }
@@ -189,7 +214,12 @@ fun ItdLivePortalSyncModal(
                                 modifier = Modifier.padding(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("🔒", fontSize = 14.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = Slate600,
+                                    modifier = Modifier.size(14.dp)
+                                )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
                                     text = "DPDP Act 2023 Compliant: Credentials exist solely in volatile RAM during the TLS handshake and are zeroized immediately.",
@@ -245,7 +275,12 @@ fun ItdLivePortalSyncModal(
                                     modifier = Modifier.padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("✅", fontSize = 20.sp)
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        tint = EmeraldSuccess,
+                                        modifier = Modifier.size(22.dp)
+                                    )
                                     Spacer(Modifier.width(10.dp))
                                     Column {
                                         Text(
@@ -327,7 +362,7 @@ fun ItdLivePortalSyncModal(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
                     ) {
-                        Text("Apply to My Return 🎉", fontWeight = FontWeight.Bold)
+                        Text("Apply to My Return", fontWeight = FontWeight.Bold)
                     }
                 }
 

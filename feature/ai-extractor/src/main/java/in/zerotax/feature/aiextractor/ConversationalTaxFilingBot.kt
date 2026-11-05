@@ -79,8 +79,8 @@ class ConversationalTaxFilingBot {
             ChatMessage(
                 sender = ChatSender.BOT,
                 text = "Namaste! I am your ZeroTax Smart Personal Assistant — powered by on-device intelligence with deterministic tax math.\n\n" +
-                       "You don't need to struggle with complex CBDT tax schedules. Just chat with me naturally, and I'll assemble your complete return, recommend the best tax regime, and uncover hidden deductions to maximize your refund! 🚀",
-                quickReplies = listOf("Start Filing Return 🚀", "Which Regime is Better for Me?", "Can I Claim HRA & Home Loan Both?")
+                       "You don't need to struggle with complex CBDT tax schedules. Just chat with me naturally, and I'll assemble your complete return, recommend the best tax regime, and uncover hidden deductions to maximize your refund!",
+                quickReplies = listOf("Start Filing Return", "Which Regime is Better for Me?", "Can I Claim HRA & Home Loan Both?")
             )
         )
     }
@@ -100,7 +100,7 @@ class ConversationalTaxFilingBot {
                     ChatMessage(
                         sender = ChatSender.BOT,
                         text = "Ready to start assembling your return? Let's begin with your salary income.",
-                        quickReplies = listOf("Start Filing Return 🚀", "Switched Jobs This Year (2 Form 16s)")
+                        quickReplies = listOf("Start Filing Return", "Switched Jobs This Year (2 Form 16s)")
                     )
                 )
                 return botResponses
@@ -164,7 +164,7 @@ class ConversationalTaxFilingBot {
                         ChatMessage(
                             sender = ChatSender.BOT,
                             text = "Calculated HRA Exemption u/s 10(13A): ₹${formatInr(hraExempt)} (Rule 2A Least-of-3 formula)." +
-                                   if (annualRent > 1_00_000L) "\n⚠️ Note: Annual rent is ₹${formatInr(annualRent)} (>₹1L). Landlord's PAN is mandatory per CBDT guidelines." else "",
+                                   if (annualRent > 1_00_000L) "\nNote: Annual rent is ₹${formatInr(annualRent)} (>₹1L). Landlord's PAN is mandatory per CBDT guidelines." else "",
                             attachedDataSummary = "HRA Exemption: ₹${formatInr(hraExempt)}"
                         )
                     )
@@ -256,7 +256,7 @@ class ConversationalTaxFilingBot {
                 botResponses.add(
                     ChatMessage(
                         sender = ChatSender.BOT,
-                        text = "Do you voluntarily invest in National Pension System (NPS Tier-1 u/s 80CCD(1B))?\n\n💡 Pro-Tip: This provides an exclusive ₹50,000 deduction OVER AND ABOVE the Section 80C limit!",
+                        text = "Do you voluntarily invest in National Pension System (NPS Tier-1 u/s 80CCD(1B))?\n\nPro-Tip: This provides an exclusive ₹50,000 deduction OVER AND ABOVE the Section 80C limit!",
                         quickReplies = listOf("Yes, ₹50,000 (Full Max)", "Yes, ₹25,000", "No NPS")
                     )
                 )
@@ -279,7 +279,7 @@ class ConversationalTaxFilingBot {
                 botResponses.add(
                     ChatMessage(
                         sender = ChatSender.BOT,
-                        text = "Did you or your spouse/child pay interest on a Higher Education Loan this year (Section 80E)?\n\n💡 Fact: Section 80E has NO maximum ceiling — 100% of interest paid is deductible for 8 years!",
+                        text = "Did you or your spouse/child pay interest on a Higher Education Loan this year (Section 80E)?\n\nFact: Section 80E has NO maximum ceiling — 100% of interest paid is deductible for 8 years!",
                         quickReplies = listOf("Yes, ₹40,000 Interest", "Yes, ₹80,000 Interest", "No Education Loan")
                     )
                 )
@@ -347,7 +347,7 @@ class ConversationalTaxFilingBot {
                 botResponses.add(
                     ChatMessage(
                         sender = ChatSender.BOT,
-                        text = "Did you sell any stocks, shares, or mutual funds during FY 2025-26?\n\n💡 Section 112A provides an annual ₹1,25,000 tax-free LTCG exemption!",
+                        text = "Did you sell any stocks, shares, or mutual funds during FY 2025-26?\n\nSection 112A provides an annual ₹1,25,000 tax-free LTCG exemption!",
                         quickReplies = listOf("No Stock Sales", "Yes, under ₹1,25,000 (Tax Free)", "Auto-Sync with CAMS/Zerodha")
                     )
                 )
@@ -382,8 +382,8 @@ class ConversationalTaxFilingBot {
                 botResponses.add(
                     ChatMessage(
                         sender = ChatSender.BOT,
-                        text = "🎉 All your details have been collected and structured!\n\n" +
-                               "📊 Live Return Summary (AY 2026-27):\n" +
+                        text = "All your details have been collected and structured!\n\n" +
+                               "Live Return Summary (AY 2026-27):\n" +
                                "• Gross Salary: ₹${formatInr(snapshot.grossSalary)}\n" +
                                "• Standard Deduction u/s 16(ia): ₹${formatInr(snapshot.standardDeduction)}\n" +
                                "• Total Deductions Claimed: ₹${formatInr(snapshot.totalDeductionsClaimed)}\n" +
@@ -391,10 +391,10 @@ class ConversationalTaxFilingBot {
                                "• Final Tax Liability: ₹${formatInr(snapshot.estimatedTaxLiability)} (100% Rebated u/s 87A)\n" +
                                "• Net Refund Due to Bank: ₹${formatInr(snapshot.estimatedRefundDue)}\n" +
                                "• Designated Refund Bank: $bankNameAndAccount\n\n" +
-                               "🏆 Dual-Regime Recommendation:\n" +
+                               "Dual-Regime Recommendation:\n" +
                                "We evaluated both regimes. $regimeWin gives you the best outcome" +
                                (if (savings > 0) " (saves ₹${formatInr(savings)} more)!" else "!") + "\n\n" +
-                               "🛡️ Statutory Gate: Per statutory regulations u/s 140, please review all points on the Pre-Filing Review screen before final submission to the portal.",
+                               "Statutory Gate: Per statutory regulations u/s 140, please review all points on the Pre-Filing Review screen before final submission to the portal.",
                         quickReplies = listOf("Review All Points & Submit to Portal →")
                     )
                 )
@@ -422,7 +422,7 @@ class ConversationalTaxFilingBot {
             query.contains("which regime") || query.contains("compare regime") || query.contains("old vs new") -> {
                 ChatMessage(
                     sender = ChatSender.BOT,
-                    text = "💡 Regime Comparison Analysis:\n" +
+                    text = "Regime Comparison Analysis:\n" +
                            "• New Regime (AY 2026-27): Offers zero tax up to ₹12.75 Lakhs salary (₹75,000 standard deduction + Section 87A rebate). Ideal for salaried filers without high home loans or HRA.\n" +
                            "• Old Regime: Requires >₹4,50,000 in total deductions (HRA + 80C ₹1.5L + 80D ₹75k + Home Loan 24b ₹2L) to beat the New Regime.\n\n" +
                            "Current Recommendation: ${snapshot.recommendedRegime}.",
@@ -433,7 +433,7 @@ class ConversationalTaxFilingBot {
             query.contains("both hra and home loan") || (query.contains("hra") && query.contains("home loan")) -> {
                 ChatMessage(
                     sender = ChatSender.BOT,
-                    text = "💡 Can you claim BOTH HRA and Home Loan?\n" +
+                    text = "Can you claim BOTH HRA and Home Loan?\n" +
                            "YES! Under Indian Income Tax laws, if you own a home in one city (or far from your workplace) and live in a rented house due to your job, you can legally claim BOTH:\n" +
                            "1. HRA Exemption u/s 10(13A) for rent paid.\n" +
                            "2. Home Loan Interest u/s 24(b) (up to ₹2 Lakhs) & Principal u/s 80C (up to ₹1.5 Lakhs) for your owned home!",
@@ -444,7 +444,7 @@ class ConversationalTaxFilingBot {
             query.contains("80d") || query.contains("health insurance") || query.contains("medical") -> {
                 ChatMessage(
                     sender = ChatSender.BOT,
-                    text = "💡 Section 80D Health Insurance Breakdown:\n" +
+                    text = "Section 80D Health Insurance Breakdown:\n" +
                            "• Self, Spouse & Dependent Children: up to ₹25,000/year.\n" +
                            "• Parents (Regular below 60): up to ₹25,000/year.\n" +
                            "• Parents (Senior Citizens 60+): up to ₹50,000/year.\n" +
@@ -457,7 +457,7 @@ class ConversationalTaxFilingBot {
             query.contains("80ccd1b") || query.contains("nps") -> {
                 ChatMessage(
                     sender = ChatSender.BOT,
-                    text = "💡 Section 80CCD(1B) — National Pension System (NPS):\n" +
+                    text = "Section 80CCD(1B) — National Pension System (NPS):\n" +
                            "You get an exclusive ₹50,000 tax deduction for voluntary Tier-1 NPS contributions OVER AND ABOVE the Section 80C ₹1.5 Lakh limit. For someone in the 30% tax bracket, this saves ₹15,600 in tax every single year!",
                     isAdvisorTip = true
                 )
@@ -466,7 +466,7 @@ class ConversationalTaxFilingBot {
             query.contains("80e") || query.contains("education loan") -> {
                 ChatMessage(
                     sender = ChatSender.BOT,
-                    text = "💡 Section 80E — Higher Education Loan:\n" +
+                    text = "Section 80E — Higher Education Loan:\n" +
                            "100% of the interest paid on an education loan taken for yourself, spouse, or children is deductible from taxable income. There is NO upper monetary cap! Available for up to 8 continuous assessment years.",
                     isAdvisorTip = true
                 )
@@ -475,7 +475,7 @@ class ConversationalTaxFilingBot {
             query.contains("switched job") || query.contains("2 form 16") || query.contains("two form 16") -> {
                 ChatMessage(
                     sender = ChatSender.BOT,
-                    text = "💡 Job Switch & Multiple Form 16 Warning:\n" +
+                    text = "Job Switch & Multiple Form 16 Warning:\n" +
                            "When you switch employers in the middle of a financial year, BOTH employers may inadvertently give you the ₹75,000 standard deduction and lower slab rates. If you don't combine both Form 16s, the CPC Bengaluru system will recalculate and issue an unexpected Section 143(1) tax demand. ZeroTax automatically merges both Form 16s so you never receive a notice!",
                     isAdvisorTip = true
                 )
@@ -490,7 +490,7 @@ class ConversationalTaxFilingBot {
 
                 ChatMessage(
                     sender = ChatSender.BOT,
-                    text = "🎯 Proactive Tax-Saving Opportunities for You:\n" + tips.joinToString("\n"),
+                    text = "Proactive Tax-Saving Opportunities for You:\n" + tips.joinToString("\n"),
                     isAdvisorTip = true
                 )
             }

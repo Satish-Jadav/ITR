@@ -2,6 +2,7 @@ package `in`.zerotax.feature.aiextractor
 
 import android.content.Context
 import `in`.zerotax.core.security.UidaiAadhaarVerhoeffScrubber
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -16,49 +17,57 @@ enum class CopilotQuickOptionChip(
     val displayTitleEn: String,
     val displayTitleHi: String,
     val displayTitleGu: String,
+    val iconKey: String,
     val requiresLlmCall: Boolean = false
 ) {
     AUTO_FIND_DOCS(
         categoryPill = "Auto-Import & File",
-        displayTitleEn = "📂 Auto-Find My Form 16 & Tax PDFs",
-        displayTitleHi = "📂 फोन से फॉर्म 16 और टैक्स PDF खोजें",
-        displayTitleGu = "📂 ફોનમાંથી ફોર્મ 16 અને ટેક્સ PDF શોધો"
+        displayTitleEn = "Auto-Find My Form 16 & Tax PDFs",
+        displayTitleHi = "फोन से फॉर्म 16 और टैक्स PDF खोजें",
+        displayTitleGu = "ફોનમાંથી ફોર્મ 16 અને ટેક્સ PDF શોધો",
+        iconKey = "folder"
     ),
     SYNC_PORTAL_6_STREAMS(
         categoryPill = "Auto-Import & File",
-        displayTitleEn = "⚡ 1-Tap Sync AIS, 26AS & Last Year ITR",
-        displayTitleHi = "⚡ 1-टैप में AIS, 26AS और पिछला ITR सिंक करें",
-        displayTitleGu = "⚡ 1-ટેપમાં AIS, 26AS અને ગયા વર્ષનું ITR સિંક કરો"
+        displayTitleEn = "1-Tap Sync AIS, 26AS & Last Year ITR",
+        displayTitleHi = "1-टैप में AIS, 26AS और पिछला ITR सिंक करें",
+        displayTitleGu = "1-ટેપમાં AIS, 26AS અને ગયા વર્ષનું ITR સિંક કરો",
+        iconKey = "sync"
     ),
     COMPARE_REGIME_WHY(
         categoryPill = "Save More Tax",
-        displayTitleEn = "⚖️ Why did Old / New Regime win for me?",
-        displayTitleHi = "⚖️ मेरे लिए नई या पुरानी व्यवस्था क्यों बेहतर है?",
-        displayTitleGu = "⚖️ મારા માટે નવી કે જૂની કર વ્યવસ્થા કેમ શ્રેષ્ઠ છે?"
+        displayTitleEn = "Why did Old / New Regime win for me?",
+        displayTitleHi = "मेरे लिए नई या पुरानी व्यवस्था क्यों बेहतर है?",
+        displayTitleGu = "મારા માટે નવી કે જૂની કર વ્યવસ્થા કેમ શ્રેષ્ઠ છે?",
+        iconKey = "balance"
     ),
     SIMULATE_NPS_80D_HRA(
         categoryPill = "Save More Tax",
-        displayTitleEn = "💰 Open Tax-Saving Sliders (NPS, 80D, HRA)",
-        displayTitleHi = "💰 टैक्स बचत स्लाइडर खोलें (NPS, 80D, HRA)",
-        displayTitleGu = "💰 ટેક્સ બચત સ્લાઇડર ખોલો (NPS, 80D, HRA)"
+        displayTitleEn = "Open Tax-Saving Sliders (NPS, 80D, HRA)",
+        displayTitleHi = "टैक्स बचत स्लाइडर खोलें (NPS, 80D, HRA)",
+        displayTitleGu = "ટેક્સ બચત સ્લાઇડર ખોલો (NPS, 80D, HRA)",
+        iconKey = "tune"
     ),
     HARVEST_112A_LTCG(
         categoryPill = "Stocks, MF & Crypto",
-        displayTitleEn = "📈 Harvest ₹1.25L Tax-Free Equity LTCG",
-        displayTitleHi = "📈 ₹1.25 लाख टैक्स-फ्री LTCG की गणना करें",
-        displayTitleGu = "📈 ₹1.25 લાખ ટેક્સ-ફ્રી LTCG ની ગણતરી કરો"
+        displayTitleEn = "Harvest ₹1.25L Tax-Free Equity LTCG",
+        displayTitleHi = "₹1.25 लाख टैक्स-फ्री LTCG की गणना करें",
+        displayTitleGu = "₹1.25 લાખ ટેક્સ-ફ્રી LTCG ની ગણતરી કરો",
+        iconKey = "trending_up"
     ),
     GENERATE_HR_FORMS_PACK(
         categoryPill = "Certificates & Forms",
-        displayTitleEn = "📄 Download Form 12BB / 12BAA / 15G / Rent Receipts",
-        displayTitleHi = "📄 फॉर्म 12BB / 12BAA / 15G / किराया रसीद डाउनलोड करें",
-        displayTitleGu = "📄 ફોર્મ 12BB / 12BAA / 15G / ભાડા પાવતી ડાઉનલોડ કરો"
+        displayTitleEn = "Download Form 12BB / 12BAA / 15G / Rent Receipts",
+        displayTitleHi = "फॉर्म 12BB / 12BAA / 15G / किराया रसीद डाउनलोड करें",
+        displayTitleGu = "ફોર્મ 12BB / 12BAA / 15G / ભાડા પાવતી ડાઉનલોડ કરો",
+        iconKey = "description"
     ),
     EXPLAIN_NOTICE_OR_PAY_CHALLAN(
         categoryPill = "Notices & Refund",
-        displayTitleEn = "🛡️ Check Notice (143(1)) / Pay Tax via UPI",
-        displayTitleHi = "🛡️ नोटिस जांचें (143(1)) / UPI से टैक्स भरें",
-        displayTitleGu = "🛡️ નોટિસ તપાસો (143(1)) / UPI થી ટેક્સ ભરો"
+        displayTitleEn = "Check Notice (143(1)) / Pay Tax via UPI",
+        displayTitleHi = "नोटिस जांचें (143(1)) / UPI से टैक्स भरें",
+        displayTitleGu = "નોટિસ તપાસો (143(1)) / UPI થી ટેક્સ ભરો",
+        iconKey = "shield"
     )
 }
 
@@ -134,7 +143,7 @@ class OptimizedTaxCopilotChatbotEngine(
             append("IN:<user_query>").append(cleanQuery).append("</user_query>\nOUT:")
         }
 
-        runCatching {
+        val localLlmResult = runCatching {
             val rawOut = modelMutex.withLock {
                 modelBridge?.generateContent(microPrompt).orEmpty()
             }
@@ -143,11 +152,25 @@ class OptimizedTaxCopilotChatbotEngine(
                 synchronized(inMemoryMemoCache) { inMemoryMemoCache[cacheKey] = jsonStr }
                 parseCompactWhatIfJson(jsonStr, resolvedByTier0 = false)
             } else {
-                WhatIfDeltaIntent(intentCode = "OTHER_STATUTORY_QA", resolvedByTier0Regex = true)
+                null
             }
-        }.getOrElse {
-            WhatIfDeltaIntent(intentCode = "OTHER_STATUTORY_QA", resolvedByTier0Regex = true)
+        }.getOrNull()
+
+        if (localLlmResult != null) {
+            return@withContext localLlmResult
         }
+
+        // STEP 4: Tier-2 Cloud Vercel AI API Fallback (for Budget Devices lacking AICore NPU)
+        runCatching {
+            val cloudRes = ZeroTaxCloudApiBridge.queryAiCopilot(cleanQuery).getOrNull()
+            if (cloudRes != null) {
+                val intent = parseCompactWhatIfJson(cloudRes.toString(), resolvedByTier0 = false)
+                synchronized(inMemoryMemoCache) { inMemoryMemoCache[cacheKey] = cloudRes.toString() }
+                return@withContext intent
+            }
+        }
+
+        WhatIfDeltaIntent(intentCode = "OTHER_STATUTORY_QA", resolvedByTier0Regex = true)
     }
 
     internal fun tryTier0FastPath(query: String): WhatIfDeltaIntent? {

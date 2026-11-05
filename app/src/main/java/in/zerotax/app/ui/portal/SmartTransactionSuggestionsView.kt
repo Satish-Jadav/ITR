@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.portal
+package `in`.zerotax.app.ui.portal
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -11,6 +11,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -124,10 +127,21 @@ fun SmartTransactionSuggestionsView(
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text(
-                            text = if (isForm60Applied) "✓ Form 60 Linked" else "+ Form 60 Profile",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (isForm60Applied) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = EmeraldSuccess,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                            }
+                            Text(
+                                text = if (isForm60Applied) "Form 60 Linked" else "+ Form 60 Profile",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -180,7 +194,12 @@ fun SmartTransactionSuggestionsView(
                                         .background(EmeraldSuccess),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("✓", color = PureWhite, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = PureWhite,
+                                        modifier = Modifier.size(14.dp)
+                                    )
                                 }
                                 Spacer(Modifier.width(10.dp))
                                 Column {
@@ -331,7 +350,15 @@ fun SmartTransactionSuggestionsView(
                                 Spacer(Modifier.width(8.dp))
                                 Text("Lazy Loading Next Batch...", style = MaterialTheme.typography.labelMedium)
                             } else {
-                                Text("⚡ Lazy Load More Transactions (Page ${currentPage + 1})", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Bolt,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("Lazy Load More Transactions (Page ${currentPage + 1})", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                }
                             }
                         }
                     }

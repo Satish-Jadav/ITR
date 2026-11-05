@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -115,7 +118,12 @@ fun ZeroTaxCoachmarkPopup(
                     onClick = onDismiss,
                     modifier = Modifier.size(24.dp)
                 ) {
-                    Text("✕", color = Slate400, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Dismiss",
+                        tint = Slate400,
+                        modifier = Modifier.size(14.dp)
+                    )
                 }
             }
 
@@ -132,7 +140,12 @@ fun ZeroTaxCoachmarkPopup(
                     modifier = Modifier.padding(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("👉", fontSize = 16.sp)
+                    Icon(
+                        imageVector = Icons.Default.TouchApp,
+                        contentDescription = null,
+                        tint = EnterpriseTeal200,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = currentStep.actionInstruction,
@@ -201,7 +214,7 @@ fun ZeroTaxCoachmarkPopup(
                         modifier = Modifier.height(32.dp)
                     ) {
                         Text(
-                            text = if (currentStep.stepNumber == totalSteps) "Finish Tour 🎉" else "Next Step →",
+                            text = if (currentStep.stepNumber == totalSteps) "Finish Tour" else "Next Step →",
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp
                         )

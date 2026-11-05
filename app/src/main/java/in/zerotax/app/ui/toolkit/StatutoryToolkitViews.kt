@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,10 +84,19 @@ fun WhatIfScenarioSimulatorView(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "🔮 Offline What-If Tax Simulator",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = EnterpriseTeal700,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "Offline What-If Tax Simulator",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            )
+                        }
                         StatutoryBadge(text = "< 5ms Pure On-Device", tone = BadgeTone.SUCCESS)
                     }
                     Spacer(Modifier.height(6.dp))
@@ -282,10 +293,19 @@ fun Form12BbDeclarationView(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "📋 CBDT Form 12BB Proof Generator",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Assignment,
+                                contentDescription = null,
+                                tint = EnterpriseTeal700,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "CBDT Form 12BB Proof Generator",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            )
+                        }
                         StatutoryBadge(text = "Rule 26C", tone = BadgeTone.STATUTORY)
                     }
                     Spacer(Modifier.height(6.dp))
@@ -406,8 +426,17 @@ fun Form12BbDeclarationView(
                     border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("✅ Form 12BB PDF Ready", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = EmeraldSuccess,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text("Form 12BB PDF Ready", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                            }
                             StatutoryBadge(text = "${bytes.size / 1024} KB", tone = BadgeTone.SUCCESS)
                         }
                         Spacer(Modifier.height(4.dp))
@@ -455,10 +484,19 @@ fun Form15GOr15HZeroTdsView(pan: String) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = if (isSeniorCitizen) "🛡️ Form 15H (Senior Citizen)" else "🛡️ Form 15G (Below 60)",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Security,
+                                contentDescription = null,
+                                tint = EnterpriseTeal700,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = if (isSeniorCitizen) "Form 15H (Senior Citizen)" else "Form 15G (Below 60)",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            )
+                        }
                         StatutoryBadge(text = "Section 197A", tone = BadgeTone.STATUTORY)
                     }
                     Spacer(Modifier.height(6.dp))
@@ -571,7 +609,16 @@ fun Form15GOr15HZeroTdsView(pan: String) {
                     border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("✅ Official Zero-TDS PDF Generated (${bytes.size / 1024} KB)", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = EmeraldSuccess,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text("Official Zero-TDS PDF Generated (${bytes.size / 1024} KB)", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                        }
                         Spacer(Modifier.height(4.dp))
                         Text("Submit this declaration to your bank manager in April to ensure 0% TDS is deducted on your fixed deposit interest.", style = MaterialTheme.typography.bodySmall, color = Slate700)
                     }
@@ -628,7 +675,16 @@ fun ResidentialStatusAndFamilyArbitrageView() {
                 border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal100))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("🌐 Section 6 NRI/RNOR & Family Arbitrage", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Public,
+                            contentDescription = null,
+                            tint = EnterpriseTeal700,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Section 6 NRI/RNOR & Family Arbitrage", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                    }
                     Spacer(Modifier.height(4.dp))
                     Text("Verify physical presence in India, check Schedule FA foreign asset disclosure immunity, and legally reduce household tax.", style = MaterialTheme.typography.bodySmall, color = Slate700)
                 }
@@ -680,7 +736,16 @@ fun ResidentialStatusAndFamilyArbitrageView() {
                 border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(IndigoStatutory))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("👨‍👩‍👧 Family Tax Arbitrage (Sec 10(13A), 80D, Gifting)", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = IndigoStatutory))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Group,
+                            contentDescription = null,
+                            tint = IndigoStatutory,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Family Tax Arbitrage (Sec 10(13A), 80D, Gifting)", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = IndigoStatutory))
+                    }
                     Spacer(Modifier.height(8.dp))
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -738,7 +803,16 @@ fun RefundAuditAndGstView() {
                 border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal100))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("⚖️ Refund Interest Audit & Freelancer GST Radar", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Gavel,
+                            contentDescription = null,
+                            tint = EnterpriseTeal700,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Refund Interest Audit & Freelancer GST Radar", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                    }
                     Spacer(Modifier.height(4.dp))
                     Text("Audit CPC Section 244A interest (0.5%/month) and track export freelancer GST/LUT thresholds.", style = MaterialTheme.typography.bodySmall, color = Slate700)
                 }
@@ -850,7 +924,16 @@ fun ScheduleAlAndWealthView() {
                 border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal100))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("🏛️ Schedule AL & Section 50C Safe-Harbor Shield", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.AccountBalance,
+                            contentDescription = null,
+                            tint = EnterpriseTeal700,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Schedule AL & Section 50C Safe-Harbor Shield", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                    }
                     Spacer(Modifier.height(4.dp))
                     Text("Auto-generate Asset & Liability disclosure for GTI > ₹50L and check 10% circle rate safe-harbor tolerance.", style = MaterialTheme.typography.bodySmall, color = Slate700)
                 }

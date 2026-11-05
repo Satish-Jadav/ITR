@@ -143,26 +143,26 @@ object Section143_1IntimationDiffAnalyzer {
         when {
             diffs.isEmpty() && columnBAsComputed.netPayableOrRefundableRupees < 0L -> {
                 verdict = IntimationDiscrepancyVerdict.REFUND_DETERMINED_WITH_244A_INTEREST
-                headline = "🎉 Return Processed with Zero Discrepancy — Refund of ₹${abs(columnBAsComputed.netPayableOrRefundableRupees)} Confirmed!"
+                headline = "Return Processed with Zero Discrepancy — Refund of ₹${abs(columnBAsComputed.netPayableOrRefundableRupees)} Confirmed!"
             }
             diffs.isEmpty() -> {
                 verdict = IntimationDiscrepancyVerdict.ZERO_DISCREPANCY_ACCEPTED
-                headline = "✅ Return Processed & Accepted 100% by CPC Bengaluru with Zero Variance!"
+                headline = "Return Processed & Accepted 100% by CPC Bengaluru with Zero Variance!"
             }
             hasCreditDisallowance && !hasIncomeAddition -> {
                 verdict = IntimationDiscrepancyVerdict.TAX_CREDIT_MISMATCH_SECTION_154
                 isSec154 = true
-                headline = "⚠️ Tax Credit Mismatch: CPC did not match ₹${abs(columnAAsFiled.totalTaxCreditsAllowedRupees - columnBAsComputed.totalTaxCreditsAllowedRupees)} in TDS/Challan credits."
+                headline = "Tax Credit Mismatch: CPC did not match ₹${abs(columnAAsFiled.totalTaxCreditsAllowedRupees - columnBAsComputed.totalTaxCreditsAllowedRupees)} in TDS/Challan credits."
                 sec154Payload = buildSection154Json(pan, assessmentYear, acknowledgmentNumber, columnAAsFiled, columnBAsComputed)
             }
             hasIncomeAddition -> {
                 verdict = IntimationDiscrepancyVerdict.INCOME_OMISSION_SECTION_139_5
                 isSec139_5 = true
-                headline = "ℹ️ Unreported Income Detected by CPC Bengaluru: Difference of ₹${columnBAsComputed.grossTotalIncomeRupees - columnAAsFiled.grossTotalIncomeRupees}."
+                headline = "Unreported Income Detected by CPC Bengaluru: Difference of ₹${columnBAsComputed.grossTotalIncomeRupees - columnAAsFiled.grossTotalIncomeRupees}."
             }
             hasPayableDemand -> {
                 verdict = IntimationDiscrepancyVerdict.DEMAND_NOTICE_SECTION_143_1_A
-                headline = "🚨 Demand Notice u/s 143(1)(a): CPC Bengaluru has determined tax payable of ₹${columnBAsComputed.netPayableOrRefundableRupees}."
+                headline = "Demand Notice u/s 143(1)(a): CPC Bengaluru has determined tax payable of ₹${columnBAsComputed.netPayableOrRefundableRupees}."
             }
             else -> {
                 verdict = IntimationDiscrepancyVerdict.ZERO_DISCREPANCY_ACCEPTED

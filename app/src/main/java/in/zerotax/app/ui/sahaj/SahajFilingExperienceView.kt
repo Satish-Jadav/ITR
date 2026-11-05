@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,7 +87,12 @@ fun SahajFilingExperienceView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("🔄", fontSize = 20.sp)
+                    Icon(
+                        imageVector = Icons.Default.Sync,
+                        contentDescription = null,
+                        tint = EnterpriseTeal700,
+                        modifier = Modifier.size(20.dp)
+                    )
                     Spacer(Modifier.width(10.dp))
                     Column {
                         Text(
@@ -141,7 +148,16 @@ fun SahajFilingExperienceView(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = EnterpriseTeal700)
                 ) {
-                    Text("💡 How to File: Show Step-by-Step Guide", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = null,
+                            tint = EnterpriseTeal700,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("How to File: Show Step-by-Step Guide", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -167,7 +183,12 @@ fun SahajFilingExperienceView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (refundDue > 0) "🎉" else "⚖️", fontSize = 24.sp)
+                        Icon(
+                            imageVector = if (refundDue > 0) Icons.Default.CheckCircle else Icons.Default.AccountBalance,
+                            contentDescription = null,
+                            tint = if (refundDue > 0) EmeraldSuccess else EnterpriseTeal700,
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = if (refundDue > 0) "Income Tax Refund Ready" else if (taxPayable == 0L) "Zero Tax Payable" else "Tax Due to Pay",
@@ -268,7 +289,12 @@ fun SahajFilingExperienceView(
                     modifier = Modifier.padding(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("💡", fontSize = 16.sp)
+                    Icon(
+                        imageVector = Icons.Default.Lightbulb,
+                        contentDescription = null,
+                        tint = EnterpriseTeal900,
+                        modifier = Modifier.size(16.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "The government gives you this ₹75,000 discount automatically. Your taxable income is reduced to ₹${Rupee.formatInr(netTaxableEarnings)}.",
@@ -344,7 +370,12 @@ fun SahajFilingExperienceView(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("💰", fontSize = 14.sp)
+                    Icon(
+                        imageVector = Icons.Default.TrendingUp,
+                        contentDescription = null,
+                        tint = EmeraldSuccess,
+                        modifier = Modifier.size(16.dp)
+                    )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = "New Tax Regime saves you ₹${Rupee.formatInr(regimeSavings)} in tax!",
@@ -390,7 +421,12 @@ fun SahajFilingExperienceView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🏦", fontSize = 22.sp)
+                        Icon(
+                            imageVector = Icons.Default.AccountBalance,
+                            contentDescription = null,
+                            tint = Slate700,
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(Modifier.width(10.dp))
                         Column {
                             Text("State Bank of India", fontWeight = FontWeight.Bold, color = Slate900, fontSize = 13.sp)
@@ -410,15 +446,27 @@ fun SahajFilingExperienceView(
                 colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
                 modifier = Modifier.fillMaxWidth().height(48.dp)
             ) {
-                Text(
-                    text = "💳 Pay ₹${Rupee.formatInr(taxPayable)} Tax via Instant UPI / Challan 280",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CreditCard,
+                        contentDescription = null,
+                        tint = Slate900,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Pay ₹${Rupee.formatInr(taxPayable)} Tax via Instant UPI / Challan 280",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                    )
+                }
             }
         }
 
         ZeroTaxPrimaryButton(
-            text = "🔒 Authenticate with Biometrics to e-File ITR-1",
+            text = "Authenticate with Biometrics to e-File ITR-1",
             onClick = { showBiometricFilingDialog = true },
             modifier = Modifier.fillMaxWidth().height(50.dp)
         )
@@ -429,7 +477,19 @@ fun SahajFilingExperienceView(
             shape = RoundedCornerShape(8.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, Slate300)
         ) {
-            Text("🔍 Review AIS Tax Transactions & Form 26AS", style = MaterialTheme.typography.labelSmall.copy(color = Slate700))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = Slate700,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Review AIS Tax Transactions & Form 26AS", style = MaterialTheme.typography.labelSmall.copy(color = Slate700))
+            }
         }
     }
 
@@ -440,7 +500,12 @@ fun SahajFilingExperienceView(
             containerColor = Slate900,
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🛡️", fontSize = 22.sp)
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = null,
+                        tint = EmeraldSuccess,
+                        modifier = Modifier.size(22.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         "Confirm Biometric Signature",
@@ -472,7 +537,19 @@ fun SahajFilingExperienceView(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
                 ) {
-                    Text("👆 Verify & Dispatch to CBDT", fontWeight = FontWeight.Bold)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Fingerprint,
+                            contentDescription = null,
+                            tint = PureWhite,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Verify & Dispatch to CBDT", fontWeight = FontWeight.Bold)
+                    }
                 }
             },
             dismissButton = {

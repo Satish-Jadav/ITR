@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -260,7 +262,12 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🤖", fontSize = 11.sp)
+                                Icon(
+                                    imageVector = Icons.Default.SmartToy,
+                                    contentDescription = null,
+                                    tint = EnterpriseTeal900,
+                                    modifier = Modifier.size(13.dp)
+                                )
                                 Spacer(Modifier.width(4.dp))
                                 Text("Chat & File", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
                             }
@@ -278,7 +285,12 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🛠️", fontSize = 11.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Build,
+                                    contentDescription = null,
+                                    tint = IndigoStatutory,
+                                    modifier = Modifier.size(13.dp)
+                                )
                                 Spacer(Modifier.width(4.dp))
                                 Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
                             }
@@ -296,7 +308,12 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("📊", fontSize = 11.sp)
+                                Icon(
+                                    imageVector = Icons.Default.BarChart,
+                                    contentDescription = null,
+                                    tint = EmeraldSuccess,
+                                    modifier = Modifier.size(13.dp)
+                                )
                                 Spacer(Modifier.width(4.dp))
                                 Text("Insights", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                             }
@@ -314,7 +331,12 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🛡️", fontSize = 11.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Security,
+                                    contentDescription = null,
+                                    tint = AmberWarning,
+                                    modifier = Modifier.size(13.dp)
+                                )
                                 Spacer(Modifier.width(4.dp))
                                 Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AmberWarning))
                             }
@@ -332,7 +354,12 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🏢", fontSize = 11.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Domain,
+                                    contentDescription = null,
+                                    tint = IndigoStatutory,
+                                    modifier = Modifier.size(13.dp)
+                                )
                                 Spacer(Modifier.width(4.dp))
                                 Text("Business Audit", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
                             }
@@ -350,7 +377,12 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🌍", fontSize = 11.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Public,
+                                    contentDescription = null,
+                                    tint = EnterpriseTeal900,
+                                    modifier = Modifier.size(13.dp)
+                                )
                                 Spacer(Modifier.width(4.dp))
                                 Text("NRI Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
                             }
@@ -368,7 +400,12 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🏢", fontSize = 11.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Apartment,
+                                    contentDescription = null,
+                                    tint = EnterpriseTeal900,
+                                    modifier = Modifier.size(13.dp)
+                                )
                                 Spacer(Modifier.width(4.dp))
                                 Text("ITR-5/6/7", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
                             }
@@ -402,7 +439,12 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🔒", fontSize = 10.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = Slate700,
+                                    modifier = Modifier.size(11.dp)
+                                )
                                 Spacer(Modifier.width(3.dp))
                                 Text("Lock", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate700))
                             }
@@ -420,14 +462,22 @@ fun EnterpriseTopHeader(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(userProfile.authProvider.iconEmoji, fontSize = 11.sp)
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(13.dp)
+                                )
                                 Spacer(Modifier.width(4.dp))
                                 Text(
                                     text = userProfile.displayName.take(10),
                                     style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                                 Spacer(Modifier.width(4.dp))
-                                Text("🚪", fontSize = 10.sp)
+                                Icon(
+                                    imageVector = Icons.Default.ExitToApp,
+                                    contentDescription = "Sign Out",
+                                    modifier = Modifier.size(11.dp)
+                                )
                             }
                         }
                     }
@@ -526,7 +576,12 @@ fun SmartIndividualPanField(
             placeholder = { Text("ABCDE1234F", style = TextStyle(fontFamily = FontFamily.Monospace, color = Slate400)) },
             trailingIcon = {
                 if (isComplete && decoded.isValidFormat) {
-                    Text("✓", color = EmeraldSuccess, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(end = 8.dp))
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = EmeraldSuccess,
+                        modifier = Modifier.padding(end = 8.dp).size(20.dp)
+                    )
                 }
             },
             supportingText = {
@@ -587,34 +642,34 @@ fun SmartIndividualPanField(
             ) {
                 when (decoded.entityType) {
                     PanEntityType.INDIVIDUAL -> {
-                        StatutoryBadge(text = "👤 Individual Taxpayer", tone = BadgeTone.SUCCESS)
+                        StatutoryBadge(text = "Individual Taxpayer", tone = BadgeTone.SUCCESS)
                         StatutoryBadge(text = "ITR-1 / ITR-2 / ITR-4 Eligible", tone = BadgeTone.STATUTORY)
                         if (isComplete) {
                             StatutoryBadge(text = "Sec 87A Rebate Eligible", tone = BadgeTone.SUCCESS)
                         }
                     }
                     PanEntityType.HUF -> {
-                        StatutoryBadge(text = "👨‍👩‍👧‍👦 HUF Entity", tone = BadgeTone.NEUTRAL)
+                        StatutoryBadge(text = "HUF Entity", tone = BadgeTone.NEUTRAL)
                         StatutoryBadge(text = "ITR-2 / ITR-3 Eligible", tone = BadgeTone.STATUTORY)
                     }
                     PanEntityType.COMPANY -> {
-                        StatutoryBadge(text = "🏢 Company Entity", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "Company Entity", tone = BadgeTone.STATUTORY)
                         StatutoryBadge(text = "ITR-6 / ITR-7 Eligible", tone = BadgeTone.STATUTORY)
                     }
                     PanEntityType.FIRM -> {
-                        StatutoryBadge(text = "🤝 Partnership / LLP", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "Partnership / LLP", tone = BadgeTone.STATUTORY)
                         StatutoryBadge(text = "ITR-5 / ITR-4 Eligible", tone = BadgeTone.STATUTORY)
                     }
                     PanEntityType.TRUST -> {
-                        StatutoryBadge(text = "🏛️ Trust / NGO", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "Trust / NGO", tone = BadgeTone.STATUTORY)
                         StatutoryBadge(text = "ITR-7 Eligible", tone = BadgeTone.STATUTORY)
                     }
                     PanEntityType.AOP, PanEntityType.BOI, PanEntityType.LOCAL_AUTHORITY, PanEntityType.ARTIFICIAL_JURIDICAL -> {
-                        StatutoryBadge(text = "🏛️ ${decoded.entityType.title}", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = decoded.entityType.title, tone = BadgeTone.STATUTORY)
                         StatutoryBadge(text = "ITR-5 Eligible", tone = BadgeTone.STATUTORY)
                     }
                     else -> {
-                        StatutoryBadge(text = "⚠️ ${decoded.entityType.title}", tone = BadgeTone.WARNING)
+                        StatutoryBadge(text = decoded.entityType.title, tone = BadgeTone.WARNING)
                     }
                 }
             }
@@ -706,11 +761,20 @@ fun CitizenCategoryAgeSelector(
             }
             if (selectedCategory != CitizenCategory.REGULAR_BELOW_60) {
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "✓ Enhanced Section 80D limit (₹50,000) & Section 80TTB interest deduction (up to ₹50,000) auto-applied.",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = EmeraldSuccess
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = EmeraldSuccess,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "Enhanced Section 80D limit (₹50,000) & Section 80TTB interest deduction (up to ₹50,000) auto-applied.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = EmeraldSuccess
+                    )
+                }
             }
         }
     }

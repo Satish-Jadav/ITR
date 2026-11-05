@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -149,7 +152,12 @@ fun StatutoryTimelineBanner(
                         .background(if (daysLeft <= 15) AmberWarning.copy(alpha = 0.2f) else EnterpriseTeal100),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(if (daysLeft <= 15) "⚠️" else "🗓️", fontSize = 16.sp)
+                    Icon(
+                        imageVector = if (daysLeft <= 15) Icons.Default.Warning else Icons.Default.CalendarMonth,
+                        contentDescription = null,
+                        tint = if (daysLeft <= 15) AmberWarning else EnterpriseTeal900,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
 
                 Spacer(Modifier.width(10.dp))
@@ -287,10 +295,12 @@ fun StatutoryReminderModal(
                             .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        Text(
-                            text = if (milestone.isCritical) "🔴" else "🔵",
-                            fontSize = 10.sp,
-                            modifier = Modifier.padding(top = 4.dp)
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 6.dp)
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(if (milestone.isCritical) CrimsonDanger else IndigoStatutory)
                         )
                         Spacer(Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {

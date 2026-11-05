@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -231,9 +233,9 @@ fun ZeroTaxFourTapSpineScaffold(
                     tonalElevation = 2.dp
                 ) {
                     val icons = mapOf(
-                        WorkspaceTab.FilingAndRefundHub to "🏛️",
-                        WorkspaceTab.SmartTaxVaultAndCopilot to "🛡️",
-                        WorkspaceTab.PrivacyAndSettings to "🔐"
+                        WorkspaceTab.FilingAndRefundHub to Icons.Default.AccountBalance,
+                        WorkspaceTab.SmartTaxVaultAndCopilot to Icons.Default.Security,
+                        WorkspaceTab.PrivacyAndSettings to Icons.Default.Lock
                     )
                     WorkspaceTab.entries.forEach { tab ->
                         val isSelected = uiState.selectedWorkspaceTab == tab
@@ -249,7 +251,11 @@ fun ZeroTaxFourTapSpineScaffold(
                                 )
                             },
                             icon = {
-                                Text(icons[tab] ?: "📋", fontSize = 18.sp)
+                                Icon(
+                                    imageVector = icons[tab] ?: Icons.Default.Description,
+                                    contentDescription = tab.title,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             },
                             colors = NavigationBarItemDefaults.colors(
                                 indicatorColor = EnterpriseTeal100,
@@ -533,7 +539,12 @@ private fun Stage1IdentityConsent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🔑", fontSize = 16.sp)
+                    Icon(
+                        imageVector = Icons.Default.VpnKey,
+                        contentDescription = null,
+                        tint = IndigoStatutory,
+                        modifier = Modifier.size(16.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
                     Column {
                         Text(
@@ -596,10 +607,18 @@ private fun Stage1IdentityConsent(
                 .fillMaxWidth()
                 .height(44.dp)
         ) {
-            Text(
-                text = "🤖 Prefer Chat? Open TaxBuddy-Style Assistant",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.SmartToy,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = "Prefer Chat? Open TaxBuddy-Style Assistant",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            }
         }
 
         Spacer(Modifier.height(8.dp))
@@ -1015,7 +1034,15 @@ private fun Stage4RegimeShowdown(
             shape = RoundedCornerShape(4.dp),
             modifier = Modifier.fillMaxWidth().height(38.dp)
         ) {
-            Text("💡 Optimize Old Regime Deductions (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Lightbulb,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("Optimize Old Regime Deductions (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+            }
         }
 
         Spacer(Modifier.height(6.dp))
@@ -1026,7 +1053,15 @@ private fun Stage4RegimeShowdown(
             colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldSuccess),
             modifier = Modifier.fillMaxWidth().height(38.dp)
         ) {
-            Text("🛡️ Pre-Filing Audit & Notice Risk Shield (100% Score)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Security,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("Pre-Filing Audit & Notice Risk Shield (100% Score)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+            }
         }
 
         Spacer(Modifier.height(10.dp))
@@ -1069,7 +1104,16 @@ private fun Stage4RegimeShowdown(
                 colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
                 modifier = Modifier.fillMaxWidth().height(42.dp)
             ) {
-                Text("💳 Pay Tax via Instant UPI / Challan 280 (Zero Fee)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CreditCard,
+                        contentDescription = null,
+                        tint = Slate900,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("Pay Tax via Instant UPI / Challan 280 (Zero Fee)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                }
             }
         }
 
@@ -1351,7 +1395,15 @@ private fun ProWorkspaceView(
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
                                         modifier = Modifier.fillMaxWidth().height(40.dp)
                                     ) {
-                                        Text("⚖️ Review Master Legal Terms & Declarations", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.Gavel,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(Modifier.width(6.dp))
+                                            Text("Review Master Legal Terms & Declarations", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                        }
                                     }
                                 }
                             }
