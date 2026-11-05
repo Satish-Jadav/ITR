@@ -212,6 +212,7 @@ fun EnterpriseTopHeader(
     onOpenBusinessAudit: (() -> Unit)? = null,
     onOpenNriSuite: (() -> Unit)? = null,
     onOpenCorporateSuite: (() -> Unit)? = null,
+    onLockVault: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -389,6 +390,24 @@ fun EnterpriseTopHeader(
                         text = "SQLCipher StrongBox",
                         tone = BadgeTone.SUCCESS
                     )
+
+                    if (onLockVault != null) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Slate100)
+                                .border(0.5.dp, Slate300, RoundedCornerShape(4.dp))
+                                .clickable { onLockVault() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("🔒", fontSize = 10.sp)
+                                Spacer(Modifier.width(3.dp))
+                                Text("Lock", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate700))
+                            }
+                        }
+                    }
 
                     if (userProfile != null) {
                         Spacer(Modifier.width(6.dp))

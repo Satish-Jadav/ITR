@@ -27,11 +27,15 @@ val EnterpriseTeal800 = Color(0xFF0A3D3C)
 val EnterpriseTeal700 = Color(0xFF0D5452)
 val EnterpriseTeal600 = Color(0xFF0F766E) // Brand Primary
 val EnterpriseTeal500 = Color(0xFF14B8A6) // Interactive focus
+val EnterpriseTeal400 = Color(0xFF2DD4BF)
+val EnterpriseTeal300 = Color(0xFF5EEAD4)
+val EnterpriseTeal200 = Color(0xFF99F6E4)
 val EnterpriseTeal100 = Color(0xFFCCFBF1) // Success pill container
 val EnterpriseTeal50  = Color(0xFFF0FDFA) // Subtle highlight
 
 // Semantic Status Colors (Restrained, High-Contrast Statutory Badges)
 val EmeraldSuccess     = Color(0xFF047857) // Verified / Zero Discrepancy
+val EmeraldDark        = Color(0xFF064E3B)
 val EmeraldSuccessBg   = Color(0xFFECFDF5)
 val EmeraldSuccessBgDark = Color(0xFF064E3B)
 
