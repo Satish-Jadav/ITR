@@ -19,7 +19,9 @@ data class InstitutionPdfPasswordRule(
  */
 object InstitutionPdfPasswordRegistry {
 
-    val rules: List<InstitutionPdfPasswordRule> = listOf(
+    private val dynamicRules = mutableListOf<InstitutionPdfPasswordRule>()
+
+    val defaultRules: List<InstitutionPdfPasswordRule> = listOf(
         InstitutionPdfPasswordRule(
             institutionId = "TRACES_FORM16",
             institutionName = "Income Tax Department / TRACES",
@@ -111,6 +113,18 @@ object InstitutionPdfPasswordRegistry {
             officialHelplineHint = "Annual tax computation P&L report"
         )
     )
+
+    val rules: List<InstitutionPdfPasswordRule>
+        get() = synchronized(this) {
+            if (dynamicRules.isNotEmpty()) dynamicRules.toList() else defaultRules
+        }
+
+    fun updateRules(newRules: List<InstitutionPdfPasswordRule>) {
+        synchronized(this) {
+            dynamicRules.clear()
+            dynamicRules.addAll(newRules)
+        }
+    }
 
     fun findRuleByInstitution(idOrKeyword: String): InstitutionPdfPasswordRule? {
         val query = idOrKeyword.lowercase().trim()

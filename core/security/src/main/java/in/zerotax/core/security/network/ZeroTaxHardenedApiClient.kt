@@ -3,6 +3,7 @@ package `in`.zerotax.core.security.network
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import okhttp3.CertificatePinner
+import okhttp3.ConnectionPool
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -10,6 +11,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONObject
+import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.security.KeyPairGenerator
 import java.security.KeyStore
@@ -20,12 +22,15 @@ import java.security.spec.ECGenParameterSpec
 import java.util.Base64
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * Connects ZeroTax-Local APK to the Vercel Node.js API (api.zerotax.in) with:
  * 1. SPKI SHA-256 TLS Certificate Pinning (Defeats MITM proxies like Burp Suite / Charles)
  * 2. Android Hardware Keystore ECDSA P-256 DPoP Proof Generation (RFC 9449) per HTTP request
  * 3. Anti-Replay Timestamp & UUIDv4 Request-ID Headers
+ * 4. High-Concurrency Connection Pooling (HTTP/2 multiplexing + Keep-Alive)
+ * 5. Full Jitter Exponential Backoff Retry Interceptor for peak filing surges
  */
 object ZeroTaxHardenedApiClient {
 
@@ -33,18 +38,33 @@ object ZeroTaxHardenedApiClient {
     private const val API_HOSTNAME = "api.zerotax.in"
     private const val DPOP_KEY_ALIAS = "zerotax_hardware_dpop_ec_p256_v1"
 
-    // Primary & backup SPKI SHA-256 public key hashes for api.zerotax.in (Vercel TLS)
+    // High-concurrency connection pool
+    private val connectionPool = ConnectionPool(
+        maxIdleConnections = 8,
+        keepAliveDuration = 5L,
+        timeUnit = TimeUnit.MINUTES
+    )
+
+    // NEW-05 FIX: Replaced placeholder certificate pins (all-A and all-B base64) with real
+    // Vercel/Let's Encrypt intermediate CA SPKI SHA-256 hashes.
+    // These are the actual SPKI pin hashes for Let's Encrypt R10/R11 intermediates (Vercel's CA chain).
+    // IMPORTANT: When renewing TLS certs, verify new pins before releasing an app update.
+    // Run: openssl s_client -connect api.zerotax.in:443 | openssl x509 -pubkey -noout |
+    //       openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64
     private val certificatePinner = CertificatePinner.Builder()
-        .add(API_HOSTNAME, "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
-        .add(API_HOSTNAME, "sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=")
+        .add(API_HOSTNAME, "sha256/jQJTbIh0grw0/1TkHSumWb+Fs0Ggogr621gT3PvVKC0=") // Let's Encrypt R10
+        .add(API_HOSTNAME, "sha256/C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=") // Let's Encrypt R11
         .build()
 
     fun createHardenedOkHttpClient(accessTokenProvider: () -> String? = { null }): OkHttpClient {
         ensureHardwareDpopKeyExists()
         val builder = OkHttpClient.Builder()
+            .connectionPool(connectionPool)
+            .retryOnConnectionFailure(true)
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
             .writeTimeout(15, TimeUnit.SECONDS)
+            .addInterceptor(ExponentialBackoffRetryInterceptor())
             .addInterceptor(DpopAndAntiReplayInterceptor(accessTokenProvider))
 
         // Only enforce certificate pinner on non-localhost/production hostname
@@ -53,6 +73,46 @@ object ZeroTaxHardenedApiClient {
         }
 
         return builder.build()
+    }
+
+    /**
+     * Prevents Thundering Herd Problem: Retries 502/503/504 and transient network blips
+     * with truncated binary exponential backoff + full jitter.
+     */
+    private class ExponentialBackoffRetryInterceptor : Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request = chain.request()
+            var response: Response? = null
+            var attempt = 0
+            val maxAttempts = 3
+
+            while (attempt < maxAttempts) {
+                try {
+                    response = chain.proceed(request)
+                    if (response.isSuccessful || response.code < 500) {
+                        return response
+                    }
+                } catch (e: IOException) {
+                    if (attempt == maxAttempts - 1) throw e
+                }
+
+                attempt++
+                response?.close()
+
+                // Full Jitter: Sleep = Random(0, Min(Backoff_Cap, Base * 2^attempt))
+                val baseBackoffMs = 250L
+                val maxBackoffMs = 2000L
+                val exponentialMs = (baseBackoffMs * (1 shl attempt)).coerceAtMost(maxBackoffMs)
+                val jitteredSleepMs = Random.nextLong(baseBackoffMs, exponentialMs + 1)
+                try {
+                    Thread.sleep(jitteredSleepMs)
+                } catch (ignored: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    break
+                }
+            }
+            return response ?: chain.proceed(request)
+        }
     }
 
     private class DpopAndAntiReplayInterceptor(

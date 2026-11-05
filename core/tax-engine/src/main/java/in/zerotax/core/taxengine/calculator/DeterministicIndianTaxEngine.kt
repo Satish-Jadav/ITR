@@ -48,7 +48,38 @@ object DeterministicIndianTaxEngine {
     private const val OLD_REGIME_87A_MAX_REBATE = 12_500L
     private const val SEC_112A_EXEMPT_THRESHOLD = 1_25_000L
 
+    /**
+     * VUL-11 & VUL-12 FIX: Sanitize all financial input fields to non-negative values.
+     *
+     * - VUL-11: Negative presumptive receipts (Sec 44ADA) could illegally offset salary income
+     *   across heads, violating Sec 71(2A) which prohibits inter-head set-off of business losses.
+     * - VUL-12: Negative STCG/LTCG (passed directly) inflated the basic exemption absorption
+     *   pool, producing negative special-rate tax and ultimately negative total tax payable.
+     *
+     * All monetary inputs must be >= 0. Negative values represent data-entry errors or attacks.
+     */
+    private fun sanitizeInput(input: TaxpayerFinancialInput): TaxpayerFinancialInput = input.copy(
+        grossSalary                     = max(0L, input.grossSalary),
+        exemptHraAndAllowancesSec10     = max(0L, input.exemptHraAndAllowancesSec10),
+        professionalTaxSec16iii         = max(0L, input.professionalTaxSec16iii),
+        selfOccupiedHomeLoanInterestSec24b = max(0L, input.selfOccupiedHomeLoanInterestSec24b),
+        savingsBankInterest             = max(0L, input.savingsBankInterest),
+        fixedDepositInterest            = max(0L, input.fixedDepositInterest),
+        familyPensionReceived           = max(0L, input.familyPensionReceived),
+        section80CInvestments           = max(0L, input.section80CInvestments),
+        section80DSelfAndFamily         = max(0L, input.section80DSelfAndFamily),
+        section80DParentsSenior         = max(0L, input.section80DParentsSenior),
+        section80CCD1BSelfNps           = max(0L, input.section80CCD1BSelfNps),
+        section80CCD2EmployerNps        = max(0L, input.section80CCD2EmployerNps),
+        basicPlusDaForNps               = max(0L, input.basicPlusDaForNps),
+        presumptiveGrossReceipts44ADA   = max(0L, input.presumptiveGrossReceipts44ADA),
+        netTaxableStcg111ARupees        = max(0L, input.netTaxableStcg111ARupees),
+        netTaxableLtcg112ARupees        = max(0L, input.netTaxableLtcg112ARupees)
+    )
+
     fun computeNewRegime(input: TaxpayerFinancialInput): RegimeComputationResult {
+        // VUL-11/12 FIX: Clamp all monetary fields to non-negative before any computation.
+        val input = sanitizeInput(input)
         val stdDed = min(input.grossSalary, NEW_REGIME_STD_DEDUCTION)
         val netSalary = max(0L, input.grossSalary - stdDed)
         val presumptiveIncome = (input.presumptiveGrossReceipts44ADA * (input.presumptiveDeclaredProfitRatePercent / 100.0)).roundToLong()
@@ -139,6 +170,8 @@ object DeterministicIndianTaxEngine {
     }
 
     fun computeOldRegime(input: TaxpayerFinancialInput): RegimeComputationResult {
+        // VUL-11/12 FIX: Clamp all monetary fields to non-negative before any computation.
+        val input = sanitizeInput(input)
         val stdDed = min(input.grossSalary, OLD_REGIME_STD_DEDUCTION)
         val netSalary = max(0L, input.grossSalary - input.exemptHraAndAllowancesSec10 - input.professionalTaxSec16iii - stdDed)
         val lossFromHouseProperty = min(input.selfOccupiedHomeLoanInterestSec24b, 2_00_000L)
@@ -405,7 +438,9 @@ object DeterministicIndianTaxEngine {
         val excessIncomeOverThreshold = totalIncome - threshold
 
         // Marginal relief calculation
-        val taxAtThreshold = baseTax - (excessIncomeOverThreshold * 0.30).roundToLong()
+        // VUL-13 FIX: Guard against taxAtThreshold becoming negative when baseTax < excess * 0.30
+        // (can happen when income is dominated by lower special rates like 10% or 12.5% capital gains).
+        val taxAtThreshold = max(0L, baseTax - (excessIncomeOverThreshold * 0.30).roundToLong())
         val surchargeAtThreshold = (taxAtThreshold * min(prevRate, 0.15)).roundToLong()
         val maxPayableUnderMarginalRelief = taxAtThreshold + surchargeAtThreshold + excessIncomeOverThreshold
 

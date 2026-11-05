@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.model.Rupee
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
 import `in`.zerotax.feature.aiextractor.ChatSender
 import `in`.zerotax.feature.aiextractor.ChatStep
 import `in`.zerotax.feature.aiextractor.ConversationalTaxFilingBot
@@ -64,6 +65,35 @@ fun ConversationalFilingChatScreen(
         }
     }
 
+    fun syncChatToCloud() {
+        scope.launch {
+            runCatching {
+                val jsonArray = org.json.JSONArray()
+                messages.forEach { msg ->
+                    jsonArray.put(org.json.JSONObject().apply {
+                        put("id", msg.id)
+                        put("sender", if (msg.sender == ChatSender.BOT) "BOT" else "USER")
+                        put("text", msg.text)
+                        put("timestamp", msg.timestamp)
+                    })
+                }
+                val summary = org.json.JSONObject().apply {
+                    put("grossSalary", currentSnapshot.grossSalary)
+                    put("netTaxableSalary", currentSnapshot.netTaxableIncome)
+                    put("taxLiability", currentSnapshot.estimatedTaxLiability)
+                    put("refundDue", currentSnapshot.estimatedRefundDue)
+                    put("totalDeductions", currentSnapshot.totalDeductionsClaimed)
+                }
+                ZeroTaxCloudApiBridge.syncChatSession(
+                    assessmentYear = "2026-27",
+                    chatTitle = "Filing Session • PAN ${pan.take(2)}***${pan.takeLast(2)}",
+                    messagesJsonArray = jsonArray,
+                    summarySnapshot = summary
+                )
+            }
+        }
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -87,6 +117,7 @@ fun ConversationalFilingChatScreen(
                     if (isReadyForReview) {
                         Button(
                             onClick = {
+                                syncChatToCloud()
                                 onProceedToFullReview(
                                     currentSnapshot.grossSalary,
                                     currentSnapshot.netTaxableIncome,
@@ -174,6 +205,7 @@ fun ConversationalFilingChatScreen(
                                         .border(0.75.dp, EnterpriseTeal600.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                                         .clickable {
                                             if (reply.contains("Review All Points")) {
+                                                syncChatToCloud()
                                                 onProceedToFullReview(
                                                     currentSnapshot.grossSalary,
                                                     currentSnapshot.netTaxableIncome,

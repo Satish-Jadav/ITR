@@ -937,3 +937,22 @@ flowchart TD
 - Direct TLS handshake via Aadhaar OTP or password pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
 
 
+
+
+9.8 Chartered Accountant & Auditor Portal (`CaAuditorPortalScreen.kt`, `ShareWithCaClientModal.kt`):
+- Auditor login & client pairing dashboard with ICAI membership number verification.
+- Pair Client Dialog accepting single-use 6-digit codes (`ZT-XXXX`) to securely attach clients to the CA audit roster.
+- Client Review Modal inspecting Gross Total Income, Chapter VI-A deductions, Tax Payable/Refund, and regime comparison.
+- UDIN Sign-Off Workflow: records audit notes, generates compliant 18-digit UDIN drafts, and signs off statutory approvals.
+- Client-Side Pairing Modal (`ShareWithCaClientModal.kt`): allows users to generate an ephemeral 6-digit code with a 15-minute countdown, 1-tap copy, and real-time audit status indicator.
+
+9.9 Think Like a CA Deduction Maximizer (`ThinkLikeACaAdvisorView.kt`):
+- Interactive tax optimization dashboard that simulates expert chartered accountant advisory logic.
+- Live comparison between baseline tax and optimized tax, displaying total statutory deductions identified and potential refund due.
+- Category filters: Salary Structure, Health Cover, Home Ownership, Retirement & NPS, Education, Donations & Rent.
+- 1-tap claim cards displaying statutory section, maximum eligibility ceiling, net tax savings, and audit tips.
+
+9.10 Zero-Knowledge Trust Shield Modal (`ZeroKnowledgeTrustShieldModal.kt`):
+- High-trust branding dialog clarifying zero-cloud access under the Digital Personal Data Protection Act, 2023.
+- Side-by-side Transparency Matrix: "What ZeroTax Servers See: Nothing" (0 bytes, no storage, no telemetry) vs "What Stays Protected On-Device" (AES-256-GCM hardware vault, biometric lock, ephemeral RAM tokens).
+- Interactive user consent checkbox and acknowledgement flow confirming local data ownership.

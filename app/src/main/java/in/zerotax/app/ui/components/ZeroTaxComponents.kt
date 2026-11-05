@@ -214,6 +214,9 @@ fun EnterpriseTopHeader(
     onOpenBusinessAudit: (() -> Unit)? = null,
     onOpenNriSuite: (() -> Unit)? = null,
     onOpenCorporateSuite: (() -> Unit)? = null,
+    onOpenTrustShield: (() -> Unit)? = null,
+    onOpenThinkLikeCa: (() -> Unit)? = null,
+    onOpenCaPortal: (() -> Unit)? = null,
     onLockVault: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -427,6 +430,75 @@ fun EnterpriseTopHeader(
                         text = "SQLCipher StrongBox",
                         tone = BadgeTone.SUCCESS
                     )
+
+                    if (onOpenTrustShield != null) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(EnterpriseTeal50)
+                                .border(0.5.dp, EnterpriseTeal600, RoundedCornerShape(4.dp))
+                                .clickable { onOpenTrustShield() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.VerifiedUser,
+                                    contentDescription = null,
+                                    tint = EnterpriseTeal700,
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                Spacer(Modifier.width(3.dp))
+                                Text("Trust Shield", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                            }
+                        }
+                    }
+
+                    if (onOpenThinkLikeCa != null) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(EmeraldSuccessBg)
+                                .border(0.5.dp, EmeraldSuccess, RoundedCornerShape(4.dp))
+                                .clickable { onOpenThinkLikeCa() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.TrendingUp,
+                                    contentDescription = null,
+                                    tint = EmeraldSuccess,
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                Spacer(Modifier.width(3.dp))
+                                Text("Think Like a CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                            }
+                        }
+                    }
+
+                    if (onOpenCaPortal != null) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(IndigoStatutoryBg)
+                                .border(0.5.dp, IndigoStatutory, RoundedCornerShape(4.dp))
+                                .clickable { onOpenCaPortal() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.AssignmentInd,
+                                    contentDescription = null,
+                                    tint = IndigoStatutory,
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                Spacer(Modifier.width(3.dp))
+                                Text("CA Desk", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
+                            }
+                        }
+                    }
 
                     if (onLockVault != null) {
                         Spacer(Modifier.width(6.dp))

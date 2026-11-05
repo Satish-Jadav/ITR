@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.feature.portalbridge
+package `in`.zerotax.feature.portalbridge
 
 import `in`.zerotax.core.model.AadhaarVerificationResult
 import `in`.zerotax.core.model.BankAccountDetails
@@ -155,8 +155,9 @@ class ItdDirectFilingClient {
         } catch (e: Exception) {
             Result.failure(e)
         } finally {
-            // Cryptographic session purge within 500ms
-            delay(500)
+            // NEW-06 FIX: Immediately purge session tokens without suspend delay.
+            // A delay(500) inside a finally block re-throws CancellationException if the coroutine
+            // is cancelled, leaving volatileSessionToken un-zeroed in memory.
             purgeSessionAndZeroize()
         }
     }

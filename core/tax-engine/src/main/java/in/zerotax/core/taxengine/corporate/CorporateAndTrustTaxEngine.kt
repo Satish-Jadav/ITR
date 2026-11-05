@@ -34,7 +34,14 @@ object CorporateAndTrustTaxEngine {
 
         // 2. Adjusted Book Profit for Remuneration Calculation
         // Book profit = profit before remuneration + disallowed interest
-        val adjustedBookProfit = max(0L, input.bookProfitBeforePartnerPayments + interestDisallowed)
+        // VUL-15 FIX: Do NOT clamp to 0. A negative book profit represents a business loss
+        // that must flow through for Sec 72 carry-forward (8 years). Clamping to 0 destroys
+        // the taxpayer's right to carry forward this loss for future-year set-off.
+        val adjustedBookProfit = input.bookProfitBeforePartnerPayments + interestDisallowed
+        val businessLossCarryForward = if (adjustedBookProfit < 0L) -adjustedBookProfit else 0L
+        if (businessLossCarryForward > 0L) {
+            notes.add("Section 72 Business Loss: Rs.$businessLossCarryForward eligible for carry-forward for up to 8 assessment years.")
+        }
 
         // 3. Partner Remuneration Limit u/s 40(b)(v)
         // First 3,00,000 of book profit: ₹1,50,000 or 90% of book profit (whichever is greater)
@@ -115,6 +122,7 @@ object CorporateAndTrustTaxEngine {
             alternateMinimumTax115JC = totalAmt,
             isAmtPayable = isAmtApplicable,
             finalTaxPayableRupees = finalTax,
+            businessLossCarryForwardRupees = businessLossCarryForward,
             statutoryNotes = notes
         )
     }

@@ -22,6 +22,9 @@ import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.BadgeTone
 import `in`.zerotax.app.ui.components.StatutoryBadge
 import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.ChronoUnit
@@ -42,8 +45,49 @@ object StatutoryTaxTimelineManager {
     val currentAssessmentYear = "AY 2026-27"
     val currentFinancialYear = "FY 2025-26"
 
+    private val dynamicMilestones = mutableListOf<TaxMilestone>()
+
+    fun updateMilestones(newMilestones: List<TaxMilestone>) {
+        synchronized(this) {
+            dynamicMilestones.clear()
+            dynamicMilestones.addAll(newMilestones)
+        }
+    }
+
+    suspend fun syncDynamicTimelineFromCloud(): Boolean = withContext(Dispatchers.IO) {
+        runCatching {
+            val json = ZeroTaxCloudApiBridge.fetchStatutoryTimeline().getOrNull() ?: return@withContext false
+            val array = json.optJSONArray("milestones") ?: return@withContext false
+            val parsedList = mutableListOf<TaxMilestone>()
+            for (i in 0 until array.length()) {
+                val item = array.getJSONObject(i)
+                val targetIso = item.optString("targetDateIso")
+                val targetDate = if (targetIso.isNotBlank()) LocalDate.parse(targetIso) else LocalDate.now()
+                parsedList.add(
+                    TaxMilestone(
+                        title = item.optString("title", "Statutory Milestone"),
+                        dateText = item.optString("dateText", ""),
+                        targetDate = targetDate,
+                        description = item.optString("description", ""),
+                        statutorySection = item.optString("statutorySection", "Income-tax Act"),
+                        isCritical = item.optBoolean("isCritical", false)
+                    )
+                )
+            }
+            if (parsedList.isNotEmpty()) {
+                updateMilestones(parsedList)
+                true
+            } else false
+        }.getOrDefault(false)
+    }
+
     // Statutory CBDT Milestones for Individuals (ITR-1 SAHAJ & ITR-4 SUGAM)
     fun getMilestones(referenceDate: LocalDate = LocalDate.now()): List<TaxMilestone> {
+        synchronized(this) {
+            if (dynamicMilestones.isNotEmpty()) {
+                return dynamicMilestones.toList()
+            }
+        }
         val currentYear = referenceDate.year
         return listOf(
             TaxMilestone(
@@ -118,6 +162,10 @@ fun StatutoryTimelineBanner(
     var showReminderModal by remember { mutableStateOf(false) }
     var remindersSubscribed by remember { mutableStateOf(true) }
     val daysLeft = remember { StatutoryTaxTimelineManager.daysUntilJuly31() }
+
+    LaunchedEffect(Unit) {
+        StatutoryTaxTimelineManager.syncDynamicTimelineFromCloud()
+    }
 
     Card(
         modifier = modifier

@@ -1387,3 +1387,26 @@ Operates as a pure-JVM deterministic allocation engine to legally minimize emplo
 - `ItdLivePortalSyncModal.kt`: Direct TLS connection pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
 - `ZeroTaxBiometricShield.kt`: System-level AndroidX BiometricPrompt gate securing sensitive return records with 1-tap lock and countdown notifications.
 
+6.18 Chartered Accountant & Auditor Portal Architecture (`CaAuditDomainModels.kt`, `CaAuditorPortalScreen.kt`)
+- Dedicated ICAI Membership Authentication and CA Roster Management.
+- Client-Auditor Cryptographic Pairing Session (`ClientPairingSession`): Generates ephemeral 6-digit alphanumeric codes (format: `ZT-XXXX`) with 15-minute TTL.
+- Statutory Audit Review Modal: Enables CA review of Gross Total Income, Chapter VI-A deductions, Tax Payable/Refund across both regimes, and Section 44AB/Form 3CD verification notes.
+- UDIN Sign-Off & Approval Engine: Generates compliant 18-digit UDIN drafts and cryptographically timestamped statutory approval payloads (`CaAuditSignOffPayload`).
+
+6.19 Think Like a CA Deduction Maximizer Engine (`ThinkLikeACaDeductionMaximizerEngine.kt`, `ThinkLikeACaAdvisorView.kt`)
+- Heuristic optimization algorithm designed from senior tax auditor perspectives to maximize refund yields and eliminate unnecessary tax outlays.
+- Section 80CCD(2) Employer NPS: Evaluates 14% of Basic + DA salary restructuring, allowable under both New Regime (Sec 115BAC) and Old Regime.
+- Section 80D Comprehensive Health Cover: Computes ₹25,000 self + ₹50,000 senior parents + ₹5,000 preventive checkup up to ₹1,00,000 ceiling.
+- Section 24(b) Housing Loan Interest: Captures up to ₹2,00,000 self-occupied interest deduction.
+- Section 80CCD(1B) Tier-1 NPS: Reclaims ₹50,000 exclusive deduction beyond the 80C ceiling.
+- Section 80C Standard Investment Basket: Maximizes ELSS, PPF, EPF, Life Insurance up to ₹1,50,000.
+- Additional Statutory Avenues: Section 80E (100% higher education loan interest for 8 years), Section 80GG (up to ₹60,000 rent deduction without HRA), Section 80TTA/TTB (savings/deposit interest up to ₹10,000/₹50,000), Section 56(2)(x) & 10(13A) family tax arbitrage.
+- Section 87A Rebate Compression: Targets net tax liability <= ₹7,00,000 (AY 2025-26) or <= ₹12,00,000 (AY 2026-27) to legally reduce tax payable to ₹0 and release 100% of deducted TDS/TCS as refund.
+
+6.20 DPDP Act 2023 Section 6 Zero-Knowledge Trust Shield (`ZeroKnowledgeTrustShieldModal.kt`)
+- Direct consumer assurance and transparency protocol clarifying zero-cloud data access.
+- Transparency Matrix:
+  - ZeroTax Central Servers: 0 bytes retained, zero telemetry, zero plain-text passwords or financial records, no third-party SDK analytics.
+  - User Device Vault: Android Keystore StrongBox AES-256-GCM encryption, biometric hardware gate, ephemeral RAM-only session tokens.
+- Interactive user consent acknowledgement meeting Section 6 itemized notice mandates.
+

@@ -29,8 +29,12 @@ object UpiChallan280IntentLauncher {
         taxType: ChallanTaxType = ChallanTaxType.SELF_ASSESSMENT_TAX,
         merchantVpa: String = "incometax@sbi"
     ): String {
-        val note = "ITD-CHALLAN280-AY$assessmentYear-PAN$pan-M${taxType.minorHead}"
-        return "upi://pay?pa=$merchantVpa&pn=Income+Tax+Department&mc=9311&tr=ITR_${pan}&tn=$note&am=$amountRupees&cu=INR"
+        // VUL-10 FIX: Removed PAN from tr= parameter to prevent PAN leakage to UPI apps.
+        // Note: in production, launchUpiPaymentIntent() should use setPackage() to restrict
+        // to a known verified UPI app (e.g. BHIM) or present a chooser with whitelisted apps.
+        val note = "ITD-CHALLAN280-AY$assessmentYear-M${taxType.minorHead}"
+        val txnRef = "ITR_CHALLAN_${taxType.code}_${System.currentTimeMillis()}"
+        return "upi://pay?pa=$merchantVpa&pn=Income+Tax+Department&mc=9311&tr=$txnRef&tn=$note&am=$amountRupees&cu=INR"
     }
 
     fun buildUpiPaymentUri(
@@ -45,10 +49,26 @@ object UpiChallan280IntentLauncher {
 
     fun launchUpiPaymentIntent(context: Context, upiUri: Uri): Result<Unit> {
         return runCatching {
+            // VUL-10 FIX: Use BHIM (official government UPI app) as the preferred package.
+            // Falls back to implicit intent if BHIM is not installed (user can then select from chooser).
+            // This prevents rogue third-party apps from silently intercepting the payment intent.
+            val BHIM_PACKAGE = "in.org.npci.upiapp"
             val intent = Intent(Intent.ACTION_VIEW, upiUri).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                setPackage(BHIM_PACKAGE)
             }
-            context.startActivity(intent)
+            val bhimAvailable = context.packageManager.resolveActivity(intent, 0) != null
+            if (bhimAvailable) {
+                context.startActivity(intent)
+            } else {
+                // Fallback: implicit intent with chooser (user sees all UPI apps)
+                val fallbackIntent = Intent(Intent.ACTION_VIEW, upiUri).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(Intent.createChooser(fallbackIntent, "Pay via UPI").apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            }
         }
     }
 

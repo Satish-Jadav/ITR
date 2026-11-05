@@ -49,34 +49,12 @@ object ZeroTaxAuthSecurityManager {
             return@withContext Result.failure(IllegalArgumentException("Password must be at least 6 characters."))
         }
 
+        // VUL-03 FIX: sign-in must NEVER auto-provision new accounts.
+        // Unknown emails receive a failure, not silent registration.
         val existing = localUserRegistry[email]
-        if (existing == null) {
-            // Auto-provision demo account or register if not existing
-            val salt = generateRandomSalt()
-            val hash = hashPassword(passwordRaw, salt)
-            val newUid = "usr_${UUID.nameUUIDFromBytes(email.toByteArray())}"
-            val defaultName = email.substringBefore("@").replaceFirstChar { it.uppercase() }
-            val newUser = StoredUserRecord(
-                uid = newUid,
-                email = email,
-                displayName = defaultName,
-                passwordHash = hash,
-                salt = salt,
-                authProvider = AuthProvider.EMAIL_PASSWORD,
-                isVerified = true
+            ?: return@withContext Result.failure(
+                IllegalArgumentException("No account found for this email. Please sign up first.")
             )
-            localUserRegistry[email] = newUser
-            val profile = UserAuthProfile(
-                uid = newUser.uid,
-                email = newUser.email,
-                displayName = newUser.displayName,
-                authProvider = AuthProvider.EMAIL_PASSWORD,
-                isEmailVerified = true,
-                lastLoginEpochMs = System.currentTimeMillis()
-            )
-            activeUserSession = profile
-            return@withContext Result.success(profile)
-        }
 
         val computedHash = hashPassword(passwordRaw, existing.salt)
         if (computedHash != existing.passwordHash) {

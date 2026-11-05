@@ -74,13 +74,30 @@ object EncryptedZtVaultMigrationEngine {
         return baos.toByteArray()
     }
 
+    // VUL-06 FIX: Hard cap to block GZIP-bomb decompression attacks (OOM).
+    private const val MAX_DECOMPRESSED_BYTES = 50L * 1024L * 1024L // 50 MB
+
     /**
      * Decompresses GZIP bytes into raw string.
+     * Throws SecurityException if decompressed output exceeds 50 MB (GZIP bomb guard).
      */
     private fun decompressGzip(compressed: ByteArray): String {
         val bais = ByteArrayInputStream(compressed)
         GZIPInputStream(bais).use { gz ->
-            return gz.reader(StandardCharsets.UTF_8).readText()
+            val baos = ByteArrayOutputStream()
+            val buffer = ByteArray(8192)
+            var totalRead = 0L
+            var n: Int
+            while (gz.read(buffer).also { n = it } != -1) {
+                totalRead += n
+                if (totalRead > MAX_DECOMPRESSED_BYTES) {
+                    throw SecurityException(
+                        "Vault archive exceeds maximum allowed size (50 MB). Possible decompression attack."
+                    )
+                }
+                baos.write(buffer, 0, n)
+            }
+            return baos.toString(StandardCharsets.UTF_8.name())
         }
     }
 
