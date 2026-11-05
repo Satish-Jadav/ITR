@@ -17,8 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import `in`.zerotax.app.ui.components.BadgeTone
-import `in`.zerotax.app.ui.components.StatutoryBadge
+import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.model.*
 import `in`.zerotax.core.taxengine.corporate.CorporateAndTrustTaxEngine
@@ -39,29 +38,11 @@ fun CorporateAndTrustSuiteScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = "Corporate & Trust Tax Suite",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = "Statutory Filing for ITR-5, ITR-6 & ITR-7",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate500)
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                actions = {
-                    StatutoryBadge(text = "PAN $pan", tone = BadgeTone.STATUTORY)
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            ZeroTaxTopAppBar(
+                title = "Corporate & Trust Suite",
+                subtitle = "Statutory Filing for ITR-5, ITR-6 & ITR-7",
+                pan = pan,
+                onBack = onBack
             )
         }
     ) { innerPadding ->

@@ -98,27 +98,13 @@ fun DualRegionNriComplianceScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Dual-Region NRI Tax Suite",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        StatutoryBadge(text = residencyDecision.status.shortCode, tone = BadgeTone.SUCCESS)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                actions = {
-                    StatutoryBadge(text = "PAN $pan", tone = BadgeTone.STATUTORY)
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            ZeroTaxTopAppBar(
+                title = "Dual-Region NRI Tax Suite",
+                subtitle = "Section 6 Residency, Section 90 DTAA & Form 10F Relief",
+                pan = pan,
+                onBack = onBack,
+                badgeText = residencyDecision.status.shortCode,
+                badgeTone = BadgeTone.SUCCESS
             )
         }
     ) { innerPadding ->

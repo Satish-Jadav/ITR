@@ -108,27 +108,13 @@ fun SmallBusinessAuditSuiteScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Small Business Tax Audit Suite",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        StatutoryBadge(text = "Sec 44AB & 44AD", tone = BadgeTone.STATUTORY)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                actions = {
-                    StatutoryBadge(text = "PAN $pan", tone = BadgeTone.STATUTORY)
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            ZeroTaxTopAppBar(
+                title = "Small Business Tax Audit",
+                subtitle = "Presumptive Limits & Form 3CD Auditor",
+                pan = pan,
+                onBack = onBack,
+                badgeText = "Sec 44AB & 44AD",
+                badgeTone = BadgeTone.STATUTORY
             )
         }
     ) { innerPadding ->

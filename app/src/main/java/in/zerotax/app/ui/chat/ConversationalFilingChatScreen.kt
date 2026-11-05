@@ -61,51 +61,13 @@ fun ConversationalFilingChatScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(EnterpriseTeal600),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("🤖", fontSize = 18.sp)
-                        }
-                        Spacer(Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = "ZeroTax Smart Chatbot",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .clip(CircleShape)
-                                        .background(EmeraldSuccess)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text(
-                                    text = "Interactive TaxBuddy-Style Filing • On-Device AICore",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Slate500
-                                )
-                            }
-                        }
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                actions = {
-                    StatutoryBadge(text = "PAN $pan", tone = BadgeTone.STATUTORY)
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            ZeroTaxTopAppBar(
+                title = "ZeroTax Smart Chatbot",
+                subtitle = "Interactive Filing • On-Device AICore",
+                pan = pan,
+                onBack = onBack,
+                badgeText = "Private AI",
+                badgeTone = BadgeTone.SUCCESS
             )
         },
         bottomBar = {

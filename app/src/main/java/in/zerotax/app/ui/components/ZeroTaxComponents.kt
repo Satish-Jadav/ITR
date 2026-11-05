@@ -211,6 +211,7 @@ fun EnterpriseTopHeader(
     onOpenNotices: (() -> Unit)? = null,
     onOpenBusinessAudit: (() -> Unit)? = null,
     onOpenNriSuite: (() -> Unit)? = null,
+    onOpenCorporateSuite: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -351,6 +352,24 @@ fun EnterpriseTopHeader(
                                 Text("🌍", fontSize = 11.sp)
                                 Spacer(Modifier.width(4.dp))
                                 Text("NRI Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                            }
+                        }
+                        Spacer(Modifier.width(6.dp))
+                    }
+
+                    if (onOpenCorporateSuite != null) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(EnterpriseTeal50)
+                                .border(0.5.dp, EnterpriseTeal600, RoundedCornerShape(4.dp))
+                                .clickable { onOpenCorporateSuite() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("🏢", fontSize = 11.sp)
+                                Spacer(Modifier.width(4.dp))
+                                Text("ITR-5/6/7", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
                             }
                         }
                         Spacer(Modifier.width(6.dp))
@@ -558,6 +577,22 @@ fun SmartIndividualPanField(
                     PanEntityType.HUF -> {
                         StatutoryBadge(text = "👨‍👩‍👧‍👦 HUF Entity", tone = BadgeTone.NEUTRAL)
                         StatutoryBadge(text = "ITR-2 / ITR-3 Eligible", tone = BadgeTone.STATUTORY)
+                    }
+                    PanEntityType.COMPANY -> {
+                        StatutoryBadge(text = "🏢 Company Entity", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "ITR-6 / ITR-7 Eligible", tone = BadgeTone.STATUTORY)
+                    }
+                    PanEntityType.FIRM -> {
+                        StatutoryBadge(text = "🤝 Partnership / LLP", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "ITR-5 / ITR-4 Eligible", tone = BadgeTone.STATUTORY)
+                    }
+                    PanEntityType.TRUST -> {
+                        StatutoryBadge(text = "🏛️ Trust / NGO", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "ITR-7 Eligible", tone = BadgeTone.STATUTORY)
+                    }
+                    PanEntityType.AOP, PanEntityType.BOI, PanEntityType.LOCAL_AUTHORITY, PanEntityType.ARTIFICIAL_JURIDICAL -> {
+                        StatutoryBadge(text = "🏛️ ${decoded.entityType.title}", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "ITR-5 Eligible", tone = BadgeTone.STATUTORY)
                     }
                     else -> {
                         StatutoryBadge(text = "⚠️ ${decoded.entityType.title}", tone = BadgeTone.WARNING)
@@ -943,6 +978,278 @@ fun RegimeComparisonInstitutionalCard(
                     )
                 )
             }
+        }
+    }
+}
+
+// ============================================================================
+// STANDARDIZED ZERO TAX ENTERPRISE BRAND COMPONENTS
+// ============================================================================
+
+/**
+ * Standardized Top App Bar for all secondary and tool screens.
+ * Embodies the Sovereign Shield logo, high-contrast titles, and PAN identity.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ZeroTaxTopAppBar(
+    title: String,
+    subtitle: String? = null,
+    pan: String? = null,
+    onBack: (() -> Unit)? = null,
+    badgeText: String? = null,
+    badgeTone: BadgeTone = BadgeTone.STATUTORY,
+    actions: @Composable RowScope.() -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    TopAppBar(
+        modifier = modifier,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ZeroTaxBrandLogo(size = 28.dp, showText = false)
+                Spacer(Modifier.width(10.dp))
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                        )
+                        if (badgeText != null) {
+                            Spacer(Modifier.width(8.dp))
+                            StatutoryBadge(text = badgeText, tone = badgeTone)
+                        }
+                    }
+                    if (subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+                        )
+                    }
+                }
+            }
+        },
+        navigationIcon = {
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Text("←", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = Slate800))
+                }
+            }
+        },
+        actions = {
+            if (!pan.isNullOrBlank()) {
+                StatutoryBadge(text = "PAN $pan", tone = BadgeTone.STATUTORY)
+                Spacer(Modifier.width(8.dp))
+            }
+            actions()
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            scrolledContainerColor = MaterialTheme.colorScheme.surface
+        )
+    )
+}
+
+/**
+ * Standardized Primary Button adhering strictly to the Enterprise Teal 600 palette.
+ */
+@Composable
+fun ZeroTaxPrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.heightIn(min = 44.dp),
+        enabled = enabled,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = EnterpriseTeal600,
+            contentColor = PureWhite,
+            disabledContainerColor = Slate300,
+            disabledContentColor = Slate500
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp, pressedElevation = 2.dp)
+    ) {
+        if (leadingIcon != null) {
+            leadingIcon()
+            Spacer(Modifier.width(8.dp))
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.2.sp)
+        )
+        if (trailingIcon != null) {
+            Spacer(Modifier.width(8.dp))
+            trailingIcon()
+        }
+    }
+}
+
+/**
+ * Standardized Outlined Button with subtle Enterprise Teal borders and hover states.
+ */
+@Composable
+fun ZeroTaxOutlinedButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    leadingIcon: @Composable (() -> Unit)? = null
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.heightIn(min = 44.dp),
+        enabled = enabled,
+        shape = RoundedCornerShape(8.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, if (enabled) EnterpriseTeal600 else Slate300),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = EnterpriseTeal600,
+            disabledContentColor = Slate400
+        )
+    ) {
+        if (leadingIcon != null) {
+            leadingIcon()
+            Spacer(Modifier.width(8.dp))
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+        )
+    }
+}
+
+/**
+ * Standardized Sovereign Slate Card with unified radius and elevated borders.
+ */
+@Composable
+fun ZeroTaxCard(
+    modifier: Modifier = Modifier,
+    accentBorderColor: Color? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(12.dp),
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = accentBorderColor ?: MaterialTheme.colorScheme.outlineVariant,
+                shape = shape
+            ),
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            content = content
+        )
+    }
+}
+
+/**
+ * Standardized Financial Stat Card for displaying tax figures, refunds, or deductions.
+ */
+@Composable
+fun ZeroTaxStatCard(
+    title: String,
+    amountRupees: Long,
+    subtitle: String? = null,
+    tone: BadgeTone = BadgeTone.NEUTRAL,
+    badgeText: String? = null,
+    modifier: Modifier = Modifier
+) {
+    ZeroTaxCard(
+        modifier = modifier,
+        accentBorderColor = when (tone) {
+            BadgeTone.SUCCESS -> EmeraldSuccess.copy(alpha = 0.35f)
+            BadgeTone.WARNING -> AmberWarning.copy(alpha = 0.35f)
+            BadgeTone.DANGER -> CrimsonDanger.copy(alpha = 0.35f)
+            BadgeTone.STATUTORY -> IndigoStatutory.copy(alpha = 0.35f)
+            BadgeTone.NEUTRAL -> null
+        }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium.copy(color = Slate600, fontWeight = FontWeight.Medium)
+            )
+            if (badgeText != null) {
+                StatutoryBadge(text = badgeText, tone = tone)
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = "₹${Rupee.formatInr(amountRupees)}",
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.Bold,
+                color = when (tone) {
+                    BadgeTone.SUCCESS -> EmeraldSuccess
+                    BadgeTone.DANGER -> CrimsonDanger
+                    BadgeTone.WARNING -> AmberWarning
+                    BadgeTone.STATUTORY -> EnterpriseTeal700
+                    BadgeTone.NEUTRAL -> Slate900
+                }
+            )
+        )
+        if (subtitle != null) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+            )
+        }
+    }
+}
+
+/**
+ * Standardized Section Header with Brand Indicator Pill.
+ */
+@Composable
+fun ZeroTaxSectionHeader(
+    title: String,
+    subtitle: String? = null,
+    badgeText: String? = null,
+    badgeTone: BadgeTone = BadgeTone.STATUTORY,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 4.dp, height = 18.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(EnterpriseTeal600)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                )
+            }
+            if (badgeText != null) {
+                StatutoryBadge(text = badgeText, tone = badgeTone)
+            }
+        }
+        if (subtitle != null) {
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 12.sp),
+                modifier = Modifier.padding(start = 12.dp)
+            )
         }
     }
 }

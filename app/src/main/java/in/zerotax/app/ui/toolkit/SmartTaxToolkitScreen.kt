@@ -86,27 +86,13 @@ fun SmartTaxToolkitScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Smart Tax Toolkit",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        StatutoryBadge(text = "Value-Add Tools", tone = BadgeTone.SUCCESS)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                actions = {
-                    StatutoryBadge(text = "PAN $pan", tone = BadgeTone.STATUTORY)
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            ZeroTaxTopAppBar(
+                title = "Smart Tax Toolkit",
+                subtitle = "Statutory Calculators & Optimization Engines",
+                pan = pan,
+                onBack = onBack,
+                badgeText = "Value-Add Tools",
+                badgeTone = BadgeTone.SUCCESS
             )
         }
     ) { innerPadding ->
