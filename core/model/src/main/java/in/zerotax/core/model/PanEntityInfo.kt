@@ -11,6 +11,7 @@ enum class PanEntityType(
     val title: String,
     val description: String,
     val isSupportedInPersonalSuite: Boolean,
+    val isSupportedInCorporateSuite: Boolean = false,
     val eligibleItrForms: List<ItrFormType>
 ) {
     INDIVIDUAL(
@@ -18,6 +19,7 @@ enum class PanEntityType(
         title = "Individual",
         description = "Natural Person / Salaried Employee / Professional / Sole Proprietor",
         isSupportedInPersonalSuite = true,
+        isSupportedInCorporateSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_1_SAHAJ, ItrFormType.ITR_2, ItrFormType.ITR_4_SUGAM)
     ),
     HUF(
@@ -25,62 +27,71 @@ enum class PanEntityType(
         title = "Hindu Undivided Family (HUF)",
         description = "Family entity assessed under Hindu law through Karta",
         isSupportedInPersonalSuite = true,
+        isSupportedInCorporateSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_2, ItrFormType.ITR_3)
     ),
     COMPANY(
         code = 'C',
         title = "Company",
-        description = "Private Limited / Public Limited Corporate Body",
+        description = "Private Limited / Public Limited / OPC Corporate Body",
         isSupportedInPersonalSuite = false,
-        eligibleItrForms = listOf(ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
+        isSupportedInCorporateSuite = true,
+        eligibleItrForms = listOf(ItrFormType.ITR_6, ItrFormType.ITR_7)
     ),
     FIRM(
         code = 'F',
         title = "Partnership Firm / LLP",
         description = "Partnership Firm or Limited Liability Partnership",
         isSupportedInPersonalSuite = false,
-        eligibleItrForms = listOf(ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
+        isSupportedInCorporateSuite = true,
+        eligibleItrForms = listOf(ItrFormType.ITR_5, ItrFormType.ITR_4_SUGAM)
     ),
     AOP(
         code = 'A',
         title = "Association of Persons (AOP)",
         description = "Association of individuals or entities pooling resources",
         isSupportedInPersonalSuite = false,
-        eligibleItrForms = listOf(ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
+        isSupportedInCorporateSuite = true,
+        eligibleItrForms = listOf(ItrFormType.ITR_5)
     ),
     BOI(
         code = 'B',
         title = "Body of Individuals (BOI)",
         description = "Conglomeration of individuals without formal partnership",
         isSupportedInPersonalSuite = false,
-        eligibleItrForms = listOf(ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
+        isSupportedInCorporateSuite = true,
+        eligibleItrForms = listOf(ItrFormType.ITR_5)
     ),
     TRUST(
         code = 'T',
         title = "Trust / Charitable Institution",
-        description = "Charitable, Religious, or Private Family Trust",
+        description = "Charitable, Religious, or Political Entity u/s 139(4A)-(4D)",
         isSupportedInPersonalSuite = false,
-        eligibleItrForms = listOf(ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
+        isSupportedInCorporateSuite = true,
+        eligibleItrForms = listOf(ItrFormType.ITR_7)
     ),
     LOCAL_AUTHORITY(
         code = 'L',
         title = "Local Authority",
         description = "Municipal Corporation, Cantonment Board, or Panchayat",
         isSupportedInPersonalSuite = false,
-        eligibleItrForms = listOf(ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
+        isSupportedInCorporateSuite = true,
+        eligibleItrForms = listOf(ItrFormType.ITR_5)
     ),
     ARTIFICIAL_JURIDICAL(
         code = 'J',
         title = "Artificial Juridical Person",
         description = "Statutory Corporations, Universities, or Deities",
         isSupportedInPersonalSuite = false,
-        eligibleItrForms = listOf(ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
+        isSupportedInCorporateSuite = true,
+        eligibleItrForms = listOf(ItrFormType.ITR_5, ItrFormType.ITR_7)
     ),
     GOVERNMENT_AGENCY(
         code = 'G',
         title = "Government Agency",
         description = "Central / State Government Department or Undertaking",
         isSupportedInPersonalSuite = false,
+        isSupportedInCorporateSuite = false,
         eligibleItrForms = listOf(ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
     ),
     UNKNOWN(
@@ -138,7 +149,12 @@ object PanEntityDecoder {
             !isValid -> "Invalid PAN syntax. Must be 5 letters, 4 numbers, 1 letter (e.g. ABCDE1234F)"
             entity == PanEntityType.INDIVIDUAL -> "Valid Individual PAN (Eligible for ITR-1, ITR-2, ITR-4 & Section 87A rebate)"
             entity == PanEntityType.HUF -> "Valid HUF PAN (Eligible for ITR-2 & ITR-3. Sec 87A rebate is restricted to individuals)"
-            else -> "${entity.title} detected. Note: ZeroTax-Local is specialized for Individuals ('P') and HUFs ('H')."
+            entity == PanEntityType.COMPANY -> "Valid Company PAN (Eligible for ITR-6 Corporate / ITR-7 Section 115BAA/BAB return)"
+            entity == PanEntityType.FIRM -> "Valid Partnership / LLP PAN (Eligible for ITR-5 / ITR-4 Sugam u/s 40(b))"
+            entity == PanEntityType.TRUST -> "Valid Trust / NGO PAN (Eligible for ITR-7 Section 11/12 85% application return)"
+            entity in listOf(PanEntityType.AOP, PanEntityType.BOI, PanEntityType.LOCAL_AUTHORITY, PanEntityType.ARTIFICIAL_JURIDICAL) ->
+                "Valid ${entity.title} PAN (Eligible for ITR-5 Entity Return)"
+            else -> "${entity.title} detected (Eligible for specialized entity return)"
         }
 
         return PanDecodedDetails(
