@@ -42,6 +42,7 @@ fun EnterpriseAuditFastStartView(
     onLaunchPortalAssistant: () -> Unit,
     onOpenTaxPaymentHub: () -> Unit,
     onRunAudit: () -> Unit,
+    onOpenPortalSync: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -51,6 +52,43 @@ fun EnterpriseAuditFastStartView(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         StatutoryTimelineBanner()
+
+        // 1-TAP IN-APP ITD PORTAL SYNC CARD
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = EnterpriseTeal50,
+            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onOpenPortalSync() }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("🔄", fontSize = 20.sp)
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            "Sync Corporate 26AS, AIS/TIS & Advance Tax",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                        )
+                        Text(
+                            "Pull verified corporate prepaid taxes, Challan 280 & MAT credits in-app.",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                        )
+                    }
+                }
+                StatutoryBadge(text = "1-Tap Sync →", tone = BadgeTone.SUCCESS)
+            }
+        }
 
         // EXECUTIVE SUITE LAUNCHER CARD
         Card(

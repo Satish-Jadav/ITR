@@ -34,6 +34,7 @@ import `in`.zerotax.app.ui.insights.TaxVisualizerAndAnalyticsScreen
 import `in`.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
 import `in`.zerotax.app.ui.notice.TaxNoticeDefenseAssistantScreen
 import `in`.zerotax.app.ui.nri.DualRegionNriComplianceScreen
+import `in`.zerotax.app.ui.portal.ItdLivePortalSyncModal
 import `in`.zerotax.app.ui.portal.PortalAssistantScreen
 import `in`.zerotax.app.ui.portal.SmartTransactionSuggestionsView
 import `in`.zerotax.app.ui.enterprise.EnterpriseAuditFastStartView
@@ -87,6 +88,7 @@ fun ZeroTaxFourTapSpineScaffold(
     var showCorporateSuite by remember { mutableStateOf(false) }
     var showPasswordCheatsheetModal by remember { mutableStateOf(false) }
     var showTaxPaymentHub by remember { mutableStateOf(false) }
+    var showPortalSyncModal by remember { mutableStateOf(false) }
 
     if (showCorporateSuite) {
         CorporateAndTrustSuiteScreen(
@@ -373,10 +375,21 @@ fun ZeroTaxFourTapSpineScaffold(
                         onOpenBusinessAudit = { showBusinessAudit = true },
                         onOpenNriSuite = { showNriSuite = true },
                         onOpenCorporateSuite = { showCorporateSuite = true },
+                        onOpenPortalSync = { showPortalSyncModal = true },
                         onLoadAuditTrail = { viewModel.loadAuditTrailLazy() },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
                 }
+            }
+
+            if (showPortalSyncModal) {
+                ItdLivePortalSyncModal(
+                    pan = uiState.pan,
+                    onDismiss = { showPortalSyncModal = false },
+                    onSyncCompleted = { count, tds, interest ->
+                        showPortalSyncModal = false
+                    }
+                )
             }
 
             if (showMasterLegalDialog) {
@@ -1106,6 +1119,7 @@ private fun ProWorkspaceView(
     onOpenBusinessAudit: () -> Unit = {},
     onOpenNriSuite: () -> Unit = {},
     onOpenCorporateSuite: () -> Unit = {},
+    onOpenPortalSync: () -> Unit = {},
     onLoadAuditTrail: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
@@ -1174,7 +1188,8 @@ private fun ProWorkspaceView(
                                         onLaunchPortalAssistant = onLaunchPortalAssistant,
                                         onOpenDeductionsAdvisor = onOpenDeductionsAdvisor,
                                         onOpenTaxPaymentHub = onOpenTaxPaymentHub,
-                                        onOpenAisTransactions = onOpenAisTransactions
+                                        onOpenAisTransactions = onOpenAisTransactions,
+                                        onOpenPortalSync = onOpenPortalSync
                                     )
                                 }
                             }
@@ -1184,7 +1199,8 @@ private fun ProWorkspaceView(
                                         pan = uiState.pan,
                                         onLaunchPortalAssistant = onLaunchPortalAssistant,
                                         onOpenTaxPaymentHub = onOpenTaxPaymentHub,
-                                        onOpenAisTransactions = onOpenAisTransactions
+                                        onOpenAisTransactions = onOpenAisTransactions,
+                                        onOpenPortalSync = onOpenPortalSync
                                     )
                                 }
                             }
@@ -1203,7 +1219,8 @@ private fun ProWorkspaceView(
                                         onOpenNotices = onOpenNotices,
                                         onLaunchPortalAssistant = onLaunchPortalAssistant,
                                         onOpenTaxPaymentHub = onOpenTaxPaymentHub,
-                                        onRunAudit = onRunAudit
+                                        onRunAudit = onRunAudit,
+                                        onOpenPortalSync = onOpenPortalSync
                                     )
                                 }
                             }
