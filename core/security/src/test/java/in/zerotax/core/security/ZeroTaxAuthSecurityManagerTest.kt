@@ -88,5 +88,15 @@ class ZeroTaxAuthSecurityManagerTest {
         assertTrue(profile.uid.startsWith("bio_"))
         assertTrue(ZeroTaxAuthSecurityManager.isAuthenticated())
     }
+
+    @Test
+    fun testSignInWithEmail_UnregisteredAccount_FailsExplicitly() = runBlocking {
+        // VUL-03 FIX: Sign-in must NEVER auto-register unknown accounts
+        val unregisteredEmail = "ghost.unregistered@zerotax.local"
+        val result = ZeroTaxAuthSecurityManager.signInWithEmail(unregisteredEmail, "SomePassword123")
+        assertTrue(result.isFailure)
+        val message = result.exceptionOrNull()?.message ?: ""
+        assertTrue(message.contains("No account found", ignoreCase = true))
+    }
 }
 

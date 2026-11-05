@@ -61,4 +61,41 @@ class ThinkLikeACaDeductionMaximizerEngineTest {
         assertNotNull(report)
         assertTrue(report.recommendations.any { it.isRebate87ATarget }, "Should detect 87A rebate compression opportunities")
     }
+
+    @Test
+    fun testSeniorCitizenTaxpayer_maximizesSection80TTBAndHealth() {
+        val input = CaReviewInput(
+            pan = "ABCDE7777S",
+            grossSalary = 0L,
+            tdsPrepaid = 15_000L,
+            parentsAreSeniorCitizens = false,
+            otherSourcesInterest = 48_000L
+        )
+        val report = ThinkLikeACaDeductionMaximizerEngine.optimizeTaxAndMaximizeRefund(input)
+        assertNotNull(report)
+        // With only interest income of 48k, tax should be 0 and full TDS refunded
+        assertEquals(0L, report.optimizedTaxLiability)
+        assertEquals(15_000L, report.optimizedRefundDue)
+    }
+
+    @Test
+    fun testHighIncomeTaxpayer_optimizesSection80CAnd80CCD2() {
+        val input = CaReviewInput(
+            pan = "AABCG1234H",
+            grossSalary = 35_00_000L,
+            tdsPrepaid = 6_50_000L,
+            employerOffersNps80CCD2 = true,
+            hasHomeLoan = true,
+            homeLoanInterestPaid = 2_00_000L,
+            parentsAreSeniorCitizens = true,
+            existingDeductionsClaimed = mapOf("80C" to 50_000L)
+        )
+        val report = ThinkLikeACaDeductionMaximizerEngine.optimizeTaxAndMaximizeRefund(input)
+        assertNotNull(report)
+        assertTrue(report.totalTaxSavedRupees > 0)
+        // Check 80C top-up suggestion (1.5L max - 50k claimed = 1L headroom)
+        val sec80CRec = report.recommendations.find { it.sectionCode == "Sec 80C" }
+        assertNotNull(sec80CRec)
+        assertEquals(1_00_000L, sec80CRec!!.potentialAdditionalClaim)
+    }
 }

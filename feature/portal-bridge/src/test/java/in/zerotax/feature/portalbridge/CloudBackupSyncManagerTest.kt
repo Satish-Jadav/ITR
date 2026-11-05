@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.feature.portalbridge
+package `in`.zerotax.feature.portalbridge
 
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -68,6 +68,10 @@ class CloudBackupSyncManagerTest {
         val recovered = CloudBackupSyncManager.checkCrashRecoveryState(null, "XYZPE5678K")
         assertNotNull(recovered)
         assertEquals("XYZPE5678K", recovered?.pan)
+
+        // NEW-07 FIX: Mismatched PAN lookup should return null
+        val mismatched = CloudBackupSyncManager.checkCrashRecoveryState(null, "DIFFERENT_PAN")
+        org.junit.Assert.assertNull("Crash recovery state must not be returned for a different PAN", mismatched)
 
         val purged = CloudBackupSyncManager.purgeCloudStateOnShred(null)
         assertTrue(purged)
