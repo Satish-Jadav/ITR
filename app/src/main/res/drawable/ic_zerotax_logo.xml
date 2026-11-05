@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Shield Backdrop -->
+    <path
+        android:pathData="M 24,4 L 42,11 C 42,28 34,39 24,44 C 14,39 6,28 6,11 Z"
+        android:fillColor="#0D3534"
+        android:strokeColor="#14B8A6"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Rupee Top Bar -->
+    <path
+        android:pathData="M 16,14 L 32,14"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round" />
+
+    <!-- Rupee Second Bar -->
+    <path
+        android:pathData="M 16,19.5 L 29,19.5"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round" />
+
+    <!-- Rupee Loop -->
+    <path
+        android:pathData="M 20,14 L 20,26 C 27.5,26 27.5,17 20,17"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Verification Diagonal Leg -->
+    <path
+        android:pathData="M 20,26 L 31,37"
+        android:strokeColor="#10B981"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round" />
+</vector>
+

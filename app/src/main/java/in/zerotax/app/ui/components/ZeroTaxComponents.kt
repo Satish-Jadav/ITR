@@ -2,6 +2,7 @@ package `in`.zerotax.app.ui.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,13 +15,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.navigation.OnboardingTap
@@ -29,6 +36,127 @@ import `in`.zerotax.core.model.CitizenCategory
 import `in`.zerotax.core.model.PanEntityDecoder
 import `in`.zerotax.core.model.PanEntityType
 import `in`.zerotax.core.model.Rupee
+
+/**
+ * Sovereign Brand Logo Component for ZeroTax.
+ * Combines the Indian Rupee symbol (₹), the Sovereign Privacy Shield,
+ * and the Emerald Verification Zenith in minimalist geometry.
+ */
+@Composable
+fun ZeroTaxBrandLogo(
+    modifier: Modifier = Modifier,
+    size: Dp = 40.dp,
+    showText: Boolean = false,
+    subtitle: String? = "Private Indian Tax Vault"
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(Slate950),
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(modifier = Modifier.size(size * 0.84f)) {
+                val w = this.size.width
+                val h = this.size.height
+
+                // Shield Path
+                val shieldPath = Path().apply {
+                    moveTo(w * 0.5f, h * 0.08f)
+                    lineTo(w * 0.88f, h * 0.22f)
+                    cubicTo(w * 0.88f, h * 0.58f, w * 0.72f, h * 0.82f, w * 0.5f, h * 0.94f)
+                    cubicTo(w * 0.28f, h * 0.82f, w * 0.12f, h * 0.58f, w * 0.12f, h * 0.22f)
+                    close()
+                }
+                drawPath(path = shieldPath, color = EnterpriseTeal900)
+                drawPath(
+                    path = shieldPath,
+                    color = EnterpriseTeal500,
+                    style = Stroke(width = w * 0.06f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+
+                val strokeW = w * 0.065f
+
+                // Rupee Top Horizontal Bar
+                drawLine(
+                    color = Color.White,
+                    start = Offset(w * 0.32f, h * 0.30f),
+                    end = Offset(w * 0.68f, h * 0.30f),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+                )
+
+                // Rupee Second Horizontal Bar
+                drawLine(
+                    color = Color.White,
+                    start = Offset(w * 0.32f, h * 0.44f),
+                    end = Offset(w * 0.62f, h * 0.44f),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+                )
+
+                // Rupee Vertical Stem & Loop
+                val loopPath = Path().apply {
+                    moveTo(w * 0.42f, h * 0.30f)
+                    lineTo(w * 0.42f, h * 0.58f)
+                    cubicTo(w * 0.66f, h * 0.58f, w * 0.66f, h * 0.36f, w * 0.42f, h * 0.36f)
+                }
+                drawPath(
+                    path = loopPath,
+                    color = Color.White,
+                    style = Stroke(width = strokeW, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+
+                // Emerald Verification Leg / Dynamic Checkmark
+                drawLine(
+                    color = EmeraldSuccess,
+                    start = Offset(w * 0.42f, h * 0.58f),
+                    end = Offset(w * 0.68f, h * 0.78f),
+                    strokeWidth = strokeW * 1.15f,
+                    cap = StrokeCap.Round
+                )
+            }
+        }
+
+        if (showText) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Zero",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Slate900,
+                            letterSpacing = (-0.5).sp
+                        )
+                    )
+                    Text(
+                        text = "Tax",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = EnterpriseTeal600,
+                            letterSpacing = (-0.5).sp
+                        )
+                    )
+                }
+                if (!subtitle.isNullOrBlank()) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Slate500,
+                            fontSize = 10.sp,
+                            letterSpacing = 0.3.sp
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
 
 enum class BadgeTone {
     SUCCESS,
@@ -101,19 +229,21 @@ fun EnterpriseTopHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    ZeroTaxBrandLogo(size = 28.dp, showText = false)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "ZeroTax",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(Modifier.width(6.dp))
                     // Security dot
                     Box(
                         modifier = Modifier
-                            .size(7.dp)
+                            .size(6.dp)
                             .clip(CircleShape)
                             .background(if (isVaultEncrypted) EmeraldSuccess else AmberWarning)
                     )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "ZeroTax Local",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(6.dp))
                     StatutoryBadge(text = "AY $assessmentYear", tone = BadgeTone.STATUTORY)
                 }
 
