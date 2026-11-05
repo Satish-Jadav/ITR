@@ -35,7 +35,10 @@ data class TaxpayerRoutingProfile(
     val goodsVehicleCount44AE: Int = 0,
     val hasVirtualDigitalAssets115BBH: Boolean = false,
     val hasRegularBusinessOrIntradaySpeculativeOrFnO: Boolean = false,
-    val requiresStatutoryAudit44AB: Boolean = false
+    val requiresStatutoryAudit44AB: Boolean = false,
+    val basicExemptionLimit: Long = 3_00_000L,
+    val hasAnyCurrentYearCapitalLoss: Boolean = false,
+    val hasPriorYearForm10IeaOptOut: Boolean = false
 )
 
 @Serializable
@@ -43,5 +46,7 @@ data class FormRoutingDecision(
     val selectedForm: ItrFormType,
     val routingReasonCodes: List<String>,
     val requiresScheduleFA: Boolean,
-    val requiresScheduleAL: Boolean // Asset & Liability schedule if Total Income > ₹50,00,000
+    val requiresScheduleAL: Boolean, // Asset & Liability schedule if Total Income > ₹50,00,000
+    val requiresForm10IeaBeforeDueDate: Boolean = false,
+    val isLockedIntoNewRegimePermanently: Boolean = false
 )

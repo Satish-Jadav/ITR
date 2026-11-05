@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app
+package `in`.zerotax.app
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -11,9 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import `in`.zerotax.app.ui.auth.AuthenticationScreen
 import `in`.zerotax.app.ui.navigation.ZeroTaxFourTapSpineScaffold
 import `in`.zerotax.app.ui.splash.SplashScreen
 import `in`.zerotax.app.ui.theme.ZeroTaxTheme
+import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
+import `in`.zerotax.core.model.AuthSessionState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,23 +31,43 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ZeroTaxTheme {
+                val viewModel: ZeroTaxViewModel = viewModel()
+                val uiState by viewModel.uiState.collectAsState()
                 var isSplashFinished by remember { mutableStateOf(false) }
 
                 Surface(modifier = Modifier.fillMaxSize()) {
                     AnimatedContent(
-                        targetState = isSplashFinished,
+                        targetState = isSplashFinished to (uiState.authSessionState is AuthSessionState.Authenticated),
                         transitionSpec = {
                             fadeIn(animationSpec = tween(400, easing = FastOutSlowInEasing)) togetherWith
                             fadeOut(animationSpec = tween(300, easing = FastOutSlowInEasing))
                         },
                         label = "AppLaunchTransition"
-                    ) { finished ->
-                        if (!finished) {
+                    ) { (splashFinished, isAuthenticated) ->
+                        if (!splashFinished) {
                             SplashScreen(
                                 onInitializationComplete = { isSplashFinished = true }
                             )
+                        } else if (!isAuthenticated) {
+                            AuthenticationScreen(
+                                onAuthenticationSuccess = { /* state handled in viewModel */ },
+                                onSignInWithEmail = { email, password, isSignUp, name ->
+                                    viewModel.signInWithEmail(email, password, isSignUp, name)
+                                },
+                                onSignInWithGoogle = { email, name ->
+                                    viewModel.signInWithGoogle(email, name)
+                                },
+                                onSignInOfflineGuest = {
+                                    viewModel.signInAsGuest()
+                                },
+                                onBiometricUnlock = {
+                                    viewModel.signInWithBiometrics()
+                                },
+                                isLoading = uiState.isAuthLoading,
+                                errorMessage = uiState.authErrorMessage
+                            )
                         } else {
-                            ZeroTaxFourTapSpineScaffold()
+                            ZeroTaxFourTapSpineScaffold(viewModel = viewModel)
                         }
                     }
                 }

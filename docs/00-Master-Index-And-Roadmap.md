@@ -68,3 +68,33 @@ This master index provides the consolidated architecture, product specifications
 | **WP-11** | Full Compose UI Integration & Statutory Modals | **Completed ✓** | `IndianCurrencyFormatter`, 5-minute scoped `FLAG_SECURE` override helper, DPDP Section 6 multilingual consent card, cropped PDF disambiguation card, Section 205 employer TDS shield card, and presumptive slider. |
 | **WP-12** | Multi-Branch CI/CD Pipeline & Master Documentation | **Completed ✓** | Updated GitHub Actions CI workflow triggering on `master`, `main`, and `release/*`, updated root `README.md`, verified 0 test failures, and removed temporary plan files. |
 
+---
+
+### 4.3 Next-Gen Feature Suite & User Authentication System (F-01 to F-15)
+- **User Authentication System (`AuthDomainModels.kt`, `ZeroTaxAuthSecurityManager.kt`, `AuthenticationScreen.kt`)**:
+  - Dual Email & Password authentication with PBKDF2/SHA-256 salted hashing and input validation.
+  - "Continue with Google" sign-in integration with Google account picker and profile synchronization.
+  - "Use Local Offline Vault" zero-account privacy alternative for complete on-device autonomy.
+  - Device Biometrics integration (Fingerprint / PIN / Face) via AndroidX Biometric.
+  - DPDP Act 2023 Section 12(3) compliance: User credentials securely bind to SQLCipher hardware Keystore master key without cloud PII exposure.
+  - Seamless entry pipeline in `MainActivity.kt`: `SplashScreen` $\to$ `AuthenticationScreen` $\to$ `ZeroTaxFourTapSpineScaffold`.
+- **Section 6 Residential Status Engine (`ResidentialStatusAndFamilyArbitrageEngine.kt` — Feature F-01)**:
+  - Comprehensive day-counter evaluating 182-day, 60+365-day, and 120-day (> ₹15L) rules for ROR, RNOR, and NR.
+  - Legal shielding: Proving RNOR status legally exempts returning NRIs from Schedule FA Black Money Act reporting and shields foreign dividends/capital gains from Indian tax for 2–3 years.
+- **Family Tax Arbitrage Simulator (`ResidentialStatusAndFamilyArbitrageEngine.kt` — Feature F-02)**:
+  - Rent to retired parents u/s 10(13A) (saving 30% slab tax while parents enjoy 0% slab up to ₹12L in New Regime).
+  - Senior parent health insurance u/s 80D up to ₹50,000.
+  - Capital gifting to adult children (18+) or parents to invest in high-yield FDs completely avoiding Section 64 clubbing.
+- **Section 244A Refund Interest Auditor & Section 154 Builder (`RefundInterest244AAndGstAuditor.kt` — Features F-05 & F-06)**:
+  - Audits 0.5% per month (6% p.a.) simple interest from April 1 of AY on refunds $\ge 10\%$ of assessed tax.
+  - Automatic Section 154 rectification payload generation for CPC Bengaluru interest shortfalls.
+- **Freelancer GST & e-FIRA Radar (`RefundInterest244AAndGstAuditor.kt` — Feature F-08)**:
+  - ₹20L gross receipts threshold tracking and export LUT / e-FIRA inward remittance compliance checks.
+- **Section 50C 10% Stamp Duty Safe-Harbor Shield (`ScheduleAlAndCapitalGainsWealthEngine.kt` — Feature F-03)**:
+  - Third Proviso to Section 50C(1) tolerance check: adopts actual agreement consideration with ₹0 deemed addition when circle rate is within 110% of sale price.
+- **Post-Oct 1, 2024 Share Buyback Tax Engine (`ScheduleAlAndCapitalGainsWealthEngine.kt`)**:
+  - Computes Deemed Dividend u/s 2(22)(f) in Schedule OS and records original purchase cost as Capital Loss u/s 46A in Schedule CG.
+- **Schedule AL Auto-Builder (`ScheduleAlAndCapitalGainsWealthEngine.kt` — Feature F-09)**:
+  - Automated aggregation of immovable/movable assets and liabilities for incomes > ₹50 Lakhs into CBDT JSON format.
+
+

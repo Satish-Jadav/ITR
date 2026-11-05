@@ -6,6 +6,7 @@ import `in`.zerotax.app.ui.navigation.OnboardingTap
 import `in`.zerotax.app.ui.navigation.WorkspaceTab
 import `in`.zerotax.core.model.*
 import `in`.zerotax.core.security.CanonicalWarningHasher
+import `in`.zerotax.core.security.ZeroTaxAuthSecurityManager
 import `in`.zerotax.core.taxengine.calculator.DeterministicIndianTaxEngine
 import `in`.zerotax.core.taxengine.calculator.RegimeComputationResult
 import `in`.zerotax.core.taxengine.calculator.TaxpayerFinancialInput
@@ -45,6 +46,9 @@ data class ZeroTaxUiState(
     val showPasswordCheatsheet: Boolean = false,
     val filingTierMode: FilingTierMode = FilingTierMode.SAHAJ_SIMPLE,
     val recommendedTierMode: FilingTierMode = FilingTierMode.SAHAJ_SIMPLE,
+    val authSessionState: AuthSessionState = AuthSessionState.Unauthenticated,
+    val authErrorMessage: String? = null,
+    val isAuthLoading: Boolean = false,
     val challanPayments: List<ScheduleItChallanEntry> = emptyList(),
     val totalTaxPaidViaChallan: Long = 0L,
     val showTaxPaymentHub: Boolean = false,
@@ -225,15 +229,124 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun onShredVaultData() {
         viewModelScope.launch {
+            ZeroTaxAuthSecurityManager.signOut()
             _uiState.update {
                 it.copy(
                     isVaultShredded = true,
                     auditTrail = emptyList(),
                     pan = "",
                     grossSalaryRupees = 0L,
-                    currentTap = OnboardingTap.Tap1IdentityConsent
+                    currentTap = OnboardingTap.Tap1IdentityConsent,
+                    authSessionState = AuthSessionState.Unauthenticated
                 )
             }
+        }
+    }
+
+    fun signInWithEmail(email: String, password: String, isSignUp: Boolean, name: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
+            val result = if (isSignUp) {
+                ZeroTaxAuthSecurityManager.signUpWithEmail(email, password, name)
+            } else {
+                ZeroTaxAuthSecurityManager.signInWithEmail(email, password)
+            }
+            result.fold(
+                onSuccess = { profile ->
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authSessionState = AuthSessionState.Authenticated(profile),
+                            authErrorMessage = null
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authErrorMessage = error.message ?: "Authentication failed. Please verify credentials."
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun signInWithGoogle(email: String, name: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
+            val fakeIdToken = "g_token_${System.currentTimeMillis()}"
+            val result = ZeroTaxAuthSecurityManager.signInWithGoogle(fakeIdToken, email, name)
+            result.fold(
+                onSuccess = { profile ->
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authSessionState = AuthSessionState.Authenticated(profile),
+                            authErrorMessage = null
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authErrorMessage = error.message ?: "Google Sign-In failed."
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun signInAsGuest() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
+            val guestProfile = ZeroTaxAuthSecurityManager.signInAsGuestOffline()
+            _uiState.update {
+                it.copy(
+                    isAuthLoading = false,
+                    authSessionState = AuthSessionState.Authenticated(guestProfile),
+                    authErrorMessage = null
+                )
+            }
+        }
+    }
+
+    fun signInWithBiometrics() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
+            val result = ZeroTaxAuthSecurityManager.signInWithBiometrics()
+            result.fold(
+                onSuccess = { profile ->
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authSessionState = AuthSessionState.Authenticated(profile),
+                            authErrorMessage = null
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authErrorMessage = error.message ?: "Biometric unlock failed."
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun signOut() {
+        ZeroTaxAuthSecurityManager.signOut()
+        _uiState.update {
+            it.copy(
+                authSessionState = AuthSessionState.Unauthenticated,
+                authErrorMessage = null
+            )
         }
     }
 

@@ -75,6 +75,8 @@ fun EnterpriseTopHeader(
     pan: String,
     assessmentYear: String = "2026-27",
     isVaultEncrypted: Boolean = true,
+    userProfile: `in`.zerotax.core.model.UserAuthProfile? = null,
+    onSignOut: (() -> Unit)? = null,
     onOpenChatbot: (() -> Unit)? = null,
     onOpenToolkit: (() -> Unit)? = null,
     onOpenAnalytics: (() -> Unit)? = null,
@@ -238,6 +240,29 @@ fun EnterpriseTopHeader(
                         text = "SQLCipher StrongBox",
                         tone = BadgeTone.SUCCESS
                     )
+
+                    if (userProfile != null) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
+                                .clickable { onSignOut?.invoke() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(userProfile.authProvider.iconEmoji, fontSize = 11.sp)
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = userProfile.displayName.take(10),
+                                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text("🚪", fontSize = 10.sp)
+                            }
+                        }
+                    }
                 }
             }
         }

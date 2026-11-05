@@ -186,3 +186,18 @@ To eliminate taxpayer friction, confusion, and accidental non-compliance, ZeroTa
 8. **Complete Chapter VI-A Statutory Deductions Directory (`SmartDeductionsCatalog`)**:
    - Full statutory coverage of all 16 Chapter VI-A deduction codes: 80C, 80CCC, 80CCD(1), 80CCD(1B), 80CCD(2), 80D, 80DD, 80DDB, 80E, 80EEA, 80EEB, 80G, 80GG, 80GGA, 80GGC, 80TTA, 80TTB, and 80U.
    - Actionable instructions for every deduction: issuing authorities (CMO, research associations, banks, insurers), statutory limits, and required document forms (Form 10-I, Form 10-IA, Form 16A, RPwD certificates).
+
+9. **Dual Authentication & Privacy-First Vault Access (`ZeroTaxAuthSecurityManager` & `AuthenticationScreen`)**:
+   - Offers Google Sign-In, Email & Password (with PBKDF2/SHA-256 salted hashing), and 100% Offline Local Vault access.
+   - Strictly conforms to DPDP Act 2023 Section 12(3) Right to Erasure, storing zero unencrypted credentials in plaintext and allowing complete one-tap vault shredding in <300ms.
+
+10. **Interactive Section 6 Residential Status Day-Counter (`ResidentialStatusAndFamilyArbitrageEngine` — Feature F-01)**:
+    - Automatically calculates days in India across current and preceding 4–10 financial years to determine ROR, RNOR, or Non-Resident status.
+    - Accurately shields returning NRIs under the RNOR status, legally exempting foreign assets and foreign dividends/capital gains from Indian tax and Schedule FA Black Money Act penalties.
+
+11. **Family & Spouse Tax Arbitrage Simulator (`ResidentialStatusAndFamilyArbitrageEngine` — Feature F-02)**:
+    - Simulates legitimate family tax-saving structures: paying rent to retired parents u/s 10(13A), paying senior parent health insurance u/s 80D up to ₹50,000, and gifting capital to adult children (18+) or parents for high-yield FDs without triggering Section 64 clubbing.
+
+12. **Section 244A Refund Interest Auditor & Freelancer GST Radar (`RefundInterest244AAndGstAuditor` — Features F-05 & F-08)**:
+    - Audits Section 143(1) intimations to verify CPC Bengaluru has paid the statutory 0.5% per month (6% p.a.) simple refund interest from April 1 of the AY, auto-generating a Section 154 rectification request if short-paid.
+    - Monitors cumulative gross receipts against the ₹20 Lakh GST registration threshold and tracks foreign export inward remittances (e-FIRA / LUT) to guarantee zero export tax exposure.
