@@ -7,8 +7,9 @@
     <application
         android:allowBackup="false"
         android:fullBackupContent="false"
-        android:label="ZeroTax-Local"
-        android:icon="@android:drawable/sym_def_app_icon"
+        android:label="ZeroTax"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false">
         <activity

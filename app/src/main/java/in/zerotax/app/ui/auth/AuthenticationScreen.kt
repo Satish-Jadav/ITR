@@ -62,33 +62,32 @@ fun AuthenticationScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // App Brand Emblem
-            Box(
-                modifier = Modifier
-                    .size(68.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
+            // App Brand Emblem & Sovereign Logo
+            `in`.zerotax.app.ui.components.ZeroTaxBrandLogo(size = 72.dp, showText = false)
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "₹0",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary
+                    text = "Zero",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        letterSpacing = (-0.5).sp
+                    )
+                )
+                Text(
+                    text = "Tax",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = `in`.zerotax.app.ui.theme.EnterpriseTeal600,
+                        letterSpacing = (-0.5).sp
+                    )
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
             Text(
-                text = "ZeroTax-Local",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Text(
-                text = "Privacy-First Indian Tax Filing & Audit Assistant",
+                text = "Private Indian Tax Vault & Compliance Suite",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_slate_950">#090D16</color>
+    <color name="brand_slate_900">#0F172A</color>
+    <color name="brand_teal_900">#072726</color>
+    <color name="brand_teal_600">#0F766E</color>
+    <color name="brand_teal_500">#14B8A6</color>
+    <color name="brand_emerald">#10B981</color>
+    <color name="brand_white">#FFFFFF</color>
+</resources>
+
