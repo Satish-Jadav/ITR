@@ -60,7 +60,13 @@ enum class ToolkitTab(val label: String, val icon: String) {
     ITR_U_UPDATED_RETURN("ITR-U Updated Return", "🔄"),
     ADVANCE_TAX_RADAR("Advance Tax & Challan 280", "⚡"),
     LTCG_HARVESTING("LTCG Tax-Harvesting", "📈"),
-    STATEMENT_EXPORTER("Bank-Ready Summary", "📄")
+    STATEMENT_EXPORTER("Bank-Ready Summary", "📄"),
+    WHAT_IF_SIMULATOR("What-If Simulator", "🔮"),
+    FORM_12BB_PROOF("Form 12BB Proofs", "📋"),
+    FORM_15G_15H("Form 15G/H Zero-TDS", "🛡️"),
+    RESIDENTIAL_STATUS("NRI & Family Arbitrage", "🌐"),
+    REFUND_AUDIT_244A("Refund 244A & GST", "⚖️"),
+    SCHEDULE_AL_WEALTH("Schedule AL & Wealth", "🏛️")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -155,6 +161,12 @@ fun SmartTaxToolkitScreen(
                     ToolkitTab.ADVANCE_TAX_RADAR -> AdvanceTaxRadarView(pan = pan, totalTaxLiability = taxLiability, tdsPaid = tdsClaimed)
                     ToolkitTab.LTCG_HARVESTING -> LtcgHarvestingRadarView()
                     ToolkitTab.STATEMENT_EXPORTER -> BankReadyStatementView(pan = pan, grossSalary = grossSalary, taxLiability = taxLiability, tdsClaimed = tdsClaimed)
+                    ToolkitTab.WHAT_IF_SIMULATOR -> WhatIfScenarioSimulatorView(pan = pan, grossSalary = grossSalary)
+                    ToolkitTab.FORM_12BB_PROOF -> Form12BbDeclarationView(pan = pan, grossSalary = grossSalary)
+                    ToolkitTab.FORM_15G_15H -> Form15GOr15HZeroTdsView(pan = pan)
+                    ToolkitTab.RESIDENTIAL_STATUS -> ResidentialStatusAndFamilyArbitrageView()
+                    ToolkitTab.REFUND_AUDIT_244A -> RefundAuditAndGstView()
+                    ToolkitTab.SCHEDULE_AL_WEALTH -> ScheduleAlAndWealthView()
                 }
             }
         }

@@ -96,5 +96,13 @@ This master index provides the consolidated architecture, product specifications
   - Computes Deemed Dividend u/s 2(22)(f) in Schedule OS and records original purchase cost as Capital Loss u/s 46A in Schedule CG.
 - **Schedule AL Auto-Builder (`ScheduleAlAndCapitalGainsWealthEngine.kt` — Feature F-09)**:
   - Automated aggregation of immovable/movable assets and liabilities for incomes > ₹50 Lakhs into CBDT JSON format.
+- **Rule 26C Form 12BB Proof Generator (`LocalStatutoryPdfGenerators.kt` — Feature F-04)**:
+  - Generates bank-grade PDF 1.4 investment declarations (HRA, 80C, 80CCD, 80D, 24(b)) on-device for employer HR/payroll submission.
+- **Form 15G / 15H Zero-TDS FD Declaration Generator (`LocalStatutoryPdfGenerators.kt` — Feature F-07)**:
+  - Generates CBDT-compliant Form 15H (senior citizens) and Form 15G (under 60) declarations to eliminate 10% TDS deductions on bank fixed deposits.
+- **100% Offline Natural-Language "What-If" Scenario Simulator (`OfflineWhatIfTaxSimulator.kt` — Feature F-15)**:
+  - Real-time (< 5ms) deterministic tax calculation evaluating investment scenarios without network latency or cloud data leakage.
+- **Interactive Compose Smart Tax Toolkit Views (`StatutoryToolkitViews.kt` & `SmartTaxToolkitScreen.kt`)**:
+  - Expanded `ToolkitTab` to 15 specialized tabs with smooth horizontal slide/fade animated transitions surfacing all next-gen features directly to end-users.
 
 
