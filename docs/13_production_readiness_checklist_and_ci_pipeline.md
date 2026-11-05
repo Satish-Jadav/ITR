@@ -16,8 +16,6 @@ permissions:
 jobs:
   validate-and-test:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/igordmn/android-ndk:34.0.0
 
     steps:
       - name: Checkout Repository
