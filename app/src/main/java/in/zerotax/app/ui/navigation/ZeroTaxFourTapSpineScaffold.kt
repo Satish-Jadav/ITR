@@ -36,6 +36,12 @@ import `in`.zerotax.app.ui.notice.TaxNoticeDefenseAssistantScreen
 import `in`.zerotax.app.ui.nri.DualRegionNriComplianceScreen
 import `in`.zerotax.app.ui.portal.PortalAssistantScreen
 import `in`.zerotax.app.ui.portal.SmartTransactionSuggestionsView
+import `in`.zerotax.app.ui.enterprise.EnterpriseAuditFastStartView
+import `in`.zerotax.app.ui.sahaj.SahajFilingExperienceView
+import `in`.zerotax.app.ui.security.BiometricShieldGate
+import `in`.zerotax.app.ui.security.ZeroTaxBiometricManager
+import `in`.zerotax.app.ui.sugam.SugamPresumptiveFastStartView
+import `in`.zerotax.app.ui.timeline.StatutoryTimelineBanner
 import `in`.zerotax.app.ui.toolkit.SmartTaxToolkitScreen
 import `in`.zerotax.feature.portalbridge.CloudBackupSyncManager
 import `in`.zerotax.app.ui.theme.*
@@ -212,7 +218,8 @@ fun ZeroTaxFourTapSpineScaffold(
                 onOpenNotices = { showNoticeDefense = true },
                 onOpenBusinessAudit = { showBusinessAudit = true },
                 onOpenNriSuite = { showNriSuite = true },
-                onOpenCorporateSuite = { showCorporateSuite = true }
+                onOpenCorporateSuite = { showCorporateSuite = true },
+                onLockVault = { ZeroTaxBiometricManager.lockVaultNow() }
             )
         },
         bottomBar = {
@@ -269,12 +276,16 @@ fun ZeroTaxFourTapSpineScaffold(
             }
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.background)
+        BiometricShieldGate(
+            isUnlocked = ZeroTaxBiometricManager.isVaultBiometricallyUnlocked,
+            onUnlock = { ZeroTaxBiometricManager.unlockVault() }
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
             // Directional smooth horizontal slide & fade transitions between steps
             AnimatedContent(
                 targetState = uiState.currentTap,
@@ -419,6 +430,7 @@ fun ZeroTaxFourTapSpineScaffold(
             }
         }
     }
+}
 }
 
 // ============================================================================
@@ -1149,147 +1161,50 @@ private fun ProWorkspaceView(
                             Spacer(Modifier.height(8.dp))
                         }
 
-                        item {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = CardDefaults.outlinedCardBorder().copy(
-                                    width = 1.dp,
-                                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
-                                )
-                            ) {
-                                Column(modifier = Modifier.padding(14.dp)) {
-                                    Text(
-                                        text = "CBDT Schema-Compliant Return Package",
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        when (uiState.filingTierMode) {
+                            FilingTierMode.SAHAJ_SIMPLE -> {
+                                item {
+                                    SahajFilingExperienceView(
+                                        pan = uiState.pan,
+                                        grossSalary = uiState.grossSalaryRupees,
+                                        bankInterest = 14_200L,
+                                        tdsClaimed = uiState.salarySummary.aggregateTdsAllowed,
+                                        newRegimeTax = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
+                                        oldRegimeTax = uiState.oldRegimeResult.totalTaxLiabilityRounded288B,
+                                        onLaunchPortalAssistant = onLaunchPortalAssistant,
+                                        onOpenDeductionsAdvisor = onOpenDeductionsAdvisor,
+                                        onOpenTaxPaymentHub = onOpenTaxPaymentHub,
+                                        onOpenAisTransactions = onOpenAisTransactions
                                     )
-                                    Spacer(Modifier.height(8.dp))
-                                    EnterpriseLedgerRow(label = "Form Designation", statutoryRef = "CBDT AY 2026-27", amount = 0L)
-                                    EnterpriseLedgerRow(label = "Total Income u/s 288A", amount = uiState.newRegimeResult.netTaxableNormalIncomeRounded288A)
-                                    EnterpriseLedgerRow(label = "Tax Liability u/s 288B", amount = uiState.newRegimeResult.totalTaxLiabilityRounded288B)
-                                    EnterpriseLedgerRow(label = "Prepaid Taxes (TDS)", amount = uiState.salarySummary.aggregateTdsAllowed)
-                                    EnterpriseLedgerRow(
-                                        label = "Net Refund Due",
-                                        amount = uiState.salarySummary.aggregateTdsAllowed - uiState.newRegimeResult.totalTaxLiabilityRounded288B,
-                                        isHighlighted = true
+                                }
+                            }
+                            FilingTierMode.INVESTOR_PRO -> {
+                                item {
+                                    SugamPresumptiveFastStartView(
+                                        pan = uiState.pan,
+                                        onLaunchPortalAssistant = onLaunchPortalAssistant,
+                                        onOpenTaxPaymentHub = onOpenTaxPaymentHub,
+                                        onOpenAisTransactions = onOpenAisTransactions
                                     )
-
-                                    Spacer(Modifier.height(12.dp))
-                                    Button(
-                                        onClick = onOpenTaxPaymentHub,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("💳 Tax Payment & Challan 280 Hub (UPI / TIN 2.0 / RTGS)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
-                                    }
-
-                                    Spacer(Modifier.height(8.dp))
-                                    Button(
-                                        onClick = onLaunchPortalAssistant,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("Direct In-App ITR Filing Suite & Gemini Copilot", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onOpenAisTransactions,
-                                        shape = RoundedCornerShape(4.dp),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("Inspect AIS Transactions & Form 60 KYC Profile", style = MaterialTheme.typography.labelMedium)
-                                    }
-
-                                    // Dynamic Tier-Tailored Action Buttons
-                                    if (uiState.filingTierMode != FilingTierMode.SAHAJ_SIMPLE) {
-                                        Spacer(Modifier.height(8.dp))
-                                        OutlinedButton(
-                                            onClick = onOpenDeductionsAdvisor,
-                                            shape = RoundedCornerShape(4.dp),
-                                            modifier = Modifier.fillMaxWidth().height(42.dp)
-                                        ) {
-                                            Text("Smart Deductions & Life-Events (Home Loan, 80D, NPS)", style = MaterialTheme.typography.labelMedium)
-                                        }
-                                        Spacer(Modifier.height(8.dp))
-                                        OutlinedButton(
-                                            onClick = onOpenToolkit,
-                                            shape = RoundedCornerShape(4.dp),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = IndigoStatutory),
-                                            modifier = Modifier.fillMaxWidth().height(42.dp)
-                                        ) {
-                                            Text("🛠️ Smart Tax Toolkit (HRA, Advance Tax, LTCG Harvesting)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                        }
-                                        Spacer(Modifier.height(8.dp))
-                                        OutlinedButton(
-                                            onClick = onOpenAnalytics,
-                                            shape = RoundedCornerShape(4.dp),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldSuccess),
-                                            modifier = Modifier.fillMaxWidth().height(42.dp)
-                                        ) {
-                                            Text("📊 Tax Intelligence (Income Flow, 3-Way Radar, Calendar)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                        }
-                                    }
-
-                                    if (uiState.filingTierMode == FilingTierMode.ENTERPRISE_AUDIT) {
-                                        Spacer(Modifier.height(8.dp))
-                                        OutlinedButton(
-                                            onClick = onOpenBusinessAudit,
-                                            shape = RoundedCornerShape(4.dp),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = IndigoStatutory),
-                                            modifier = Modifier.fillMaxWidth().height(42.dp)
-                                        ) {
-                                            Text("🏢 Small Business Tax Audit & Presumptive Suite (Sec 44AB/AD & Form 3CD)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                        }
-                                        Spacer(Modifier.height(8.dp))
-                                        OutlinedButton(
-                                            onClick = onOpenNriSuite,
-                                            shape = RoundedCornerShape(4.dp),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
-                                            modifier = Modifier.fillMaxWidth().height(42.dp)
-                                        ) {
-                                            Text("🌍 Dual-Region NRI & DTAA Compliance Suite (Sec 6, 10(4), Form 10F)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                        }
-                                        Spacer(Modifier.height(8.dp))
-                                        OutlinedButton(
-                                            onClick = onOpenNotices,
-                                            shape = RoundedCornerShape(4.dp),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = AmberWarning),
-                                            modifier = Modifier.fillMaxWidth().height(42.dp)
-                                        ) {
-                                            Text("🛡️ Tax Notice Defense & Rectification (Sec 143(1), 139(9), 154, 245)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                        }
-                                        Spacer(Modifier.height(8.dp))
-                                        OutlinedButton(
-                                            onClick = onOpenCorporateSuite,
-                                            shape = RoundedCornerShape(4.dp),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
-                                            modifier = Modifier.fillMaxWidth().height(42.dp)
-                                        ) {
-                                            Text("🏢 Corporate & Trust Suite (ITR-5 LLP, ITR-6 MAT, ITR-7 Trust)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                        }
-                                    }
-
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onRunAudit,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldSuccess),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("🛡️ Run 6-Gate Pre-Filing Audit & CPC Refund Tracker", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    OutlinedButton(
-                                        onClick = onOpenChatbot,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
-                                        modifier = Modifier.fillMaxWidth().height(42.dp)
-                                    ) {
-                                        Text("🤖 Conversational Filing Chatbot (TaxBuddy Style)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                                    }
+                                }
+                            }
+                            FilingTierMode.ENTERPRISE_AUDIT -> {
+                                item {
+                                    EnterpriseAuditFastStartView(
+                                        pan = uiState.pan,
+                                        totalIncome = uiState.newRegimeResult.netTaxableNormalIncomeRounded288A,
+                                        taxLiability = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
+                                        tdsClaimed = uiState.salarySummary.aggregateTdsAllowed,
+                                        onOpenCorporateSuite = onOpenCorporateSuite,
+                                        onOpenBusinessAudit = onOpenBusinessAudit,
+                                        onOpenNriSuite = onOpenNriSuite,
+                                        onOpenToolkit = onOpenToolkit,
+                                        onOpenAnalytics = onOpenAnalytics,
+                                        onOpenNotices = onOpenNotices,
+                                        onLaunchPortalAssistant = onLaunchPortalAssistant,
+                                        onOpenTaxPaymentHub = onOpenTaxPaymentHub,
+                                        onRunAudit = onRunAudit
+                                    )
                                 }
                             }
                         }

@@ -31,49 +31,49 @@ enum class PanEntityType(
         code = 'C',
         title = "Company",
         description = "Private Limited / Public Limited / OPC Corporate Body",
-        isSupportedInPersonalSuite = true,
+        isSupportedInPersonalSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_6, ItrFormType.ITR_7)
     ),
     FIRM(
         code = 'F',
         title = "Partnership Firm / LLP",
         description = "Partnership Firm or Limited Liability Partnership",
-        isSupportedInPersonalSuite = true,
+        isSupportedInPersonalSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_5, ItrFormType.ITR_4_SUGAM)
     ),
     AOP(
         code = 'A',
         title = "Association of Persons (AOP)",
         description = "Association of individuals or entities pooling resources",
-        isSupportedInPersonalSuite = true,
+        isSupportedInPersonalSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_5)
     ),
     BOI(
         code = 'B',
         title = "Body of Individuals (BOI)",
         description = "Conglomeration of individuals without formal partnership",
-        isSupportedInPersonalSuite = true,
+        isSupportedInPersonalSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_5)
     ),
     TRUST(
         code = 'T',
         title = "Trust / Charitable Institution",
         description = "Charitable, Religious, or Political Entity u/s 139(4A)-(4D)",
-        isSupportedInPersonalSuite = true,
+        isSupportedInPersonalSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_7)
     ),
     LOCAL_AUTHORITY(
         code = 'L',
         title = "Local Authority",
         description = "Municipal Corporation, Cantonment Board, or Panchayat",
-        isSupportedInPersonalSuite = true,
+        isSupportedInPersonalSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_5)
     ),
     ARTIFICIAL_JURIDICAL(
         code = 'J',
         title = "Artificial Juridical Person",
         description = "Statutory Corporations, Universities, or Deities",
-        isSupportedInPersonalSuite = true,
+        isSupportedInPersonalSuite = false,
         eligibleItrForms = listOf(ItrFormType.ITR_5, ItrFormType.ITR_7)
     ),
     GOVERNMENT_AGENCY(
