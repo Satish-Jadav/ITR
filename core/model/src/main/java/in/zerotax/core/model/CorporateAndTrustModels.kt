@@ -119,3 +119,4 @@ data class Itr7TrustResult(
     val isCompletelyTaxExempt: Boolean,
     val statutoryNotes: List<String>
 )
+

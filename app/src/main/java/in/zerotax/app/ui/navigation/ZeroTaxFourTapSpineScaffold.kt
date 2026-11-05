@@ -28,6 +28,7 @@ import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.audit.PreFilingAuditView
 import `in`.zerotax.app.ui.business.SmallBusinessAuditSuiteScreen
 import `in`.zerotax.app.ui.chat.ConversationalFilingChatScreen
+import `in`.zerotax.app.ui.corporate.CorporateAndTrustSuiteScreen
 import `in`.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
 import `in`.zerotax.app.ui.insights.TaxVisualizerAndAnalyticsScreen
 import `in`.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
@@ -77,8 +78,17 @@ fun ZeroTaxFourTapSpineScaffold(
     var showNoticeDefense by remember { mutableStateOf(false) }
     var showBusinessAudit by remember { mutableStateOf(false) }
     var showNriSuite by remember { mutableStateOf(false) }
+    var showCorporateSuite by remember { mutableStateOf(false) }
     var showPasswordCheatsheetModal by remember { mutableStateOf(false) }
     var showTaxPaymentHub by remember { mutableStateOf(false) }
+
+    if (showCorporateSuite) {
+        CorporateAndTrustSuiteScreen(
+            pan = uiState.pan,
+            onBack = { showCorporateSuite = false }
+        )
+        return
+    }
 
     if (showNriSuite) {
         DualRegionNriComplianceScreen(
@@ -201,7 +211,8 @@ fun ZeroTaxFourTapSpineScaffold(
                 onOpenAnalytics = { showAnalyticsScreen = true },
                 onOpenNotices = { showNoticeDefense = true },
                 onOpenBusinessAudit = { showBusinessAudit = true },
-                onOpenNriSuite = { showNriSuite = true }
+                onOpenNriSuite = { showNriSuite = true },
+                onOpenCorporateSuite = { showCorporateSuite = true }
             )
         },
         bottomBar = {
@@ -210,12 +221,34 @@ fun ZeroTaxFourTapSpineScaffold(
                     containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 2.dp
                 ) {
+                    val icons = mapOf(
+                        WorkspaceTab.FilingAndRefundHub to "🏛️",
+                        WorkspaceTab.SmartTaxVaultAndCopilot to "🛡️",
+                        WorkspaceTab.PrivacyAndSettings to "🔐"
+                    )
                     WorkspaceTab.entries.forEach { tab ->
+                        val isSelected = uiState.selectedWorkspaceTab == tab
                         NavigationBarItem(
-                            selected = uiState.selectedWorkspaceTab == tab,
+                            selected = isSelected,
                             onClick = { viewModel.onSelectWorkspaceTab(tab) },
-                            label = { Text(tab.title, style = MaterialTheme.typography.labelSmall) },
-                            icon = {}
+                            label = {
+                                Text(
+                                    text = tab.title,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                )
+                            },
+                            icon = {
+                                Text(icons[tab] ?: "📋", fontSize = 18.sp)
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = EnterpriseTeal100,
+                                selectedIconColor = EnterpriseTeal900,
+                                selectedTextColor = EnterpriseTeal700,
+                                unselectedIconColor = Slate500,
+                                unselectedTextColor = Slate600
+                            )
                         )
                     }
                 }
@@ -328,6 +361,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         onOpenNotices = { showNoticeDefense = true },
                         onOpenBusinessAudit = { showBusinessAudit = true },
                         onOpenNriSuite = { showNriSuite = true },
+                        onOpenCorporateSuite = { showCorporateSuite = true },
                         onLoadAuditTrail = { viewModel.loadAuditTrailLazy() },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
@@ -1059,6 +1093,7 @@ private fun ProWorkspaceView(
     onOpenNotices: () -> Unit = {},
     onOpenBusinessAudit: () -> Unit = {},
     onOpenNriSuite: () -> Unit = {},
+    onOpenCorporateSuite: () -> Unit = {},
     onLoadAuditTrail: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
@@ -1225,6 +1260,15 @@ private fun ProWorkspaceView(
                                             modifier = Modifier.fillMaxWidth().height(42.dp)
                                         ) {
                                             Text("🛡️ Tax Notice Defense & Rectification (Sec 143(1), 139(9), 154, 245)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                        }
+                                        Spacer(Modifier.height(8.dp))
+                                        OutlinedButton(
+                                            onClick = onOpenCorporateSuite,
+                                            shape = RoundedCornerShape(4.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
+                                            modifier = Modifier.fillMaxWidth().height(42.dp)
+                                        ) {
+                                            Text("🏢 Corporate & Trust Suite (ITR-5 LLP, ITR-6 MAT, ITR-7 Trust)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                         }
                                     }
 

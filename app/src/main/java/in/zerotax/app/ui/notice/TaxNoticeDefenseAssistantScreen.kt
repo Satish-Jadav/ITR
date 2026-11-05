@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.notice
+package `in`.zerotax.app.ui.notice
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -91,27 +91,13 @@ fun TaxNoticeDefenseAssistantScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Tax Notice Defense & Rectification",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        StatutoryBadge(text = "CPC Defense Shield", tone = BadgeTone.WARNING)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                actions = {
-                    StatutoryBadge(text = "PAN $pan", tone = BadgeTone.STATUTORY)
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            ZeroTaxTopAppBar(
+                title = "Tax Notice Defense",
+                subtitle = "CPC Defective 139(9), Intimation 143(1) & Demand Rectification",
+                pan = pan,
+                onBack = onBack,
+                badgeText = "CPC Defense Shield",
+                badgeTone = BadgeTone.WARNING
             )
         }
     ) { innerPadding ->

@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.theme
+package `in`.zerotax.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -46,3 +46,37 @@ val CrimsonDangerBgDark = Color(0xFF450A0A)
 val IndigoStatutory    = Color(0xFF1E40AF) // Statutory Act / Clause Ref
 val IndigoStatutoryBg  = Color(0xFFEFF6FF)
 val IndigoStatutoryBgDark = Color(0xFF172554)
+
+// ============================================================================
+// ZERO TAX BRAND COLOR TOKENS (Single Source of Truth)
+// ============================================================================
+object ZeroTaxBrandColors {
+    val Primary = EnterpriseTeal600
+    val PrimaryDark = EnterpriseTeal900
+    val PrimaryMedium = EnterpriseTeal700
+    val PrimaryInteractive = EnterpriseTeal500
+    val PrimaryLight = EnterpriseTeal100
+    val PrimaryContainer = EnterpriseTeal50
+
+    val SlateDeep = Slate950
+    val SlateDark = Slate900
+    val SlateElevated = Slate850
+    val SlateCard = Slate800
+    val SlateMuted = Slate700
+    val SlateTextSecondary = Slate600
+    val SlateTextTertiary = Slate500
+    val SlateBorder = Slate300
+    val SlateDivider = Slate200
+    val SlateSurface = Slate100
+    val SlateBackdrop = Slate50
+    val White = PureWhite
+
+    val Success = EmeraldSuccess
+    val SuccessBg = EmeraldSuccessBg
+    val Warning = AmberWarning
+    val WarningBg = AmberWarningBg
+    val Danger = CrimsonDanger
+    val DangerBg = CrimsonDangerBg
+    val Statutory = IndigoStatutory
+    val StatutoryBg = IndigoStatutoryBg
+}

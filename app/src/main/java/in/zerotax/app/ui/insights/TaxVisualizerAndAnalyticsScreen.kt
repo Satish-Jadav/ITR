@@ -50,27 +50,13 @@ fun TaxVisualizerAndAnalyticsScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Tax Intelligence & Analytics",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        StatutoryBadge(text = "Pro Insights", tone = BadgeTone.SUCCESS)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                actions = {
-                    StatutoryBadge(text = "PAN $pan", tone = BadgeTone.STATUTORY)
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            ZeroTaxTopAppBar(
+                title = "Tax Intelligence & Analytics",
+                subtitle = "Sankey Flow, 3-Way AIS Reconciliation & Effective Tax Rate",
+                pan = pan,
+                onBack = onBack,
+                badgeText = "Pro Insights",
+                badgeTone = BadgeTone.SUCCESS
             )
         }
     ) { innerPadding ->
