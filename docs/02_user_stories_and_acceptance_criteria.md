@@ -699,9 +699,9 @@ Story 10.1: Biometric App Locking & July 31 Countdown Reminders
 Feature: Hardware Biometric Gate Protecting Sensitive Tax Returns & Local Push Notifications
   Scenario: User opens ZeroTax or switches back from another application
     Given the device supports BiometricPrompt (fingerprint or face) or device PIN
-    When the app comes to foreground or user taps "🔒 Lock"
+    When the app comes to foreground or user taps "Lock"
     Then ZeroTax prompts for biometric verification before decrypting SQLCipher data
-    And displays the real-time July 31 deadline countdown ("⏱️ 86 Days remaining") with statutory notification scheduling.
+    And displays the real-time July 31 deadline countdown ("86 Days remaining") with statutory notification scheduling.
 
 Story 10.2: 1-Tap In-App Portal Sync (Form 26AS, AIS/TIS & Pre-Fill)
 Feature: Direct TLS In-App Handshake with Income Tax Portal

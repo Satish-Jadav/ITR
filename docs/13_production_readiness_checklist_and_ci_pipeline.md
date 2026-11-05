@@ -224,9 +224,9 @@ To eliminate taxpayer friction, confusion, and accidental non-compliance, ZeroTa
 17.2 Plan-Based Separation & Interactive Coachmark Walkthrough:
 - Segmented into SAHAJ (ITR-1 plain language), SUGAM (ITR-4 presumptive deck), and ENTERPRISE AUDIT (ITR-2 to ITR-7 executive desk), augmented with 4-step coachmark tour.
 17.3 Hardware Biometric Security Gate & 1-Tap App Lock:
-- AndroidX BiometricPrompt securing user returns, PAN, and bank data upon cold start and foreground resume, featuring instant "🔒 Lock" button in the top header.
+- AndroidX BiometricPrompt securing user returns, PAN, and bank data upon cold start and foreground resume, featuring instant "Lock" button in the top header.
 17.4 Statutory Tax Timeline & Push Notifications:
-- July 31 deadline countdown pill ("⏱️ 86 Days remaining") and 1-tap local notification scheduler for filing start, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
+- July 31 deadline countdown pill ("86 Days remaining") and 1-tap local notification scheduler for filing start, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
 17.5 In-App Live ITD Portal Sync Suite:
 - Direct TLS handshake via Aadhaar OTP or password pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
 17.6 F&O Trading ICAI Turnover & Tax Audit Engine (Section 31):

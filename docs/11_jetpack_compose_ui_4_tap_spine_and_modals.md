@@ -798,9 +798,9 @@ To maximize usability across all taxpayer segments, ZeroTax provides a plan-base
 
 | Tier | Target Persona & Criteria | Visible Features | Statutory Forms |
 | :--- | :--- | :--- | :--- |
-| **`SAHAJ_SIMPLE`** (🌱) | Salaried & Pensioners under ₹20L with single/dual Form 16, bank interest, and 1 house property. | Clean 1-tap refund spine, simplified deductions (80C, 80D), instant e-verification. Strips all business/audit noise. | ITR-1 (Sahaj) |
-| **`INVESTOR_PRO`** (📈) | Stocks, Mutual Funds, Crypto, Freelancers, Consultants (Sec 44ADA), or income ₹20L–₹50L. | Capital gains ledger (111A/112A), Sec 44ADA presumptive profit slider, dual-regime break-even optimizer, Chapter VI-A deductions catalog. | ITR-2, ITR-4 (Sugam) |
-| **`ENTERPRISE_AUDIT`** (🛡️) | Big Money, HNIs, Gross Income > ₹50L, Turnover > ₹1 Cr, Foreign Assets (RSUs/ESPPs). | Enterprise Audit Shield, Section 44AB CA dossier generator, 3-way Form 26AS/AIS/TRACES discrepancy reconciliation radar, Schedule FA Black Money Act compliance. | ITR-2, ITR-3, Section 44AB CA Dossier |
+| **`SAHAJ_SIMPLE`** | Salaried & Pensioners under ₹20L with single/dual Form 16, bank interest, and 1 house property. | Clean 1-tap refund spine, simplified deductions (80C, 80D), instant e-verification. Strips all business/audit noise. | ITR-1 (Sahaj) |
+| **`INVESTOR_PRO`** | Stocks, Mutual Funds, Crypto, Freelancers, Consultants (Sec 44ADA), or income ₹20L–₹50L. | Capital gains ledger (111A/112A), Sec 44ADA presumptive profit slider, dual-regime break-even optimizer, Chapter VI-A deductions catalog. | ITR-2, ITR-4 (Sugam) |
+| **`ENTERPRISE_AUDIT`** | Big Money, HNIs, Gross Income > ₹50L, Turnover > ₹1 Cr, Foreign Assets (RSUs/ESPPs). | Enterprise Audit Shield, Section 44AB CA dossier generator, 3-way Form 26AS/AIS/TRACES discrepancy reconciliation radar, Schedule FA Black Money Act compliance. | ITR-2, ITR-3, Section 44AB CA Dossier |
 
 The app automatically suggests the ideal tier via `FilingTierMode.autoDetectTier(grossIncome, hasCapitalGains, hasPresumptiveBusiness, hasForeignAssets, hasAuditExposure)`, while presenting the user with an interactive `FilingTierSelectorCard` to switch at any moment.
 
@@ -863,7 +863,7 @@ flowchart LR
    - Biometric prompt integration (Fingerprint, Face, or Device PIN) for fast, secure vault unlocking on subsequent app launches.
 
 ### 7.3 TopAppBar User Session Badge & 1-Tap Sign-Out
-When authenticated, `EnterpriseTopHeader` renders a compact, interactive user pill displaying the provider's emoji badge (`📧` for Email, `🌐` for Google, `🔐` for Biometric, `🛡️` for Guest) alongside the user's name. Tapping the pill triggers a 1-tap Sign-Out that safely resets the active in-memory session and returns the user to the Authentication screen.
+When authenticated, `EnterpriseTopHeader` renders a compact, interactive user pill displaying the provider's icon badge (Email, Google, Biometric, Guest) alongside the user's name. Tapping the pill triggers a 1-tap Sign-Out that safely resets the active in-memory session and returns the user to the Authentication screen.
 
 ---
 
@@ -912,7 +912,7 @@ flowchart TD
 9.1 Sahaj Filing Experience View (`SahajFilingExperienceView.kt`):
 - Plain-language, jargon-free interface for salaried freshers and simple filers.
 - Card sections: "What You Earned", "Automatic ₹75,000 Government Discount", "Taxes Deducted by Employer", "Your Refund Result".
-- Features embedded "⚡ 1-Tap Sync with Income Tax Portal" button and "💡 How to File" coachmark launcher.
+- Features embedded "1-Tap Sync with Income Tax Portal" button and "How to File" coachmark launcher.
 
 9.2 Sugam Presumptive Fast-Start View (`SugamPresumptiveFastStartView.kt`):
 - 2-minute presumptive deck for freelancers (44ADA 50%) and creators/traders (44AD 6%/8%).
@@ -924,10 +924,10 @@ flowchart TD
 
 9.4 ZeroTax Biometric Shield Gate (`ZeroTaxBiometricShield.kt`):
 - Full-screen biometric gate protecting vault contents with Fingerprint, Face ID, or PIN.
-- Integrates instant 1-tap "🔒 Lock" button in `EnterpriseTopHeader`.
+- Integrates instant 1-tap "Lock" button in `EnterpriseTopHeader`.
 
 9.5 Statutory Tax Timeline Manager (`StatutoryTaxTimelineManager.kt`):
-- July 31 filing deadline countdown pill ("⏱️ 86 Days remaining") in the top header.
+- July 31 filing deadline countdown pill ("86 Days remaining") in the top header.
 - 1-tap local notification scheduler: filing start notification, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
 
 9.6 ZeroTax Coachmark Tour (`ZeroTaxCoachmarkTour.kt`):
