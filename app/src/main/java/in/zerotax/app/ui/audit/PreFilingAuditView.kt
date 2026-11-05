@@ -53,6 +53,7 @@ fun PreFilingAuditView(
     bankAccount: BankAccountDetails?,
     onBack: () -> Unit,
     onProceedToFiling: () -> Unit,
+    pan: String = "TAXPAYER",
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -625,16 +626,16 @@ fun PreFilingAuditView(
     }
 
     if (showLegalDialog) {
-        val employerTan = salarySummary.employers.firstOrNull()?.employerTan ?: "ABCDE1234F"
+        val verifiedPan = pan.ifBlank { salarySummary.employers.firstOrNull()?.employerTan ?: "TAXPAYER" }
         ComprehensiveLegalAcknowledgementDialog(
-            pan = employerTan,
+            pan = verifiedPan,
             onDismiss = { showLegalDialog = false },
             onAcknowledgeAndAccept = { sha256, _ ->
                 isLegalAcknowledgementSigned = true
                 signedConsentSha256 = sha256
                 showLegalDialog = false
                 val snapshot = CloudBackupSyncManager.packageState(
-                    pan = employerTan,
+                    pan = verifiedPan,
                     grossSalaryRupees = salarySummary.aggregateGrossSalary,
                     totalDeductionsRupees = computation.totalChapterVIADeductions + computation.standardDeduction,
                     netTaxableIncomeRupees = computation.netTaxableNormalIncomeRounded288A,
