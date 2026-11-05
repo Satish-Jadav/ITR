@@ -16,7 +16,7 @@ class FilingTierModeTest {
         )
         assertEquals(FilingTierMode.SAHAJ_SIMPLE, tier)
         assertEquals("Sahaj Simple", tier.title)
-        assertEquals("🌱", tier.badgeIcon)
+        assertEquals("eco", tier.badgeIcon)
         assertTrue(tier.recommendedItrForms.contains(ItrFormType.ITR_1_SAHAJ))
     }
 
@@ -31,7 +31,7 @@ class FilingTierModeTest {
         )
         assertEquals(FilingTierMode.INVESTOR_PRO, tier)
         assertEquals("Growth & Investor", tier.title)
-        assertEquals("📈", tier.badgeIcon)
+        assertEquals("trending_up", tier.badgeIcon)
         assertTrue(tier.recommendedItrForms.contains(ItrFormType.ITR_2))
     }
 
@@ -71,7 +71,7 @@ class FilingTierModeTest {
         )
         assertEquals(FilingTierMode.ENTERPRISE_AUDIT, tier)
         assertEquals("Enterprise Audit Shield", tier.title)
-        assertEquals("🛡️", tier.badgeIcon)
+        assertEquals("shield", tier.badgeIcon)
     }
 
     @Test
@@ -107,20 +107,20 @@ class FilingTierModeTest {
 
         val upi = TaxPaymentChannel.UPI_INSTANT
         assertEquals("Instant UPI (GPay / PhonePe / BHIM / Paytm)", upi.title)
-        assertEquals("⚡", upi.iconEmoji)
+        assertEquals("bolt", upi.iconName)
         assertEquals("Instant (Real-time)", upi.processingTime)
 
         val netBanking = TaxPaymentChannel.NET_BANKING
-        assertEquals("🏦", netBanking.iconEmoji)
+        assertEquals("account_balance", netBanking.iconName)
 
         val debitCard = TaxPaymentChannel.DEBIT_CARD
-        assertEquals("💳", debitCard.iconEmoji)
+        assertEquals("credit_card", debitCard.iconName)
 
         val rtgsNeft = TaxPaymentChannel.RTGS_NEFT
-        assertEquals("🏛️", rtgsNeft.iconEmoji)
+        assertEquals("domain", rtgsNeft.iconName)
 
         val otc = TaxPaymentChannel.OVER_THE_COUNTER
-        assertEquals("📝", otc.iconEmoji)
+        assertEquals("description", otc.iconName)
     }
 }
 

@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.Pin
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -128,8 +131,8 @@ fun BiometricShieldGate(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        StatutoryBadge(text = "🛡️ AES-256-GCM Vault", tone = BadgeTone.SUCCESS)
-                        StatutoryBadge(text = "🔒 Zero Cloud Telemetry", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "AES-256-GCM Vault", tone = BadgeTone.SUCCESS)
+                        StatutoryBadge(text = "Zero Cloud Telemetry", tone = BadgeTone.STATUTORY)
                     }
 
                     Spacer(Modifier.height(36.dp))
@@ -147,10 +150,18 @@ fun BiometricShieldGate(
                         ),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                     ) {
-                        Text(
-                            text = "👆 Unlock with Fingerprint / Face ID",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Fingerprint,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "Unlock with Fingerprint / Face ID",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
 
                     Spacer(Modifier.height(14.dp))
@@ -165,10 +176,18 @@ fun BiometricShieldGate(
                         border = androidx.compose.foundation.BorderStroke(1.dp, Slate700),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate300)
                     ) {
-                        Text(
-                            text = "🔢 Use Device PIN / Passcode",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Pin,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "Use Device PIN / Passcode",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                        }
                     }
                 }
             }

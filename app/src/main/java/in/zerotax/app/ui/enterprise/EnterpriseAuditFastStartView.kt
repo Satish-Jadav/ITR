@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,7 +75,12 @@ fun EnterpriseAuditFastStartView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("🔄", fontSize = 20.sp)
+                    Icon(
+                        imageVector = Icons.Default.Sync,
+                        contentDescription = null,
+                        tint = EnterpriseTeal700,
+                        modifier = Modifier.size(20.dp)
+                    )
                     Spacer(Modifier.width(10.dp))
                     Column {
                         Text(
@@ -104,7 +111,12 @@ fun EnterpriseAuditFastStartView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🏛️", fontSize = 24.sp)
+                        Icon(
+                            imageVector = Icons.Default.AccountBalance,
+                            contentDescription = null,
+                            tint = PureWhite,
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(Modifier.width(8.dp))
                         Column {
                             Text(
@@ -144,7 +156,16 @@ fun EnterpriseAuditFastStartView(
                             .clickable { onOpenCorporateSuite() }
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
-                            Text("🏢 Corporate & Trust", fontWeight = FontWeight.Bold, color = EnterpriseTeal300, fontSize = 12.sp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Apartment,
+                                    contentDescription = null,
+                                    tint = EnterpriseTeal300,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text("Corporate & Trust", fontWeight = FontWeight.Bold, color = EnterpriseTeal300, fontSize = 12.sp)
+                            }
                             Spacer(Modifier.height(2.dp))
                             Text("ITR-5 Firm, ITR-6 MAT, ITR-7 Trust", color = Slate300, fontSize = 10.sp)
                             Spacer(Modifier.height(6.dp))
@@ -162,7 +183,16 @@ fun EnterpriseAuditFastStartView(
                             .clickable { onOpenBusinessAudit() }
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
-                            Text("📊 Sec 44AB Tax Audit", fontWeight = FontWeight.Bold, color = IndigoStatutoryBg, fontSize = 12.sp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.BarChart,
+                                    contentDescription = null,
+                                    tint = IndigoStatutoryBg,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text("Sec 44AB Tax Audit", fontWeight = FontWeight.Bold, color = IndigoStatutoryBg, fontSize = 12.sp)
+                            }
                             Spacer(Modifier.height(2.dp))
                             Text("Form 3CD 44 Clauses & Balance Sheet", color = Slate300, fontSize = 10.sp)
                             Spacer(Modifier.height(6.dp))
@@ -187,7 +217,16 @@ fun EnterpriseAuditFastStartView(
                             .clickable { onOpenNriSuite() }
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
-                            Text("🌍 NRI & DTAA Relief", fontWeight = FontWeight.Bold, color = PureWhite, fontSize = 12.sp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Public,
+                                    contentDescription = null,
+                                    tint = PureWhite,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text("NRI & DTAA Relief", fontWeight = FontWeight.Bold, color = PureWhite, fontSize = 12.sp)
+                            }
                             Spacer(Modifier.height(2.dp))
                             Text("Sec 90/91, Form 10F, Schedule FA", color = Slate400, fontSize = 10.sp)
                         }
@@ -203,7 +242,16 @@ fun EnterpriseAuditFastStartView(
                             .clickable { onOpenNotices() }
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
-                            Text("🛡️ Notice Defense", fontWeight = FontWeight.Bold, color = AmberWarning, fontSize = 12.sp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Security,
+                                    contentDescription = null,
+                                    tint = AmberWarning,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text("Notice Defense", fontWeight = FontWeight.Bold, color = AmberWarning, fontSize = 12.sp)
+                            }
                             Spacer(Modifier.height(2.dp))
                             Text("Sec 143(1), 139(9), 154 Rectification", color = Slate400, fontSize = 10.sp)
                         }
@@ -244,7 +292,16 @@ fun EnterpriseAuditFastStartView(
                     shape = RoundedCornerShape(6.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600)
                 ) {
-                    Text("🛠️ Tax Toolkit", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Build,
+                            contentDescription = null,
+                            tint = EnterpriseTeal700,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("Tax Toolkit", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
+                    }
                 }
                 OutlinedButton(
                     onClick = onOpenAnalytics,
@@ -252,7 +309,16 @@ fun EnterpriseAuditFastStartView(
                     shape = RoundedCornerShape(6.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess)
                 ) {
-                    Text("📊 Radar Analytics", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.BarChart,
+                            contentDescription = null,
+                            tint = EmeraldSuccess,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("Radar Analytics", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                    }
                 }
             }
         }
@@ -268,7 +334,16 @@ fun EnterpriseAuditFastStartView(
                 colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
                 modifier = Modifier.weight(1f).height(46.dp)
             ) {
-                Text("💳 Pay Challan 280", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CreditCard,
+                        contentDescription = null,
+                        tint = Slate900,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("Pay Challan 280", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                }
             }
 
             Button(
@@ -277,12 +352,21 @@ fun EnterpriseAuditFastStartView(
                 colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess),
                 modifier = Modifier.weight(1f).height(46.dp)
             ) {
-                Text("🛡️ Run 6-Gate Audit", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = PureWhite))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = null,
+                        tint = PureWhite,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("Run 6-Gate Audit", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = PureWhite))
+                }
             }
         }
 
         ZeroTaxPrimaryButton(
-            text = "🚀 Direct In-App ITR e-Filing Suite & Gemini Copilot",
+            text = "Direct In-App ITR e-Filing Suite & Gemini Copilot",
             onClick = onLaunchPortalAssistant,
             modifier = Modifier.fillMaxWidth().height(50.dp)
         )

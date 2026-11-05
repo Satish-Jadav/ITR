@@ -11,11 +11,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Radar
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -28,11 +36,11 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.math.max
 
-enum class AnalyticsViewTab(val label: String, val icon: String) {
-    INCOME_FLOW("Income Flow Visualizer", "📊"),
-    THREE_WAY_RECONCILIATION("3-Way Discrepancy Radar", "🔍"),
-    STATUTORY_CALENDAR("Statutory Tax Calendar", "📅"),
-    HISTORICAL_ARCHIVE("3-Year ITR Dossier", "🏛️")
+enum class AnalyticsViewTab(val label: String, val icon: ImageVector) {
+    INCOME_FLOW("Income Flow Visualizer", Icons.Default.AccountBalanceWallet),
+    THREE_WAY_RECONCILIATION("3-Way Discrepancy Radar", Icons.Default.Radar),
+    STATUTORY_CALENDAR("Statutory Tax Calendar", Icons.Default.CalendarMonth),
+    HISTORICAL_ARCHIVE("3-Year ITR Dossier", Icons.Default.AccountBalance)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,7 +85,7 @@ fun TaxVisualizerAndAnalyticsScreen(
                         onClick = { selectedTab = tab },
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(tab.icon, fontSize = 14.sp)
+                                Icon(tab.icon, contentDescription = null, modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(6.dp))
                                 Text(tab.label, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold))
                             }
@@ -402,10 +410,18 @@ private fun ThreeWayReconciliationRadarView(
                 colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                 modifier = Modifier.fillMaxWidth().height(44.dp)
             ) {
-                Text(
-                    text = if (isAutoHealed) "✓ All 3 Sources Auto-Healed & Synchronized" else "🛡️ 1-Tap Auto-Heal Discrepancies (Notice-Proof)",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (isAutoHealed) Icons.Default.Check else Icons.Default.Security,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = if (isAutoHealed) "All 3 Sources Auto-Healed & Synchronized" else "1-Tap Auto-Heal Discrepancies (Notice-Proof)",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
             }
 
             Spacer(Modifier.height(30.dp))
@@ -434,7 +450,7 @@ private fun ThreeWayComparisonItem(
         Column(modifier = Modifier.padding(12.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(head, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                StatutoryBadge(text = if (isMatched) "✓ Matched" else "Variance Detected", tone = if (isMatched) BadgeTone.SUCCESS else BadgeTone.WARNING)
+                StatutoryBadge(text = if (isMatched) "Matched" else "Variance Detected", tone = if (isMatched) BadgeTone.SUCCESS else BadgeTone.WARNING)
             }
             Spacer(Modifier.height(6.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -657,7 +673,15 @@ private fun HistoricalItrDossierView(
                 colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                 modifier = Modifier.fillMaxWidth().height(44.dp)
             ) {
-                Text("🏛️ Export 3-Year Certified Financial Dossier (Bank/Visa Ready)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.AccountBalance,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("Export 3-Year Certified Financial Dossier (Bank/Visa Ready)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                }
             }
 
             Spacer(Modifier.height(30.dp))

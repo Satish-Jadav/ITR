@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.legal
+package `in`.zerotax.app.ui.legal
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,7 +104,12 @@ fun ComprehensiveLegalAcknowledgementDialog(
                 ) {
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("⚖️", fontSize = 18.sp)
+                            Icon(
+                                imageVector = Icons.Default.Gavel,
+                                contentDescription = null,
+                                tint = IndigoStatutory,
+                                modifier = Modifier.size(20.dp)
+                            )
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 text = "Statutory Legal Acknowledgement",

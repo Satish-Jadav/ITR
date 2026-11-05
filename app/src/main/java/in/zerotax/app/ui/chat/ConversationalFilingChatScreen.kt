@@ -13,6 +13,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -134,10 +140,19 @@ fun ConversationalFilingChatScreen(
                                     }
                                     .padding(horizontal = 8.dp, vertical = 3.dp)
                             ) {
-                                Text(
-                                    text = "💡 $prompt",
-                                    style = TextStyle(fontSize = 10.sp, color = Slate700, fontWeight = FontWeight.Medium)
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Lightbulb,
+                                        contentDescription = null,
+                                        tint = EnterpriseTeal600,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        text = prompt,
+                                        style = TextStyle(fontSize = 10.sp, color = Slate700, fontWeight = FontWeight.Medium)
+                                    )
+                                }
                             }
                         }
                     }
@@ -226,7 +241,12 @@ fun ConversationalFilingChatScreen(
                                     .background(if (inputText.isNotBlank()) EnterpriseTeal600 else Slate200),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("➤", color = PureWhite, style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                                Icon(
+                                    imageVector = Icons.Default.Send,
+                                    contentDescription = "Send",
+                                    tint = PureWhite,
+                                    modifier = Modifier.size(16.dp)
+                                )
                             }
                         }
                     }
@@ -289,10 +309,19 @@ fun ConversationalFilingChatScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "🏆 Recommended: ${currentSnapshot.recommendedRegime}",
-                            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = EnterpriseTeal900,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = "Recommended: ${currentSnapshot.recommendedRegime}",
+                                style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            )
+                        }
                         if (currentSnapshot.taxSavedByRecommendedRegime > 0) {
                             Text(
                                 text = "Saves ₹${Rupee.formatInr(currentSnapshot.taxSavedByRecommendedRegime)}",
@@ -390,7 +419,12 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                     .background(EnterpriseTeal600),
                 contentAlignment = Alignment.Center
             ) {
-                Text("🤖", fontSize = 14.sp)
+                Icon(
+                    imageVector = Icons.Default.SmartToy,
+                    contentDescription = null,
+                    tint = PureWhite,
+                    modifier = Modifier.size(16.dp)
+                )
             }
             Spacer(Modifier.width(8.dp))
         }
@@ -426,7 +460,7 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
                     if (message.isAdvisorTip) {
-                        StatutoryBadge(text = "💡 TaxBuddy Expert Guidance", tone = BadgeTone.WARNING)
+                        StatutoryBadge(text = "TaxBuddy Expert Guidance", tone = BadgeTone.WARNING)
                         Spacer(Modifier.height(4.dp))
                     }
 
@@ -437,7 +471,8 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                         )
                     )
 
-                    if (message.attachedDataSummary != null) {
+                    val attachedSummary = message.attachedDataSummary
+                    if (attachedSummary != null) {
                         Spacer(Modifier.height(6.dp))
                         Box(
                             modifier = Modifier
@@ -445,15 +480,24 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                                 .background(if (isBot) EmeraldSuccessBg else PureWhite.copy(alpha = 0.2f))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
-                            Text(
-                                text = "✓ ${message.attachedDataSummary}",
-                                style = TextStyle(
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isBot) EmeraldSuccess else PureWhite
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = if (isBot) EmeraldSuccess else PureWhite,
+                                    modifier = Modifier.size(11.dp)
                                 )
-                            )
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = attachedSummary,
+                                    style = TextStyle(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isBot) EmeraldSuccess else PureWhite
+                                    )
+                                )
+                            }
                         }
                     }
                 }

@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -152,19 +154,32 @@ fun PortalAssistantScreen(
                         onClick = { isCopilotSheetVisible = true },
                         shape = RoundedCornerShape(4.dp)
                     ) {
-                        Text(
-                            text = "✨ Ask Gemini",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                color = EnterpriseTeal600,
-                                fontWeight = FontWeight.Bold
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = EnterpriseTeal600,
+                                modifier = Modifier.size(16.dp)
                             )
-                        )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = "Ask Gemini",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    color = EnterpriseTeal600,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
                     }
                     IconButton(onClick = {
                         itdClient.purgeSessionAndZeroize()
                         onClose()
                     }) {
-                        Text("✕", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -684,10 +699,19 @@ private fun InAppAuthenticationStage(
             border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess.copy(alpha = 0.4f)))
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = "🔒 DPDP Act 2023 §12(3) Guaranteed Ephemeral Security",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = EmeraldSuccess,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = "DPDP Act 2023 §12(3) Guaranteed Ephemeral Security",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                    )
+                }
                 Spacer(Modifier.height(2.dp))
                 Text(
                     text = "Your password is never saved to disk. In-memory buffers are cryptographically zero-wiped within 500ms of session creation.",
@@ -973,7 +997,12 @@ private fun CompletedConfirmationStage(
                         .background(EmeraldSuccess),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("✓", style = TextStyle(fontSize = 24.sp, color = PureWhite, fontWeight = FontWeight.Bold))
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = PureWhite,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
                 Spacer(Modifier.height(10.dp))
                 Text(

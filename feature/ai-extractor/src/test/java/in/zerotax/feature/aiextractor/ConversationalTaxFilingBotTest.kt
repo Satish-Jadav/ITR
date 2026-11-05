@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.feature.aiextractor
+package `in`.zerotax.feature.aiextractor
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -23,7 +23,7 @@ class ConversationalTaxFilingBotTest {
         assertTrue(queryAnswers.any { it.isAdvisorTip })
 
         // 3. Start conversation -> Asks for Salary
-        val res1 = bot.processUserMessage("Start Filing Return 🚀")
+        val res1 = bot.processUserMessage("Start Filing Return")
         assertEquals(ChatStep.ASK_SALARY, bot.currentStep)
         assertTrue(res1.first().text.contains("Gross Salary"))
 

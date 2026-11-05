@@ -13,11 +13,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -52,23 +55,23 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.max
 import kotlin.math.min
 
-enum class ToolkitTab(val label: String, val icon: String) {
-    HRA_OPTIMIZER("HRA & Rent Receipts", "🏠"),
-    CTC_OPTIMIZER("CTC Restructuring", "💼"),
-    CAPITAL_GAINS_LEDGER("Capital Gains & CFL", "📊"),
-    PROPERTY_LTCG("Property Dual-Option", "🏘️"),
-    FORM_10E_RELIEF("Salary Arrears Sec 89", "📑"),
-    ITR_U_UPDATED_RETURN("ITR-U Updated Return", "🔄"),
-    ADVANCE_TAX_RADAR("Advance Tax & Challan 280", "⚡"),
-    LTCG_HARVESTING("LTCG Tax-Harvesting", "📈"),
-    STATEMENT_EXPORTER("Bank-Ready Summary", "📄"),
-    WHAT_IF_SIMULATOR("What-If Simulator", "🔮"),
-    FORM_12BB_PROOF("Form 12BB Proofs", "📋"),
-    FORM_15G_15H("Form 15G/H Zero-TDS", "🛡️"),
-    RESIDENTIAL_STATUS("NRI & Family Arbitrage", "🌐"),
-    REFUND_AUDIT_244A("Refund 244A & GST", "⚖️"),
-    SCHEDULE_AL_WEALTH("Schedule AL & Wealth", "🏛️"),
-    CORPORATE_SUITE("ITR-5/6/7 Corporate", "🏢")
+enum class ToolkitTab(val label: String, val icon: ImageVector) {
+    HRA_OPTIMIZER("HRA & Rent Receipts", Icons.Default.Home),
+    CTC_OPTIMIZER("CTC Restructuring", Icons.Default.Work),
+    CAPITAL_GAINS_LEDGER("Capital Gains & CFL", Icons.Default.BarChart),
+    PROPERTY_LTCG("Property Dual-Option", Icons.Default.Apartment),
+    FORM_10E_RELIEF("Salary Arrears Sec 89", Icons.Default.Description),
+    ITR_U_UPDATED_RETURN("ITR-U Updated Return", Icons.Default.Sync),
+    ADVANCE_TAX_RADAR("Advance Tax & Challan 280", Icons.Default.Bolt),
+    LTCG_HARVESTING("LTCG Tax-Harvesting", Icons.Default.TrendingUp),
+    STATEMENT_EXPORTER("Bank-Ready Summary", Icons.Default.Article),
+    WHAT_IF_SIMULATOR("What-If Simulator", Icons.Default.AutoAwesome),
+    FORM_12BB_PROOF("Form 12BB Proofs", Icons.Default.Assignment),
+    FORM_15G_15H("Form 15G/H Zero-TDS", Icons.Default.Security),
+    RESIDENTIAL_STATUS("NRI & Family Arbitrage", Icons.Default.Public),
+    REFUND_AUDIT_244A("Refund 244A & GST", Icons.Default.Gavel),
+    SCHEDULE_AL_WEALTH("Schedule AL & Wealth", Icons.Default.AccountBalance),
+    CORPORATE_SUITE("ITR-5/6/7 Corporate", Icons.Default.Domain)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,12 +112,18 @@ fun SmartTaxToolkitScreen(
                 edgePadding = 12.dp
             ) {
                 ToolkitTab.entries.forEach { tab ->
+                    val isSelected = selectedTab == tab
                     Tab(
-                        selected = selectedTab == tab,
+                        selected = isSelected,
                         onClick = { selectedTab = tab },
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(tab.icon, fontSize = 14.sp)
+                                Icon(
+                                    imageVector = tab.icon,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (isSelected) EnterpriseTeal600 else Slate600
+                                )
                                 Spacer(Modifier.width(6.dp))
                                 Text(tab.label, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold))
                             }
@@ -315,7 +324,12 @@ private fun HraOptimizerView(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("⚠️", fontSize = 14.sp)
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = AmberWarning,
+                                modifier = Modifier.size(16.dp)
+                            )
                             Spacer(Modifier.width(6.dp))
                             Text("Mandatory Landlord PAN Required (CBDT Circular 08/2013)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = AmberWarning))
                         }
@@ -336,10 +350,24 @@ private fun HraOptimizerView(
                 colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                 modifier = Modifier.fillMaxWidth().height(44.dp)
             ) {
-                Text(
-                    text = if (showRentReceiptPreview) "Hide Rent Receipts" else "📄 Generate 12-Month Rent Receipts Pack for HR",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (!showRentReceiptPreview) {
+                        Icon(
+                            imageVector = Icons.Default.Article,
+                            contentDescription = null,
+                            tint = PureWhite,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    Text(
+                        text = if (showRentReceiptPreview) "Hide Rent Receipts" else "Generate 12-Month Rent Receipts Pack for HR",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
             }
 
             if (showRentReceiptPreview) {
@@ -517,7 +545,19 @@ private fun AdvanceTaxRadarView(
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                         modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {
-                        Text("⚡ Pay via UPI (GPay / PhonePe / Paytm Challan 280)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Bolt,
+                                contentDescription = null,
+                                tint = PureWhite,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Pay via UPI (GPay / PhonePe / Paytm Challan 280)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        }
                     }
                 }
             }
@@ -739,7 +779,16 @@ private fun BankReadyStatementView(
                             .padding(10.dp)
                     ) {
                         Column {
-                            Text("🛡️ Tamper-Evident SHA-256 System Seal", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Security,
+                                    contentDescription = null,
+                                    tint = Slate800,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text("Tamper-Evident SHA-256 System Seal", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                            }
                             Text(
                                 text = "Verified on-device with zero-telemetry hardware vault. Accepted for SBI, HDFC, ICICI Home Loan & Visa Proof.",
                                 style = TextStyle(fontSize = 10.sp, color = Slate600)
@@ -755,7 +804,19 @@ private fun BankReadyStatementView(
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                         modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {
-                        Text("📄 Export Official Bank-Grade PDF Statement", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Article,
+                                contentDescription = null,
+                                tint = PureWhite,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Export Official Bank-Grade PDF Statement", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        }
                     }
                 }
             }
@@ -1019,7 +1080,16 @@ private fun CtcRestructuringView(grossSalary: Long) {
                             colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                         ) {
-                            Text("📋 Copy HR Letter", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = null,
+                                    tint = PureWhite,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text("Copy HR Letter", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                            }
                         }
                     }
 
@@ -1274,7 +1344,12 @@ private fun CapitalGainsLedgerView() {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("⚡", fontSize = 11.sp)
+                                    Icon(
+                                        imageVector = Icons.Default.Bolt,
+                                        contentDescription = null,
+                                        tint = Slate600,
+                                        modifier = Modifier.size(12.dp)
+                                    )
                                     Spacer(Modifier.width(6.dp))
                                     Text(
                                         "${step.lossSource} → ${step.setOffAgainstGain}",
@@ -1378,7 +1453,19 @@ private fun CapitalGainsLedgerView() {
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                         modifier = Modifier.fillMaxWidth().height(38.dp)
                     ) {
-                        Text("📋 Copy Schedule CFL Data for e-Filing", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = null,
+                                tint = PureWhite,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text("Copy Schedule CFL Data for e-Filing", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                        }
                     }
                 }
             }
@@ -1800,7 +1887,16 @@ private fun Form10EReliefView(pan: String) {
                             colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                         ) {
-                            Text("📋 Copy Form 10E JSON", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = null,
+                                    tint = PureWhite,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text("Copy Form 10E JSON", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                            }
                         }
                     }
 

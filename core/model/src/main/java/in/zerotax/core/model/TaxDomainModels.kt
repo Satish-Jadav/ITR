@@ -216,20 +216,20 @@ enum class DeductionRegimeScope {
 
 @Serializable
 enum class LifeEventTag(val label: String, val icon: String) {
-    HOME_LOAN("Running Home Loan", "🏠"),
-    HEALTH_INSURANCE("Health Insurance & Checkup", "🏥"),
-    NPS_INVESTMENT("NPS / Pension Scheme", "📈"),
-    EDUCATION_LOAN("Higher Education Loan", "🎓"),
-    CHILDREN_FEES("Children School Fees", "🎒"),
-    RENT_NO_HRA("Paying Rent (No HRA)", "🔑"),
-    CHARITABLE_DONATION("Charity / Donations", "🤝"),
-    EV_CAR_LOAN("Electric Vehicle Loan", "⚡"),
-    SAVINGS_INTEREST("Bank Savings Interest", "🏦"),
-    DISABLED_DEPENDENT("Medical Care / Disability", "♿"),
-    SELF_DISABILITY("Self-Disability (Sec 80U)", "🧑‍🦽"),
-    CRITICAL_ILLNESS("Specified Chronic Illness (80DDB)", "💊"),
-    POLITICAL_DONATION("Political & Scientific Donation (80GGC/GGA)", "🏛️"),
-    SENIOR_DEPOSITS("Senior Citizen Savings & FDs (80TTB)", "👴")
+    HOME_LOAN("Running Home Loan", "home"),
+    HEALTH_INSURANCE("Health Insurance & Checkup", "local_hospital"),
+    NPS_INVESTMENT("NPS / Pension Scheme", "trending_up"),
+    EDUCATION_LOAN("Higher Education Loan", "school"),
+    CHILDREN_FEES("Children School Fees", "backpack"),
+    RENT_NO_HRA("Paying Rent (No HRA)", "key"),
+    CHARITABLE_DONATION("Charity / Donations", "favorite"),
+    EV_CAR_LOAN("Electric Vehicle Loan", "electric_car"),
+    SAVINGS_INTEREST("Bank Savings Interest", "account_balance"),
+    DISABLED_DEPENDENT("Medical Care / Disability", "accessible"),
+    SELF_DISABILITY("Self-Disability (Sec 80U)", "accessible"),
+    CRITICAL_ILLNESS("Specified Chronic Illness (80DDB)", "medication"),
+    POLITICAL_DONATION("Political & Scientific Donation (80GGC/GGA)", "policy"),
+    SENIOR_DEPOSITS("Senior Citizen Savings & FDs (80TTB)", "person")
 }
 
 /**
@@ -247,21 +247,21 @@ enum class FilingTierMode(
         title = "Sahaj Simple",
         subtitle = "Salaried & Pensioners (Under ₹50L)",
         targetPersona = "Single/dual Form 16, interest, 1 house property. 1-tap instant refund filing.",
-        badgeIcon = "🌱",
+        badgeIcon = "eco",
         recommendedItrForms = listOf(ItrFormType.ITR_1_SAHAJ)
     ),
     INVESTOR_PRO(
         title = "Growth & Investor",
         subtitle = "Stocks, MFs, Freelancers & 44ADA",
         targetPersona = "Capital gains (111A/112A), Sec 44ADA consulting, multiple properties, deductions optimization.",
-        badgeIcon = "📈",
+        badgeIcon = "trending_up",
         recommendedItrForms = listOf(ItrFormType.ITR_2, ItrFormType.ITR_4_SUGAM)
     ),
     ENTERPRISE_AUDIT(
         title = "Enterprise Audit Shield",
         subtitle = "Big Money, HNIs, Sec 44AB & RSUs",
         targetPersona = "Turnover > ₹1 Cr, Schedule FA foreign assets, Black Money Act protection, 3-way discrepancy radar, CA dossier.",
-        badgeIcon = "🛡️",
+        badgeIcon = "shield",
         recommendedItrForms = listOf(ItrFormType.ITR_2, ItrFormType.ITR_3, ItrFormType.UNSUPPORTED_REQUIRES_CA_AUDIT_44AB)
     );
 
@@ -291,42 +291,42 @@ enum class TaxPaymentChannel(
     val description: String,
     val processingTime: String,
     val statutoryFee: String,
-    val iconEmoji: String
+    val iconName: String
 ) {
     UPI_INSTANT(
         title = "Instant UPI (GPay / PhonePe / BHIM / Paytm)",
         description = "0% transaction charges. Instant Challan 280 receipt generated with CIN & BSR code.",
         processingTime = "Instant (Real-time)",
         statutoryFee = "₹0 (Zero Surcharge)",
-        iconEmoji = "⚡"
+        iconName = "bolt"
     ),
     NET_BANKING(
         title = "Retail / Corporate NetBanking",
         description = "Direct payment through authorized banks via CBDT TIN 2.0 gateway.",
         processingTime = "5-10 minutes",
         statutoryFee = "₹0 (Selected banks)",
-        iconEmoji = "🏦"
+        iconName = "account_balance"
     ),
     DEBIT_CARD(
         title = "Debit Card Gateway",
         description = "Payment via authorized bank debit cards on the e-Filing portal.",
         processingTime = "Instant",
         statutoryFee = "Bank nominal charges",
-        iconEmoji = "💳"
+        iconName = "credit_card"
     ),
     RTGS_NEFT(
         title = "RTGS / NEFT (Virtual Account Mandate)",
         description = "For large tax payments (> ₹1 Lakh) from any scheduled/foreign bank using generated Mandate.",
         processingTime = "Same-day RTGS",
         statutoryFee = "Standard RBI NEFT/RTGS",
-        iconEmoji = "🏛️"
+        iconName = "domain"
     ),
     OVER_THE_COUNTER(
         title = "Over-The-Counter (Cash / Cheque / DD)",
         description = "Generate pre-filled Challan 280 mandate slip and pay at designated bank branches.",
         processingTime = "1-2 business days",
         statutoryFee = "Free",
-        iconEmoji = "📝"
+        iconName = "description"
     )
 }
 

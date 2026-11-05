@@ -3,11 +3,11 @@ package `in`.zerotax.core.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class AuthProvider(val displayName: String, val iconEmoji: String) {
-    EMAIL_PASSWORD("Email & Password", "📧"),
-    GOOGLE("Google Account", "🌐"),
-    BIOMETRIC_VAULT("Device Biometrics (Fingerprint / Face / PIN)", "🔐"),
-    GUEST_LOCAL("Local Encrypted Vault (Zero Registration)", "🛡️")
+enum class AuthProvider(val displayName: String, val iconName: String) {
+    EMAIL_PASSWORD("Email & Password", "mail"),
+    GOOGLE("Google Account", "globe"),
+    BIOMETRIC_VAULT("Device Biometrics (Fingerprint / Face / PIN)", "fingerprint"),
+    GUEST_LOCAL("Local Encrypted Vault (Zero Registration)", "shield")
 }
 
 @Serializable

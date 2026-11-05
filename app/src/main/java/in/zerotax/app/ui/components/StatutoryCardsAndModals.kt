@@ -290,7 +290,12 @@ fun InstitutionPdfPasswordCheatsheetModal(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🔑", fontSize = 18.sp)
+                        Icon(
+                            imageVector = Icons.Default.VpnKey,
+                            contentDescription = null,
+                            tint = EnterpriseTeal600,
+                            modifier = Modifier.size(20.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             "PDF Password Cheatsheet",
@@ -364,7 +369,7 @@ fun InstitutionPdfPasswordCheatsheetModal(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "${rule.exampleDescription} ➔ ${rule.exampleInput}",
+                                    text = "${rule.exampleDescription} -> ${rule.exampleInput}",
                                     style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Slate600)
                                 )
                             }
@@ -412,7 +417,12 @@ fun PreSubmissionSafetyChecklistCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🛡️", fontSize = 16.sp)
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = null,
+                        tint = EnterpriseTeal900,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         "Pre-Filing Safety & Notice Shield (5 Gates)",
@@ -486,11 +496,11 @@ private fun SafetyChecklistItem(
                 .background(if (isPassed) EmeraldSuccess else AmberWarning),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = if (isPassed) "✓" else "!",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+            Icon(
+                imageVector = if (isPassed) Icons.Default.Check else Icons.Default.PriorityHigh,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(12.dp)
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
@@ -545,7 +555,12 @@ fun Section87AMarginalReliefExplainerCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("💡", fontSize = 16.sp)
+                    Icon(
+                        imageVector = Icons.Default.Lightbulb,
+                        contentDescription = null,
+                        tint = EmeraldSuccess,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         "Section 87A Marginal Relief Shield",
@@ -729,7 +744,12 @@ fun TaxPaymentAndChallanHubModal(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("💳", fontSize = 18.sp)
+                        Icon(
+                            imageVector = Icons.Default.CreditCard,
+                            contentDescription = null,
+                            tint = EnterpriseTeal600,
+                            modifier = Modifier.size(20.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
@@ -805,7 +825,19 @@ fun TaxPaymentAndChallanHubModal(
                                         .padding(10.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(channel.iconEmoji, fontSize = 18.sp)
+                                    val channelIcon = when (channel.iconName) {
+                                        "bolt" -> Icons.Default.Bolt
+                                        "account_balance" -> Icons.Default.AccountBalance
+                                        "credit_card" -> Icons.Default.CreditCard
+                                        "domain" -> Icons.Default.Domain
+                                        else -> Icons.Default.Description
+                                    }
+                                    Icon(
+                                        imageVector = channelIcon,
+                                        contentDescription = null,
+                                        tint = if (isSelected) EnterpriseTeal700 else Slate600,
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
@@ -842,7 +874,15 @@ fun TaxPaymentAndChallanHubModal(
                                     colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("⚡ Launch UPI App (GPay / PhonePe / Paytm)")
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Bolt,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Launch UPI App (GPay / PhonePe / Paytm)")
+                                    }
                                 }
                             }
                             TaxPaymentChannel.NET_BANKING, TaxPaymentChannel.DEBIT_CARD -> {
@@ -855,7 +895,15 @@ fun TaxPaymentAndChallanHubModal(
                                     colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("🏦 Open e-Filing Portal TIN 2.0 Gateway")
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.AccountBalance,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Open e-Filing Portal TIN 2.0 Gateway")
+                                    }
                                 }
                             }
                             TaxPaymentChannel.RTGS_NEFT -> {
@@ -952,7 +1000,20 @@ fun TaxPaymentAndChallanHubModal(
 
                                 if (isVerificationSuccess) {
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text("✓ Challan 280 verified & added to Schedule IT!", color = EmeraldSuccess, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = EmeraldSuccess,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            "Challan 280 verified & added to Schedule IT!",
+                                            color = EmeraldSuccess,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                    }
                                 }
 
                                 Spacer(modifier = Modifier.height(8.dp))

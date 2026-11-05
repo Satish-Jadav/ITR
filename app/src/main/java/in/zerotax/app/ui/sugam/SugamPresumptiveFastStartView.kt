@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -98,7 +100,12 @@ fun SugamPresumptiveFastStartView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("🔄", fontSize = 20.sp)
+                    Icon(
+                        imageVector = Icons.Default.Sync,
+                        contentDescription = null,
+                        tint = EnterpriseTeal700,
+                        modifier = Modifier.size(22.dp)
+                    )
                     Spacer(Modifier.width(10.dp))
                     Column {
                         Text(
@@ -111,7 +118,7 @@ fun SugamPresumptiveFastStartView(
                         )
                     }
                 }
-                StatutoryBadge(text = "1-Tap Sync →", tone = BadgeTone.SUCCESS)
+                StatutoryBadge(text = "1-Tap Sync", tone = BadgeTone.SUCCESS)
             }
         }
 
@@ -132,7 +139,12 @@ fun SugamPresumptiveFastStartView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("⚡", fontSize = 22.sp)
+                        Icon(
+                            imageVector = Icons.Default.Bolt,
+                            contentDescription = null,
+                            tint = EnterpriseTeal700,
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(Modifier.width(8.dp))
                         Column {
                             Text(
@@ -194,7 +206,12 @@ fun SugamPresumptiveFastStartView(
                                 )
                             }
                             if (isSelected) {
-                                Text("✓", color = PureWhite, fontWeight = FontWeight.Bold)
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = PureWhite,
+                                    modifier = Modifier.size(18.dp)
+                                )
                             }
                         }
                     }
@@ -291,15 +308,27 @@ fun SugamPresumptiveFastStartView(
                 colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
                 modifier = Modifier.fillMaxWidth().height(46.dp)
             ) {
-                Text(
-                    text = "💳 Pay Advance Tax / Self-Assessment (Challan 280)",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CreditCard,
+                        contentDescription = null,
+                        tint = Slate900,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Pay Advance Tax / Self-Assessment (Challan 280)",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                    )
+                }
             }
         }
 
         ZeroTaxPrimaryButton(
-            text = "🔒 Authenticate with Biometrics to e-File ITR-4 (SUGAM)",
+            text = "Authenticate with Biometrics to e-File ITR-4 (SUGAM)",
             onClick = { showBiometricFilingDialog = true },
             modifier = Modifier.fillMaxWidth().height(50.dp)
         )
@@ -310,7 +339,19 @@ fun SugamPresumptiveFastStartView(
             shape = RoundedCornerShape(8.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, Slate300)
         ) {
-            Text("🔍 Verify Client TDS u/s 194J / 194C in AIS", style = MaterialTheme.typography.labelSmall.copy(color = Slate700))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = Slate700,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Verify Client TDS u/s 194J / 194C in AIS", style = MaterialTheme.typography.labelSmall.copy(color = Slate700))
+            }
         }
     }
 

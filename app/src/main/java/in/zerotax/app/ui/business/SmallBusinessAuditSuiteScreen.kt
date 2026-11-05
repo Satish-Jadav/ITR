@@ -11,6 +11,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -201,9 +205,11 @@ fun SmallBusinessAuditSuiteScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = if (isMandatory) "⚠️" else "🛡️",
-                                        fontSize = 18.sp
+                                    Icon(
+                                        imageVector = if (isMandatory) Icons.Default.Warning else Icons.Default.Security,
+                                        contentDescription = null,
+                                        tint = if (isMandatory) AmberWarning else EmeraldSuccess,
+                                        modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     Text(
@@ -467,7 +473,15 @@ fun SmallBusinessAuditSuiteScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                                 ) {
-                                    Text("📋 Copy CA Pack", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.ContentCopy,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("Copy CA Pack", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                                    }
                                 }
                             }
 
@@ -593,7 +607,15 @@ fun SmallBusinessAuditSuiteScreen(
                                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                                         modifier = Modifier.fillMaxWidth().height(38.dp)
                                     ) {
-                                        Text("📋 Copy Form 10-IEA CBDT JSON Payload", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.ContentCopy,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(Modifier.width(6.dp))
+                                            Text("Copy Form 10-IEA CBDT JSON Payload", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                                        }
                                     }
                                 }
                             }

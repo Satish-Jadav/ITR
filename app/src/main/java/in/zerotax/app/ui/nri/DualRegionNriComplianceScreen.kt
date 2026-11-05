@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -422,7 +424,15 @@ fun DualRegionNriComplianceScreen(
                                 colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                             ) {
-                                Text("📋 Copy Form 10F", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.ContentCopy,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Copy Form 10F", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                                }
                             }
                         }
 

@@ -12,6 +12,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -137,13 +141,22 @@ fun SmartDeductionsAdvisorScreen(
                         onClick = { isCopilotSheetVisible = true },
                         shape = RoundedCornerShape(4.dp)
                     ) {
-                        Text(
-                            text = "✨ Ask Copilot",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                color = EnterpriseTeal600,
-                                fontWeight = FontWeight.Bold
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = EnterpriseTeal600,
+                                modifier = Modifier.size(16.dp)
                             )
-                        )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = "Ask Copilot",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    color = EnterpriseTeal600,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -279,10 +292,19 @@ fun SmartDeductionsAdvisorScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "🏠 Home Loan EMI & Taxable Income Simulator",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Home,
+                                        contentDescription = null,
+                                        tint = EnterpriseTeal900,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        text = "Home Loan EMI & Taxable Income Simulator",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                                    )
+                                }
                                 StatutoryBadge(text = "Live Amortization", tone = BadgeTone.SUCCESS)
                             }
 
@@ -431,7 +453,12 @@ fun SmartDeductionsAdvisorScreen(
                             ) {
                                 Column {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text("🏛️", fontSize = 12.sp)
+                                        Icon(
+                                            imageVector = Icons.Default.AccountBalance,
+                                            contentDescription = null,
+                                            tint = Slate700,
+                                            modifier = Modifier.size(14.dp)
+                                        )
                                         Spacer(Modifier.width(6.dp))
                                         Text(
                                             text = "Who Holds This: Lending Bank (SBI, HDFC, ICICI, LIC HFL, Axis)",
@@ -511,7 +538,12 @@ fun SmartDeductionsAdvisorScreen(
                         ) {
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("🏛️", fontSize = 12.sp)
+                                    Icon(
+                                        imageVector = Icons.Default.AccountBalance,
+                                        contentDescription = null,
+                                        tint = Slate700,
+                                        modifier = Modifier.size(14.dp)
+                                    )
                                     Spacer(Modifier.width(6.dp))
                                     Text(
                                         text = "Who Holds This: ${spec.documentHolder}",
