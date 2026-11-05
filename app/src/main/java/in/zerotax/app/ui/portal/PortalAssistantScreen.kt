@@ -1,5 +1,9 @@
 package `in`.zerotax.app.ui.portal
 
+import `in`.zerotax.core.model.AssessmentYearProfile
+import `in`.zerotax.core.model.CitizenCategory
+import `in`.zerotax.core.taxengine.calculator.DeterministicIndianTaxEngine
+import `in`.zerotax.core.taxengine.calculator.TaxpayerFinancialInput
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -292,7 +296,13 @@ fun PortalAssistantScreen(
                                 isSubmitting = true
                                 submissionStepText = "Compiling CBDT AY 2026-27 JSON Schema..."
                                 delay(400)
-                                val mockSalarySummary = ReconciledSalarySummary(
+                                val realInput = TaxpayerFinancialInput(
+                                    citizenCategory = CitizenCategory.REGULAR_BELOW_60,
+                                    grossSalary = grossSalary,
+                                    assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+                                )
+                                val realComputation = DeterministicIndianTaxEngine.computeNewRegime(realInput)
+                                val realSalarySummary = ReconciledSalarySummary(
                                     employers = emptyList(),
                                     aggregateGrossSalary = grossSalary,
                                     aggregateSec10Exemptions = 0L,
@@ -300,27 +310,11 @@ fun PortalAssistantScreen(
                                     aggregateTdsAllowed = tdsClaimed,
                                     totalDiscrepancyAmount = 0L
                                 )
-                                val mockComputation = RegimeComputationResult(
-                                    regime = TaxRegime.NEW_REGIME_115BAC,
-                                    grossTotalIncome = grossSalary,
-                                    standardDeduction = 75_000L,
-                                    totalChapterVIADeductions = 0L,
-                                    netTaxableNormalIncomeRounded288A = netTaxableSalary,
-                                    netTaxableSpecialRateIncome = 0L,
-                                    baseSlabTaxOnNormalIncome = 60_000L,
-                                    specialRateTax111AAnd112A = 0L,
-                                    rebate87A = 60_000L,
-                                    marginalRelief87A = 0L,
-                                    taxAfterRebateAndRelief = 0L,
-                                    surchargeAfterMarginalRelief = 0L,
-                                    healthAndEducationCess = 0L,
-                                    totalTaxLiabilityRounded288B = 0L
-                                )
                                 val cbdtJson = CbdtItr1JsonCompiler.compileItr1Json(
                                     pan = pan,
                                     assessmentYear = "2026-27",
-                                    salarySummary = mockSalarySummary,
-                                    computation = mockComputation,
+                                    salarySummary = realSalarySummary,
+                                    computation = realComputation,
                                     bankAccount = selectedBank,
                                     filingSection = FilingSection.ON_OR_BEFORE_DUE_DATE_139_1,
                                     declaration = TaxpayerDeclaration(fullName = "Taxpayer", pan = pan)
