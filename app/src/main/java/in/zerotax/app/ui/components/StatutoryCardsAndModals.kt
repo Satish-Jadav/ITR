@@ -650,10 +650,13 @@ fun FilingTierSelectorCard(
             .fillMaxWidth()
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = CardDefaults.outlinedCardBorder().copy(
+            width = 1.dp,
+            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f))
+        )
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(14.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -663,50 +666,52 @@ fun FilingTierSelectorCard(
                     Text(currentTier.badgeIcon, fontSize = 16.sp)
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Filing Experience: ${currentTier.title}",
+                        text = "Filing Plan: ${currentTier.title}",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     )
                 }
                 if (currentTier == recommendedTier) {
-                    StatutoryBadge(text = "AUTO-MATCHED", tone = BadgeTone.SUCCESS)
+                    StatutoryBadge(text = "RECOMMENDED", tone = BadgeTone.SUCCESS)
                 } else {
-                    StatutoryBadge(text = "CUSTOM TIER", tone = BadgeTone.NEUTRAL)
+                    StatutoryBadge(text = "ACTIVE PLAN", tone = BadgeTone.NEUTRAL)
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // 3-Tier Selector Buttons
+            // Row 1: Top two plans side by side (spacious 50% width each)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                FilingTierMode.entries.forEach { tier ->
+                val topTwoTiers = listOf(FilingTierMode.SAHAJ_SIMPLE, FilingTierMode.INVESTOR_PRO)
+                topTwoTiers.forEach { tier ->
                     val isSelected = currentTier == tier
                     Card(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onTierSelected(tier) },
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                         ),
                         border = if (isSelected) {
                             CardDefaults.outlinedCardBorder().copy(width = 1.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
-                        } else CardDefaults.outlinedCardBorder().copy(width = 0.5.dp)
+                        } else CardDefaults.outlinedCardBorder().copy(width = 0.75.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                                .padding(vertical = 10.dp, horizontal = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(tier.badgeIcon, fontSize = 14.sp)
+                            Text(tier.badgeIcon, fontSize = 16.sp)
+                            Spacer(Modifier.height(4.dp))
                             Text(
                                 text = tier.title,
-                                style = MaterialTheme.typography.labelSmall.copy(
+                                style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Slate700
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                 ),
                                 maxLines = 1
                             )
@@ -716,10 +721,61 @@ fun FilingTierSelectorCard(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Row 2: Bottom 3rd tier: Enterprise Audit (wrapped full-width so it is completely spacious)
+            val isEnterpriseSelected = currentTier == FilingTierMode.ENTERPRISE_AUDIT
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onTierSelected(FilingTierMode.ENTERPRISE_AUDIT) },
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isEnterpriseSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                ),
+                border = if (isEnterpriseSelected) {
+                    CardDefaults.outlinedCardBorder().copy(width = 1.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
+                } else CardDefaults.outlinedCardBorder().copy(width = 0.75.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp, horizontal = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(FilingTierMode.ENTERPRISE_AUDIT.badgeIcon, fontSize = 16.sp)
+                        Spacer(Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = FilingTierMode.ENTERPRISE_AUDIT.title,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = if (isEnterpriseSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isEnterpriseSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Text(
+                                text = "ITR-2, ITR-3, Form 3CD/3CA Audit & Trusts",
+                                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            )
+                        }
+                    }
+                    if (isEnterpriseSelected) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "${currentTier.subtitle} — ${currentTier.targetPersona}",
+                text = "${currentTier.subtitle} • ${currentTier.targetPersona}",
                 style = MaterialTheme.typography.bodySmall,
-                color = Slate600
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

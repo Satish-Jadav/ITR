@@ -784,11 +784,14 @@ fun CitizenCategoryAgeSelector(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-        border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = CardDefaults.outlinedCardBorder().copy(
+            width = 1.dp,
+            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f))
+        )
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(14.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -796,60 +799,120 @@ fun CitizenCategoryAgeSelector(
             ) {
                 Text(
                     text = "Age Category & Basic Exemption",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 )
                 val exemptionText = when (selectedCategory) {
-                    CitizenCategory.REGULAR_BELOW_60 -> "₹2.5L Exemption (Old Regime)"
-                    CitizenCategory.SENIOR_60_TO_79 -> "₹3.0L Exemption (Old Regime)"
-                    CitizenCategory.SUPER_SENIOR_80_PLUS -> "₹5.0L Exemption (Old Regime)"
+                    CitizenCategory.REGULAR_BELOW_60 -> "₹2.5L Basic Limit"
+                    CitizenCategory.SENIOR_60_TO_79 -> "₹3.0L Basic Limit"
+                    CitizenCategory.SUPER_SENIOR_80_PLUS -> "₹5.0L Basic Limit"
                 }
                 StatutoryBadge(
                     text = exemptionText,
                     tone = if (selectedCategory == CitizenCategory.REGULAR_BELOW_60) BadgeTone.NEUTRAL else BadgeTone.SUCCESS
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Row 1: First two cards side by side (generous 50% width each)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val options = listOf(
-                    Triple(CitizenCategory.REGULAR_BELOW_60, "< 60 Yrs", "Normal"),
-                    Triple(CitizenCategory.SENIOR_60_TO_79, "60-79 Yrs", "Senior"),
-                    Triple(CitizenCategory.SUPER_SENIOR_80_PLUS, "80+ Yrs", "Super Senior")
+                val topTwo = listOf(
+                    Triple(CitizenCategory.REGULAR_BELOW_60, "< 60 Yrs", "Normal Citizen"),
+                    Triple(CitizenCategory.SENIOR_60_TO_79, "60-79 Yrs", "Senior Citizen")
                 )
-                options.forEach { (cat, ageLabel, roleLabel) ->
+                topTwo.forEach { (cat, ageLabel, roleLabel) ->
                     val isSelected = selectedCategory == cat
                     Card(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onCategoryChanged(cat) },
-                        shape = RoundedCornerShape(6.dp),
+                        shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                         ),
                         border = if (isSelected) {
-                            CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
-                        } else CardDefaults.outlinedCardBorder().copy(width = 0.5.dp)
+                            CardDefaults.outlinedCardBorder().copy(width = 1.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
+                        } else CardDefaults.outlinedCardBorder().copy(width = 0.75.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                                .padding(vertical = 10.dp, horizontal = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 text = roleLabel,
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Slate600
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             )
+                            Spacer(Modifier.height(2.dp))
                             Text(
                                 text = ageLabel,
-                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                             )
                         }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Row 2: Third card at bottom (wrapped full-width so it is completely uncluttered and spacious)
+            val isSuperSeniorSelected = selectedCategory == CitizenCategory.SUPER_SENIOR_80_PLUS
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onCategoryChanged(CitizenCategory.SUPER_SENIOR_80_PLUS) },
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isSuperSeniorSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                ),
+                border = if (isSuperSeniorSelected) {
+                    CardDefaults.outlinedCardBorder().copy(width = 1.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
+                } else CardDefaults.outlinedCardBorder().copy(width = 0.75.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp, horizontal = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Super Senior Citizen",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = if (isSuperSeniorSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSuperSeniorSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = "80+ Years • Enhanced ₹5,00,000 Basic Exemption Limit",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                    }
+                    if (isSuperSeniorSelected) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
             }

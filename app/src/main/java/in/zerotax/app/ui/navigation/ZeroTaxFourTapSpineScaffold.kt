@@ -405,6 +405,8 @@ fun ZeroTaxFourTapSpineScaffold(
                         onPanChanged = { viewModel.onPanChanged(it) },
                         citizenCategory = uiState.citizenCategory,
                         onCitizenCategoryChanged = { viewModel.onCitizenCategoryChanged(it) },
+                        filingTier = uiState.filingTierMode,
+                        onTierSelected = { viewModel.onFilingTierChanged(it) },
                         onOpenPasswordCheatsheet = { showPasswordCheatsheetModal = true },
                         onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap2LiveDiscovery) },
                         onOpenChatbot = { showChatbotFiling = true }
@@ -556,6 +558,8 @@ private fun Stage1IdentityConsent(
     onPanChanged: (String) -> Unit,
     citizenCategory: CitizenCategory,
     onCitizenCategoryChanged: (CitizenCategory) -> Unit,
+    filingTier: FilingTierMode,
+    onTierSelected: (FilingTierMode) -> Unit,
     onOpenPasswordCheatsheet: () -> Unit,
     onProceed: () -> Unit,
     onOpenChatbot: () -> Unit = {}
@@ -579,19 +583,33 @@ private fun Stage1IdentityConsent(
         ) {
             Column {
                 Text(
-                    text = "Step 1 of 4: Basic Details",
+                    text = "Step 1 of 4: Plan & Identity",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "Enter your PAN and age to determine your applicable tax exemption slabs.",
+                    text = "Select your filing plan and verify your basic details for AY 2026-27.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(14.dp))
+
+        // Prominent Filing Plan / Tier Selection (Blinkit-style 2-top, 1-bottom card layout)
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(tween(350, delayMillis = 60)) + slideInVertically(tween(350, delayMillis = 60)) { it / 3 }
+        ) {
+            FilingTierSelectorCard(
+                currentTier = filingTier,
+                recommendedTier = filingTier,
+                onTierSelected = onTierSelected
+            )
+        }
+
+        Spacer(Modifier.height(14.dp))
 
         AnimatedVisibility(
             visible = isVisible,
