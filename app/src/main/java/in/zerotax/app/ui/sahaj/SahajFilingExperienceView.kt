@@ -42,6 +42,7 @@ fun SahajFilingExperienceView(
     onOpenDeductionsAdvisor: () -> Unit,
     onOpenTaxPaymentHub: () -> Unit,
     onOpenAisTransactions: () -> Unit,
+    onOpenPortalSync: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showTour by remember { mutableStateOf(true) }
@@ -63,6 +64,43 @@ fun SahajFilingExperienceView(
     ) {
         // Statutory Timeline Banner with July 31 Countdown
         StatutoryTimelineBanner()
+
+        // 1-TAP IN-APP ITD PORTAL SYNC CARD
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = EnterpriseTeal50,
+            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onOpenPortalSync() }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("🔄", fontSize = 20.sp)
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            "Sync Directly from Income Tax Portal",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                        )
+                        Text(
+                            "Pull Form 26AS, AIS/TIS & prefill in-app. Never leave ZeroTax!",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                        )
+                    }
+                }
+                StatutoryBadge(text = "1-Tap Sync →", tone = BadgeTone.SUCCESS)
+            }
+        }
 
         // Guided Tour Mini-Popup Card ("Do this then click this")
         AnimatedVisibility(
