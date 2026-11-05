@@ -133,8 +133,8 @@ fun EnterpriseAuditFastStartView(
                 ) {
                     OutlinedButton(
                         onClick = onOpenShareWithCa,
-                        modifier = Modifier.weight(1f).height(38.dp),
-                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier.weight(1f).height(40.dp),
+                        shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, IndigoStatutory)
                     ) {
@@ -147,8 +147,8 @@ fun EnterpriseAuditFastStartView(
 
                     Button(
                         onClick = onOpenThinkLikeCa,
-                        modifier = Modifier.weight(1f).height(38.dp),
-                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier.weight(1f).height(40.dp),
+                        shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
                     ) {
@@ -158,19 +158,21 @@ fun EnterpriseAuditFastStartView(
                             Text("Think Like a CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureWhite))
                         }
                     }
+                }
 
-                    OutlinedButton(
-                        onClick = onOpenCaPortal,
-                        modifier = Modifier.weight(1f).height(38.dp),
-                        shape = RoundedCornerShape(6.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Assignment, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text("CA Portal", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700))
-                        }
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = onOpenCaPortal,
+                    modifier = Modifier.fillMaxWidth().height(40.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Assignment, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Open CA Auditor Portal", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700))
                     }
                 }
             }

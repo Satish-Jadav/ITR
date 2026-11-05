@@ -134,3 +134,4 @@ class ZeroTaxHardenedApiClientLoggingTest {
         assertTrue(failure!!.diagnosticHint!!.contains("DNS lookup failed"))
     }
 }
+
