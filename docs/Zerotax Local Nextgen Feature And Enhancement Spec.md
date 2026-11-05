@@ -2464,3 +2464,41 @@ While ITR-1 Sahaj, ITR-2, ITR-3, and ITR-4 Sugam serve individuals and Hindu Und
    - Any private benefit to trustees/founders u/s 13(1)(c) or unapproved investment u/s 13(1)(d) violates exemption conditions and is taxed at the **Maximum Marginal Rate (30% + 12% surcharge + 4% cess = 34.944%)** under **Section 115BBI**.
 3. **Section 13A Political Parties:**
    - 100% tax exemption on voluntary contributions subject to maintaining audited books of accounts and filing Form 24A with the Election Commission of India under Section 29C of the Representation of the People Act, 1951.
+
+---
+
+## 29. Plan-Based Fast-Start Architecture, Biometric Security Shield & Statutory Reminders
+
+### 29.1 Three Distinct Personas & Progressive Disclosure Matrix
+ZeroTax segments its workspace into three clear, persona-driven tiers designed so any user can start work immediately:
+
+| Plan Tier | Primary Target Persona | Primary UI Experience | Statutory Scope | Speed to File |
+| :--- | :--- | :--- | :--- | :--- |
+| **SAHAJ Simple** | Salaried employees, teachers, junior software developers, pensioners (Income < ₹50L) | `SahajFilingExperienceView.kt` — Plain English, automatic ₹75k standard deduction, regime comparison, and interactive coachmarks | ITR-1 (SAHAJ) | Under 60 seconds from Form 16 |
+| **Investor & Growth (SUGAM)** | Freelancers, gig consultants, small retailers, digital service providers | `SugamPresumptiveFastStartView.kt` — 2-minute presumptive deck for 44ADA (50%) & 44AD (6% digital / 8% cash) | ITR-4 (SUGAM) & ITR-2 | Under 2 minutes |
+| **Enterprise Audit Shield** | CAs, finance heads, partnership firms, domestic companies, charitable trusts | `EnterpriseAuditFastStartView.kt` — Executive statutory hub with fast launchers for ITR-5, 6, 7, 44AB Form 3CD, and NRI DTAA | ITR-2, 3, 5, 6, 7 & 44AB | Full statutory audit workflow |
+
+### 29.2 Interactive Coachmark Walkthrough ("Do this then click this" Mini-Popup Tour)
+Built via `ZeroTaxCoachmarkTour.kt`, this feature delivers an industry-standard guided onboarding experience:
+1. **Visual Focus & Step Indicators:** Floating mini-popup card with high-contrast borders and active pointer icons guiding the user sequentially through 4 core milestones.
+2. **Step 1 (Check Earnings):** *"We decrypted your Form 16 PDF in private memory without uploading anything to the internet. Look at the numbers to confirm."*
+3. **Step 2 (Automatic Discount):** *"Section 16(ia) gives you an automatic ₹75,000 standard deduction. Zero bills or receipts needed."*
+4. **Step 3 (Regime Comparison):** *"We compared both regimes and automatically chose the New Regime because it saves you ₹18,500."*
+5. **Step 4 (Biometric 1-Tap File):** *"Tap below to verify with your fingerprint or face and securely dispatch to CBDT."*
+6. **Replayable Any Time:** Users can dismiss the tour and re-open it on demand via the `"💡 How to File"` button.
+
+### 29.3 Full Biometric Security Shield (`ZeroTaxBiometricShield.kt`)
+1. **Hardware-Enforced Privacy Gate:**
+   - All confidential taxpayer records (PAN, Form 16 Part B, AIS/TIS dividend transactions, refund bank accounts, and JSON return drafts) are gated behind device biometric authentication (Fingerprint, Face ID, or Device PIN fallback).
+2. **BiometricShieldGate Composable:**
+   - Displays a frosted sovereign barrier with `ZeroTaxBrandLogo` and a 1-tap `"👆 Unlock with Fingerprint / Face ID"` action.
+3. **Instant Top-Bar Lock Control:**
+   - A dedicated `"🔒 Lock"` button in `EnterpriseTopHeader` empowers users to instantly lock their vault upon stepping away from their device.
+
+### 29.4 Statutory Tax Timeline & Local Reminder Engine (`StatutoryTaxTimelineManager.kt`)
+1. **Statutory Milestone Tracking:**
+   - Tracks CBDT statutory milestones for AY 2026-27: April 1 (Filing Window Opens), June 15 (Q1 Advance Tax), July 1 (30-Day Reminder), July 25 (6-Day Urgent Penalty Warning u/s 234F), July 31 (Timely Filing Deadline u/s 139(1)), October 31 (Tax Audit Due Date), and December 31 (Belated/Revised Cutoff u/s 139(4)/(5)).
+2. **Real-Time Countdown Pill:**
+   - Real-time countdown badge embedded across all plans: e.g., *"⏱️ 86 Days remaining until July 31"*.
+3. **Local Privacy-First Notification Scheduler:**
+   - Allows users to schedule system reminders on device with zero cloud telemetry, ensuring timely filing and avoiding ₹5,000 late fees u/s 234F and interest u/s 234A.

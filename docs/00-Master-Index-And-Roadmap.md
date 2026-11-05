@@ -106,4 +106,34 @@ This master index provides the consolidated architecture, product specifications
 - **Interactive Compose Smart Tax Toolkit Views (`StatutoryToolkitViews.kt` & `SmartTaxToolkitScreen.kt`)**:
   - Expanded `ToolkitTab` to 15 specialized tabs with smooth horizontal slide/fade animated transitions surfacing all next-gen features directly to end-users.
 
+---
+
+### 4.4 Non-Individual Corporate & Trust Entities Suite (ITR-5, ITR-6, ITR-7)
+- **ITR-5 Partnership & LLP Suite**:
+  - Full statutory implementation of Section 40(b) interest (12% simple interest cap) and partner remuneration (90% up to ₹3 Lakhs book profit, 60% thereafter).
+  - Alternative Minimum Tax (AMT) u/s 115JC @ 18.5% with Form 29C calculation and Section 115JD AMT credit tracking.
+- **ITR-6 Corporate Company Suite**:
+  - Concessional regime evaluation: Section 115BAA @ 22% (MAT-exempt domestic company) and Section 115BAB @ 15% (new manufacturing company).
+  - Minimum Alternate Tax (MAT) u/s 115JB @ 15% on Book Profits with 14 statutory additions/deductions and Section 115JAA MAT credit carry-forward (15 AYs).
+- **ITR-7 Trust, NGO & Political Party Suite**:
+  - Section 11 & 12 statutory application of income (85% minimum application rule, Form 9A deemed application, Form 10 accumulation for 5 years).
+  - Section 13 statutory violations taxed at Maximum Marginal Rate (MMR) 34.944% under Section 115BBI.
+- **Deterministic Form Router (`DeterministicItrFormRouter.kt`)**:
+  - Routes 4th PAN character: `'C'` $\to$ `ITR-6`/`ITR-7`, `'F'` $\to$ `ITR-5`/`ITR-4`, `'T'` $\to$ `ITR-7`, `'A'/'B'/'L'/'J'` $\to$ `ITR-5`.
+
+---
+
+### 4.5 Plan-Based Fast-Start Dashboards, Biometric Shield Gate & Statutory Reminders
+- **Plan-Based User Experience Separation**:
+  - **SAHAJ (ITR-1)**: Plain-language, jargon-free interface for first-time filers (*"What You Earned"*, *"Automatic ₹75,000 Government Discount"*, *"Taxes Deducted by Employer"*, *"Your Refund Result"*).
+  - **SUGAM (ITR-4)**: 2-minute presumptive deck for freelancers and small businesses (`44ADA` @ 50% / `44AD` @ 6% digital / 8% cash) with zero books of accounts required.
+  - **ENTERPRISE AUDIT (ITR-2 to ITR-7)**: Executive statutory audit desk with 1-tap fast launchers for Corporate Suite (`ITR-5/6/7`), 44AB Form 3CD, Dual-Region NRI DTAA, and Notice Defense.
+- **Interactive Coachmark Walkthrough ("Do this then click this" Mini-Popup Tour)**:
+  - Step-by-step guidance anchored cleanly with visual pointer cards (`Step 1 of 4` $\to$ `Step 4 of 4`) guiding non-expert users through Form 16 verification, regime selection, and biometric filing. Replayable at any time via the `"💡 How to File"` button.
+- **Full Biometric Security Shield (`ZeroTaxBiometricShield.kt`)**:
+  - Device biometric gate (Fingerprint / Face ID / PIN fallback) protecting the tax vault, filing records, PAN, bank accounts, and exports from unauthorized access. Includes an instant 1-tap `"🔒 Lock"` button in the top bar.
+- **Statutory Tax Timeline & Reminders (`StatutoryTaxTimelineManager.kt`)**:
+  - Real-time statutory milestone countdown engine tracking the **July 31** deadline, countdown timer pill (*"⏱️ 86 Days remaining"*), and 1-tap local notification scheduler for filing start, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
+
+
 
