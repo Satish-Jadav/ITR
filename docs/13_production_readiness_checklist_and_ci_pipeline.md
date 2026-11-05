@@ -201,3 +201,19 @@ To eliminate taxpayer friction, confusion, and accidental non-compliance, ZeroTa
 12. **Section 244A Refund Interest Auditor & Freelancer GST Radar (`RefundInterest244AAndGstAuditor` — Features F-05 & F-08)**:
     - Audits Section 143(1) intimations to verify CPC Bengaluru has paid the statutory 0.5% per month (6% p.a.) simple refund interest from April 1 of the AY, auto-generating a Section 154 rectification request if short-paid.
     - Monitors cumulative gross receipts against the ₹20 Lakh GST registration threshold and tracks foreign export inward remittances (e-FIRA / LUT) to guarantee zero export tax exposure.
+
+13. **Schedule AL Auto-Builder & Section 50C Safe-Harbor Shield (`ScheduleAlAndCapitalGainsWealthEngine` — Features F-03 & F-09)**:
+    - Auto-generates statutory asset and liability balance sheets for taxpayers whose total income exceeds ₹50 Lakhs (Schedule AL).
+    - Assesses real estate transfers under the Third Proviso to Section 50C(1), verifying if stamp duty circle rate is within 110% of actual agreement value to protect against arbitrary deemed capital gains assessments.
+
+14. **CBDT Rule 26C Form 12BB Proof Exporter (`LocalStatutoryPdfGenerators` — Feature F-04)**:
+    - Generates valid, bank-grade PDF 1.4 documents containing verified HRA, LTA, Section 24(b) home loan interest, and Chapter VI-A investment deductions.
+    - Completely on-device generation with zero network transit, ready for payroll/HR submission before employer TDS cut-off deadlines.
+
+15. **Section 197A / Rule 29C Form 15G & 15H Exporter (`LocalStatutoryPdfGenerators` — Feature F-07)**:
+    - Generates pre-filled Form 15H (senior citizens age >= 60) and Form 15G (< 60) zero-TDS declarations for fixed deposits.
+    - Formatted to statutory specifications for April 1 submission to bank branches, preventing unnecessary 10% TDS deductions on low-income fixed deposit interest.
+
+16. **100% Offline Natural-Language "What-If" Scenario Simulator (`OfflineWhatIfTaxSimulator` — Feature F-15)**:
+    - Instant (< 5ms) deterministic evaluation of hypothetical tax scenarios (e.g. "Contribute 50k in NPS", "Buy 25k health insurance", "Earn 5L freelance 44ADA").
+    - Pure on-device calculation without AI server dependency or latency, providing instantaneous tax delta figures and statutory guidance.

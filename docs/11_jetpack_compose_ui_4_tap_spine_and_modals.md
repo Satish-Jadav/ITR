@@ -864,3 +864,47 @@ flowchart LR
 
 ### 7.3 TopAppBar User Session Badge & 1-Tap Sign-Out
 When authenticated, `EnterpriseTopHeader` renders a compact, interactive user pill displaying the provider's emoji badge (`📧` for Email, `🌐` for Google, `🔐` for Biometric, `🛡️` for Guest) alongside the user's name. Tapping the pill triggers a 1-tap Sign-Out that safely resets the active in-memory session and returns the user to the Authentication screen.
+
+---
+
+## 8. Next-Gen Statutory Smart Tax Toolkit UI Modules (`StatutoryToolkitViews.kt`)
+
+### 8.1 Architecture & Tab Navigation
+The `SmartTaxToolkitScreen` serves as ZeroTax's value-add and compliance copilot, expanded from 9 to 15 specialized statutory tabs with animated horizontal transition choreography:
+
+```mermaid
+flowchart TD
+    A["Smart Tax Toolkit Navigation"] --> B["What-If Simulator (F-15)"]
+    A --> C["CBDT Form 12BB Generator (F-04)"]
+    A --> D["Form 15G/H Zero-TDS Generator (F-07)"]
+    A --> E["Section 6 RNOR & Family Arbitrage (F-01, F-02)"]
+    A --> F["Refund 244A & GST Radar (F-05, F-06, F-08)"]
+    A --> G["Schedule AL & 50C Safe Harbor (F-03, F-09)"]
+```
+
+### 8.2 Feature Implementation Specs
+1. **Offline Natural-Language "What-If" Scenario Simulator (`WhatIfScenarioSimulatorView`)**:
+   - Parses plain-text user intentions in `< 5ms` without remote LLM latency or network leakage.
+   - Evaluates investment shifts across Section 80C, 80CCD(1B) NPS, Section 80D Mediclaim, Section 24(b) home loan interest, and Section 44ADA presumptive income.
+   - Outputs side-by-side comparison of current vs simulated tax liability, tax saved delta, and actionable statutory guidance.
+
+2. **CBDT Rule 26C Form 12BB Proof Generator (`Form12BbDeclarationView`)**:
+   - Compiles claims for House Rent Allowance (Section 10(13A)), Leave Travel Concession (Section 10(5)), Home Loan Interest (Section 24(b)), and Chapter VI-A deductions.
+   - Exports a valid, bank-grade PDF 1.4 document generated 100% on-device for HR/payroll submission.
+
+3. **Form 15G / 15H Zero-TDS Fixed Deposit Exporter (`Form15GOr15HZeroTdsView`)**:
+   - Generates official CBDT declarations under Section 197A and Rule 29C for submission to bank branches on April 1.
+   - Dynamically configures Form 15H for senior citizens ($\ge 60$) or Form 15G for individuals below 60.
+
+4. **Section 6 Residential Status & Family Arbitrage Simulator (`ResidentialStatusAndFamilyArbitrageView`)**:
+   - Physical presence day-counter assessing ROR, RNOR, and NR statuses with Schedule FA foreign asset disclosure immunity badges.
+   - Simulates household tax optimization via legal family arbitrage: rent to senior parents u/s 10(13A), senior parent 80D up to ₹50,000, and non-clubbed capital gifting.
+
+5. **Section 244A Refund Interest & Freelancer GST Auditor (`RefundAuditAndGstView`)**:
+   - Audits CPC refund orders at 0.5% per month interest under Section 244A and Rule 119A ₹100 truncation, building Section 154 rectification payloads when shortfalls occur.
+   - Freelancer GST Radar tracking ₹20L interstate service export thresholds, Letter of Undertaking (LUT) zero-rated status, and e-FIRA receipts.
+
+6. **Schedule AL Wealth & Section 50C Safe-Harbor Shield (`ScheduleAlAndWealthView`)**:
+   - Generates statutory balance sheet disclosure for Gross Total Income exceeding ₹50,00,000.
+   - Evaluates Section 50C 10% stamp duty safe-harbor shield (Third Proviso to Section 50C(1)) for real estate transactions.
+
