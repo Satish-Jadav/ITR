@@ -17,8 +17,10 @@ class UpiChallan280IntentLauncherTest {
         assertTrue(uriString.startsWith("upi://pay"))
         assertTrue(uriString.contains("am=25000"))
         assertTrue(uriString.contains("cu=INR"))
-        assertTrue(uriString.contains("ABCDE1234F"))
+        // VUL-10 FIX: PAN must NOT be leaked in the UPI payment URI
+        assertFalse("PAN must not be leaked in UPI intent URI", uriString.contains("ABCDE1234F"))
         assertTrue(uriString.contains("M300"))
+        assertTrue(uriString.contains("incometax@sbi"))
     }
 
     @Test

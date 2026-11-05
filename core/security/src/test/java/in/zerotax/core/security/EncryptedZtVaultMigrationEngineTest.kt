@@ -57,4 +57,30 @@ class EncryptedZtVaultMigrationEngineTest {
         assertFalse(result.isSuccess)
         assertTrue(result.errorMessage?.contains("Authentication failed") == true)
     }
+
+    @Test
+    fun importVault_invalidHeader_failsValidation() {
+        val corruptedBytes = "CORRUPTED_NOT_ZTVAULT".toByteArray()
+        val result = EncryptedZtVaultMigrationEngine.importVaultBundle(
+            vaultBytes = corruptedBytes,
+            pan = "ABCDE1234F",
+            dob = "15/08/1990",
+            userPasscode = "AnyPasscode"
+        )
+        assertFalse(result.isSuccess)
+        assertTrue(result.errorMessage?.contains("Invalid vault") == true)
+    }
+
+    @Test
+    fun importVault_truncatedBytes_failsValidation() {
+        val tinyBytes = byteArrayOf(0x01, 0x02, 0x03)
+        val result = EncryptedZtVaultMigrationEngine.importVaultBundle(
+            vaultBytes = tinyBytes,
+            pan = "ABCDE1234F",
+            dob = "15/08/1990",
+            userPasscode = "AnyPasscode"
+        )
+        assertFalse(result.isSuccess)
+        assertTrue(result.errorMessage?.contains("Size too small") == true)
+    }
 }

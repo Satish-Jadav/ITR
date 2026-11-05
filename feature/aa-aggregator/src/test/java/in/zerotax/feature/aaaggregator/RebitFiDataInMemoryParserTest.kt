@@ -46,5 +46,37 @@ class RebitFiDataInMemoryParserTest {
         assertTrue(revokeResult.isSuccess)
         assertEquals(ConsentLifeCycleState.REVOKED_BY_USER, manager.activeConsents.value.first().state)
     }
+
+    @Test
+    fun testParseMutualFundJson_UnrealizedHoldingsExcludedFromRealizedGains() {
+        // VUL-18 FIX: Only redeemed or sold holdings generate capital gains; MTM unrealized holdings are excluded
+        val rawPayload = """
+            {
+                "depository_or_rta": "CAMS",
+                "holdings": [
+                    {
+                        "isin": "INF209K01157",
+                        "cost_rupees": 100000,
+                        "current_or_sale_value_rupees": 140000,
+                        "is_redeemed": false
+                    },
+                    {
+                        "isin": "INF179K01BE2",
+                        "cost_rupees": 200000,
+                        "current_or_sale_value_rupees": 275000,
+                        "is_redeemed": true,
+                        "sale_date": "2025-11-20"
+                    }
+                ]
+            }
+        """.trimIndent()
+
+        val extraction = RebitFiDataInMemoryParser.parseMutualFundAndEquityJson(rawPayload)
+        assertEquals("CAMS", extraction.registrarOrDepository)
+        // Only the redeemed lot (275000 - 200000 = 75000) should be included!
+        assertEquals(75000L, extraction.totalRealizedGainRupees)
+        assertEquals(1, extraction.lots.size)
+        assertEquals("INF179K01BE2", extraction.lots.first().isin)
+    }
 }
 
