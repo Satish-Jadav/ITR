@@ -148,6 +148,34 @@ This master index provides the consolidated architecture, product specifications
 - **DPDP Act 2023 Volatile Security:**
   - Credentials and session tokens reside exclusively in volatile memory during the direct TLS handshake and are zeroized immediately following payload retrieval.
 
+---
+
+### 4.7 F&O Trading & Tax Audit, Post-Filing Lifecycle, Senior Citizen Exemption & Micro-Prompt AI Copilot Suite
+- **F&O Trading, Turnover & Tax Audit Engine (`FnOTradingAndTaxAuditEngine.kt` — Section 31)**:
+  - **ICAI Guidance Note Absolute Turnover Formula**: Computes statutory turnover as $\sum |\text{P\&L}_i| + \text{Premium Received on Sale of Options}$.
+  - **Speculative Intraday Equity Trading u/s 43(5)**: Set-off ring-fence u/s 73 (only against speculative profit; 4-year carry forward u/s 73(4)).
+  - **Non-Speculative F&O Trading u/s 43(5) Proviso (d)**: Loss set-off u/s 70 & 71 (offsets HP, CG, Other Sources; strictly barred from setting off Salary u/s 71(2A); 8-year carry forward u/s 72).
+  - **Section 44AB Tax Audit Decision Tree**: Evaluates the ₹10 Crore threshold for $\ge 95\%$ digital transactions and Section 44AD(4)/(5) 5-year lock-in opt-out rules.
+- **Automated Section 143(1) Intimation Diff Analyzer & Section 154 Rectification Builder (`Section143_1IntimationDiffAnalyzer.kt` — Section 33.1)**:
+  - Line-by-line comparison of Column A ("As Filed by Taxpayer") vs Column B ("As Computed under Section 143(1)").
+  - Detects zero discrepancy, tax credit mismatches (TDS/TCS/Challan dropped by CPC), and unreported AIS income additions.
+  - Generates CBDT Section 154 Rectification JSON payload and Section 139(5) Revised Return action guidance.
+- **Zero-Knowledge `.ztvault` Encrypted Migration Engine (`EncryptedZtVaultMigrationEngine.kt` — Section 33.3)**:
+  - Portable, zero-cloud backup and transfer protocol for multi-year CFL losses and return data across devices.
+  - Key derivation: PBKDF2 with 256,000 iterations from PAN, DOB, and user passcode with 32-byte salt.
+  - AES-256-GCM authenticated encryption (12-byte IV, 128-bit auth tag) with gzip compression.
+- **Senior Citizen Tax Deductions & Section 194P Exemption Engine (`SeniorCitizenTaxAndExemptionEngine.kt` — Section 34)**:
+  - **Section 194P Exemption**: Evaluates age $\ge 75$ resident pensioners receiving interest only from the specified pension bank; statutorily exempts them from filing ITR u/s 139 upon Form 12BBA submission.
+  - **Form 12BBA Generator**: Creates structured declaration payload for the specified bank.
+  - **Senior Citizen Deductions**: Implements Section 80TTB ₹50,000 bank interest deduction, Section 207(2) Advance Tax immunity (₹0 Sec 234B/C interest), and Section 80D up to ₹50,000.
+- **Hybrid Multi-Source Income & Progressive Disclosure Engine (`HybridIncomeAndProgressiveDisclosureEngine.kt` — Section 38)**:
+  - Combines primary salary with moonlighting jobs, freelancing u/s 44ADA (50% presumptive deduction), digital creators u/s 44AD (6% digital / 8% cash), commissions u/s 194H, and casual gigs u/s 56.
+  - Dynamic progressive disclosure state machine showing only relevant cards, seamlessly auto-routing to ITR-1, ITR-4, ITR-2, or ITR-3 Lite behind the scenes.
+- **Optimized Tax Copilot Chatbot Engine (`OptimizedTaxCopilotChatbotEngine.kt` — Section 35)**:
+  - 6 Guided Quick-Pick Action menus with 1-tap chips (`AUTO_FIND_DOCS`, `SYNC_PORTAL_6_STREAMS`, `COMPARE_REGIME_WHY`, `SIMULATE_NPS_80D_HRA`, `HARVEST_112A_LTCG`, `GENERATE_HR_FORMS_PACK`, `EXPLAIN_NOTICE_OR_PAY_CHALLAN`).
+  - 3-Tier Zero-Waste AI Pipeline: Tier-0 Deterministic Regex Router (< 2ms, 0 tokens), Tier-1 Memoization Cache (< 2ms), Tier-2 KV-Prefix Cached Micro-Prompts.
+
+
 
 
 

@@ -141,3 +141,20 @@ ZeroTax-Local redefines Indian Income Tax Return (ITR-1, ITR-2, ITR-4, and ITR-U
 * **Directional Horizontal Slide Transitions:** Stages 1 through 4 transition via directional horizontal slide-and-fade (`slideInHorizontally` + `fadeIn` / `slideOutHorizontally` + `fadeOut` with `FastOutSlowInEasing`), dynamically reversing direction when navigating backward.
 * **Tabular Figures & Animated Currency Counters:** Numbers in the Regime Showdown and ledger cards animate with vertical slide transitions (`AnimatedContent`) as inputs update, while stepper segments smoothly morph colors with `animateColorAsState`.
 * **Pure-JVM Firewall Verification in CI:** GitHub Actions CI pipeline enforces `grep -rnE "import (android\.|androidx\.|com\.google\.ai\.edge\.aicore)" core/tax-engine/src/main/` rejecting any Android or AI SDK imports into the deterministic calculation core.
+
+---
+
+## 6. Next-Gen Architecture & Sub-Engines (Phases 4.4 to 4.7)
+
+| Component | Module | Statutory / Technical Scope |
+|---|---|---|
+| `CorporateAndTrustTaxEngine` | `:core:tax-engine` | Non-individual statutory processing: ITR-5 (Partnership/LLP Sec 40(b) & AMT), ITR-6 (Company Sec 115BAA/MAT), ITR-7 (Trust Sec 11/12 application & MMR). |
+| `FnOTradingAndTaxAuditEngine` | `:core:tax-engine` | ICAI Guidance Note absolute turnover, Section 73 speculative loss ring-fence (4-year carry forward), Section 71(2A) salary loss bar (8-year carry forward u/s 72), and Section 44AB ₹10 Cr digital audit tree. |
+| `Section143_1IntimationDiffAnalyzer` | `:core:tax-engine` | Column A (As Filed) vs Column B (As Computed) diff analyzer, detecting zero discrepancy, credit mismatches, and income additions; generates CBDT Section 154 JSON payloads. |
+| `EncryptedZtVaultMigrationEngine` | `:core:security` | Zero-knowledge `.ztvault` backup and Quick Share transfer: PBKDF2 (256,000 iter) key derivation + AES-256-GCM authenticated encryption on GZIP payload. |
+| `SeniorCitizenTaxAndExemptionEngine` | `:core:tax-engine` | Section 194P Age 75+ ITR filing exemption check and Form 12BBA declaration generator, alongside Section 80TTB ₹50,000 deduction and Section 207(2) advance tax immunity. |
+| `HybridIncomeAndProgressiveDisclosureEngine` | `:core:tax-engine` | Multi-source income combinator (Salary + Moonlighting + 44ADA 50% + 44AD 6%/8% + Casual 56) and progressive disclosure state machine auto-routing to ITR-1, ITR-4, ITR-2, or ITR-3 Lite. |
+| `OptimizedTaxCopilotChatbotEngine` | `:feature:ai-extractor` | 6 Guided Quick-Pick Action menus with 3-Tier AI optimization: Tier-0 regex (< 2ms, 0 tokens), Tier-1 memoization, and Tier-2 KV-cached micro-prompts. |
+| `ItdLivePortalSyncModal` | `:app` | Direct TLS handshake pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status with 0 external browser redirects. |
+| `ZeroTaxBiometricShield` | `:app` | AndroidX BiometricPrompt gate securing sensitive return records with 1-tap lock and July 31 countdown notifications. |
+

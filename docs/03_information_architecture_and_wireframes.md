@@ -558,3 +558,26 @@ fun allowTemporaryExportSnapshot(lifecycleScope: CoroutineScope) {
 • 3-Way Discrepancy Triangulation Radar (Form 16 vs 26AS vs AIS): Side-by-side comparison across employer Form 16, TRACES Form 26AS, and ITD AIS/TIS with 1-tap auto-healing to eliminate Section 143(1)(a) tax demand notices.
 • Statutory Tax Calendar & Compliance Reminders (AY 2026-27): Tracks all 6 statutory deadlines with dynamic countdown timers (July 31 filing deadline, quarterly advance tax milestones, December 31 revised return deadline, and March 31 tax-saving/harvesting cutoff) with explicit penalty warnings (Sections 234A/B/C/F).
 • Multi-Year Historical ITR Dossier: 3-Year comparative record of filed income, growth trajectories, and CPC refunds formatted with digital verification stamps for bank loans and visa approvals.
+
+6.4 Next-Gen Wireframes & Architecture Expansions (Phases 4.4 to 4.7)
+• Plan-Based 3-Tier Experience Separation:
+   - SAHAJ Simple (ITR-1): Plain-language, jargon-free cards for salaried freshers and simple taxpayers ("What You Earned", "Automatic ₹75,000 Government Discount", "Taxes Deducted by Employer", "Your Refund Result").
+   - Investor & Freelance Pro (ITR-4 / ITR-2): 2-minute presumptive deck for 44ADA (50%) and 44AD (6%/8%), combined with Capital Gains tax-loss harvesting visualizer.
+   - Enterprise & Corporate Audit (ITR-5 / ITR-6 / ITR-7): Executive desk with 1-tap launchers for Partnership/LLP Sec 40(b), Company Sec 115BAA/MAT, Trust Sec 11/12, and 44AB Form 3CD audit pack.
+• Hardware Biometric Shield Gate:
+   - Locks app data behind AndroidX BiometricPrompt (Fingerprint / Face ID / PIN) upon cold start or app resume, with a prominent "🔒 Lock" button in the top bar.
+• Statutory Tax Timeline Manager & Local Notifications:
+   - July 31 deadline countdown pill ("⏱️ 86 Days remaining") and 1-tap local notification scheduler for filing start, 30-day reminder, and late-fee alerts u/s 234F.
+• Interactive Coachmark Tour ("Do this then click this" Mini-Popup):
+   - Visual floating guide cards walking first-time filers through 4 key actions with a replay button.
+• In-App Live ITD Portal Sync Modal:
+   - Direct TLS handshake via Aadhaar OTP or password pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status with zero external browser redirects.
+• Section 143(1) Intimation Diff Analyzer & Section 154 Rectification:
+   - Side-by-side Column A (As Filed) vs Column B (As Computed) visualizer with 1-tap CBDT Section 154 JSON generation.
+• Zero-Knowledge .ztvault Device Transfer:
+   - PBKDF2 (256,000 iter) + AES-256-GCM encrypted vault bundle for seamless phone upgrade and CA handover.
+• Senior Citizen 194P Exemption & Form 12BBA Generator:
+   - Evaluates Age 75+ pensioners with single-bank interest, surfacing a statutory "Exempt from ITR Filing" card and Form 12BBA PDF download.
+• 6-Menu Chip-Driven Copilot Chatbot:
+   - Guided quick-pick action pills eliminating empty text inputs, backed by Tier-0 deterministic regex routing (< 2ms, 0 tokens).
+

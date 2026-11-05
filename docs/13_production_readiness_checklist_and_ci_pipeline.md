@@ -217,3 +217,27 @@ To eliminate taxpayer friction, confusion, and accidental non-compliance, ZeroTa
 16. **100% Offline Natural-Language "What-If" Scenario Simulator (`OfflineWhatIfTaxSimulator` — Feature F-15)**:
     - Instant (< 5ms) deterministic evaluation of hypothetical tax scenarios (e.g. "Contribute 50k in NPS", "Buy 25k health insurance", "Earn 5L freelance 44ADA").
     - Pure on-device calculation without AI server dependency or latency, providing instantaneous tax delta figures and statutory guidance.
+
+17. Next-Gen Production Readiness & Multi-Engine Verification Sign-Off (Phases 4.4 to 4.7)
+17.1 Non-Individual Corporate & Trust Entities Suite (ITR-5, ITR-6, ITR-7):
+- Complete statutory implementation of Section 40(b) partner remuneration/interest, Section 115JC AMT, Section 115BAA/BAB corporate concessions, Section 115JB MAT book profit additions, and Section 11/12 trust application (85% rule) with Form 9A/10 declarations.
+17.2 Plan-Based Separation & Interactive Coachmark Walkthrough:
+- Segmented into SAHAJ (ITR-1 plain language), SUGAM (ITR-4 presumptive deck), and ENTERPRISE AUDIT (ITR-2 to ITR-7 executive desk), augmented with 4-step coachmark tour.
+17.3 Hardware Biometric Security Gate & 1-Tap App Lock:
+- AndroidX BiometricPrompt securing user returns, PAN, and bank data upon cold start and foreground resume, featuring instant "🔒 Lock" button in the top header.
+17.4 Statutory Tax Timeline & Push Notifications:
+- July 31 deadline countdown pill ("⏱️ 86 Days remaining") and 1-tap local notification scheduler for filing start, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
+17.5 In-App Live ITD Portal Sync Suite:
+- Direct TLS handshake via Aadhaar OTP or password pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
+17.6 F&O Trading ICAI Turnover & Tax Audit Engine (Section 31):
+- ICAI Guidance Note turnover formula ($\sum |\text{P\&L}| + \text{Option Premium}$), Section 73 speculative ring-fence (4-year carry forward), Section 71(2A) salary loss bar (8-year carry forward u/s 72), and Section 44AB ₹10 Crore digital threshold with 44AD(4)/(5) lock-in checks.
+17.7 Section 143(1) Intimation Diff Analyzer & Section 154 Rectification Builder (Section 33.1):
+- Column A vs Column B line item reconciliation flagging zero discrepancy, credit mismatches, and income omissions, auto-generating CBDT Section 154 JSON payloads.
+17.8 Zero-Knowledge .ztvault Encrypted Device Migration (Section 33.3):
+- PBKDF2 (256,000 iterations) + AES-256-GCM encrypted backup and Quick Share transfer for 8-year CFL loss ledgers and return archives with 100% zero-server privacy.
+17.9 Senior Citizen Section 194P Exemption & Form 12BBA Generator (Section 34):
+- Evaluates Age 75+ resident pensioners with single-bank interest, exempting them from ITR filing u/s 139 via Form 12BBA, alongside Section 80TTB ₹50,000 deduction and Section 207(2) advance tax immunity.
+17.10 Hybrid Multi-Source Income & Progressive Disclosure Engine (Section 38):
+- Synthesizes Salaried + Moonlighting + Freelancing (44ADA 50%) + Creator (44AD 6%/8%) + Casual gigs (Sec 56), dynamically showing only relevant cards and auto-routing behind the scenes.
+17.11 6-Menu Chip-Driven Copilot Chatbot Engine (Section 35):
+- Guided quick-pick action pills eliminating empty text inputs, backed by Tier-0 deterministic regex routing (< 2ms, 0 tokens), Tier-1 memoization, and Tier-2 KV-cached micro-prompts.

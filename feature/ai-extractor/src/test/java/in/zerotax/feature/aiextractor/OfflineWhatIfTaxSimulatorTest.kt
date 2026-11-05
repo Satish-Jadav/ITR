@@ -10,8 +10,7 @@ class OfflineWhatIfTaxSimulatorTest {
 
     private val baseSalaryInput = TaxpayerFinancialInput(
         grossSalary = 12_00_000L,
-        annualHouseRentPaid = 0L,
-        hraExemptionClaimed = 0L,
+        exemptHraAndAllowancesSec10 = 0L,
         section80CInvestments = 1_00_000L,
         section80DSelfAndFamily = 0L,
         section80CCD1BSelfNps = 0L,

@@ -1,4 +1,4 @@
-﻿10 — Phase 3 Schedule FA Calendar-Year Engine, ITR-U (Sec 139(8A)) & Official CBDT JSON Compiler
+10 — Phase 3 Schedule FA Calendar-Year Engine, ITR-U (Sec 139(8A)) & Official CBDT JSON Compiler
 1. Phase 3 Calendar-Year (Jan 1 – Dec 31) Schedule FA Table A3 Foreign RSU/ESPP Engine
 A frequent cause of ₹10 Lakh Black Money Act notices is reporting Foreign Assets using the Indian Financial Year (Apr 1 – Mar 31) instead of the Calendar Year (Jan 1 – Dec 31), or using inconsistent USD-to-INR exchange rates. The ScheduleFaCalendarYearEngine computes Initial, Peak, and Closing values for each foreign RSU/ESPP vest lot using the embedded sbi_ttbr_exchange_rates database.
 
@@ -637,4 +637,10 @@ GATE-CAT-A-06
 ScheduleFA.DtlsForeignEquity & Form67
 Black Money Act Secs 42 & 43 (Jan 1 – Dec 31 Calendar Year) & Rule 128(5) TTBR
 Auto-routes to ITR-2, populates Table A3, and caps FTC at min(ForeignTax, IndianTax).
+
+7. ITR-3 Lite Schedule BP, Form 3CD Annexures & Section 154 Rectification JSON Compilers (Phases 4.4 to 4.7)
+- ITR-3 Lite Schedule BP Compiler: Compiles simplified P&L and balance sheet disclosures for retail F&O and intraday equity traders without requiring full industrial ERP ledgers.
+- Form 3CD CA Handover Pack Compiler: Formats statutory audit annexures (Clause 8 nature of business, Clause 10 books u/s 44AA, Clause 11 broker ledgers, Clause 21 expense disallowances, Clause 22 MSME 43B(h) overdue payments, and Clause 26 statutory dues).
+- Section 154 Rectification JSON Compiler: Auto-generates CBDT-compliant rectification payload containing claimed vs CPC allowed TDS/TCS/Challan entries to resolve intimation shortfalls.
+- Form 12BBA Senior Citizen Declaration Compiler: Formats statutory declaration under Rule 26D for specified banks under Section 194P, exempting seniors aged 75+ from Section 139 return filing.
 

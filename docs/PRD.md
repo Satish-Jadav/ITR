@@ -1,4 +1,4 @@
-﻿Product Requirements Document: Zero-Friction On-Device AI ITR Filing App ("ZeroTax-Local" — CA & Legal Edition)
+Product Requirements Document: Zero-Friction On-Device AI ITR Filing App ("ZeroTax-Local" — CA & Legal Edition)
 0. CA & Fintech Legal Counsel Review Summary
 The following architectural and statutory foundations have been updated to ensure full compliance across Chartered Accountancy standards, the Income-tax Act, 1961, the Digital Personal Data Protection (DPDP) Act, 2023, and UIDAI security baselines:
 
@@ -106,4 +106,8 @@ P3-FR-01 to 06
 Phase 3 (Moat)
 Schedule FA Table A3 foreign asset reporting (Calendar Year basis) with historical SBI TTBR tables (Rule 115); Form 67 Foreign Tax Credit compilation (Rule 128(5)); on-device notice analysis module for Section 143(1) and 139(9) communications; AIS dispute logging; updated return processing under Section 139(8A) / 140B; equity tax-loss harvesting tracking.
 Zero variance (₹0.00) against all baseline validation test suites; verified operational integrity under isolated offline handset execution (Airplane Mode).
+P4-FR-01 to 08
+Phases 4.4 to 4.7 (Enterprise & Automation)
+Non-individual corporate entities (ITR-5/6/7); F&O Trading ICAI turnover & Sec 44AB tax audit; Sec 143(1) Intimation Diff Analyzer & Sec 154 Rectification JSON builder; Zero-Knowledge .ztvault encrypted device migration (PBKDF2 + AES-256-GCM); Senior Citizen Sec 194P exemption & Form 12BBA; Hybrid multi-source income engine & progressive disclosure UI; 6-menu chip-driven chatbot with 3-tier zero-waste AI; In-app live portal sync with 0 external browser hops; Hardware biometric security gate.
+Sub-2ms Tier-0 regex classification; <180ms NPU micro-prompt execution; 100% offline .ztvault migration; zero-leakage direct TLS portal handshake.
 

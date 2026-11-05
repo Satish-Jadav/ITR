@@ -1,4 +1,4 @@
-﻿Detailed System Design Document ("ZeroTax-Local" — CA & Principal Architect Edition)
+Detailed System Design Document ("ZeroTax-Local" — CA & Principal Architect Edition)
 Production-grade engineering and statutory compliance specification for client-side Indian Income Tax Return computation, on-device document extraction via Android AICore (Gemini Nano), strict TRACES/26AS deterministic reconciliation, and CBDT Category 'A' e-filing validation.
 0. Principal Architect & CA Review Summary (Critical Bug Fixes & Enhancements Over Draft v1)
 Fixed Critical Section 143(1)(a) TDS Short-Credit Bug in reconcileSalary:Draft bug in line 99 computed val verifiedTds = tds26as?.tdsDeposited ?: f16?.tdsDeducted ?: 0L. This mistakenly claimed f16.tdsDeducted whenever tds26as was missing or failed to cap f16.tdsDeducted when an employer deducted TDS via payslips but defaulted on depositing it to the government via Form 24Q. Claiming TDS above Form 26AS Part A causes an automatic Section 143(1)(a) short-credit demand intimation from CPC Bengaluru. The production engine enforces val allowedTds = min(primary.tdsReported, deposited26AsTds) inside DeterministicReconciler.reconcileSalaries(), surfacing an Employer TDS Protection Nudge Card for unreflectedTdsAmount = max(0L, primary.tdsReported - deposited26AsTds).
@@ -280,4 +280,14 @@ US RSU Vested on a Weekend / Bank Holiday (GTV-15)
 ScheduleFaCalendarYearEngine queries sbi_ttbr_exchange_rates with WHERE rate_date_iso <= :targetIsoDate ORDER BY rate_date_iso DESC LIMIT 1, rolling back deterministically to the immediately preceding SBI business day (Rule 115 & Rule 128(5)).
 User Manually Reduces Income Below AIS / Form 26AS
 Intercepts the edit with Section270AStatutoryOverrideDialog (warning of 50% under-reporting and 200% misreporting penalties u/s 270A) and writes the SHA-256 warning hash + reason code to user_legal_consents_and_overrides.
+
+6. Next-Gen Subsystems Architecture (Phases 4.4 to 4.7)
+- F&O Trading Subsystem (`FnOTradingAndTaxAuditEngine.kt`): ICAI Guidance Note absolute turnover ($\sum |\text{P\&L}| + \text{Option Premium}$), Sec 73 speculative loss ring-fence (4-year carry forward), Sec 71(2A) salary loss bar (8-year carry forward u/s 72), and Sec 44AB ₹10 Cr digital audit tree with 44AD(4)/(5) lock-in checks.
+- Post-Filing Diff Subsystem (`Section143_1IntimationDiffAnalyzer.kt`): Column A (As Filed) vs Column B (As Computed) reconciliation, auto-generating CBDT Section 154 Rectification JSON payloads for dropped credits.
+- Encrypted Migration Subsystem (`EncryptedZtVaultMigrationEngine.kt`): Zero-cloud backup and transfer using PBKDF2 (256,000 iterations) + AES-256-GCM on GZIP database snapshots.
+- Senior Citizen Subsystem (`SeniorCitizenTaxAndExemptionEngine.kt`): Section 194P Age 75+ filing exemption check, Form 12BBA bank declaration generator, Section 80TTB ₹50,000 deduction, and Section 207(2) advance tax immunity.
+- Hybrid Income & Progressive Disclosure Subsystem (`HybridIncomeAndProgressiveDisclosureEngine.kt`): Multi-source income combinator and progressive disclosure state machine auto-routing to ITR-1, ITR-4, ITR-2, or ITR-3 Lite behind the scenes.
+- 6-Menu Chip Copilot Subsystem (`OptimizedTaxCopilotChatbotEngine.kt`): 3-Tier AI pipeline with Tier-0 deterministic regex routing (< 2ms, 0 tokens), Tier-1 memoization, and Tier-2 KV-cached micro-prompts.
+- In-App Live ITD Portal Sync Subsystem (`ItdLivePortalSyncModal.kt`): Direct TLS handshake pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
+- Hardware Biometric Shield Subsystem (`ZeroTaxBiometricShield.kt`): System-level AndroidX BiometricPrompt gate securing sensitive return records with 1-tap lock and countdown notifications.
 

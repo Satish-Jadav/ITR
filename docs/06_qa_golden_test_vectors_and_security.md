@@ -1,4 +1,4 @@
-﻿06 — Parameterized Golden Tax Calculation Test Vectors & OWASP MASVS Security (Consolidated Phases 1–3)
+06 — Parameterized Golden Tax Calculation Test Vectors & OWASP MASVS Security (Consolidated Phases 1–3)
 1. Master Golden Tax Calculation Test Vectors (₹0.00 Variance Requirement)
 Every commit affecting :core:tax-engine must pass all 18 Golden Test Vectors (GTV-01 through GTV-18) across Phase 1 (ITR-1/ITR-4), Phase 2 (ITR-2 Capital Gains & AA), and Phase 3 (Schedule FA, Form 67 & ITR-U) with ₹0.00 variance against the official CBDT ITR schema utility.
 
@@ -550,6 +550,12 @@ GTV-03 & GTV-04 (AY 2026-27 Finance Act 2025 New Regime Rebate & Marginal Relief
 GTV-08 (Section 112A(6) Rebate Exclusion): Normal salary taxable income of ₹4,00,000 attracts ₹5,000 slab tax (5% above ₹3,00,000), which is fully rebated to ₹0 under Section 87A. However, ₹2,25,000 LTCG u/s 112A yields ₹1,00,000 taxable LTCG above ₹1,25,000 taxed at 12.5% = ₹12,500. Section 112A(6) prohibits applying Section 87A rebate against ₹12,500, resulting in ₹12,500 + ₹500 (4% cess) = ₹13,000.
 GTV-10 (Second Proviso to Section 112(1)(a) Property Grandfathering): For flat acquired in FY 2015-16 (CII = 254) at ₹50,00,000 and sold in FY 2025-26 (CII = 376) at ₹80,00,000: Unindexed gain = ₹30,00,000, tax @ 12.5% = ₹3,75,000. Indexed cost = round(50,00,000 × 376 / 254) = ₹74,01,575; indexed gain = ₹5,98,425, tax @ 20% = ₹1,19,685. The engine deterministically picks min(₹3,75,000, ₹1,19,685) = ₹1,19,685.
 GTV-14 (Rule 119A Principal Rounding & Section 207 Senior Citizen Immunity): Unpaid tax ₹45,689 is rounded down to the nearest multiple of ₹100 (₹45,600) under Rule 119A(b) before multiplying by 1% per month for 3 months (₹1,368). For a Resident Senior Citizen (Age >= 60) without income under "Profits and gains of business or profession", Section 207(2) grants complete immunity from Section 234B interest (₹0).
+GTV-19 (ICAI Absolute F&O Turnover): F&O trades with +₹40,000, -₹65,000, and ₹15,000 Option Sale Premium yield net P&L -₹25,000, but ICAI Guidance Note statutory turnover is |40,000| + |-65,000| + 15,000 = ₹1,20,000.
+GTV-20 (Section 73 Speculative Loss Ring-Fence): Intraday equity loss of ₹30,000 is ring-fenced from offsetting F&O profit or capital gains; carried forward 4 years u/s 73(4).
+GTV-21 (Section 71(2A) F&O Loss Salary Bar): F&O loss of ₹80,000 offsets House Property (₹20,000) and Capital Gains (₹30,000), but remaining ₹30,000 is barred from setting off ₹12,00,000 Salary u/s 71(2A) and carries forward 8 years u/s 72.
+GTV-22 (Section 194P Senior Citizen Filing Exemption): Resident individual aged 77 with ₹4,80,000 pension and ₹1,20,000 interest from the same specified bank is statutorily exempt from filing ITR u/s 139 upon submitting Form 12BBA.
+GTV-23 (Section 143(1) Intimation Diff & Section 154 Rectification): CPC disallowing ₹25,000 TDS generates an automated Section 154 Tax Credit Mismatch rectification JSON payload.
+GTV-24 (Zero-Knowledge .ztvault Encryption Round-Trip): SQLCipher snapshot encrypted with PBKDF2 (256,000 iterations) + AES-256-GCM decrypts with byte-for-byte fidelity with correct passcode and fails authentication when supplied with invalid passcode.
 
 6. OWASP MASVS Level 2 (L2) & Defense-in-Depth Security Audit Matrix
 

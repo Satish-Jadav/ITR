@@ -1,4 +1,4 @@
-﻿09 — On-Device Gemini Nano (AICore) Wrapper, RBI Account Aggregator Crypto & Challan 280 Parser
+09 — On-Device Gemini Nano (AICore) Wrapper, RBI Account Aggregator Crypto & Challan 280 Parser
 1. On-Device Gemini Nano (com.google.ai.edge.aicore) Wrapper with Math Firewall & Visual Cropper (:feature:ai-extractor)
 package in.zerotax.feature.aiextractor
 
@@ -695,4 +695,15 @@ TokenLockedVernacularExplainer
 Android AICore NPU (en-IN, hi-IN, gu-IN)
 < 900 ms per notice
 Enforces 100% byte-for-byte preservation of {{SEC_1}}, {{AMT_1}}, and {{AMT_2}} placeholders prior to deterministic rupee re-injection.
+
+7. 3-Tier AI Prompt & Token Optimization & Encrypted .ztvault Cryptography (Sections 33 & 35)
+7.1 3-Tier Zero-Waste AI Orchestration Pipeline:
+- Tier 0 (Deterministic Regex Router): < 2ms, 0 AI tokens, 0 NPU wakeups. Handles ~85% of numeric What-If and navigation queries directly via Kotlin regexes and Indian shorthand number parsing ("50k" -> 50,000, "1.5 lakh" -> 1,50,000).
+- Tier 1 (SHA-256 In-Memory Memoization Cache): < 2ms, 0 NPU wakeups. Caches structured JSON outputs keyed by query hash.
+- Tier 2 (KV-Prefix-Cached Micro-Prompts): < 180ms on NPU. Starts with immutable 42-token static prefix (`ROLE:ZeroTaxDeterministicJSONParser|TEMP:0|RULES:NoMath,ExactIntOnly,ValidJSON`) allowing Android AICore to reuse cached KV attention states.
+- Compact 2-Letter Output Schemas: Maps abbreviated keys (`{"i":"SIM_WHAT_IF","c80":50000}`) back to Kotlin domain models, cutting generation tokens by 68%.
+
+7.2 Encrypted .ztvault Migration Protocol (Section 33.3):
+- Cryptographic Specification: PBKDF2 (HMAC-SHA512 / HMAC-SHA256) with 256,000 iterations deriving a 256-bit AES key from user PAN, Date of Birth, and transfer passcode, seasoned with a 32-byte SecureRandom salt.
+- Authenticated Encryption: AES-256-GCM with a 12-byte IV and 128-bit authentication tag, encrypting GZIP-compressed SQLCipher database snapshots and Schedule CFL provenance metadata for zero-server Android Quick Share / Nearby Share transfers.
 

@@ -268,3 +268,13 @@ Section 4 Clauses 4.1–4.5
 Designated Data Protection Officer (DPO) & Grievance Officer: dpo@zerotax.in
 Acknowledgement & Resolution SLA: Automated ticket acknowledgment within 24 hours and binding resolution within 72 hours (strictly well within the statutory timeline prescribed under Section 13 of the Digital Personal Data Protection Act, 2023).
 Zero-Custody Verification Certificate: Because all Personal Data and financial PDFs reside exclusively inside the user's on-device zero_tax_vault.db (encrypted via Android Hardware Keystore StrongBox), exercising "Shred Local Tax Vault" on the handset immediately completes cryptographic erasure under Section 12(3) without requiring any server-side deletion request.
+
+8. Allied Statutory Legal Compliances & Judicial Precedents (Phases 4.4 to 4.7)
+- ICAI Guidance Note on Tax Audit u/s 44AB: Statutory Turnover for exchange-traded F&O and intraday transactions is the absolute sum of positive and negative differences plus option sale premiums, evaluated against the ₹10 Crore threshold for >= 95% digital transactions.
+- Sections 43(5) & 73 Speculative Loss Ring-Fencing: Intraday cash equity settled without actual delivery is speculative business income; losses are ring-fenced to offset only speculative profits and carry forward for 4 assessment years u/s 73(4).
+- Section 71(2A) Salary Set-Off Bar: Expressly bars set-off of any business/profession loss (speculative or non-speculative F&O) against Salary income; unabsorbed losses carry forward for 8 assessment years u/s 72.
+- Section 194P & Rule 26D Senior Citizen Exemption: Resident individuals aged 75+ with only pension and bank interest from the specified pension bank are statutorily exempt from Section 139 ITR filing upon furnishing Form 12BBA.
+- Section 143(1) & Section 154 Rectification: Discrepancies between Column A (As Filed) and Column B (As Computed) involving deposited TDS/TCS/Challan credits are remediated via Section 154 online rectification requests.
+- Corporate & Trust Entity Legal Compliances (ITR-5/6/7): Section 40(b) partnership remuneration limits, Section 115JC AMT, Section 115BAA/BAB corporate concessions, Section 115JB MAT book profit additions, and Section 11/12 trust application (85% rule) with Form 9A/10 filings.
+- Zero-Knowledge .ztvault Protocol: Encrypted device-to-device migration using PBKDF2 (256,000 iterations) + AES-256-GCM upholding DPDP Act 2023 purpose limitation and data autonomy principles without third-party cloud exposure.
+
