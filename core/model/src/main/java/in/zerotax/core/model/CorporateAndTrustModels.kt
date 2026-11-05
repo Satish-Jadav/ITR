@@ -51,6 +51,10 @@ data class Itr5FirmResult(
     val alternateMinimumTax115JC: Long,
     val isAmtPayable: Boolean,
     val finalTaxPayableRupees: Long,
+    // VUL-15 FIX: Carry-forward loss field for Sec 72 tracking.
+    // When bookProfitBeforePartnerPayments is negative, the firm has a business loss
+    // that can be carried forward for 8 years under Sec 72. Clamping it to 0 destroys this record.
+    val businessLossCarryForwardRupees: Long = 0L,
     val statutoryNotes: List<String>
 )
 

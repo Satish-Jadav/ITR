@@ -61,7 +61,9 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
             "ais.insight.gov.in"
         )
         const val PORTAL_TIMEOUT_MS = 15_000L
-        val AADHAAR_SCRUB_REGEX = Regex("""\b\d{4}\s?\d{4}\s?\d{4}\b""")
+        // VUL-09 FIX: Extend Aadhaar scrub regex to also cover hyphen and dot separators.
+        // Original \s? only matched spaces; attackers could bypass with "1234-5678-9012" format.
+        val AADHAAR_SCRUB_REGEX = Regex("""\b\d{4}[\s\-.]?\d{4}[\s\-.]?\d{4}\b""")
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -120,10 +122,28 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
     /**
      * Client-Side Assisted Filing u/s 139(1B):
      * Directly injects verified return numbers into the official e-filing portal DOM fields.
+     *
+     * VUL-08 FIX: All payload values are passed via a single JSON object encoded by JSONObject.quote().
+     * This prevents Kotlin string-template injection of arbitrary JS code if any Long field were
+     * somehow manipulated to contain JS-breaking characters. Values are parsed in JS from the JSON object.
      */
     fun autoFillPortalFields(webView: WebView, payload: PortalAutoFillPayload) {
+        // Build a JSON object; JSONObject handles all escaping internally.
+        val dataJson = JSONObject().apply {
+            put("grossSalary", payload.grossSalary)
+            put("sec10Exemptions", payload.sec10Exemptions)
+            put("standardDeduction", payload.standardDeduction)
+            put("netSalary", payload.netSalary)
+            put("deductions80C", payload.deductions80C)
+            put("deductions80D", payload.deductions80D)
+            put("deductions80CCD2", payload.deductions80CCD2)
+            put("tdsClaimed", payload.tdsClaimed)
+        }.toString()
+        // JSONObject.quote wraps the JSON string safely for JS consumption.
+        val escapedDataJson = JSONObject.quote(dataJson)
         val script = """
             (function() {
+                const data = JSON.parse($escapedDataJson);
                 let populated = 0;
                 function setInputValue(selectors, val) {
                     for (let sel of selectors) {
@@ -140,24 +160,24 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                 }
 
                 // Auto-fill Salary & Allowances
-                setInputValue(['input[name*="grossSalary"]', 'input[id*="grossSalary"]', 'input[formcontrolname="grossSalary"]'], '${payload.grossSalary}');
-                setInputValue(['input[name*="sec10"]', 'input[id*="sec10"]', 'input[formcontrolname="sec10"]'], '${payload.sec10Exemptions}');
-                setInputValue(['input[name*="stdDed"]', 'input[id*="stdDed"]', 'input[formcontrolname="stdDed"]', 'input[name*="16ia"]'], '${payload.standardDeduction}');
-                setInputValue(['input[name*="netSalary"]', 'input[id*="netSalary"]'], '${payload.netSalary}');
+                setInputValue(['input[name*="grossSalary"]', 'input[id*="grossSalary"]', 'input[formcontrolname="grossSalary"]'], String(data.grossSalary));
+                setInputValue(['input[name*="sec10"]', 'input[id*="sec10"]', 'input[formcontrolname="sec10"]'], String(data.sec10Exemptions));
+                setInputValue(['input[name*="stdDed"]', 'input[id*="stdDed"]', 'input[formcontrolname="stdDed"]', 'input[name*="16ia"]'], String(data.standardDeduction));
+                setInputValue(['input[name*="netSalary"]', 'input[id*="netSalary"]'], String(data.netSalary));
 
                 // Auto-fill Deductions
-                if (${payload.deductions80C} > 0) {
-                    setInputValue(['input[name*="80c"]', 'input[id*="80c"]', 'input[formcontrolname="sec80c"]'], '${payload.deductions80C}');
+                if (data.deductions80C > 0) {
+                    setInputValue(['input[name*="80c"]', 'input[id*="80c"]', 'input[formcontrolname="sec80c"]'], String(data.deductions80C));
                 }
-                if (${payload.deductions80D} > 0) {
-                    setInputValue(['input[name*="80d"]', 'input[id*="80d"]', 'input[formcontrolname="sec80d"]'], '${payload.deductions80D}');
+                if (data.deductions80D > 0) {
+                    setInputValue(['input[name*="80d"]', 'input[id*="80d"]', 'input[formcontrolname="sec80d"]'], String(data.deductions80D));
                 }
-                if (${payload.deductions80CCD2} > 0) {
-                    setInputValue(['input[name*="80ccd2"]', 'input[id*="80ccd2"]'], '${payload.deductions80CCD2}');
+                if (data.deductions80CCD2 > 0) {
+                    setInputValue(['input[name*="80ccd2"]', 'input[id*="80ccd2"]'], String(data.deductions80CCD2));
                 }
 
                 // Auto-fill TDS Claimed
-                setInputValue(['input[name*="tdsClaimed"]', 'input[id*="tdsClaimed"]', 'input[formcontrolname="tdsClaimed"]'], '${payload.tdsClaimed}');
+                setInputValue(['input[name*="tdsClaimed"]', 'input[id*="tdsClaimed"]', 'input[formcontrolname="tdsClaimed"]'], String(data.tdsClaimed));
 
                 if (window.ZeroTaxClientBridge && window.ZeroTaxClientBridge.onAutoFillComplete) {
                     window.ZeroTaxClientBridge.onAutoFillComplete(populated);
@@ -236,12 +256,16 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
     }
 
     fun injectAadhaarOtpVerificationScript(webView: WebView, otp6Digits: String) {
+        // VUL-08: Sanitize OTP to strictly 6 digits before injecting; reject any non-numeric input.
+        val safeOtp = otp6Digits.filter { it.isDigit() }.take(6)
+        if (safeOtp.length != 6) return // Abort injection for malformed OTP
+        val escapedOtp = JSONObject.quote(safeOtp)
         val script = """
             (function() {
                 try {
                     const otpInput = document.querySelector('input[name*="otp" i]') || document.querySelector('input[id*="otp" i]');
                     if (otpInput) {
-                        otpInput.value = '$otp6Digits';
+                        otpInput.value = $escapedOtp;
                         otpInput.dispatchEvent(new Event('input', { bubbles: true }));
                         otpInput.dispatchEvent(new Event('change', { bubbles: true }));
                         const submitBtn = document.querySelector('button[type="submit"]') || document.querySelector('button.e-verify-btn');
@@ -272,13 +296,17 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
     }
 
     fun injectPollCpcProcessingStatusScript(webView: WebView, ackNo: String) {
+        // VUL-08: Sanitize ackNo to strictly alphanumeric before injecting into JS selector.
+        val safeAckNo = ackNo.filter { it.isLetterOrDigit() || it == '-' }.take(30)
+        val escapedAck = JSONObject.quote(safeAckNo)
         val script = """
             (function() {
                 try {
-                    const statusRow = document.querySelector('tr[data-ack="$ackNo"]') || document.querySelector('.cpc-status-card');
+                    const ack = $escapedAck;
+                    const statusRow = document.querySelector('tr[data-ack="' + ack + '"]') || document.querySelector('.cpc-status-card');
                     if (statusRow) {
                         const text = statusRow.innerText || '';
-                        window.ZeroTaxBridge.onCpcStatusPolled('$ackNo', text, 0);
+                        window.ZeroTaxBridge.onCpcStatusPolled(ack, text, 0);
                     }
                 } catch(e) {}
             })();

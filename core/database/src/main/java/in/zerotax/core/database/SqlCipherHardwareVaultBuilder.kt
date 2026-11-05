@@ -65,10 +65,23 @@ object SqlCipherHardwareVaultBuilder {
         val hexIv = prefs.getString(KEY_IV, null)
 
         if (hexCipher != null && hexIv != null) {
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            val spec = GCMParameterSpec(GCM_TAG_LENGTH_BITS, hexToBytes(hexIv))
-            cipher.init(Cipher.DECRYPT_MODE, hardwareKey, spec)
-            return cipher.doFinal(hexToBytes(hexCipher))
+            // VUL-07 FIX: Handle AndroidKeyStore eviction or hardware key recreation.
+            // On device backup/restore or screen lock reset, Keystore keys are invalidated
+            // while SharedPreferences persist. Attempting to decrypt with a regenerated key
+            // throws AEADBadTagException / GeneralSecurityException, causing a permanent crash loop.
+            val decrypted = runCatching {
+                val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+                val spec = GCMParameterSpec(GCM_TAG_LENGTH_BITS, hexToBytes(hexIv))
+                cipher.init(Cipher.DECRYPT_MODE, hardwareKey, spec)
+                cipher.doFinal(hexToBytes(hexCipher))
+            }.getOrNull()
+
+            if (decrypted != null) {
+                return decrypted
+            }
+            // Decryption failed: Keystore key was evicted or invalidated.
+            // Purge corrupted ciphertext/IV and re-initialize a fresh vault passphrase.
+            prefs.edit().remove(KEY_CIPHERTEXT).remove(KEY_IV).apply()
         }
 
         val rawPassphrase = ByteArray(PASSPHRASE_BYTE_COUNT).also {

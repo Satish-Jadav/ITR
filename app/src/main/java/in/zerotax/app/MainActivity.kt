@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.zerotax.app.ui.auth.AuthenticationScreen
+import `in`.zerotax.app.ui.ca.CaAuditorPortalScreen
 import `in`.zerotax.app.ui.navigation.ZeroTaxFourTapSpineScaffold
 import `in`.zerotax.app.ui.splash.SplashScreen
 import `in`.zerotax.app.ui.theme.ZeroTaxTheme
@@ -34,40 +35,50 @@ class MainActivity : ComponentActivity() {
                 val viewModel: ZeroTaxViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsState()
                 var isSplashFinished by remember { mutableStateOf(false) }
+                var showCaPortalInMain by remember { mutableStateOf(false) }
 
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    AnimatedContent(
-                        targetState = isSplashFinished to (uiState.authSessionState is AuthSessionState.Authenticated),
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(400, easing = FastOutSlowInEasing)) togetherWith
-                            fadeOut(animationSpec = tween(300, easing = FastOutSlowInEasing))
-                        },
-                        label = "AppLaunchTransition"
-                    ) { (splashFinished, isAuthenticated) ->
-                        if (!splashFinished) {
-                            SplashScreen(
-                                onInitializationComplete = { isSplashFinished = true }
-                            )
-                        } else if (!isAuthenticated) {
-                            AuthenticationScreen(
-                                onAuthenticationSuccess = { /* state handled in viewModel */ },
-                                onSignInWithEmail = { email, password, isSignUp, name ->
-                                    viewModel.signInWithEmail(email, password, isSignUp, name)
-                                },
-                                onSignInWithGoogle = { email, name ->
-                                    viewModel.signInWithGoogle(email, name)
-                                },
-                                onSignInOfflineGuest = {
-                                    viewModel.signInAsGuest()
-                                },
-                                onBiometricUnlock = {
-                                    viewModel.signInWithBiometrics()
-                                },
-                                isLoading = uiState.isAuthLoading,
-                                errorMessage = uiState.authErrorMessage
-                            )
-                        } else {
-                            ZeroTaxFourTapSpineScaffold(viewModel = viewModel)
+                    if (showCaPortalInMain) {
+                        CaAuditorPortalScreen(
+                            onExitCaPortal = { showCaPortalInMain = false }
+                        )
+                    } else {
+                        AnimatedContent(
+                            targetState = isSplashFinished to (uiState.authSessionState is AuthSessionState.Authenticated),
+                            transitionSpec = {
+                                fadeIn(animationSpec = tween(400, easing = FastOutSlowInEasing)) togetherWith
+                                fadeOut(animationSpec = tween(300, easing = FastOutSlowInEasing))
+                            },
+                            label = "AppLaunchTransition"
+                        ) { (splashFinished, isAuthenticated) ->
+                            if (!splashFinished) {
+                                SplashScreen(
+                                    onInitializationComplete = { isSplashFinished = true }
+                                )
+                            } else if (!isAuthenticated) {
+                                AuthenticationScreen(
+                                    onAuthenticationSuccess = { /* state handled in viewModel */ },
+                                    onSignInWithEmail = { email, password, isSignUp, name ->
+                                        viewModel.signInWithEmail(email, password, isSignUp, name)
+                                    },
+                                    onSignInWithGoogle = { email, name ->
+                                        viewModel.signInWithGoogle(email, name)
+                                    },
+                                    onSignInOfflineGuest = {
+                                        viewModel.signInAsGuest()
+                                    },
+                                    onBiometricUnlock = {
+                                        viewModel.signInWithBiometrics()
+                                    },
+                                    onLaunchCaPortal = {
+                                        showCaPortalInMain = true
+                                    },
+                                    isLoading = uiState.isAuthLoading,
+                                    errorMessage = uiState.authErrorMessage
+                                )
+                            } else {
+                                ZeroTaxFourTapSpineScaffold(viewModel = viewModel)
+                            }
                         }
                     }
                 }

@@ -35,6 +35,7 @@ import `in`.zerotax.core.model.InstitutionPdfPasswordRule
 import `in`.zerotax.core.model.Rupee
 import `in`.zerotax.core.model.ScheduleItChallanEntry
 import `in`.zerotax.core.model.TaxPaymentChannel
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
 import `in`.zerotax.feature.portalbridge.ChallanTaxType
 import `in`.zerotax.feature.portalbridge.UpiChallan280IntentLauncher
 
@@ -269,8 +270,35 @@ fun InstitutionPdfPasswordCheatsheetModal(
 ) {
     var selectedCategory by remember { mutableStateOf("All") }
     val categories = listOf("All", "Tax & Identity", "Banking", "Investments")
-    val allRules = remember { InstitutionPdfPasswordRegistry.rules }
-    val filteredRules = remember(selectedCategory) {
+    var allRules by remember { mutableStateOf(InstitutionPdfPasswordRegistry.rules) }
+
+    LaunchedEffect(Unit) {
+        runCatching {
+            val json = ZeroTaxCloudApiBridge.fetchInstitutionPdfRules().getOrNull()
+            val array = json?.optJSONArray("rules")
+            if (array != null && array.length() > 0) {
+                val list = mutableListOf<InstitutionPdfPasswordRule>()
+                for (i in 0 until array.length()) {
+                    val o = array.getJSONObject(i)
+                    list.add(
+                        InstitutionPdfPasswordRule(
+                            institutionId = o.optString("institutionId"),
+                            institutionName = o.optString("institutionName"),
+                            documentCategory = o.optString("documentCategory", "Tax & Identity"),
+                            passwordPatternRule = o.optString("passwordPatternRule"),
+                            exampleDescription = o.optString("exampleDescription"),
+                            exampleInput = o.optString("exampleInput"),
+                            officialHelplineHint = o.optString("officialHelplineHint")
+                        )
+                    )
+                }
+                InstitutionPdfPasswordRegistry.updateRules(list)
+                allRules = list
+            }
+        }
+    }
+
+    val filteredRules = remember(selectedCategory, allRules) {
         if (selectedCategory == "All") allRules
         else allRules.filter { it.documentCategory == selectedCategory }
     }

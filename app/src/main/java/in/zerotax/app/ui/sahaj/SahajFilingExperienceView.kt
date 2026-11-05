@@ -45,6 +45,7 @@ fun SahajFilingExperienceView(
     onOpenTaxPaymentHub: () -> Unit,
     onOpenAisTransactions: () -> Unit,
     onOpenPortalSync: () -> Unit = {},
+    onOpenThinkLikeCa: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showTour by remember { mutableStateOf(true) }
@@ -393,6 +394,21 @@ fun SahajFilingExperienceView(
                 border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600)
             ) {
                 Text("Have Extra Deductions? (Home Loan, 80D, Rent)", style = MaterialTheme.typography.labelSmall.copy(color = EnterpriseTeal700, fontWeight = FontWeight.Bold))
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Button(
+                onClick = onOpenThinkLikeCa,
+                modifier = Modifier.fillMaxWidth().height(40.dp),
+                shape = RoundedCornerShape(6.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.TrendingUp, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Maximize Refund: Think Like a CA (Turn Tax to ₹0)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = PureWhite))
+                }
             }
         }
 

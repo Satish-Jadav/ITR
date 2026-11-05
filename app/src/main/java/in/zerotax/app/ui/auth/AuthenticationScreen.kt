@@ -13,10 +13,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AssignmentInd
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
@@ -25,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -36,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.core.model.AuthProvider
 import `in`.zerotax.core.model.UserAuthProfile
+import `in`.zerotax.app.ui.security.ZeroKnowledgeTrustShieldModal
+import `in`.zerotax.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +52,14 @@ fun AuthenticationScreen(
     onSignInWithGoogle: (email: String, name: String) -> Unit,
     onSignInOfflineGuest: () -> Unit,
     onBiometricUnlock: () -> Unit,
+    onLaunchCaPortal: () -> Unit = {},
     isLoading: Boolean = false,
     errorMessage: String? = null
 ) {
+    var isCaMode by remember { mutableStateOf(false) }
+    var caMembershipInput by remember { mutableStateOf("514289") }
+    var caPasswordInput by remember { mutableStateOf("••••••••") }
+    var showTrustShieldModal by remember { mutableStateOf(false) }
     var isSignUpMode by remember { mutableStateOf(false) }
     var emailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
@@ -103,10 +115,11 @@ fun AuthenticationScreen(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Privacy Badge
+            // Zero-Knowledge Trust Shield Badge (Clickable)
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.clickable { showTrustShieldModal = true }
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -120,7 +133,7 @@ fun AuthenticationScreen(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "100% On-Device • DPDP Act 2023 Compliant",
+                        text = "100% On-Device Zero-Knowledge Vault • Trust Shield",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
@@ -128,7 +141,50 @@ fun AuthenticationScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Persona Selector: Taxpayer Login vs Auditor / CA Portal
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    .padding(3.dp)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = if (!isCaMode) MaterialTheme.colorScheme.surface else androidx.compose.ui.graphics.Color.Transparent,
+                    modifier = Modifier.weight(1f).clickable { isCaMode = false }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Person, contentDescription = null, tint = if (!isCaMode) EnterpriseTeal700 else Slate600, modifier = Modifier.size(15.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Taxpayer Login", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (!isCaMode) EnterpriseTeal900 else Slate600))
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = if (isCaMode) MaterialTheme.colorScheme.surface else androidx.compose.ui.graphics.Color.Transparent,
+                    modifier = Modifier.weight(1f).clickable { isCaMode = true }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = if (isCaMode) IndigoStatutory else Slate600, modifier = Modifier.size(15.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Auditor / CA Portal", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (isCaMode) IndigoStatutory else Slate600))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Error Banner (if any)
             if (!errorMessage.isNullOrBlank()) {
@@ -159,7 +215,8 @@ fun AuthenticationScreen(
                 }
             }
 
-            // PRIMARY: Google Sign-In Button
+            if (!isCaMode) {
+                // PRIMARY: Google Sign-In Button
             OutlinedButton(
                 onClick = { showGoogleAccountPicker = true },
                 enabled = !isLoading,
@@ -391,6 +448,83 @@ fun AuthenticationScreen(
                     }
                 }
             }
+            } else {
+                // Auditor / CA Dedicated Login Portal
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(IndigoStatutory))
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = IndigoStatutory, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Column {
+                                Text("Auditor & Chartered Accountant Login", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                                Text("Statutory Audit Verification & UDIN Roster", style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp))
+                            }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = caMembershipInput,
+                            onValueChange = { caMembershipInput = it },
+                            label = { Text("ICAI Membership Number (6 Digits)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = caPasswordInput,
+                            onValueChange = { caPasswordInput = it },
+                            label = { Text("Auditor Password") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            visualTransformation = PasswordVisualTransformation()
+                        )
+
+                        Spacer(Modifier.height(16.dp))
+
+                        Button(
+                            onClick = onLaunchCaPortal,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = IndigoStatutory),
+                            modifier = Modifier.fillMaxWidth().height(48.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text("Sign In to CA Verification Portal", fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Slate100,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Lock, contentDescription = null, tint = Slate600, modifier = Modifier.size(14.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    "Zero-Knowledge Protocol: Client tax packets are decrypted on-device using single-use pairing codes provided by your clients.",
+                                    style = TextStyle(fontSize = 10.sp, color = Slate600, lineHeight = 14.sp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -404,6 +538,10 @@ fun AuthenticationScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        if (showTrustShieldModal) {
+            ZeroKnowledgeTrustShieldModal(onDismiss = { showTrustShieldModal = false })
         }
 
         // Google Account Quick Picker Dialog

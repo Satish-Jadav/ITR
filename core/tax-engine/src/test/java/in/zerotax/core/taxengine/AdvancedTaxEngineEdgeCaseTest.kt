@@ -1,7 +1,9 @@
 package `in`.zerotax.core.taxengine
 
 import `in`.zerotax.core.model.AssessmentYearProfile
+import `in`.zerotax.core.model.BankAccountDetails
 import `in`.zerotax.core.model.CitizenCategory
+import `in`.zerotax.core.model.Itr5FirmInput
 import `in`.zerotax.core.model.ItrFormType
 import `in`.zerotax.core.model.ResidenceCityCategory
 import `in`.zerotax.core.model.ResidentialStatus
@@ -9,8 +11,11 @@ import `in`.zerotax.core.model.TaxpayerRoutingProfile
 import `in`.zerotax.core.taxengine.advanced.CapitalGainsAndForeignAssetEngine
 import `in`.zerotax.core.taxengine.advanced.HraAndInterestEngine
 import `in`.zerotax.core.taxengine.advanced.HraCalculationInput
+import `in`.zerotax.core.taxengine.advanced.UniversalBrokerPnLParser
 import `in`.zerotax.core.taxengine.calculator.DeterministicIndianTaxEngine
 import `in`.zerotax.core.taxengine.calculator.TaxpayerFinancialInput
+import `in`.zerotax.core.taxengine.compiler.CbdtCategoryADefectGate
+import `in`.zerotax.core.taxengine.corporate.CorporateAndTrustTaxEngine
 import `in`.zerotax.core.taxengine.revision.ItrUWindow
 import `in`.zerotax.core.taxengine.revision.RevisionAndHarvestingEngine
 import `in`.zerotax.core.taxengine.routing.DeterministicItrFormRouter
@@ -286,6 +291,85 @@ class AdvancedTaxEngineEdgeCaseTest {
         )
         assertEquals(10_000L, itrU.additionalTaxUs140B)
         assertEquals(50_000L, itrU.totalUpdatedReturnPayable)
+    }
+
+    @Test
+    fun `VUL-11 and VUL-12 Negative inputs are clamped to non-negative and prevent negative tax or illegal salary offset`() {
+        val adversarialInput = TaxpayerFinancialInput(
+            grossSalary = 10_00_000L,
+            presumptiveGrossReceipts44ADA = -5_00_000L,
+            netTaxableStcg111ARupees = -2_00_000L,
+            netTaxableLtcg112ARupees = -1_00_000L,
+            assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+        )
+        val result = DeterministicIndianTaxEngine.computeNewRegime(adversarialInput)
+        assertTrue(result.totalTaxLiabilityRounded288B >= 0L)
+        assertEquals(9_25_000L, result.netTaxableNormalIncomeRounded288A)
+    }
+
+    @Test
+    fun `VUL-14 and VUL-16 Broker PnL parser safely handles Long MIN_VALUE and Indian currency comma formatting`() {
+        val csv = """
+            Symbol,Type,Quantity,PnL
+            NIFTY26MARFUT,FNO,50,"(1,25,000)"
+            RELIANCE,LTCG,10,"2,50,000"
+            INFY,STCG,20,"-50,000"
+        """.trimIndent()
+        val parsed = UniversalBrokerPnLParser.parseBrokerCsv(csv)
+        assertEquals(125000L, parsed.totalFnoAbsoluteTurnover)
+        assertEquals(-125000L, parsed.totalFnoNetProfitOrLoss)
+        assertEquals(250000L, parsed.totalLtcg112AGains)
+        assertEquals(50000L, parsed.totalStcl111ALosses)
+    }
+
+    @Test
+    fun `VUL-19 and VUL-20 CBDT Defect Gate evaluates grossTotalIncome and strict Aadhaar formatting`() {
+        val bank = BankAccountDetails(
+            accountNumber = "123456789012",
+            ifscCode = "SBIN0001234",
+            bankName = "State Bank of India",
+            isRefundAccount = true
+        )
+        // Freelancer with zero salary but valid gross total income and TDS
+        val passResult = CbdtCategoryADefectGate.evaluateCategoryADefects(
+            pan = "ABCDE1234F",
+            aadhaarRedactedOrValid = "[Aadhaar Redacted]",
+            grossSalary = 0L,
+            claimedTds = 50_000L,
+            allowed26AsTds = 50_000L,
+            grossTotalIncome = 10_00_000L,
+            chapterViaDeductions = 1_50_000L,
+            bankAccount = bank
+        )
+        assertTrue(passResult.isPassed)
+
+        // Invalid fake Aadhaar like "xRedacted" should fail Gate 2
+        val failResult = CbdtCategoryADefectGate.evaluateCategoryADefects(
+            pan = "ABCDE1234F",
+            aadhaarRedactedOrValid = "xRedacted",
+            grossSalary = 5_00_000L,
+            claimedTds = 10_000L,
+            allowed26AsTds = 10_000L,
+            grossTotalIncome = 5_00_000L,
+            chapterViaDeductions = 50_000L,
+            bankAccount = bank
+        )
+        assertFalse(failResult.isPassed)
+        assertTrue(failResult.failedGates.contains("GATE_2_INVALID_AADHAAR_IDENTIFIER"))
+    }
+
+    @Test
+    fun `VUL-15 ITR-5 Partnership Firm loss creates business loss carry forward record`() {
+        val lossFirm = Itr5FirmInput(
+            firmPan = "AABCF1234G",
+            bookProfitBeforePartnerPayments = -4_00_000L,
+            partnerCapitalTotalRupees = 10_00_000L,
+            partnerInterestOnCapitalClaimed = 0L,
+            partnerRemunerationClaimed = 0L
+        )
+        val result = CorporateAndTrustTaxEngine.computeItr5FirmTax(lossFirm)
+        assertEquals(4_00_000L, result.businessLossCarryForwardRupees)
+        assertEquals(0L, result.totalTaxableIncomeRupees)
     }
 }
 

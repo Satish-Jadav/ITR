@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +46,9 @@ fun EnterpriseAuditFastStartView(
     onOpenTaxPaymentHub: () -> Unit,
     onRunAudit: () -> Unit,
     onOpenPortalSync: () -> Unit = {},
+    onOpenShareWithCa: () -> Unit = {},
+    onOpenThinkLikeCa: () -> Unit = {},
+    onOpenCaPortal: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -94,6 +98,81 @@ fun EnterpriseAuditFastStartView(
                     }
                 }
                 StatutoryBadge(text = "1-Tap Sync →", tone = BadgeTone.SUCCESS)
+            }
+        }
+
+        // CHARTERED ACCOUNTANT (CA) AUDIT & CLIENT PAIRING DESK
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(containerColor = Slate50),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Slate300)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = IndigoStatutory, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Chartered Accountant & Auditor Desk", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                    }
+                    StatutoryBadge(text = "Sec 44AB Ready", tone = BadgeTone.SUCCESS)
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Pair with your CA using an on-device 6-digit code for Form 3CD/3CA verification, or maximize your legal deductions to get a full refund.",
+                    style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onOpenShareWithCa,
+                        modifier = Modifier.weight(1f).height(38.dp),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, IndigoStatutory)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Share, contentDescription = null, tint = IndigoStatutory, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Share with CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
+                        }
+                    }
+
+                    Button(
+                        onClick = onOpenThinkLikeCa,
+                        modifier = Modifier.weight(1f).height(38.dp),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.TrendingUp, contentDescription = null, tint = PureWhite, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Think Like a CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureWhite))
+                        }
+                    }
+
+                    OutlinedButton(
+                        onClick = onOpenCaPortal,
+                        modifier = Modifier.weight(1f).height(38.dp),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Assignment, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("CA Portal", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700))
+                        }
+                    }
+                }
             }
         }
 

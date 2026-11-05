@@ -29,6 +29,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.audit.PreFilingAuditView
 import `in`.zerotax.app.ui.business.SmallBusinessAuditSuiteScreen
+import `in`.zerotax.app.ui.ca.CaAuditorPortalScreen
+import `in`.zerotax.app.ui.ca.ShareWithCaClientModal
+import `in`.zerotax.app.ui.ca.ThinkLikeACaAdvisorView
 import `in`.zerotax.app.ui.chat.ConversationalFilingChatScreen
 import `in`.zerotax.app.ui.corporate.CorporateAndTrustSuiteScreen
 import `in`.zerotax.app.ui.deductions.SmartDeductionsAdvisorScreen
@@ -42,6 +45,7 @@ import `in`.zerotax.app.ui.portal.SmartTransactionSuggestionsView
 import `in`.zerotax.app.ui.enterprise.EnterpriseAuditFastStartView
 import `in`.zerotax.app.ui.sahaj.SahajFilingExperienceView
 import `in`.zerotax.app.ui.security.BiometricShieldGate
+import `in`.zerotax.app.ui.security.ZeroKnowledgeTrustShieldModal
 import `in`.zerotax.app.ui.security.ZeroTaxBiometricManager
 import `in`.zerotax.app.ui.sugam.SugamPresumptiveFastStartView
 import `in`.zerotax.app.ui.timeline.StatutoryTimelineBanner
@@ -91,6 +95,27 @@ fun ZeroTaxFourTapSpineScaffold(
     var showPasswordCheatsheetModal by remember { mutableStateOf(false) }
     var showTaxPaymentHub by remember { mutableStateOf(false) }
     var showPortalSyncModal by remember { mutableStateOf(false) }
+    var showCaPortal by remember { mutableStateOf(false) }
+    var showThinkLikeCa by remember { mutableStateOf(false) }
+    var showShareWithCaModal by remember { mutableStateOf(false) }
+    var showTrustShieldModal by remember { mutableStateOf(false) }
+
+    if (showCaPortal) {
+        CaAuditorPortalScreen(
+            onExitCaPortal = { showCaPortal = false }
+        )
+        return
+    }
+
+    if (showThinkLikeCa) {
+        ThinkLikeACaAdvisorView(
+            pan = uiState.pan,
+            grossSalary = uiState.grossSalaryRupees,
+            tdsPrepaid = uiState.salarySummary.aggregateTdsAllowed,
+            onBack = { showThinkLikeCa = false }
+        )
+        return
+    }
 
     if (showCorporateSuite) {
         CorporateAndTrustSuiteScreen(
@@ -223,6 +248,9 @@ fun ZeroTaxFourTapSpineScaffold(
                 onOpenBusinessAudit = { showBusinessAudit = true },
                 onOpenNriSuite = { showNriSuite = true },
                 onOpenCorporateSuite = { showCorporateSuite = true },
+                onOpenTrustShield = { showTrustShieldModal = true },
+                onOpenThinkLikeCa = { showThinkLikeCa = true },
+                onOpenCaPortal = { showCaPortal = true },
                 onLockVault = { ZeroTaxBiometricManager.lockVaultNow() }
             )
         },
@@ -382,6 +410,9 @@ fun ZeroTaxFourTapSpineScaffold(
                         onOpenNriSuite = { showNriSuite = true },
                         onOpenCorporateSuite = { showCorporateSuite = true },
                         onOpenPortalSync = { showPortalSyncModal = true },
+                        onOpenShareWithCa = { showShareWithCaModal = true },
+                        onOpenThinkLikeCa = { showThinkLikeCa = true },
+                        onOpenCaPortal = { showCaPortal = true },
                         onLoadAuditTrail = { viewModel.loadAuditTrailLazy() },
                         onShredVault = { viewModel.onShredVaultData() }
                     )
@@ -445,6 +476,19 @@ fun ZeroTaxFourTapSpineScaffold(
                     onCancelAndRestoreVerifiedValue = {
                         showSection270ADialog = false
                     }
+                )
+            }
+
+            if (showShareWithCaModal) {
+                ShareWithCaClientModal(
+                    pan = uiState.pan,
+                    onDismiss = { showShareWithCaModal = false }
+                )
+            }
+
+            if (showTrustShieldModal) {
+                ZeroKnowledgeTrustShieldModal(
+                    onDismiss = { showTrustShieldModal = false }
                 )
             }
         }
@@ -1164,6 +1208,9 @@ private fun ProWorkspaceView(
     onOpenNriSuite: () -> Unit = {},
     onOpenCorporateSuite: () -> Unit = {},
     onOpenPortalSync: () -> Unit = {},
+    onOpenShareWithCa: () -> Unit = {},
+    onOpenThinkLikeCa: () -> Unit = {},
+    onOpenCaPortal: () -> Unit = {},
     onLoadAuditTrail: () -> Unit = {},
     onShredVault: () -> Unit
 ) {
@@ -1233,7 +1280,8 @@ private fun ProWorkspaceView(
                                         onOpenDeductionsAdvisor = onOpenDeductionsAdvisor,
                                         onOpenTaxPaymentHub = onOpenTaxPaymentHub,
                                         onOpenAisTransactions = onOpenAisTransactions,
-                                        onOpenPortalSync = onOpenPortalSync
+                                        onOpenPortalSync = onOpenPortalSync,
+                                        onOpenThinkLikeCa = onOpenThinkLikeCa
                                     )
                                 }
                             }
@@ -1264,7 +1312,10 @@ private fun ProWorkspaceView(
                                         onLaunchPortalAssistant = onLaunchPortalAssistant,
                                         onOpenTaxPaymentHub = onOpenTaxPaymentHub,
                                         onRunAudit = onRunAudit,
-                                        onOpenPortalSync = onOpenPortalSync
+                                        onOpenPortalSync = onOpenPortalSync,
+                                        onOpenShareWithCa = onOpenShareWithCa,
+                                        onOpenThinkLikeCa = onOpenThinkLikeCa,
+                                        onOpenCaPortal = onOpenCaPortal
                                     )
                                 }
                             }
