@@ -129,11 +129,11 @@ This master index provides the consolidated architecture, product specifications
   - **SUGAM (ITR-4)**: 2-minute presumptive deck for freelancers and small businesses (`44ADA` @ 50% / `44AD` @ 6% digital / 8% cash) with zero books of accounts required.
   - **ENTERPRISE AUDIT (ITR-2 to ITR-7)**: Executive statutory audit desk with 1-tap fast launchers for Corporate Suite (`ITR-5/6/7`), 44AB Form 3CD, Dual-Region NRI DTAA, and Notice Defense.
 - **Interactive Coachmark Walkthrough ("Do this then click this" Mini-Popup Tour)**:
-  - Step-by-step guidance anchored cleanly with visual pointer cards (`Step 1 of 4` $\to$ `Step 4 of 4`) guiding non-expert users through Form 16 verification, regime selection, and biometric filing. Replayable at any time via the `"💡 How to File"` button.
+  - Step-by-step guidance anchored cleanly with visual pointer cards (`Step 1 of 4` $\to$ `Step 4 of 4`) guiding non-expert users through Form 16 verification, regime selection, and biometric filing. Replayable at any time via the `"How to File"` button.
 - **Full Biometric Security Shield (`ZeroTaxBiometricShield.kt`)**:
-  - Device biometric gate (Fingerprint / Face ID / PIN fallback) protecting the tax vault, filing records, PAN, bank accounts, and exports from unauthorized access. Includes an instant 1-tap `"🔒 Lock"` button in the top bar.
+  - Device biometric gate (Fingerprint / Face ID / PIN fallback) protecting the tax vault, filing records, PAN, bank accounts, and exports from unauthorized access. Includes an instant 1-tap `"Lock"` button in the top bar.
 - **Statutory Tax Timeline & Reminders (`StatutoryTaxTimelineManager.kt`)**:
-  - Real-time statutory milestone countdown engine tracking the **July 31** deadline, countdown timer pill (*"⏱️ 86 Days remaining"*), and 1-tap local notification scheduler for filing start, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
+  - Real-time statutory milestone countdown engine tracking the **July 31** deadline, countdown timer pill (*"86 Days remaining"*), and 1-tap local notification scheduler for filing start, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
 
 ---
 

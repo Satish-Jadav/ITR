@@ -565,9 +565,9 @@ fun allowTemporaryExportSnapshot(lifecycleScope: CoroutineScope) {
    - Investor & Freelance Pro (ITR-4 / ITR-2): 2-minute presumptive deck for 44ADA (50%) and 44AD (6%/8%), combined with Capital Gains tax-loss harvesting visualizer.
    - Enterprise & Corporate Audit (ITR-5 / ITR-6 / ITR-7): Executive desk with 1-tap launchers for Partnership/LLP Sec 40(b), Company Sec 115BAA/MAT, Trust Sec 11/12, and 44AB Form 3CD audit pack.
 • Hardware Biometric Shield Gate:
-   - Locks app data behind AndroidX BiometricPrompt (Fingerprint / Face ID / PIN) upon cold start or app resume, with a prominent "🔒 Lock" button in the top bar.
+   - Locks app data behind AndroidX BiometricPrompt (Fingerprint / Face ID / PIN) upon cold start or app resume, with a prominent "Lock" button in the top bar.
 • Statutory Tax Timeline Manager & Local Notifications:
-   - July 31 deadline countdown pill ("⏱️ 86 Days remaining") and 1-tap local notification scheduler for filing start, 30-day reminder, and late-fee alerts u/s 234F.
+   - July 31 deadline countdown pill ("86 Days remaining") and 1-tap local notification scheduler for filing start, 30-day reminder, and late-fee alerts u/s 234F.
 • Interactive Coachmark Tour ("Do this then click this" Mini-Popup):
    - Visual floating guide cards walking first-time filers through 4 key actions with a replay button.
 • In-App Live ITD Portal Sync Modal:
