@@ -122,7 +122,7 @@ fun SmartTaxToolkitScreen(
                                     imageVector = tab.icon,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
-                                    tint = if (isSelected) EnterpriseTeal600 else Slate600
+                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 Text(tab.label, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold))

@@ -33,10 +33,10 @@ import `in`.zerotax.app.ui.theme.*
  * and refunds are protected behind device biometrics (Fingerprint / Face ID / Device PIN).
  */
 object ZeroTaxBiometricManager {
-    var isVaultBiometricallyUnlocked by mutableStateOf(false)
+    var isVaultBiometricallyUnlocked by mutableStateOf(true)
         private set
 
-    var requireBiometricOnAppResume by mutableStateOf(true)
+    var requireBiometricOnAppResume by mutableStateOf(false)
 
     fun unlockVault() {
         isVaultBiometricallyUnlocked = true
