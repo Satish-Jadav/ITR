@@ -1,5 +1,6 @@
 package `in`.zerotax.core.security.network
 
+import `in`.zerotax.core.security.logging.ZeroTaxLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -9,13 +10,16 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * High-level Android SDK Bridge to the ZeroTax Vercel API.
+ * High-level Android SDK Bridge to the ZeroTax Cloud API.
  * Automatically wraps calls with:
  * - RFC 9449 DPoP Android Hardware Keystore Signatures
  * - Anti-Replay Timestamps & UUID Request-IDs
  * - Zero-Knowledge Data Masking
+ * - Structured Logcat & Diagnostic Recording for all endpoints
  */
 object ZeroTaxCloudApiBridge {
+
+    private const val TAG = "ZeroTaxCloudApiBridge"
 
     @Volatile
     var activeAccessToken: String? = null
@@ -39,6 +43,10 @@ object ZeroTaxCloudApiBridge {
         clientCache[key] = Pair(System.currentTimeMillis(), data)
     }
 
+    fun clearCache() {
+        clientCache.clear()
+    }
+
     private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
 
     private val okHttpClient by lazy {
@@ -49,8 +57,12 @@ object ZeroTaxCloudApiBridge {
      * Check Income Tax Portal Real-Time Availability (Cached for 60s)
      */
     suspend fun checkPortalHealth(): Result<JSONObject> = withContext(Dispatchers.IO) {
-        getCached("PORTAL_HEALTH", 60_000L)?.let { return@withContext Result.success(it) }
+        getCached("PORTAL_HEALTH", 60_000L)?.let {
+            ZeroTaxLogger.d(TAG, "checkPortalHealth: serving from cache")
+            return@withContext Result.success(it)
+        }
 
+        ZeroTaxLogger.d(TAG, "checkPortalHealth: requesting /api/v1/compliance/portal-health")
         runCatching {
             val request = Request.Builder()
                 .url("${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/compliance/portal-health")
@@ -62,11 +74,16 @@ object ZeroTaxCloudApiBridge {
                 if (response.isSuccessful) {
                     val json = JSONObject(bodyStr)
                     putCache("PORTAL_HEALTH", json)
+                    ZeroTaxLogger.i(TAG, "checkPortalHealth succeeded")
                     json
                 } else {
-                    throw IllegalStateException("Portal health check failed (${response.code}): $bodyStr")
+                    val err = "Portal health check failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "checkPortalHealth failed: ${error.message}", error)
         }
     }
 
@@ -75,8 +92,12 @@ object ZeroTaxCloudApiBridge {
      */
     suspend fun fetchStatutoryManifest(ay: String = "2026-27", currentVer: String? = null): Result<JSONObject> = withContext(Dispatchers.IO) {
         val cacheKey = "MANIFEST_${ay}_${currentVer.orEmpty()}"
-        getCached(cacheKey, 1800_000L)?.let { return@withContext Result.success(it) }
+        getCached(cacheKey, 1800_000L)?.let {
+            ZeroTaxLogger.d(TAG, "fetchStatutoryManifest: serving from cache ($cacheKey)")
+            return@withContext Result.success(it)
+        }
 
+        ZeroTaxLogger.d(TAG, "fetchStatutoryManifest: requesting /api/v1/statutory/manifest?ay=$ay")
         runCatching {
             val urlBuilder = StringBuilder("${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/statutory/manifest?ay=$ay")
             if (!currentVer.isNullOrBlank()) {
@@ -93,11 +114,16 @@ object ZeroTaxCloudApiBridge {
                 if (response.isSuccessful) {
                     val json = JSONObject(bodyStr)
                     putCache(cacheKey, json)
+                    ZeroTaxLogger.i(TAG, "fetchStatutoryManifest succeeded for AY $ay")
                     json
                 } else {
-                    throw IllegalStateException("Statutory manifest failed (${response.code}): $bodyStr")
+                    val err = "Statutory manifest failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "fetchStatutoryManifest failed: ${error.message}", error)
         }
     }
 
@@ -105,8 +131,12 @@ object ZeroTaxCloudApiBridge {
      * Fetch Dynamic Statutory Tax Milestones & CBDT Extensions (Cached for 15m)
      */
     suspend fun fetchStatutoryTimeline(): Result<JSONObject> = withContext(Dispatchers.IO) {
-        getCached("TIMELINE", 900_000L)?.let { return@withContext Result.success(it) }
+        getCached("TIMELINE", 900_000L)?.let {
+            ZeroTaxLogger.d(TAG, "fetchStatutoryTimeline: serving from cache")
+            return@withContext Result.success(it)
+        }
 
+        ZeroTaxLogger.d(TAG, "fetchStatutoryTimeline: requesting /api/v1/statutory/timeline")
         runCatching {
             val request = Request.Builder()
                 .url("${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/statutory/timeline")
@@ -118,11 +148,16 @@ object ZeroTaxCloudApiBridge {
                 if (response.isSuccessful) {
                     val json = JSONObject(bodyStr)
                     putCache("TIMELINE", json)
+                    ZeroTaxLogger.i(TAG, "fetchStatutoryTimeline succeeded")
                     json
                 } else {
-                    throw IllegalStateException("Statutory timeline failed (${response.code}): $bodyStr")
+                    val err = "Statutory timeline failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "fetchStatutoryTimeline failed: ${error.message}", error)
         }
     }
 
@@ -130,8 +165,12 @@ object ZeroTaxCloudApiBridge {
      * Fetch Dynamic Institution PDF Password Rules & Patterns (Cached for 1h)
      */
     suspend fun fetchInstitutionPdfRules(): Result<JSONObject> = withContext(Dispatchers.IO) {
-        getCached("PDF_RULES", 3600_000L)?.let { return@withContext Result.success(it) }
+        getCached("PDF_RULES", 3600_000L)?.let {
+            ZeroTaxLogger.d(TAG, "fetchInstitutionPdfRules: serving from cache")
+            return@withContext Result.success(it)
+        }
 
+        ZeroTaxLogger.d(TAG, "fetchInstitutionPdfRules: requesting /api/v1/statutory/pdf-rules")
         runCatching {
             val request = Request.Builder()
                 .url("${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/statutory/pdf-rules")
@@ -143,18 +182,24 @@ object ZeroTaxCloudApiBridge {
                 if (response.isSuccessful) {
                     val json = JSONObject(bodyStr)
                     putCache("PDF_RULES", json)
+                    ZeroTaxLogger.i(TAG, "fetchInstitutionPdfRules succeeded")
                     json
                 } else {
-                    throw IllegalStateException("PDF rules fetch failed (${response.code}): $bodyStr")
+                    val err = "PDF rules fetch failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "fetchInstitutionPdfRules failed: ${error.message}", error)
         }
     }
 
     /**
-     * Query Tier-2 Sanitized AI Copilot Intent on Vercel Backend
+     * Query Tier-2 Sanitized AI Copilot Intent on Backend
      */
     suspend fun queryAiCopilot(cleanQuery: String, locale: String = "en-IN"): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "queryAiCopilot: locale=$locale query='$cleanQuery'")
         runCatching {
             val payload = JSONObject().apply {
                 put("sanitizedQuery", cleanQuery)
@@ -169,16 +214,21 @@ object ZeroTaxCloudApiBridge {
             okHttpClient.newCall(request).execute().use { response ->
                 val bodyStr = response.body?.string().orEmpty()
                 if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "queryAiCopilot succeeded")
                     JSONObject(bodyStr)
                 } else {
-                    throw IllegalStateException("AI query failed (${response.code}): $bodyStr")
+                    val err = "AI query failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "queryAiCopilot failed: ${error.message}", error)
         }
     }
 
     /**
-     * Uploads an E2EE encrypted .ztvault snapshot to Supabase Storage via Vercel API
+     * Uploads an E2EE encrypted .ztvault snapshot to Cloud Storage via API
      */
     suspend fun syncEncryptedVault(
         panBlindIndexHmac: String,
@@ -191,6 +241,7 @@ object ZeroTaxCloudApiBridge {
         ciphertextPayloadBase64: String,
         ciphertextSha256Hex: String
     ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "syncEncryptedVault: AY=$assessmentYear version=$expectedPreviousVersion")
         runCatching {
             val payload = JSONObject().apply {
                 put("panBlindIndexHmac", panBlindIndexHmac)
@@ -212,21 +263,27 @@ object ZeroTaxCloudApiBridge {
             okHttpClient.newCall(request).execute().use { response ->
                 val bodyStr = response.body?.string().orEmpty()
                 if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "syncEncryptedVault succeeded for AY $assessmentYear")
                     JSONObject(bodyStr)
                 } else {
-                    throw IllegalStateException("Vault sync failed (${response.code}): $bodyStr")
+                    val err = "Vault sync failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "syncEncryptedVault failed: ${error.message}", error)
         }
     }
 
     /**
-     * Restores an E2EE encrypted .ztvault snapshot from Supabase Storage via Vercel API
+     * Restores an E2EE encrypted .ztvault snapshot from Cloud Storage via API
      */
     suspend fun restoreEncryptedVault(
         panBlindIndexHmac: String,
         assessmentYear: String = "2026-27"
     ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "restoreEncryptedVault: AY=$assessmentYear")
         runCatching {
             val request = Request.Builder()
                 .url("${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/vault/sync/$panBlindIndexHmac?ay=$assessmentYear")
@@ -236,11 +293,16 @@ object ZeroTaxCloudApiBridge {
             okHttpClient.newCall(request).execute().use { response ->
                 val bodyStr = response.body?.string().orEmpty()
                 if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "restoreEncryptedVault succeeded for AY $assessmentYear")
                     JSONObject(bodyStr)
                 } else {
-                    throw IllegalStateException("Vault restore failed (${response.code}): $bodyStr")
+                    val err = "Vault restore failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "restoreEncryptedVault failed: ${error.message}", error)
         }
     }
 
@@ -248,6 +310,7 @@ object ZeroTaxCloudApiBridge {
      * DPDP Act Section 12(3) Right to Erasure - Shred all cloud backups and tokens
      */
     suspend fun shredCloudAccount(): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "shredCloudAccount: requesting /api/v1/auth/dpdp-shred-account")
         runCatching {
             val payload = JSONObject().apply {
                 put("confirmErasurePhrase", "SHRED_MY_ZEROTAX_DATA")
@@ -264,16 +327,21 @@ object ZeroTaxCloudApiBridge {
                 if (response.isSuccessful) {
                     activeAccessToken = null
                     activeRefreshToken = null
+                    ZeroTaxLogger.i(TAG, "shredCloudAccount succeeded; tokens cleared")
                     JSONObject(bodyStr)
                 } else {
-                    throw IllegalStateException("DPDP shred failed (${response.code}): $bodyStr")
+                    val err = "DPDP shred failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "shredCloudAccount failed: ${error.message}", error)
         }
     }
 
     /**
-     * Synchronizes full on-device AI Conversational Filing chat history to Supabase
+     * Synchronizes full on-device AI Conversational Filing chat history
      */
     suspend fun syncChatSession(
         assessmentYear: String = "2026-27",
@@ -281,6 +349,7 @@ object ZeroTaxCloudApiBridge {
         messagesJsonArray: JSONArray,
         summarySnapshot: JSONObject? = null
     ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "syncChatSession: AY=$assessmentYear title='$chatTitle' msgCount=${messagesJsonArray.length()}")
         runCatching {
             val payload = JSONObject().apply {
                 put("assessmentYear", assessmentYear)
@@ -299,34 +368,45 @@ object ZeroTaxCloudApiBridge {
             okHttpClient.newCall(request).execute().use { response ->
                 val bodyStr = response.body?.string().orEmpty()
                 if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "syncChatSession succeeded for AY $assessmentYear")
                     JSONObject(bodyStr)
                 } else {
-                    throw IllegalStateException("Chat sync failed (${response.code}): $bodyStr")
+                    val err = "Chat sync failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "syncChatSession failed: ${error.message}", error)
         }
     }
 
     /**
-     * Fetches user's chat filing history from Supabase
+     * Fetches user's chat filing history
      */
     suspend fun fetchChatHistory(ay: String? = null): Result<JSONObject> = withContext(Dispatchers.IO) {
-        runCatching {
-            val url = if (ay != null) 
-                "${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/chat/history?ay=$ay"
-            else 
-                "${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/chat/history"
+        val url = if (ay != null)
+            "${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/chat/history?ay=$ay"
+        else
+            "${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/chat/history"
 
+        ZeroTaxLogger.d(TAG, "fetchChatHistory: requesting $url")
+        runCatching {
             val request = Request.Builder().url(url).get().build()
 
             okHttpClient.newCall(request).execute().use { response ->
                 val bodyStr = response.body?.string().orEmpty()
                 if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "fetchChatHistory succeeded")
                     JSONObject(bodyStr)
                 } else {
-                    throw IllegalStateException("Chat history fetch failed (${response.code}): $bodyStr")
+                    val err = "Chat history fetch failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
                 }
             }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "fetchChatHistory failed: ${error.message}", error)
         }
     }
 }

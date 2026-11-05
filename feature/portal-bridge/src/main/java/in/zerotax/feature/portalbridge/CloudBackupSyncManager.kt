@@ -2,6 +2,7 @@ package `in`.zerotax.feature.portalbridge
 
 import android.content.Context
 import `in`.zerotax.core.security.CanonicalWarningHasher
+import `in`.zerotax.core.security.logging.ZeroTaxLogger
 import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -99,6 +100,7 @@ data class CloudSyncResult(
  */
 object CloudBackupSyncManager {
 
+    private const val TAG = "ZeroTaxCloudSync"
     private const val DEFAULT_CLOUD_API_ENDPOINT = "https://api.zerotax.in/v1/tax/backup-sync"
     private const val LOCAL_RECOVERY_JOURNAL_FILE = "zerotax_crash_recovery_journal.json"
 
@@ -195,6 +197,7 @@ object CloudBackupSyncManager {
         val authTagHex = "" // Auth tag is embedded in ciphertext by AES/GCM/NoPadding; not separate.
 
         val remoteResult = runCatching {
+            ZeroTaxLogger.i(TAG, "syncStateToCloud: attempting cloud vault upload for PAN ${snapshot.pan.take(2)}***")
             ZeroTaxCloudApiBridge.syncEncryptedVault(
                 panBlindIndexHmac = panBlindIndex,
                 assessmentYear = snapshot.assessmentYear,
@@ -206,11 +209,16 @@ object CloudBackupSyncManager {
                 ciphertextPayloadBase64 = payloadBase64,
                 ciphertextSha256Hex = sha256Hex
             ).getOrNull()
+        }.onFailure { e ->
+            ZeroTaxLogger.w(TAG, "syncStateToCloud: cloud vault upload failed: ${e.message}; falling back to local vault", e)
         }.getOrNull()
 
         if (remoteResult != null) {
             cloudSyncId = remoteResult.optString("backupId").takeIf { it.isNotBlank() }
             cloudSyncedAt = remoteResult.optString("syncedAtIso").takeIf { it.isNotBlank() } ?: Instant.now().toString()
+            ZeroTaxLogger.i(TAG, "syncStateToCloud: cloud upload succeeded with id $cloudSyncId")
+        } else {
+            ZeroTaxLogger.i(TAG, "syncStateToCloud: cloud upload unavailable, local crash recovery journal maintained")
         }
 
         val syncId = cloudSyncId ?: ("SYNC-" + UUID.randomUUID().toString().take(8).uppercase())

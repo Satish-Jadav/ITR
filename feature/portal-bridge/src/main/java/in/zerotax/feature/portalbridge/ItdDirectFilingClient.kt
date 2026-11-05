@@ -5,6 +5,7 @@ import `in`.zerotax.core.model.BankAccountDetails
 import `in`.zerotax.core.model.DirectFilingSubmissionResult
 import `in`.zerotax.core.model.FilingSection
 import `in`.zerotax.core.model.TaxpayerDeclaration
+import `in`.zerotax.core.security.logging.ZeroTaxLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -32,6 +33,7 @@ class ItdDirectFilingClient {
     private var isSessionActive = false
 
     companion object {
+        private const val TAG = "ZeroTaxITDFiling"
         const val ITD_BASE_GATEWAY = "https://eportal.incometax.gov.in/iec/foservices"
         const val CBDT_SCHEME_AY = "2026-27"
     }
@@ -45,9 +47,13 @@ class ItdDirectFilingClient {
         password: CharArray?,
         aadhaarOtp: String? = null
     ): Result<Boolean> = withContext(Dispatchers.IO) {
+        val maskedPan = "${pan.take(2)}***${pan.takeLast(2)}"
+        ZeroTaxLogger.i(TAG, "authenticateInApp: starting for PAN $maskedPan (OTP provided: ${aadhaarOtp != null})")
         try {
             if (pan.length != 10 || pan[3] != 'P') {
-                return@withContext Result.failure(IllegalArgumentException("Invalid Permanent Account Number (PAN) format"))
+                val err = "Invalid Permanent Account Number (PAN) format for $maskedPan"
+                ZeroTaxLogger.w(TAG, "authenticateInApp failed: $err")
+                return@withContext Result.failure(IllegalArgumentException(err))
             }
 
             // Direct in-app authentication handshake with ITD TLS endpoint
@@ -59,8 +65,10 @@ class ItdDirectFilingClient {
             volatileSessionToken = hexToken.toCharArray()
             isSessionActive = true
 
+            ZeroTaxLogger.i(TAG, "authenticateInApp: session successfully established for PAN $maskedPan")
             Result.success(true)
         } catch (e: Exception) {
+            ZeroTaxLogger.e(TAG, "authenticateInApp: handshake failure for PAN $maskedPan: ${e.message}", e)
             Result.failure(e)
         } finally {
             // Immediately overwrite temporary password array per DPDP Act 2023 Sec 12(3)
@@ -76,15 +84,21 @@ class ItdDirectFilingClient {
         cbdtJsonPayload: String,
         bankAccount: BankAccountDetails
     ): Result<DirectFilingSubmissionResult> = withContext(Dispatchers.IO) {
+        val maskedPan = "${pan.take(2)}***${pan.takeLast(2)}"
+        ZeroTaxLogger.i(TAG, "submitItrDirectly: preparing dispatch for PAN $maskedPan")
         if (!isSessionActive || volatileSessionToken == null) {
-            return@withContext Result.failure(IllegalStateException("No active authenticated session with ITD. Please authenticate in-app."))
+            val err = "No active authenticated session with ITD. Please authenticate in-app."
+            ZeroTaxLogger.w(TAG, "submitItrDirectly aborted: $err")
+            return@withContext Result.failure(IllegalStateException(err))
         }
 
         try {
             // Verify schema validity of compiled JSON
             val json = JSONObject(cbdtJsonPayload)
             if (!json.has("ITR1")) {
-                return@withContext Result.failure(IllegalArgumentException("Malformed CBDT JSON: Missing root ITR1 element"))
+                val err = "Malformed CBDT JSON: Missing root ITR1 element"
+                ZeroTaxLogger.w(TAG, "submitItrDirectly error: $err")
+                return@withContext Result.failure(IllegalArgumentException(err))
             }
 
             delay(800) // Direct encrypted payload dispatch
@@ -102,8 +116,10 @@ class ItdDirectFilingClient {
                 message = "ITR-1 Sahaj Return for AY 2026-27 successfully received by CBDT Central Processing Centre."
             )
 
+            ZeroTaxLogger.i(TAG, "submitItrDirectly succeeded: Ack=$ackNumber Token=$token")
             Result.success(submissionResult)
         } catch (e: Exception) {
+            ZeroTaxLogger.e(TAG, "submitItrDirectly failed for PAN $maskedPan: ${e.message}", e)
             Result.failure(e)
         }
     }
