@@ -135,5 +135,19 @@ This master index provides the consolidated architecture, product specifications
 - **Statutory Tax Timeline & Reminders (`StatutoryTaxTimelineManager.kt`)**:
   - Real-time statutory milestone countdown engine tracking the **July 31** deadline, countdown timer pill (*"⏱️ 86 Days remaining"*), and 1-tap local notification scheduler for filing start, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
 
+---
+
+### 4.6 In-App Live ITD Portal Sync Suite & Zero-External-Login Architecture (`ItdLivePortalSyncModal.kt`)
+- **Zero External Login Guarantee:**
+  - Users authenticate directly inside ZeroTax via **1-Tap Aadhaar OTP** or **Portal Password**; they never need to open a separate web browser or log into `eportal.incometax.gov.in`.
+- **4-Point In-App Live Sync Handshake:**
+  1. **Form 26AS Sync:** Fetches all verified TDS/TCS entries deposited by employers, banks, and clients u/s 192, 194A, 194J, 194C, and 206C.
+  2. **AIS / TIS Live Extraction:** Automatically captures interest from all savings accounts, time deposits, dividends, and securities transactions without user data entry.
+  3. **Pre-fill Profile & Bank Accounts:** Pulls verified demographic details and pre-validated bank accounts for direct refund deposit.
+  4. **Filing & Refund Status Tracking:** Queries CPC processing status, intimations u/s 143(1), and refund dispatch numbers.
+- **DPDP Act 2023 Volatile Security:**
+  - Credentials and session tokens reside exclusively in volatile memory during the direct TLS handshake and are zeroized immediately following payload retrieval.
+
+
 
 
