@@ -17,7 +17,7 @@ class ConversationalTaxFilingBotTest {
         assertTrue(initialGreeting.isNotEmpty())
         assertEquals(ChatStep.WELCOME, bot.currentStep)
 
-        // 2. User asks a contextual tax question first (TaxBuddy smart intent interception)
+        // 2. User asks a contextual tax question first (ZeroTax Copilot smart intent interception)
         val queryAnswers = bot.processUserMessage("Can I claim both HRA and Home Loan?")
         assertTrue(queryAnswers.any { it.text.contains("Can you claim BOTH HRA and Home Loan?") })
         assertTrue(queryAnswers.any { it.isAdvisorTip })

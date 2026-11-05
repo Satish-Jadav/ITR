@@ -107,7 +107,7 @@ fun PreFilingAuditView(
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "6-Gate CPC Compliance Verification (EZTax & TaxBuddy Benchmarked)",
+                            text = "6-Gate CPC Compliance Verification (ZeroTax AI Audit Engine)",
                             style = MaterialTheme.typography.labelSmall,
                             color = Slate500
                         )
@@ -430,7 +430,7 @@ fun PreFilingAuditView(
                 }
             }
 
-            // Post-Filing CPC Refund Timeline Card (from JioFinance & EZTax)
+            // Post-Filing CPC Refund Timeline Card (ZeroTax Algorithmic Timeline)
             item {
                 Spacer(Modifier.height(16.dp))
                 Text(

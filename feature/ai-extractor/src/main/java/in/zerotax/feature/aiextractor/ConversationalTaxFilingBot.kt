@@ -78,7 +78,7 @@ class ConversationalTaxFilingBot {
         return listOf(
             ChatMessage(
                 sender = ChatSender.BOT,
-                text = "Namaste! I am your ZeroTax Smart Personal Assistant — powered by on-device intelligence with deterministic tax math.\n\n" +
+                text = "Namaste! I am your ZeroTax AI Copilot — powered by on-device intelligence with deterministic tax math.\n\n" +
                        "You don't need to struggle with complex CBDT tax schedules. Just chat with me naturally, and I'll assemble your complete return, recommend the best tax regime, and uncover hidden deductions to maximize your refund!",
                 quickReplies = listOf("Start Filing Return", "Which Regime is Better for Me?", "Can I Claim HRA & Home Loan Both?")
             )
@@ -90,7 +90,7 @@ class ConversationalTaxFilingBot {
         val lower = clean.lowercase()
         val botResponses = mutableListOf<ChatMessage>()
 
-        // 1. Check for natural language tax questions or FAQs (TaxBuddy smart intent detection)
+        // 1. Check for natural language tax questions or FAQs (ZeroTax AI smart intent detection)
         val queryResponse = answerTaxQueryIfPresent(lower)
         if (queryResponse != null) {
             botResponses.add(queryResponse)
@@ -415,7 +415,7 @@ class ConversationalTaxFilingBot {
     }
 
     /**
-     * Contextual tax question answering sub-engine (TaxBuddy conversational intelligence).
+     * Contextual tax question answering sub-engine (ZeroTax AI Copilot conversational intelligence).
      */
     private fun answerTaxQueryIfPresent(query: String): ChatMessage? {
         return when {

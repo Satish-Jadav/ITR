@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.core.taxengine.advanced
+package `in`.zerotax.core.taxengine.advanced
 
 import `in`.zerotax.core.model.AuditGateResult
 import `in`.zerotax.core.model.BankAccountDetails
@@ -11,7 +11,7 @@ object PreFilingAuditEngine {
 
     /**
      * Executes the 6-Gate Pre-Filing Tax Audit to guarantee notice-proof returns,
-     * benchmarking against the highest industry standards (EZTax Creative Audit & TaxBuddy Notice Shield).
+     * benchmarking against statutory CPC Bengaluru scrutiny rules (ZeroTax Scrutiny Shield).
      */
     fun auditReturn(
         salarySummary: ReconciledSalarySummary,

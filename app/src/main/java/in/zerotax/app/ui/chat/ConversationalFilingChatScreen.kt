@@ -99,8 +99,8 @@ fun ConversationalFilingChatScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ZeroTaxTopAppBar(
-                title = "ZeroTax Smart Chatbot",
-                subtitle = "Interactive Filing • On-Device AICore",
+                title = "ZeroTax AI Copilot",
+                subtitle = "Interactive Filing • Private On-Device AI",
                 pan = pan,
                 onBack = onBack,
                 badgeText = "Private AI",
@@ -141,7 +141,7 @@ fun ConversationalFilingChatScreen(
                         Spacer(Modifier.height(8.dp))
                     }
 
-                    // Contextual Tax Advice FAQs (TaxBuddy Intelligence)
+                    // Contextual Tax Advice FAQs (ZeroTax AI Copilot)
                     val faqPrompts = listOf(
                         "Which Regime is Better?",
                         "Can I Claim HRA & Home Loan Both?",
@@ -493,7 +493,7 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
                     if (message.isAdvisorTip) {
-                        StatutoryBadge(text = "TaxBuddy Expert Guidance", tone = BadgeTone.WARNING)
+                        StatutoryBadge(text = "ZeroTax Copilot Guidance", tone = BadgeTone.SUCCESS)
                         Spacer(Modifier.height(4.dp))
                     }
 
