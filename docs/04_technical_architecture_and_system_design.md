@@ -1350,3 +1350,40 @@ Operates as a pure-JVM deterministic allocation engine to legally minimize emplo
 6.10 Universal Multi-Broker Tax P&L Parser (`UniversalBrokerPnLParser.kt`)
 - Deterministic CSV parser for Zerodha Console, Groww, Angel One trade reports.
 - Classifies Schedule 111A, 112A, and computes ICAI absolute turnover for F&O derivatives u/s 44AB.
+
+6.11 F&O Trading, Turnover & Tax Audit Engine (`FnOTradingAndTaxAuditEngine.kt`)
+- Absolute Turnover under ICAI Guidance Note: $\sum |\text{P\&L}_i| + \text{Premium Received on Sale of Options}$.
+- Speculative Intraday Equity u/s 43(5): Set-off ring-fence u/s 73 (only against speculative profit; 4-year carry forward u/s 73(4)).
+- Non-Speculative F&O u/s 43(5) Proviso (d): Loss set-off u/s 70/71 (can offset HP, CG, Other Sources; strictly barred from setting off Salary u/s 71(2A); 8-year carry forward u/s 72).
+- Section 44AB Tax Audit Decision Tree: ₹10 Crore threshold for >= 95% digital transactions, Section 44AD(4)/(5) 5-year lock-in opt-out checks, and Form 3CD annexures generation.
+
+6.12 Section 143(1) Intimation Diff Analyzer & Section 154 Rectification Builder (`Section143_1IntimationDiffAnalyzer.kt`)
+- Line-by-line reconciliation of Column A ("As Filed by Taxpayer") vs Column B ("As Computed under Section 143(1)").
+- Detects Zero Discrepancy Accepted, Tax Credit Mismatches (dropped TDS/TCS/Challan 280), and Omitted Income items.
+- Auto-generates CBDT Section 154 Rectification JSON payload and Section 139(5) Revised Return guidance.
+
+6.13 Zero-Knowledge .ztvault Encrypted Migration Engine (`EncryptedZtVaultMigrationEngine.kt`)
+- Zero-cloud device-to-device migration and CA handover bundle.
+- Key derivation: PBKDF2 with 256,000 iterations from PAN, DOB, and user transfer passcode with 32-byte salt.
+- AES-256-GCM encryption with 12-byte IV and 128-bit auth tag on GZIP-compressed database snapshot.
+
+6.14 Senior Citizen Section 194P Exemption & Form 12BBA Generator (`SeniorCitizenTaxAndExemptionEngine.kt`)
+- Section 194P statutory exemption evaluation for resident pensioners aged 75+ with single-bank interest.
+- Pre-filled Form 12BBA declaration generator for specified pension bank submission.
+- Computes Section 80TTB ₹50,000 interest deduction, Section 207(2) Advance Tax immunity (₹0 Sec 234B/C interest), and Section 80D senior limits.
+
+6.15 Hybrid Multi-Source Income & Progressive Disclosure Engine (`HybridIncomeAndProgressiveDisclosureEngine.kt`)
+- Multi-source income combinator: Primary Salary + Moonlighting + Freelance 44ADA (50%) + Creator 44AD (6%/8%) + Casual gigs (Sec 56).
+- Progressive Disclosure UI state machine: Dynamically exposes cards only when underlying data exists, auto-routing to ITR-1, ITR-4, ITR-2, or ITR-3 Lite behind the scenes.
+
+6.16 6-Menu Chip-Driven Copilot Chatbot Engine (`OptimizedTaxCopilotChatbotEngine.kt`)
+- Guided quick-pick action pills eliminating empty text inputs.
+- 3-Tier Zero-Waste AI Pipeline:
+  - Tier 0: Deterministic Regex Router (< 2ms, 0 tokens) with Indian shorthand parsing (50k -> 50,000, 1.5 lakh -> 1,50,000).
+  - Tier 1: In-memory SHA-256 memoization cache (< 2ms).
+  - Tier 2: KV-Prefix Cached Micro-Prompt execution on NPU with strict maxOutputTokens ceilings.
+
+6.17 In-App Live ITD Portal Sync Suite & Biometric Gate
+- `ItdLivePortalSyncModal.kt`: Direct TLS connection pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
+- `ZeroTaxBiometricShield.kt`: System-level AndroidX BiometricPrompt gate securing sensitive return records with 1-tap lock and countdown notifications.
+

@@ -806,3 +806,34 @@ Statutory reconciliation architecture:
   - Schedule CFL / CYLA: Unabsorbed short-term and long-term capital losses.
   - F&O Absolute Turnover: Applies the ICAI Guidance Note methodology (sum of absolute profit and loss per trade) to determine Section 44AB business turnover thresholds.
 
+15. F&O Trading, Turnover & Tax Audit Sub-Engine (`FnOTradingAndTaxAuditEngine`)
+- ICAI Guidance Note Statutory Turnover Formula:
+  $$\text{F\&O Trading Turnover} = \sum_{i=1}^{N} \left|\text{Net Profit or Loss on Trade } i\right| + \text{Premium Received on Sale of Options}$$
+- Speculative Intraday Equity Trading u/s 43(5): Set-off ring-fence u/s 73 (only against speculative profit; 4-year carry forward u/s 73(4)).
+- Non-Speculative F&O Trading u/s 43(5)(d): Loss set-off u/s 70 & 71 (offsets HP, CG, Other Sources; strictly barred from setting off Salary u/s 71(2A); 8-year carry forward u/s 72).
+- Section 44AB Tax Audit Decision Tree:
+  - Turnover > ₹10 Crore (for >= 95% digital transactions): Mandatory CA Tax Audit u/s 44AB(a).
+  - Turnover <= ₹3 Crore & declared profit < 6%: Audit required ONLY IF Sec 44AD(4)/(5) 5-year lock-in opt-out applies AND total income exceeds basic exemption.
+  - Generates Form 3CD annexures for CA handover.
+
+16. Section 143(1) Intimation Diff Analyzer & Section 154 Rectification Sub-Engine (`Section143_1IntimationDiffAnalyzer`)
+- Compares Column A ("As Filed by Taxpayer") vs Column B ("As Computed under Section 143(1)").
+- Evaluates line items: Gross Total Income, Chapter VI-A Deductions, TDS claimed vs allowed, TCS claimed vs allowed, Challan 280 tax credits, Interest 234A/B/C/244A, Net Tax Payable / Refundable.
+- Generates CBDT Section 154 Tax Credit Mismatch Rectification JSON and Section 139(5) Revised Return recommendation.
+
+17. Senior Citizen Tax & Section 194P Exemption Sub-Engine (`SeniorCitizenTaxAndExemptionEngine`)
+- Section 194P Statutory Exemption Evaluation:
+  - Resident individual aged >= 75 with only pension and interest from the specified bank.
+  - Automatically flags user as statutorily EXEMPT from filing ITR u/s 139.
+  - Compiles ready-to-sign Form 12BBA declaration for specified pension bank submission.
+- Senior Statutory Benefits: Section 80TTB ₹50,000 deduction on bank savings/FD/RD interest, Section 207(2) complete immunity from Advance Tax interest, Section 80D up to ₹50,000 for uninsured medical expenditure.
+
+18. Hybrid Multi-Source Income & Progressive Disclosure Sub-Engine (`HybridIncomeAndProgressiveDisclosureEngine`)
+- Combinator for Salaried + Moonlighting (Sec 192) + Freelancing (44ADA 50%) + Creator (44AD 6%/8%) + Commission (194H regular) + Casual gigs (Sec 56).
+- Progressive Disclosure State Machine: Computes 11 UI visibility flags ensuring zero screen clutter for simple salaried users and auto-routing to ITR-1, ITR-4, ITR-2, or ITR-3 Lite behind the scenes.
+
+19. Corporate & Trust Entity Tax Sub-Engine (`CorporateAndTrustTaxEngine`)
+- ITR-5: Section 40(b) partner remuneration and 12% interest caps, Section 115JC AMT (18.5%) and Form 29C.
+- ITR-6: Section 115BAA (22%) and 115BAB (15%) concessional corporate tax, Section 115JB MAT (15%) with 14 book profit adjustments and Section 115JAA credit tracking.
+- ITR-7: Section 11 & 12 charitable application (85% minimum rule) with Form 9A/10 declarations, and Section 115BBI Maximum Marginal Rate (34.944%) on statutory violations.
+

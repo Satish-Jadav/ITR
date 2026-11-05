@@ -1,4 +1,4 @@
-﻿12 — Comprehensive QA Edge Cases, Airplane-Mode Verification & Extended JUnit 5 Suite
+12 — Comprehensive QA Edge Cases, Airplane-Mode Verification & Extended JUnit 5 Suite
 1. Advanced Deterministic Edge Case Test Vectors (Extending Golden Vectors)
 To ensure :core:tax-engine handles complex multi-source reconciliation, fractional rounding, and statutory threshold conditions across all 3 phases without regression, the test suite includes six advanced edge-case scenarios:
 
@@ -362,3 +362,12 @@ ECV-05 verifies compliance with RBI NBFC-AA Master Directions, 2016 and DPDP Act
 ECV-06 verifies that TokenLockedVernacularExplainer.restoreAndVerifyTokens() deterministically rejects any Hindi (hi-IN) or Gujarati (gu-IN) translation where Gemini Nano dropped, altered, or translated an immutable placeholder ({{SEC_1}}, {{AMT_1}}, {{AMT_2}}), guaranteeing zero numerical hallucination in tax notice explanations.
 4. Complete 24-Vector Combined Regression Gate (GTV-01..18 + ECV-01..06)
 Every pull request targeting main or release/* must execute ./gradlew :core:tax-engine:test and pass all 24 deterministic verification tests (18 Golden Test Vectors in MasterGoldenTaxVectorTestSuite.kt plus 9 advanced edge-case and statutory routing tests in AdvancedTaxEngineEdgeCaseTest.kt covering ECV-01 through ECV-06, Rule 2A Landlord PAN blocking, Schedule FA foreign asset routing, and Section 140B ITR-U additional tax) with ₹0.00 variance and < 500ms total JVM execution time.
+
+5. Expanded Edge-Case Suites: F&O Trading, Senior 194P, 143(1) Diff & .ztvault (Phases 4.4 to 4.7)
+- ECV-07 (F&O ICAI Turnover Calculation): Asserts that trades with profit, loss, and option premiums sum absolute differences plus option sale proceeds per the ICAI Guidance Note.
+- ECV-08 (Section 73 Speculative Loss Ring-Fence): Asserts that intraday equity losses can only offset speculative profits, blocking set-off against F&O profit and carrying forward for 4 years u/s 73(4).
+- ECV-09 (Section 71(2A) F&O Salary Loss Set-Off Bar): Asserts that non-speculative F&O loss offsets House Property and Capital Gains, but strictly bars offsetting Salary income, carrying forward 8 years u/s 72.
+- ECV-10 (Section 194P Specified Senior Citizen Exemption): Asserts that resident individuals aged 75+ with only pension and single-bank interest qualify for Form 12BBA declaration and are legally exempt from filing ITR u/s 139.
+- ECV-11 (Section 143(1) Column A vs B Diff Analyzer): Asserts that dropped TDS/TCS entries trigger Section 154 Rectification JSON payloads while omitted income triggers Section 139(5) Revised Return guidance.
+- ECV-12 (Zero-Knowledge .ztvault Encryption Roundtrip): Asserts that database snapshots encrypted via PBKDF2 (256,000 iterations) + AES-256-GCM decrypt with byte-for-byte fidelity with correct credentials and fail authentication with invalid passcodes.
+

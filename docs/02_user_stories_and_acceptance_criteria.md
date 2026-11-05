@@ -1,4 +1,4 @@
-﻿02 — User Stories & Exhaustive Gherkin Acceptance Criteria (Consolidated Phases 1, 2 & 3 — 24 Production Scenarios)
+02 — User Stories & Exhaustive Gherkin Acceptance Criteria (Consolidated Phases 1, 2 & 3 — 24 Production Scenarios)
 Epic 1: DPDP Act 2023 Compliant Onboarding, Smart PAN Keyboard & Hardware Keystore Vault
 Story 1.1: Smart Auto-Switching PAN Keyboard & Individual Status ('P') Validation
 Feature: Zero-Friction Smart PAN Entry with Statutory Entity Validation
@@ -509,7 +509,7 @@ Feature: New Tax Regime Section 87A Rebate, Marginal Relief, and Special Rate Ca
     And strictly excludes the `₹12,500` special-rate tax on `Section 112A` LTCG (`(₹2,25,000 - ₹1,25,000) * 12.5%`) from `Section 87A` rebate under `Section 112A(6)`
 
     And computes final tax payable including 4% cess as `₹13,000`
-Story 9.9 (P1-FR-05 / GTV-06): Senior Citizen Section 80TTB (₹50,000 Cap) & Section 207 Advance Tax Interest Exemption
+Story 9.9 (P1-FR-05 / GTV-06 Senior Citizen Section 80TTB (₹50,000 Cap) & Section 207 Advance Tax Interest Exemption
 Feature: Senior Citizen Deduction under Section 80TTB and Section 207 Immunity from Section 234B Interest
 
   Scenario: Senior Citizen (Age 67) claims ₹50,000 deduction on combined Savings & FD interest under Section 80TTB and is exempted from Section 234B interest under Section 207
@@ -693,6 +693,73 @@ Story 9.9
 Senior Citizen Section 80TTB ₹50,000 & Section 207 234B exemption
 P1-FR-05
 GTV-06
+
+Epic 10: Next-Gen Features — Biometrics, Portal Sync, F&O Turnover, 143(1) Diff, Encrypted Vault, Senior 194P & Micro-Prompt Copilot
+Story 10.1: Biometric App Locking & July 31 Countdown Reminders
+Feature: Hardware Biometric Gate Protecting Sensitive Tax Returns & Local Push Notifications
+  Scenario: User opens ZeroTax or switches back from another application
+    Given the device supports BiometricPrompt (fingerprint or face) or device PIN
+    When the app comes to foreground or user taps "🔒 Lock"
+    Then ZeroTax prompts for biometric verification before decrypting SQLCipher data
+    And displays the real-time July 31 deadline countdown ("⏱️ 86 Days remaining") with statutory notification scheduling.
+
+Story 10.2: 1-Tap In-App Portal Sync (Form 26AS, AIS/TIS & Pre-Fill)
+Feature: Direct TLS In-App Handshake with Income Tax Portal
+  Scenario: User taps "1-Tap Sync with Income Tax Portal" on any filing dashboard
+    Given user enters PAN and authenticates via Aadhaar OTP or portal password
+    When the direct TLS session connects to eportal.incometax.gov.in
+    Then 26AS TDS/TCS entries, AIS interest/dividends, and pre-validated bank accounts are parsed into SQLite
+    And session credentials and tokens in RAM are zeroized within 500ms without opening an external browser.
+
+Story 10.3: F&O Trading ICAI Turnover & Section 44AB Tax Audit Decision Tree
+Feature: Absolute Turnover Computation u/s 44AB and Ring-Fencing of Intraday vs F&O Losses
+  Scenario: User has F&O trades and intraday equity trades in Zerodha/Groww P&L
+    Given trades with positive and negative differences
+    When FnOTradingAndTaxAuditEngine evaluates the portfolio
+    Then it computes ICAI Turnover as Sum(|P&L|) + Option Sale Premium
+    And ring-fences speculative intraday loss u/s 73 (4-year carry forward)
+    And applies F&O loss set-off against HP, CG, and Other Sources while strictly barring set-off against Salary u/s 71(2A) (8-year carry forward u/s 72)
+    And evaluates the ₹10 Crore threshold for >= 95% digital transactions alongside Section 44AD(4)/(5) lock-in checks.
+
+Story 10.4: Section 143(1) Intimation Diff Analyzer & Section 154 Rectification Builder
+Feature: Automated Column A vs Column B PDF Reconciliation and 1-Tap Rectification
+  Scenario: User receives a Section 143(1) Intimation PDF from CPC Bengaluru
+    Given Column A (As Filed) and Column B (As Computed by CPC)
+    When Section143_1IntimationDiffAnalyzer compares line items
+    Then it flags Zero Discrepancy, Tax Credit Mismatch, or Income Omission
+    And generates the CBDT Section 154 Rectification JSON payload for dropped TDS/TCS/Challans.
+
+Story 10.5: Zero-Knowledge .ztvault Device-to-Device Migration
+Feature: PBKDF2-HMAC-SHA512 + AES-256-GCM Encrypted Vault Archive
+  Scenario: User migrates to a new phone or hands over data pack to a Chartered Accountant
+    Given user enters PAN, Date of Birth, and transfer passcode
+    When EncryptedZtVaultMigrationEngine exports the bundle
+    Then it derives a 256-bit AES key using PBKDF2 with 256,000 iterations and 32-byte salt
+    And encrypts the compressed database snapshot with AES-256-GCM into a portable .ztvault file.
+
+Story 10.6: Senior Citizen Section 194P Exemption & Form 12BBA Generator
+Feature: Proactive Evaluation of Age 75+ ITR Exemption for Pensioners
+  Scenario: Resident individual aged 76 has pension and interest from State Bank of India only
+    Given age >= 75 and pension + interest from the same specified bank
+    When SeniorCitizenTaxAndExemptionEngine runs evaluation
+    Then it flags the user as statutorily EXEMPT from filing ITR u/s 139
+    And generates a pre-filled Form 12BBA declaration PDF for submission to the bank.
+
+Story 10.7: Hybrid Multi-Source Income Combinator & Progressive Disclosure UI
+Feature: Multi-Head Optimization for Salaried + Moonlighting + Freelance 44ADA + Creator 44AD
+  Scenario: Salaried employee earns freelance UI design income and YouTube revenue
+    Given primary salary, 44ADA freelance receipts, and 44AD creator receipts
+    When HybridIncomeAndProgressiveDisclosureEngine executes
+    Then it applies 50% presumptive profit on 44ADA and 6% digital profit on 44AD
+    And sets ProgressiveDisclosureUiState flags showing only relevant cards, auto-routing to ITR-4 or ITR-3 Lite behind the scenes.
+
+Story 10.8: 6-Menu Chip-Driven Copilot with 3-Tier AI Optimization
+Feature: Zero-Blank-Box Interactive Tax Chatbot
+  Scenario: User opens Copilot Chatbot
+    Given 6 top-level category pills (Auto-Import, Save Tax, Stocks/Crypto, Family/NRI, Forms/Certificates, Notices/Refund)
+    When user taps any option chip or types a numeric query
+    Then Tier-0 deterministic regex router resolves intent and amounts in < 2ms with 0 tokens
+    And executes the corresponding tool or slider without requiring manual typing.
 
 11. CA & Legal Counsel Statutory Audit Matrix for Acceptance Criteria
 Section 139A & Rule 114B (PAN Structural Validation — Story 1.1): The 4th character of the 10-character alphanumeric PAN denotes the assessee's legal status (`'P'` = Individual, `'H'` = HUF, `'C'` = Company, `'F'` = Firm/LLP, `'T'` = Trust). Enforcing `'P'` at Tap 1 prevents defective filings under Section 139(9) where non-individual entities attempt to file `ITR-1` or `ITR-2`.

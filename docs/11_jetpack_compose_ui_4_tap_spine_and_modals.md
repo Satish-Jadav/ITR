@@ -908,3 +908,32 @@ flowchart TD
    - Generates statutory balance sheet disclosure for Gross Total Income exceeding ₹50,00,000.
    - Evaluates Section 50C 10% stamp duty safe-harbor shield (Third Proviso to Section 50C(1)) for real estate transactions.
 
+9. Plan-Based Dashboards, Biometric Shield Gate & In-App Portal Sync Views (Phases 4.4 to 4.7)
+9.1 Sahaj Filing Experience View (`SahajFilingExperienceView.kt`):
+- Plain-language, jargon-free interface for salaried freshers and simple filers.
+- Card sections: "What You Earned", "Automatic ₹75,000 Government Discount", "Taxes Deducted by Employer", "Your Refund Result".
+- Features embedded "⚡ 1-Tap Sync with Income Tax Portal" button and "💡 How to File" coachmark launcher.
+
+9.2 Sugam Presumptive Fast-Start View (`SugamPresumptiveFastStartView.kt`):
+- 2-minute presumptive deck for freelancers (44ADA 50%) and creators/traders (44AD 6%/8%).
+- Zero books of accounts required; calculates statutory tax savings and single-installment March 15 advance tax u/s 234C(1)(b).
+
+9.3 Enterprise Corporate & Audit Desk (`EnterpriseAuditFastStartView.kt`):
+- Executive statutory desk for ITR-2 through ITR-7 filers.
+- Fast launch desks: Corporate & Non-Individual (ITR-5/6/7), Section 44AB Form 3CD Audit Pack, Dual-Region NRI DTAA, and Notice Defense Copilot.
+
+9.4 ZeroTax Biometric Shield Gate (`ZeroTaxBiometricShield.kt`):
+- Full-screen biometric gate protecting vault contents with Fingerprint, Face ID, or PIN.
+- Integrates instant 1-tap "🔒 Lock" button in `EnterpriseTopHeader`.
+
+9.5 Statutory Tax Timeline Manager (`StatutoryTaxTimelineManager.kt`):
+- July 31 filing deadline countdown pill ("⏱️ 86 Days remaining") in the top header.
+- 1-tap local notification scheduler: filing start notification, 30-day reminder, 6-day urgent penalty warning u/s 234F, and belated cutoff (Dec 31).
+
+9.6 ZeroTax Coachmark Tour (`ZeroTaxCoachmarkTour.kt`):
+- Visual floating mini-popup tour ("Do this then click this") guiding users through 4 critical filing steps.
+
+9.7 In-App Live ITD Portal Sync Suite (`ItdLivePortalSyncModal.kt`):
+- Direct TLS handshake via Aadhaar OTP or password pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
+
+

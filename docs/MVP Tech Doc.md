@@ -1,4 +1,4 @@
-﻿MVP Technical Specification Document (Tech Doc — CA & Principal Architect Edition)
+MVP Technical Specification Document (Tech Doc — CA & Principal Architect Edition)
 Production-grade statutory architecture, on-device confidential computing pipeline, and deterministic Indian Income-tax Core.
 0. Principal Architect & CA Review Summary (Enhancements Over Draft v1)
 Upgraded PdfPasswordUnlocker from 7 to 15 In-Memory Permutations: Replaced the draft's 7-candidate File-based unlocker with SilentPdfUnlocker operating exclusively on in-memory ByteArrayInputStream buffers across all 15 standard Indian financial password permutations (< 80ms execution, zero unencrypted temp files on disk).
@@ -312,4 +312,16 @@ TotalTDSonSalaries <= GrossSalary verification.
 TotalChapVIADeductions <= GrossTotalIncome constraint check.
 Bank account validation matching the 11-character statutory IFSC regex pattern: ^[A-Z]{4}0[A-Z0-9]{6}$.
 Full Verhoeff Aadhaar scrub audit to ensure zero plain-text PII leaks into intermediate logs or JSON payloads.
+
+8. Next-Gen Full Spectrum Production Suite (Phases 4.4 to 4.7)
+- Non-Individual Corporate & Trust Entities: ITR-5 (Partnership/LLP Sec 40(b) & AMT), ITR-6 (Company Sec 115BAA & MAT), ITR-7 (Trust Sec 11/12 application & MMR).
+- F&O Trading ICAI Turnover & Tax Audit Sub-Engine: Sum(|P&L|) + Option Sale Premium, Sec 73 speculative loss ring-fence (4-year carry forward), Sec 71(2A) salary loss bar (8-year carry forward u/s 72), and Sec 44AB ₹10 Crore digital threshold with 44AD(4)/(5) lock-in checks.
+- Section 143(1) Diff Analyzer & Section 154 Rectification Builder: Line-by-line Column A vs Column B intimation comparison with instant Section 154 JSON generation.
+- Zero-Knowledge .ztvault Device-to-Device Migration: PBKDF2 (256,000 iterations) + AES-256-GCM encrypted vault backup and Quick Share transfer.
+- Senior Citizen Section 194P Exemption & Form 12BBA Generator: Evaluates Age 75+ pensioners with single-bank interest, exempting them from ITR filing u/s 139 via Form 12BBA, alongside Section 80TTB ₹50,000 deduction and Section 207(2) advance tax immunity.
+- Hybrid Multi-Source Income Combinator & Progressive Disclosure UI: Synthesizes Salaried + Moonlighting + Freelancing (44ADA 50%) + Creator (44AD 6%/8%) + Casual gigs (Sec 56), dynamically showing only relevant cards and auto-routing behind the scenes.
+- 6-Menu Chip-Driven Copilot Chatbot Engine: Guided quick-pick action pills eliminating empty text inputs, backed by Tier-0 deterministic regex routing (< 2ms, 0 tokens), Tier-1 memoization, and Tier-2 KV-cached micro-prompts.
+- In-App Live ITD Portal Sync Suite: Direct TLS connection pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
+- ZeroTax Biometric Shield Gate: Full-screen biometric gate protecting vault contents with Fingerprint, Face ID, or PIN with 1-tap lock and countdown notifications.
+
 

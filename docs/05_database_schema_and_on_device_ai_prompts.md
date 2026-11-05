@@ -1,4 +1,4 @@
-﻿05 — Encrypted SQLCipher Database Schema, Room DAOs & On-Device Gemini Nano (AICore) Prompts (Consolidated Phases 1–3)
+05 — Encrypted SQLCipher Database Schema, Room DAOs & On-Device Gemini Nano (AICore) Prompts (Consolidated Phases 1–3)
 1. Encryption-at-Rest Architecture (SQLCipher 4.5.x + Android Hardware Keystore StrongBox)
 All local tax data across Phases 1, 2, and 3 resides inside a single encrypted SQLite database (zero_tax_vault.db) managed by Room and net.zetetic:android-database-sqlcipher.
 
@@ -738,3 +738,33 @@ Executing PRAGMA cipher_memory_security = ON; and PRAGMA secure_delete = ON; ins
 Greedy Decoding Enforcement: All four production prompts (P1-PROMPT-01, P1-PROMPT-02, P2-PROMPT-01, P3-PROMPT-01) execute strictly with temperature = 0.0f and topK = 1 inside com.google.ai.edge.aicore.GenerativeModel.
 Pre-Inference UIDAI Scrubbing: Raw OCR text is passed through UidaiAadhaarVerhoeffScrubber.scrubAllAadhaarDigits() prior to prompt construction so no 12-digit Aadhaar number ever enters the NPU context window.
 Post-Inference Validation: P1-PROMPT-01 outputs are gated by DeterministicReconciler.passesForm16SanityCheck() (±₹5 tolerance), and P3-PROMPT-01 vernacular notice translations are gated by TokenLockedVernacularExplainer.restoreAndVerifyTokens() to guarantee 100% preservation of {{NOTICE_SECTION}}, {{VARIANCE_AMOUNT}}, and {{ACTION_DEADLINE}} tokens.
+
+6.2 Ultra-Optimized Micro-Prompts V2 & Tier-0 Regex Parser Catalog (Section 35)
+Static Shared Prefix (KV-Cache Resident):
+ROLE:ZeroTaxDeterministicJSONParser|TEMP:0|RULES:NoMath,ExactIntOnly,ValidJSON
+
+1. MICRO-PROMPT-CHAT-INTENT (maxOutputTokens = 64, Input < 65 tokens):
+TASK:Map user tax query to intent code & rupee integer deltas.
+INTENTS:SIM_WHAT_IF|EXPLAIN_REGIME|IMPORT_DOC|GEN_FORM|NOTICE_HELP|REFUND_TRACK|OTHER_STATUTORY_QA
+SCHEMA:{"i":"INTENT","c80":0,"nps1b":0,"nps2":0,"dSelf":0,"dPar":0,"rentM":0,"hlInt":0}
+IN:<user_query>{{USER_QUERY}}</user_query>
+OUT:
+
+2. MICRO-PROMPT-BANK-BATCH (25-Row Compact Classifier, maxOutputTokens = 180):
+TASK:Map each row id to code: 8C|8D|8P|8E|8G|4A|4B|SI|FI|DV|XX
+IN:[{"id":"1","n":"STAR HEALTH INS","a":24500,"t":"D"},{"id":"2","n":"LIC OF INDIA","a":18000,"t":"D"}]
+OUT:{"1":"8D","2":"8C"}
+
+3. Tier-0 Deterministic Regex Pre-Parser:
+- Amount Parser: Regex `(\d+(?:\.\d+)?)\s*(k|thousand|lakh|lac|l|cr|crore)?` with section number suppression.
+- Keyword Matchers: NPS 80CCD(1B), Employer NPS 80CCD(2), 80C, Senior Parents 80D, Self 80D, Rent/HRA, Home Loan 24(b).
+
+6.3 Encrypted .ztvault Archive DDL & Binary Specification (Section 33.3)
+Binary File Layout:
+[0..7]   : Magic Header ASCII "ZTVAULT1" (8 bytes)
+[8..39]  : Cryptographic Salt (32 bytes)
+[40..51] : AES-GCM Initialization Vector (12 bytes)
+[52..End]: Ciphertext + 128-bit GCM Authentication Tag (GZIP compressed JSON payload)
+Key Derivation: PBKDF2WithHmacSHA512 (256,000 iterations) from `PAN + DOB + UserPasscode` with 32-byte salt.
+Encrypted JSON Structure: Includes SQLCipher snapshot, Schedule CFL loss history, prior-year ITR JSONs, and provenance hashes.
+
