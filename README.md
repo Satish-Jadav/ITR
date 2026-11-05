@@ -27,14 +27,14 @@
 - **WP-11 (Jetpack Compose UI & Security):** `IndianCurrencyFormatter`, 5-minute scoped `FLAG_SECURE` override helper, DPDP Section 6 multilingual consent card, cropped PDF disambiguation card, Section 205 employer TDS shield card, and presumptive slider.
 - **WP-12 (CI/CD Pipeline):** Multi-branch GitHub Actions CI workflow triggering on `master`, `main`, and `release/*`.
 
-### 1. 🤖 TaxBuddy-Style Conversational Filing Chatbot
+### 1. 🤖 ZeroTax AI Copilot Conversational Filing Chatbot
 - **Interactive Natural-Language Ingestion:** Chat naturally to share your salary, job switches, home loan EMIs, health insurance, NPS, and bank accounts without dealing with complicated tax schedules.
 - **In-Flight Tax Q&A Interception:** Ask questions like *"Which regime is better?"*, *"Can I claim both HRA and Home Loan?"*, *"What are the 80D limits?"*, or *"How to save more tax?"* and receive instant CA-grade answers with statutory citations.
 - **Live Dual-Regime Optimizer:** Concurrently calculates New Regime (Section 115BAC) and Old Regime after every entry, highlighting the winning regime and exact rupee savings.
 - **Mandatory Statutory Gate u/s 140:** Direct submission to the portal from chat is strictly prohibited. The conversation locks into an awaiting-review state requiring the taxpayer's full review before submission.
 
 ### 2. 🛡️ 6-Gate Pre-Filing Audit & Notice Risk Shield
-- **100% CPC Bengaluru Algorithmic Alignment:** Benchmarked against market leaders (JioFinance, ClearTax, TaxBuddy, EZTax) to achieve `< 0.1%` scrutiny notice risk.
+- **100% CPC Bengaluru Algorithmic Alignment:** Benchmarked against statutory CPC Bengaluru scrutiny rules to achieve `< 0.1%` scrutiny notice risk.
 - **The 6 Verification Gates:**
   1. *TDS Reconciliation & 26AS Part A Ceiling:* Reconciles Form 16 TDS against deposited Form 26AS credits.
   2. *High-Value AIS / SFT Cross-Check:* Identifies unreported interest and dividend receipts.
