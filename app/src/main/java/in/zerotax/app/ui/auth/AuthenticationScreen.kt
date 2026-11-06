@@ -427,7 +427,7 @@ fun AuthenticationScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(48.dp))
         }
 
         // Trust Shield Modal

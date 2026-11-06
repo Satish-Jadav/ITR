@@ -250,7 +250,7 @@ private fun IncomeFlowVisualizerView(
                 }
             }
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(88.dp))
         }
     }
 }
@@ -440,7 +440,7 @@ private fun ThreeWayReconciliationRadarView(
                 }
             }
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(88.dp))
         }
     }
 }
@@ -595,7 +595,7 @@ private fun StatutoryTaxCalendarView() {
                 isPassed = false
             )
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(88.dp))
         }
     }
 }
@@ -711,7 +711,7 @@ private fun HistoricalItrDossierView(
                 }
             }
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(88.dp))
         }
     }
 }

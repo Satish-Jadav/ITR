@@ -1,4 +1,4 @@
-package `in`.zerotax.app.viewmodel
+﻿package `in`.zerotax.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

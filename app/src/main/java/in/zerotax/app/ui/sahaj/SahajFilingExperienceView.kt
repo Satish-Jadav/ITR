@@ -519,6 +519,8 @@ fun SahajFilingExperienceView(
                 Text("Review AIS Tax Transactions & Form 26AS", style = MaterialTheme.typography.labelSmall.copy(color = Slate700))
             }
         }
+
+        Spacer(Modifier.height(48.dp))
     }
 
     // Biometric e-Filing Verification Dialog

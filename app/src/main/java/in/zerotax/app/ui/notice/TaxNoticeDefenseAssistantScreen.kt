@@ -443,6 +443,10 @@ fun TaxNoticeDefenseAssistantScreen(
                         }
                     }
                 }
+
+                item {
+                    Spacer(Modifier.height(88.dp))
+                }
             }
         }
     }

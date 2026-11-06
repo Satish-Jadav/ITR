@@ -1,4 +1,4 @@
-package `in`.zerotax.app.ui.timeline
+﻿package `in`.zerotax.app.ui.timeline
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background

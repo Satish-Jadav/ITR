@@ -347,6 +347,10 @@ fun Itr5FirmCalculatorView(pan: String) {
                 }
             }
         }
+
+        item {
+            Spacer(Modifier.height(88.dp))
+        }
     }
 }
 
@@ -554,6 +558,10 @@ fun Itr6CorporateCalculatorView(pan: String) {
                     }
                 }
             }
+        }
+
+        item {
+            Spacer(Modifier.height(88.dp))
         }
     }
 }
@@ -784,6 +792,10 @@ fun Itr7TrustCalculatorView(pan: String) {
                     }
                 }
             }
+        }
+
+        item {
+            Spacer(Modifier.height(88.dp))
         }
     }
 }

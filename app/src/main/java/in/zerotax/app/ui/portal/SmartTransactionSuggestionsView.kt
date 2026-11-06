@@ -375,6 +375,10 @@ fun SmartTransactionSuggestionsView(
                         Text("Apply Transactions to Return & Continue", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                     }
                 }
+
+                item {
+                    Spacer(Modifier.height(80.dp))
+                }
             }
         }
     }

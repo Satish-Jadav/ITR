@@ -491,6 +491,10 @@ fun DualRegionNriComplianceScreen(
                     }
                 }
             }
+
+            item {
+                Spacer(Modifier.height(88.dp))
+            }
         }
     }
 }

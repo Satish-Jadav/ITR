@@ -11,6 +11,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -252,7 +254,7 @@ fun PortalAssistantScreen(
                     }
                 },
                 label = "InAppFilingFlowTransition",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.weight(1f).fillMaxWidth()
             ) { stage ->
                 when (stage) {
                     InAppFilingStage.REVIEW_AND_CONSENT -> ReviewAndConsentStage(
@@ -680,6 +682,10 @@ private fun ReviewAndConsentStage(
                 )
             }
         }
+
+        item {
+            Spacer(Modifier.height(88.dp))
+        }
     }
 }
 
@@ -705,6 +711,7 @@ private fun InAppAuthenticationStage(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         Text(
@@ -891,7 +898,7 @@ private fun InAppAuthenticationStage(
             )
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(24.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -932,6 +939,8 @@ private fun InAppAuthenticationStage(
                 }
             }
         }
+
+        Spacer(Modifier.height(88.dp))
     }
 }
 
@@ -953,6 +962,7 @@ private fun DirectSubmissionStage(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         Text(
@@ -998,7 +1008,7 @@ private fun DirectSubmissionStage(
             }
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(24.dp))
 
         Button(
             onClick = onStartSubmission,
@@ -1015,6 +1025,8 @@ private fun DirectSubmissionStage(
                 Text("Submit Return Directly to ITD u/s 139(1)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
             }
         }
+
+        Spacer(Modifier.height(88.dp))
     }
 }
 
@@ -1034,6 +1046,7 @@ private fun AadhaarEVerificationStage(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         Text(
@@ -1098,7 +1111,7 @@ private fun AadhaarEVerificationStage(
             Text("Didn't receive OTP? Resend via UIDAI", style = MaterialTheme.typography.labelSmall.copy(color = EnterpriseTeal700))
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(24.dp))
 
         Button(
             onClick = onVerify,
@@ -1113,6 +1126,8 @@ private fun AadhaarEVerificationStage(
                 Text("Complete e-Verification u/s 140A", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
             }
         }
+
+        Spacer(Modifier.height(88.dp))
     }
 }
 
@@ -1132,6 +1147,7 @@ private fun CompletedConfirmationStage(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         Card(
@@ -1218,7 +1234,7 @@ private fun CompletedConfirmationStage(
             }
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(24.dp))
 
         Button(
             onClick = onDone,
@@ -1228,5 +1244,7 @@ private fun CompletedConfirmationStage(
         ) {
             Text("Done & Wipe Ephemeral Session (DPDP §12(3))", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
         }
+
+        Spacer(Modifier.height(88.dp))
     }
 }
