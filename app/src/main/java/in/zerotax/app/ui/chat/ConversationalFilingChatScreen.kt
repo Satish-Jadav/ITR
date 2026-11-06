@@ -320,7 +320,7 @@ fun ConversationalFilingChatScreen(
                             Text("Deductions Claimed", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 text = Rupee(currentSnapshot.totalDeductionsClaimed).toString(),
-                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (isSystemInDarkTheme()) Color(0xFF93C5FD) else IndigoStatutory)
+                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (isSystemInDarkTheme()) IndigoStatutoryDark else IndigoStatutory)
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
@@ -485,7 +485,7 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                     brush = androidx.compose.ui.graphics.SolidColor(
                         when {
                             !isBot -> EnterpriseTeal700
-                            message.isAdvisorTip -> if (isSystemInDarkTheme()) Color(0xFFFDE68A) else AmberWarning
+                            message.isAdvisorTip -> if (isSystemInDarkTheme()) AmberWarningDark else AmberWarning
                             else -> MaterialTheme.colorScheme.outlineVariant
                         }
                     )
@@ -502,7 +502,7 @@ private fun ChatBubbleItem(message: `in`.zerotax.feature.aiextractor.ChatMessage
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = when {
                                 !isBot -> PureWhite
-                                message.isAdvisorTip -> if (isSystemInDarkTheme()) Color(0xFFFDE68A) else AmberWarning
+                                message.isAdvisorTip -> if (isSystemInDarkTheme()) AmberWarningDark else AmberWarning
                                 else -> MaterialTheme.colorScheme.onSurface
                             }
                         )

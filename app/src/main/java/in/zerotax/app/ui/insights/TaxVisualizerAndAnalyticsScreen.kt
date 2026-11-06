@@ -360,7 +360,7 @@ private fun ThreeWayReconciliationRadarView(
                             text = "3-Source Triangulation Radar",
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSystemInDarkTheme()) (if (isAutoHealed) EnterpriseTeal200 else Color(0xFFFDE68A)) else MaterialTheme.colorScheme.onSurface
+                                color = if (isSystemInDarkTheme()) (if (isAutoHealed) EnterpriseTeal200 else AmberWarningDark) else MaterialTheme.colorScheme.onSurface
                             )
                         )
                         StatutoryBadge(
@@ -518,7 +518,7 @@ private fun StatutoryTaxCalendarView() {
                             text = "CBDT Statutory Compliance Calendar",
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSystemInDarkTheme()) Color(0xFF93C5FD) else IndigoStatutory
+                                color = if (isSystemInDarkTheme()) IndigoStatutoryDark else IndigoStatutory
                             )
                         )
                         StatutoryBadge(text = "AY 2026-27", tone = BadgeTone.STATUTORY)
@@ -530,7 +530,7 @@ private fun StatutoryTaxCalendarView() {
                             fontFamily = FontFamily.Monospace,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isSystemInDarkTheme()) Color(0xFF93C5FD) else IndigoStatutory
+                            color = if (isSystemInDarkTheme()) IndigoStatutoryDark else IndigoStatutory
                         )
                     )
                     Text(

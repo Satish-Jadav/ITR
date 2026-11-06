@@ -1466,10 +1466,9 @@ fun Section87AMarginalReliefExplainerCard(
 }
 
 /**
- * Plan-based UI Tier Selector enabling tailored workflows:
- * - Sahaj Simple: Zero-jargon, 1-tap filing for salaried / small money
- * - Growth & Investor: Capital gains, 44ADA, and deductions optimizer
- * - Enterprise Audit Shield: Big money, HNI, Schedule FA, and Section 44AB audit
+ * Plan-based UI Tier Selector — rich detail cards showing full coverage per plan.
+ * Each plan renders as an expanded Card with forms covered, eligibility, key features,
+ * and income limit so the user can make an informed selection.
  */
 @Composable
 fun FilingTierSelectorCard(
@@ -1478,149 +1477,257 @@ fun FilingTierSelectorCard(
     onTierSelected: (FilingTierMode) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = CardDefaults.outlinedCardBorder().copy(
-            width = 1.dp,
-            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f))
+    // Plan metadata displayed inside each detail card
+    data class PlanDetail(
+        val tier: FilingTierMode,
+        val icon: androidx.compose.ui.graphics.vector.ImageVector,
+        val eligibility: String,
+        val incomeLimit: String,
+        val forms: List<String>,
+        val features: List<String>
+    )
+
+    val plans = listOf(
+        PlanDetail(
+            tier = FilingTierMode.SAHAJ_SIMPLE,
+            icon = Icons.Default.Speed,
+            eligibility = "Salaried, pensioners, one house property, interest income only",
+            incomeLimit = "Total income up to Rs. 50 Lakh",
+            forms = listOf("ITR-1 Sahaj"),
+            features = listOf(
+                "Salary & pension income (1 or 2 employers)",
+                "Standard deduction Rs. 75,000",
+                "Home loan interest (Sec 24b) — one property",
+                "Chapter VI-A deductions: 80C, 80D, 80TTA",
+                "Tax refund via pre-validated bank account",
+                "New Tax Regime (NTR) vs Old Regime comparison"
+            )
+        ),
+        PlanDetail(
+            tier = FilingTierMode.INVESTOR_PRO,
+            icon = Icons.Default.TrendingUp,
+            eligibility = "Investors, freelancers, multiple properties, capital gains",
+            incomeLimit = "No upper income limit (domestic income)",
+            forms = listOf("ITR-2", "ITR-4 Sugam (44ADA/44AD)"),
+            features = listOf(
+                "Short-term capital gains Sec 111A (15% / 20%)",
+                "Long-term capital gains Sec 112A (equity/MFs)",
+                "Mutual funds, stocks & crypto gains",
+                "Presumptive income Sec 44ADA (freelancers/professionals)",
+                "Multiple house properties & rental income",
+                "Foreign income (NRE interest, DTAA relief)",
+                "Full Schedule 80C–80U deduction suite",
+                "RSU & ESOP perquisite income"
+            )
+        ),
+        PlanDetail(
+            tier = FilingTierMode.ENTERPRISE_AUDIT,
+            icon = Icons.Default.Shield,
+            eligibility = "HNIs, business owners, audit cases, foreign assets",
+            incomeLimit = "Turnover above Rs. 1 Crore or audit exposure",
+            forms = listOf("ITR-2", "ITR-3", "ITR-5/6/7 (via CA dossier)", "Form 3CA/3CB/3CD (Tax Audit)"),
+            features = listOf(
+                "Business & professional income Sec 44AB",
+                "Schedule FA — foreign assets & FEMA compliance",
+                "Black Money Act (BMA) protection notices",
+                "3-way AIS/26AS/Form 16 discrepancy radar",
+                "Partnership firm & LLP income (Schedule BP)",
+                "Advance tax installment planner",
+                "CA collaboration dossier & audit trail",
+                "Transfer pricing & international transactions"
+            )
         )
-    ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    val tierIcon = when (currentTier) {
-                        FilingTierMode.SAHAJ_SIMPLE -> Icons.Default.Speed
-                        FilingTierMode.INVESTOR_PRO -> Icons.Default.TrendingUp
-                        FilingTierMode.ENTERPRISE_AUDIT -> Icons.Default.Shield
-                    }
-                    Icon(tierIcon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Filing Plan: ${currentTier.title}",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                    )
-                }
-                if (currentTier == recommendedTier) {
-                    StatutoryBadge(text = "RECOMMENDED", tone = BadgeTone.SUCCESS)
-                } else {
-                    StatutoryBadge(text = "ACTIVE PLAN", tone = BadgeTone.NEUTRAL)
-                }
+    )
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Select Your Filing Plan",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
+            StatutoryBadge(text = "AY 2026-27", tone = BadgeTone.NEUTRAL)
+        }
+
+        plans.forEach { plan ->
+            val isSelected = currentTier == plan.tier
+            val isRecommended = recommendedTier == plan.tier
+
+            val borderColor = when {
+                isSelected -> MaterialTheme.colorScheme.primary
+                else -> MaterialTheme.colorScheme.outlineVariant
+            }
+            val containerColor = when {
+                isSelected -> MaterialTheme.colorScheme.primaryContainer
+                else -> MaterialTheme.colorScheme.surface
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Row 1: Top two plans side by side (spacious 50% width each)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val topTwoTiers = listOf(FilingTierMode.SAHAJ_SIMPLE, FilingTierMode.INVESTOR_PRO)
-                topTwoTiers.forEach { tier ->
-                    val isSelected = currentTier == tier
-                    val tierItemIcon = when (tier) {
-                        FilingTierMode.SAHAJ_SIMPLE -> Icons.Default.Speed
-                        FilingTierMode.INVESTOR_PRO -> Icons.Default.TrendingUp
-                        FilingTierMode.ENTERPRISE_AUDIT -> Icons.Default.Shield
-                    }
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onTierSelected(tier) },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                        ),
-                        border = if (isSelected) {
-                            CardDefaults.outlinedCardBorder().copy(width = 1.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
-                        } else CardDefaults.outlinedCardBorder().copy(width = 0.75.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 10.dp, horizontal = 8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(tierItemIcon, contentDescription = null, tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = tier.title,
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                ),
-                                maxLines = 2,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Row 2: Bottom 3rd tier: Enterprise Audit (wrapped full-width so it is completely spacious)
-            val isEnterpriseSelected = currentTier == FilingTierMode.ENTERPRISE_AUDIT
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onTierSelected(FilingTierMode.ENTERPRISE_AUDIT) },
-                shape = RoundedCornerShape(10.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isEnterpriseSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                ),
-                border = if (isEnterpriseSelected) {
-                    CardDefaults.outlinedCardBorder().copy(width = 1.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary))
-                } else CardDefaults.outlinedCardBorder().copy(width = 0.75.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
+                    .padding(vertical = 5.dp)
+                    .clickable { onTierSelected(plan.tier) },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = containerColor),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    width = if (isSelected) 2.dp else 1.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(borderColor)
+                )
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp, horizontal = 14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Shield, contentDescription = null, tint = if (isEnterpriseSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Column {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    // Header row: icon + title + badges
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = plan.icon,
+                                contentDescription = null,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = FilingTierMode.ENTERPRISE_AUDIT.title,
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontWeight = if (isEnterpriseSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isEnterpriseSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                text = plan.tier.title,
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                 )
                             )
                             Text(
-                                text = "ITR-2, ITR-3, Form 3CD/3CA Audit & Trusts",
-                                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                text = plan.eligibility,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(Modifier.width(6.dp))
+                        Column(horizontalAlignment = Alignment.End) {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Selected",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            if (isRecommended) {
+                                Spacer(Modifier.height(2.dp))
+                                StatutoryBadge(text = "RECOMMENDED", tone = BadgeTone.SUCCESS)
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    Spacer(Modifier.height(10.dp))
+
+                    // Income limit chip
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                        modifier = Modifier.wrapContentWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountBalance,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = plan.incomeLimit,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
                             )
                         }
                     }
-                    if (isEnterpriseSelected) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Forms covered
+                    Text(
+                        text = "Forms Covered",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(plan.forms) { form ->
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
+                            ) {
+                                Text(
+                                    text = form,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                    ),
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // Key features list
+                    Text(
+                        text = "What's Covered",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    plan.features.forEach { feature ->
+                        Row(
+                            modifier = Modifier.padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else EmeraldSuccess,
+                                modifier = Modifier.size(13.dp).padding(top = 1.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = feature,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "${currentTier.subtitle} • ${currentTier.targetPersona}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

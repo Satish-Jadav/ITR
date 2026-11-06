@@ -14,6 +14,17 @@ class ItdTransactionFetcher {
 
     companion object {
         private const val TAG = "ZeroTaxITDFetcher"
+        // Thread-safe storage for transactions synced live from ITD session
+        private val liveTransactions = java.util.Collections.synchronizedList(mutableListOf<AisTransactionRecord>())
+
+        fun updateLiveTransactions(records: List<AisTransactionRecord>) {
+            liveTransactions.clear()
+            liveTransactions.addAll(records)
+        }
+
+        fun clearLiveTransactions() {
+            liveTransactions.clear()
+        }
     }
 
     /**
@@ -32,61 +43,8 @@ class ItdTransactionFetcher {
             return@withContext Result.failure(IllegalArgumentException(err))
         }
         try {
-            delay(600) // Direct TLS round-trip with eportal.incometax.gov.in/iec/foservices/ais
-
-            val transactions = listOf(
-                AisTransactionRecord(
-                    transactionId = "AIS-SB-001",
-                    category = AisCategory.SAVINGS_INTEREST,
-                    reportingEntity = "State Bank of India (SBIN0001234)",
-                    accountOrFolioNumber = "••••••••1234",
-                    grossAmount = 14_500L,
-                    tdsWithheld = 0L,
-                    quarterOrDate = "FY 2025-26 Q4",
-                    suggestedSchedule = "Schedule OS (Income from Other Sources)",
-                    suggestedExemptionSection = "80TTA",
-                    suggestedExemptionAmount = 10_000L
-                ),
-                AisTransactionRecord(
-                    transactionId = "AIS-SB-002",
-                    category = AisCategory.SAVINGS_INTEREST,
-                    reportingEntity = "HDFC Bank Ltd (HDFC0000053)",
-                    accountOrFolioNumber = "••••••••8819",
-                    grossAmount = 6_200L,
-                    tdsWithheld = 0L,
-                    quarterOrDate = "FY 2025-26 Q4",
-                    suggestedSchedule = "Schedule OS (Income from Other Sources)",
-                    suggestedExemptionSection = "80TTA",
-                    suggestedExemptionAmount = 0L // Remaining cap already utilized by SBI
-                ),
-                AisTransactionRecord(
-                    transactionId = "AIS-TD-001",
-                    category = AisCategory.TIME_DEPOSIT_INTEREST,
-                    reportingEntity = "ICICI Bank Ltd (ICIC0000021)",
-                    accountOrFolioNumber = "••••••••9012",
-                    grossAmount = 45_000L,
-                    tdsWithheld = 4_500L,
-                    quarterOrDate = "FY 2025-26 Full Year",
-                    suggestedSchedule = "Schedule OS & Schedule TDS2",
-                    suggestedExemptionSection = null,
-                    suggestedExemptionAmount = 0L
-                ),
-                AisTransactionRecord(
-                    transactionId = "AIS-DIV-001",
-                    category = AisCategory.DIVIDENDS,
-                    reportingEntity = "Tata Consultancy Services Ltd",
-                    accountOrFolioNumber = "IN300123-10293847",
-                    grossAmount = 7_500L,
-                    tdsWithheld = 750L,
-                    quarterOrDate = "FY 2025-26 Q3",
-                    suggestedSchedule = "Schedule OS (Dividend Income)",
-                    suggestedExemptionSection = null,
-                    suggestedExemptionAmount = 0L
-                )
-            )
-
-            ZeroTaxLogger.i(TAG, "fetchAisTransactions succeeded: retrieved ${transactions.size} records")
-            Result.success(transactions)
+            ZeroTaxLogger.i(TAG, "fetchAisTransactions succeeded: retrieved ${liveTransactions.size} live records")
+            Result.success(liveTransactions.toList())
         } catch (e: Exception) {
             ZeroTaxLogger.e(TAG, "fetchAisTransactions failed for PAN $maskedPan: ${e.message}", e)
             Result.failure(e)

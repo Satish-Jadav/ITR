@@ -184,17 +184,17 @@ fun StatutoryBadge(
         )
         BadgeTone.WARNING -> Triple(
             if (isDark) AmberWarningBgDark else AmberWarningBg,
-            if (isDark) Color(0xFFFDE68A) else AmberWarning,
+            if (isDark) AmberWarningDark else AmberWarning,
             AmberWarning.copy(alpha = 0.3f)
         )
         BadgeTone.DANGER  -> Triple(
             if (isDark) CrimsonDangerBgDark else CrimsonDangerBg,
-            if (isDark) Color(0xFFFCA5A5) else CrimsonDanger,
+            if (isDark) CrimsonDangerDark else CrimsonDanger,
             CrimsonDanger.copy(alpha = 0.3f)
         )
         BadgeTone.STATUTORY -> Triple(
             if (isDark) IndigoStatutoryBgDark else IndigoStatutoryBg,
-            if (isDark) Color(0xFF93C5FD) else IndigoStatutory,
+            if (isDark) IndigoStatutoryDark else IndigoStatutory,
             IndigoStatutory.copy(alpha = 0.3f)
         )
         BadgeTone.NEUTRAL -> Triple(
@@ -384,11 +384,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Build,
                                     contentDescription = null,
-                                    tint = if (isTopDark) Color(0xFF93C5FD) else IndigoStatutory,
+                                    tint = if (isTopDark) IndigoStatutoryDark else IndigoStatutory,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) Color(0xFF93C5FD) else IndigoStatutory))
+                                Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) IndigoStatutoryDark else IndigoStatutory))
                             }
                         }
                     }
@@ -434,11 +434,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Security,
                                     contentDescription = null,
-                                    tint = if (isTopDark) Color(0xFFFDE68A) else AmberWarning,
+                                    tint = if (isTopDark) AmberWarningDark else AmberWarning,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) Color(0xFFFDE68A) else AmberWarning))
+                                Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) AmberWarningDark else AmberWarning))
                             }
                         }
                     }
@@ -1224,7 +1224,7 @@ fun RegimeComparisonInstitutionalCard(
             val calloutText = if (isNewBetter) {
                 if (isDark) EnterpriseTeal300 else EmeraldSuccess
             } else {
-                if (isDark) Color(0xFF93C5FD) else IndigoStatutory
+                if (isDark) IndigoStatutoryDark else IndigoStatutory
             }
 
             Box(

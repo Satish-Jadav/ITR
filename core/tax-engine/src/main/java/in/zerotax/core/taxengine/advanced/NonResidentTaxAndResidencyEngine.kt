@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.core.taxengine.advanced
+package `in`.zerotax.core.taxengine.advanced
 
 import kotlin.math.max
 import kotlin.math.min
@@ -181,7 +181,7 @@ object NonResidentTaxAndResidencyEngine {
     /**
      * Computes NRI tax liability, NRE 10(4) exemption, DTAA Section 90 relief, and Form 10F.
      */
-    fun computeNriTax(input: NriTaxPortfolioInput, pan: String = "ABCDE1234F"): NriTaxComputationResult {
+    fun computeNriTax(input: NriTaxPortfolioInput, pan: String = ""): NriTaxComputationResult {
         val isNriOrRnor = input.residencyStatus != ResidencyStatus.RESIDENT_ORDINARILY_RESIDENT
 
         // 1. Foreign Income is 100% excluded for NRI/RNOR

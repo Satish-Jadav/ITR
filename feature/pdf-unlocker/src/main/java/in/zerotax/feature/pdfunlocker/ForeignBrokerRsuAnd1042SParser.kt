@@ -48,8 +48,9 @@ object ForeignBrokerRsuAnd1042SParser {
 
             val gross = amounts.getOrNull(0) ?: 1000.0
             val tax = amounts.getOrNull(1) ?: (gross * 0.25)
+            val extractedPan = Regex("[A-Z]{5}[0-9]{4}[A-Z]").find(fullText)?.value.orEmpty()
             form1042S = Form1042SDividendStatement(
-                recipientPanOrSsn = "ABCDE1234F",
+                recipientPanOrSsn = extractedPan,
                 withholdingAgentName = broker,
                 grossDividendIncomeUsd = gross,
                 federalTaxWithheldUsd = tax,

@@ -187,7 +187,7 @@ fun ZeroTaxFourTapSpineScaffold(
 
     if (showPortalAssistant) {
         PortalAssistantScreen(
-            pan = uiState.pan.ifBlank { "ABCDE1234F" },
+            pan = uiState.pan,
             grossSalary = uiState.grossSalaryRupees,
             netTaxableSalary = uiState.newRegimeResult.netTaxableNormalIncomeRounded288A,
             taxLiability = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
@@ -408,6 +408,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         citizenCategory = uiState.citizenCategory,
                         onCitizenCategoryChanged = { viewModel.onCitizenCategoryChanged(it) },
                         filingTier = uiState.filingTierMode,
+                        hasPlanExplicitlySelected = uiState.hasPlanExplicitlySelected,
                         onTierSelected = { viewModel.onFilingTierChanged(it) },
                         livePortalStatus = uiState.livePortalStatus,
                         livePortalLatencyMs = uiState.livePortalLatencyMs,
@@ -590,6 +591,7 @@ private fun Stage1IdentityConsent(
     citizenCategory: CitizenCategory,
     onCitizenCategoryChanged: (CitizenCategory) -> Unit,
     filingTier: FilingTierMode,
+    hasPlanExplicitlySelected: Boolean,
     onTierSelected: (FilingTierMode) -> Unit,
     livePortalStatus: String = "HEALTHY",
     livePortalLatencyMs: Long = 1420L,
@@ -600,6 +602,7 @@ private fun Stage1IdentityConsent(
     onOpenChatbot: () -> Unit = {}
 ) {
     val isPanValid = pan.length == 10 && (pan[3] == 'P' || pan[3] == 'H')
+    val canProceed = isPanValid && hasPlanExplicitlySelected
     var isVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -781,10 +784,30 @@ private fun Stage1IdentityConsent(
 
         Spacer(Modifier.height(24.dp))
 
+        // Validation hint row
+        if (!hasPlanExplicitlySelected || !isPanValid) {
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                if (!hasPlanExplicitlySelected) {
+                    Text(
+                        text = "Please select a filing plan above to continue.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                if (!isPanValid && pan.isNotBlank()) {
+                    Text(
+                        text = "PAN must be 10 characters: 5 letters, 4 digits, 1 letter (personal: 4th char P or H).",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+
         // Primary Action CTA
         Button(
             onClick = onProceed,
-            enabled = isPanValid,
+            enabled = canProceed,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = EnterpriseTeal600,
@@ -796,7 +819,11 @@ private fun Stage1IdentityConsent(
                 .height(50.dp)
         ) {
             Text(
-                text = if (isPanValid) "Continue to Step 2: Income →" else "Enter Valid PAN to Continue",
+                text = when {
+                    !hasPlanExplicitlySelected -> "Select a Filing Plan to Continue"
+                    !isPanValid -> "Enter Valid PAN to Continue"
+                    else -> "Continue to Step 2: Income"
+                },
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -1032,7 +1059,23 @@ private fun Stage2DocumentDiscovery(
                     label = { Text("Employer TAN (10 Chars)") },
                     placeholder = { Text("e.g. BLRM01234D") },
                     singleLine = true,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    isError = employerTanText.isNotBlank() && employerTanText.length != 10,
+                    supportingText = {
+                        if (employerTanText.isNotBlank() && employerTanText.length != 10) {
+                            Text(
+                                "TAN must be exactly 10 characters (e.g. BLRM01234D)",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        } else if (employerTanText.length == 10) {
+                            Text(
+                                "Valid TAN format",
+                                color = EmeraldSuccess,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    }
                 )
             }
         }
@@ -1059,7 +1102,7 @@ private fun Stage2DocumentDiscovery(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "AIS / 26AS Tax Credits & Interest",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = if (isSystemInDarkTheme()) Color(0xFF93C5FD) else IndigoStatutory)
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = if (isSystemInDarkTheme()) IndigoStatutoryDark else IndigoStatutory)
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
@@ -1083,10 +1126,11 @@ private fun Stage2DocumentDiscovery(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.weight(1f).height(48.dp)
             ) {
-                Text("← Back", style = MaterialTheme.typography.titleSmall)
+                Text("Back", style = MaterialTheme.typography.titleSmall)
             }
             Button(
                 onClick = onProceed,
+                enabled = grossSalary > 0L,
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = EnterpriseTeal600,
@@ -1095,7 +1139,10 @@ private fun Stage2DocumentDiscovery(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
                 modifier = Modifier.weight(2f).height(48.dp)
             ) {
-                Text("Continue to Deductions →", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                Text(
+                    text = if (grossSalary > 0L) "Continue to Deductions" else "Enter Salary to Continue",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                )
             }
         }
 
@@ -1810,7 +1857,7 @@ private fun ProWorkspaceView(
                         }
 
                         item {
-                            val dangerTextColor = if (isSystemInDarkTheme()) Color(0xFFFCA5A5) else CrimsonDanger
+                            val dangerTextColor = if (isSystemInDarkTheme()) CrimsonDangerDark else CrimsonDanger
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(4.dp),

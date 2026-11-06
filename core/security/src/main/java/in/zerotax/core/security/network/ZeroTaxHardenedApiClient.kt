@@ -68,12 +68,14 @@ object ZeroTaxHardenedApiClient {
             || android.os.Build.PRODUCT.contains("emulator")
     }
 
+    const val LIVE_API_BASE_URL = "https://api-zerotax-itr.vercel.app"
+
     private fun resolveDefaultBaseUrl(): String {
-        return if (isRunningOnEmulator()) "http://10.0.2.2:3000" else "https://api.zerotax.in"
+        return LIVE_API_BASE_URL
     }
 
     var apiBaseUrl: String = resolveDefaultBaseUrl()
-    private const val API_HOSTNAME = "api.zerotax.in"
+    private const val API_HOSTNAME = "api-zerotax-itr.vercel.app"
     private const val DPOP_KEY_ALIAS = "zerotax_hardware_dpop_ec_p256_v1"
 
     // High-concurrency connection pool
@@ -83,10 +85,18 @@ object ZeroTaxHardenedApiClient {
         timeUnit = TimeUnit.MINUTES
     )
 
-    // SPKI pin hashes for Let's Encrypt R10/R11 intermediates (Vercel's CA chain).
+    // SPKI pin hashes for Google Trust Services (Vercel's CA chain on *.vercel.app)
+    // and Let's Encrypt (custom domain fallback).
     private val certificatePinner = CertificatePinner.Builder()
-        .add(API_HOSTNAME, "sha256/jQJTbIh0grw0/1TkHSumWb+Fs0Ggogr621gT3PvVKC0=") // Let's Encrypt R10
-        .add(API_HOSTNAME, "sha256/C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=") // Let's Encrypt R11
+        // Google Trust Services WR1 intermediate CA
+        .add("api-zerotax-itr.vercel.app", "sha256/yDu9og255NN5GEf+Bwa9rTrqFQ0EydZ0r1FCh9TdAW4=")
+        // Google Trust Services Root R1 / GlobalSign Root CA
+        .add("api-zerotax-itr.vercel.app", "sha256/hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=")
+        // *.vercel.app leaf certificate pin
+        .add("api-zerotax-itr.vercel.app", "sha256/ED02jY6POswcMjticCshf50ywurppjVGa00Y+Oqf8ho=")
+        // Custom domain backup pins
+        .add("api.zerotax.in", "sha256/jQJTbIh0grw0/1TkHSumWb+Fs0Ggogr621gT3PvVKC0=")
+        .add("api.zerotax.in", "sha256/C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=")
         .build()
 
     // Thread-safe ring buffer of recent API executions (up to 50 items)
@@ -341,6 +351,18 @@ object ZeroTaxHardenedApiClient {
         }
     }
 
+    @Volatile
+    private var softwareFallbackKeyPair: java.security.KeyPair? = null
+
+    private fun getOrCreateSoftwareFallbackKeyPair(): java.security.KeyPair {
+        softwareFallbackKeyPair?.let { return it }
+        val kpg = KeyPairGenerator.getInstance("EC")
+        kpg.initialize(ECGenParameterSpec("secp256r1"))
+        val kp = kpg.generateKeyPair()
+        softwareFallbackKeyPair = kp
+        return kp
+    }
+
     private fun buildHardwareSignedDpopProof(
         httpMethod: String,
         fullUrl: String,
@@ -349,11 +371,21 @@ object ZeroTaxHardenedApiClient {
         accessToken: String?
     ): String {
         return try {
-            val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-            val entry = ks.getEntry(DPOP_KEY_ALIAS, null) as? KeyStore.PrivateKeyEntry
-            if (entry == null) return "dpop_proof_fallback"
+            val ks = runCatching { KeyStore.getInstance("AndroidKeyStore").apply { load(null) } }.getOrNull()
+            val entry = ks?.getEntry(DPOP_KEY_ALIAS, null) as? KeyStore.PrivateKeyEntry
 
-            val pubKey = entry.certificate.publicKey as ECPublicKey
+            val privateKey: java.security.PrivateKey
+            val pubKey: ECPublicKey
+
+            if (entry != null) {
+                privateKey = entry.privateKey
+                pubKey = entry.certificate.publicKey as ECPublicKey
+            } else {
+                val kp = getOrCreateSoftwareFallbackKeyPair()
+                privateKey = kp.private
+                pubKey = kp.public as ECPublicKey
+            }
+
             val xCoord = pubKey.w.affineX.toByteArray().takeLast(32).toByteArray()
             val yCoord = pubKey.w.affineY.toByteArray().takeLast(32).toByteArray()
 
@@ -387,7 +419,7 @@ object ZeroTaxHardenedApiClient {
             val signingInput = "$b64Header.$b64Claims"
 
             val signer = Signature.getInstance("SHA256withECDSA").apply {
-                initSign(entry.privateKey)
+                initSign(privateKey)
                 update(signingInput.toByteArray(StandardCharsets.US_ASCII))
             }
             val signature = signer.sign()

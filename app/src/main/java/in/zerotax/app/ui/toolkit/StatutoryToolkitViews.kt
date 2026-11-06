@@ -263,10 +263,10 @@ fun Form12BbDeclarationView(
     grossSalary: Long
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var employerName by remember { mutableStateOf("Infosys Limited") }
+    var employerName by remember { mutableStateOf("") }
     var rentPaidText by remember { mutableStateOf("300000") }
-    var landlordName by remember { mutableStateOf("K. Venkataraman") }
-    var landlordPan by remember { mutableStateOf("ABCDE1234F") }
+    var landlordName by remember { mutableStateOf("") }
+    var landlordPan by remember { mutableStateOf("") }
     var sec80CText by remember { mutableStateOf("150000") }
     var sec80CCD1BText by remember { mutableStateOf("50000") }
     var sec80DText by remember { mutableStateOf("25000") }

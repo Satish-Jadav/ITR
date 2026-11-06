@@ -31,7 +31,7 @@ enum class CorporateSuiteTab(val title: String, val subtitle: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CorporateAndTrustSuiteScreen(
-    pan: String = "AAACF1234F",
+    pan: String = "",
     onBack: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -55,7 +55,7 @@ fun CorporateAndTrustSuiteScreen(
 
 @Composable
 fun CorporateAndTrustSuiteContent(
-    pan: String = "AAACF1234F",
+    pan: String = "",
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(CorporateSuiteTab.ITR_5_FIRM) }
