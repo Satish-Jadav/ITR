@@ -582,18 +582,71 @@ fun EnterpriseTopHeader(
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.VerifiedUser,
+                                    imageVector = Icons.Default.Lock,
                                     contentDescription = null,
-                                    tint = EnterpriseTeal700,
+                                    tint = if (isSystemInDarkTheme()) Color(0xFFFBBF24) else Color(0xFFD97706),
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Trust Shield", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                                Text("End-to-End Encrypted", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+
+/**
+ * WhatsApp-Style End-to-End Encryption Banner
+ * Designed to provide instant, recognizable trust and security reassurance to taxpayers.
+ */
+@Composable
+fun WhatsAppEndToEndEncryptionBanner(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    customText: String? = null
+) {
+    val isDark = isSystemInDarkTheme()
+    val bg = if (isDark) Color(0xFF232014) else Color(0xFFFEF9C3)
+    val border = if (isDark) Color(0xFF713F12).copy(alpha = 0.7f) else Color(0xFFFDE047)
+    val textCol = if (isDark) Color(0xFFFDE68A) else Color(0xFF713F12)
+    val iconCol = if (isDark) Color(0xFFFBBF24) else Color(0xFFD97706)
+
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = bg,
+        border = androidx.compose.foundation.BorderStroke(0.75.dp, border),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = "End-to-End Encrypted",
+                tint = iconCol,
+                modifier = Modifier.size(13.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = customText ?: "Your tax return and financial data are end-to-end encrypted. No one outside of this device, not even ZeroTax, can read them. Tap to verify.",
+                style = TextStyle(
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp,
+                    color = textCol,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                ),
+                modifier = Modifier.weight(1f, fill = false)
+            )
         }
     }
 }

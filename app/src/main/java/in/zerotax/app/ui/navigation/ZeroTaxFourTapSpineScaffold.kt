@@ -667,6 +667,11 @@ private fun Stage1IdentityConsent(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Spacer(Modifier.height(8.dp))
+                WhatsAppEndToEndEncryptionBanner(
+                    onClick = {},
+                    customText = "Your tax return is end-to-end encrypted. No one outside of this device, not even ZeroTax, can read your salary or PAN. Tap to verify."
+                )
             }
         }
 
