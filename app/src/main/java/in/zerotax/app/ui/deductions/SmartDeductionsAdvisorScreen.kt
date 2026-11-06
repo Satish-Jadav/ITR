@@ -1,5 +1,6 @@
-﻿package `in`.zerotax.app.ui.deductions
+package `in`.zerotax.app.ui.deductions
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -60,8 +61,8 @@ fun SmartDeductionsAdvisorScreen(
     }
 
     // Home Loan EMI Simulator States
-    var monthlyEmiInput by remember { mutableStateOf("38000") }
-    var grossSalaryInput by remember { mutableStateOf("1500000") }
+    var monthlyEmiInput by remember { mutableStateOf("") }
+    var grossSalaryInput by remember { mutableStateOf("") }
 
     val numericMonthlyEmi = monthlyEmiInput.filter { it.isDigit() }.toLongOrNull() ?: 0L
     val numericGrossSalary = grossSalaryInput.filter { it.isDigit() }.toLongOrNull() ?: 15_00_000L

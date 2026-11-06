@@ -7,7 +7,7 @@ class EncryptedZtVaultMigrationEngineTest {
 
     @Test
     fun exportAndImportVault_successfulRoundTrip() {
-        val originalJson = """{"pan":"ABCDE1234F","cflLosses":[{"ay":"2024-25","stcl":45000}],"note":"ZeroTax Local Vault"}"""
+        val originalJson = """{"pan":"ABCDE1234F","cflLosses":[{"ay":"2024-25","stcl":45000}],"note":"ZeroTax Encrypted Vault"}"""
         val metadata = ZtVaultBundleMetadata(
             pan = "ABCDE1234F",
             dob = "15/08/1990",

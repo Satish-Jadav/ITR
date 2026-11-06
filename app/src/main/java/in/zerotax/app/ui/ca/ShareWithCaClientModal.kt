@@ -1,5 +1,6 @@
-﻿package `in`.zerotax.app.ui.ca
+package `in`.zerotax.app.ui.ca
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.BadgeTone
 import `in`.zerotax.app.ui.components.StatutoryBadge
+import `in`.zerotax.app.ui.components.ZeroTaxBottomSheet
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.model.ClientAuditStatus
 
@@ -50,10 +52,14 @@ fun ShareWithCaClientModal(
         "ZT-$n"
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        title = {
+    ZeroTaxBottomSheet(
+        onDismissRequest = onDismiss
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Share,
@@ -67,9 +73,14 @@ fun ShareWithCaClientModal(
                     Text("Secure Single-Use Pairing Code", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
             }
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.Default.Close, contentDescription = "Close")
+            }
+        }
+
+        Spacer(Modifier.height(14.dp))
+
+        Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Provide this 6-digit code to your Chartered Accountant. They will enter it into their CA Verification Portal to review your schedules, verify Section 44AB books, and sign off on your return.",
                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
@@ -113,21 +124,16 @@ fun ShareWithCaClientModal(
 
                 Spacer(Modifier.height(12.dp))
 
-                Button(
+                ZeroTaxPrimaryButton(
+                    text = "Copy Code to Share via WhatsApp / Email",
                     onClick = {
                         clipboardManager.setText(AnnotatedString(pairingCode))
                         copiedCodeMessage = "Code $pairingCode copied to clipboard!"
                     },
-                    modifier = Modifier.fillMaxWidth().height(40.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    leadingIcon = {
                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Copy Code to Share via WhatsApp / Email", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
-                }
+                )
 
                 if (copiedCodeMessage != null) {
                     Spacer(Modifier.height(6.dp))
@@ -177,15 +183,11 @@ fun ShareWithCaClientModal(
                     )
                 }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = Slate800)
-            ) {
-                Text("Done", fontWeight = FontWeight.Bold)
-            }
-        }
-    )
+        Spacer(Modifier.height(16.dp))
+        ZeroTaxPrimaryButton(
+            text = "Done",
+            onClick = onDismiss
+        )
+    }
 }
 

@@ -57,7 +57,7 @@ object LocalTaxComputationPdfExporter {
                 yPosition -= (fontSize + 7f)
             }
 
-            writeLine("ZEROTAX-LOCAL — STATEMENT OF TAX COMPUTATION", isHeader = true, fontSize = 16f)
+            writeLine("ZEROTAX — STATEMENT OF TAX COMPUTATION", isHeader = true, fontSize = 16f)
             writeLine("Assessment Year: ${data.assessmentYear} | Regime: ${data.selectedRegime}", isHeader = false, fontSize = 11f)
             writeLine("Taxpayer: ${data.taxpayerName} | PAN: ${data.pan}", isHeader = false, fontSize = 11f)
             writeLine("------------------------------------------------------------------------------------------------", isHeader = false, fontSize = 10f)
@@ -90,7 +90,7 @@ object LocalTaxComputationPdfExporter {
 
             yPosition -= 20f
             writeLine("PROVENANCE & INTEGRITY ASSURANCE:", isHeader = true, fontSize = 10f)
-            writeLine("Computed 100% on-device by ZeroTax-Local deterministic engine with zero network egress.", fontSize = 9f)
+            writeLine("Computed locally by ZeroTax deterministic engine with End-to-End Encrypted Cloud Vault security.", fontSize = 9f)
             writeLine("Cryptographic Audit Signature: ${data.verificationAuditSha256}", fontSize = 8f)
         }
 

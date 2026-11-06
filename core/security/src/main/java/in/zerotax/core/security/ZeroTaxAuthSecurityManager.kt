@@ -13,7 +13,7 @@ import java.util.UUID
 /**
  * Production Authentication & Security Session Manager.
  * Operates in full compliance with the Digital Personal Data Protection (DPDP) Act, 2023.
- * Supports Email/Password, Google Sign-In, Device Biometrics, and 100% Offline Guest Vault.
+ * Supports Email/Password, Google Sign-In, Device Biometrics, and Encrypted Guest Vault.
  */
 object ZeroTaxAuthSecurityManager {
 

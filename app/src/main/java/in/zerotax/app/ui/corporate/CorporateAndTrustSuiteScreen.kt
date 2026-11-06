@@ -107,11 +107,11 @@ fun CorporateAndTrustSuiteContent(
 @Composable
 fun Itr5FirmCalculatorView(pan: String) {
     var isLlp by remember { mutableStateOf(true) }
-    var bookProfitText by remember { mutableStateOf("2500000") }
-    var capitalText by remember { mutableStateOf("5000000") }
+    var bookProfitText by remember { mutableStateOf("") }
+    var capitalText by remember { mutableStateOf("") }
     var interestRateText by remember { mutableStateOf("12.0") }
-    var interestClaimedText by remember { mutableStateOf("600000") }
-    var remunerationClaimedText by remember { mutableStateOf("1500000") }
+    var interestClaimedText by remember { mutableStateOf("") }
+    var remunerationClaimedText by remember { mutableStateOf("") }
     var deductionsText by remember { mutableStateOf("0") }
 
     val bookProfit = bookProfitText.toLongOrNull() ?: 0L
@@ -359,9 +359,9 @@ fun Itr6CorporateCalculatorView(pan: String) {
     var has115Baa by remember { mutableStateOf(true) }
     var isMfg115Bab by remember { mutableStateOf(false) }
     var turnoverOver400Cr by remember { mutableStateOf(false) }
-    var taxableIncomeText by remember { mutableStateOf("10000000") }
-    var matProfitsText by remember { mutableStateOf("12500000") }
-    var broughtForwardMatText by remember { mutableStateOf("200000") }
+    var taxableIncomeText by remember { mutableStateOf("") }
+    var matProfitsText by remember { mutableStateOf("") }
+    var broughtForwardMatText by remember { mutableStateOf("") }
 
     val taxableIncome = taxableIncomeText.toLongOrNull() ?: 0L
     val matProfits = matProfitsText.toLongOrNull() ?: 0L
@@ -569,9 +569,9 @@ fun Itr6CorporateCalculatorView(pan: String) {
 @Composable
 fun Itr7TrustCalculatorView(pan: String) {
     var isPoliticalParty by remember { mutableStateOf(false) }
-    var contributionsText by remember { mutableStateOf("10000000") }
-    var corpusText by remember { mutableStateOf("2500000") }
-    var applicationText by remember { mutableStateOf("8500000") }
+    var contributionsText by remember { mutableStateOf("") }
+    var corpusText by remember { mutableStateOf("") }
+    var applicationText by remember { mutableStateOf("") }
     var deemed9AText by remember { mutableStateOf("0") }
     var form10Text by remember { mutableStateOf("0") }
     var sec13ViolationText by remember { mutableStateOf("0") }

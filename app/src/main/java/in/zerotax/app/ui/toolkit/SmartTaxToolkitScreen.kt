@@ -1,5 +1,6 @@
 package `in`.zerotax.app.ui.toolkit
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -180,9 +181,9 @@ private fun HraOptimizerView(
     pan: String,
     grossSalary: Long
 ) {
-    var monthlyRentText by remember { mutableStateOf("28000") }
-    var monthlyBasicText by remember { mutableStateOf("65000") }
-    var monthlyHraText by remember { mutableStateOf("32500") }
+    var monthlyRentText by remember { mutableStateOf("") }
+    var monthlyBasicText by remember { mutableStateOf(if (grossSalary > 0L) (grossSalary / 24).toString() else "") }
+    var monthlyHraText by remember { mutableStateOf(if (grossSalary > 0L) (grossSalary / 48).toString() else "") }
     var isMetroCity by remember { mutableStateOf(true) }
     var landlordName by remember { mutableStateOf("") }
     var landlordPan by remember { mutableStateOf("") }
@@ -837,7 +838,7 @@ private fun BankReadyStatementView(
 private fun CtcRestructuringView(grossSalary: Long) {
     var ctcText by remember { mutableStateOf((if (grossSalary > 0L) grossSalary else 1800000L).toString()) }
     var basicPercent by remember { mutableStateOf(0.50) }
-    var rentPaidAnnualText by remember { mutableStateOf("300000") }
+    var rentPaidAnnualText by remember { mutableStateOf("") }
     var isMetroCity by remember { mutableStateOf(true) }
     var copyStatusMessage by remember { mutableStateOf<String?>(null) }
     val clipboardManager = LocalClipboardManager.current
@@ -1119,12 +1120,12 @@ private fun CtcRestructuringView(grossSalary: Long) {
 // ============================================================================
 @Composable
 private fun CapitalGainsLedgerView() {
-    var stcg111AText by remember { mutableStateOf("250000") }
-    var ltcg112AText by remember { mutableStateOf("320000") }
-    var cyStclLossText by remember { mutableStateOf("60000") }
-    var cyLtclLossText by remember { mutableStateOf("40000") }
-    var bfStclLossText by remember { mutableStateOf("50000") }
-    var bfLtclLossText by remember { mutableStateOf("30000") }
+    var stcg111AText by remember { mutableStateOf("") }
+    var ltcg112AText by remember { mutableStateOf("") }
+    var cyStclLossText by remember { mutableStateOf("") }
+    var cyLtclLossText by remember { mutableStateOf("") }
+    var bfStclLossText by remember { mutableStateOf("") }
+    var bfLtclLossText by remember { mutableStateOf("") }
     var copyStatusMessage by remember { mutableStateOf<String?>(null) }
     val clipboardManager = LocalClipboardManager.current
 
@@ -1486,9 +1487,9 @@ private fun CapitalGainsLedgerView() {
 // ============================================================================
 @Composable
 private fun PropertyLtcgView() {
-    var saleConsiderationText by remember { mutableStateOf("12000000") } // ₹1.2 Cr
-    var actualCostText by remember { mutableStateOf("3500000") } // ₹35 Lakhs
-    var sec54ReinvestmentText by remember { mutableStateOf("2000000") } // ₹20 Lakhs
+    var saleConsiderationText by remember { mutableStateOf("") }
+    var actualCostText by remember { mutableStateOf("") }
+    var sec54ReinvestmentText by remember { mutableStateOf("") }
     var acquisitionFy by remember { mutableStateOf("2012-13") }
     var acquiredBeforeJuly2024 by remember { mutableStateOf(true) }
 
@@ -1706,10 +1707,10 @@ private fun PropertyLtcgView() {
 // ============================================================================
 @Composable
 private fun Form10EReliefView(pan: String) {
-    var normalSalaryText by remember { mutableStateOf("1500000") } // ₹15 Lakhs
-    var arrearsText by remember { mutableStateOf("300000") } // ₹3 Lakhs arrears
-    var pastFyIncomeText by remember { mutableStateOf("900000") } // ₹9 Lakhs
-    var pastFyTaxText by remember { mutableStateOf("96200") } // ₹96,200
+    var normalSalaryText by remember { mutableStateOf("") }
+    var arrearsText by remember { mutableStateOf("") }
+    var pastFyIncomeText by remember { mutableStateOf("") }
+    var pastFyTaxText by remember { mutableStateOf("") }
     var pastAyYear by remember { mutableStateOf("2024-25") }
     var copyStatusMessage by remember { mutableStateOf<String?>(null) }
     val clipboardManager = LocalClipboardManager.current
@@ -1931,9 +1932,9 @@ private fun Form10EReliefView(pan: String) {
 // ============================================================================
 @Composable
 private fun ItrUView() {
-    var additionalIncomeText by remember { mutableStateOf("400000") } // ₹4 Lakhs
-    var monthsElapsedText by remember { mutableStateOf("8") } // 8 months (25% rate)
-    var interestText by remember { mutableStateOf("15000") } // ₹15,000
+    var additionalIncomeText by remember { mutableStateOf("") }
+    var monthsElapsedText by remember { mutableStateOf("") }
+    var interestText by remember { mutableStateOf("") }
 
     val input = remember(additionalIncomeText, monthsElapsedText, interestText) {
         ItrUInput(

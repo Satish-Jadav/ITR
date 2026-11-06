@@ -1,5 +1,6 @@
 package `in`.zerotax.app.ui.nri
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -50,10 +51,10 @@ fun DualRegionNriComplianceScreen(
     var indianIncomeOver15L by remember { mutableStateOf(false) }
 
     // NRI Portfolio Inputs
-    var nreInterestText by remember { mutableStateOf("250000") } // ₹2.5L NRE interest (Tax-free)
-    var fcnrInterestText by remember { mutableStateOf("120000") } // ₹1.2L FCNR interest (Tax-free)
-    var nroInterestText by remember { mutableStateOf("180000") } // ₹1.8L NRO interest (30% TDS)
-    var foreignIncomeText by remember { mutableStateOf("4500000") } // ₹45L Foreign salary (Exempt)
+    var nreInterestText by remember { mutableStateOf("") }
+    var fcnrInterestText by remember { mutableStateOf("") }
+    var nroInterestText by remember { mutableStateOf("") }
+    var foreignIncomeText by remember { mutableStateOf("") }
     var selectedCountry by remember { mutableStateOf("United States") }
     var treatyRateText by remember { mutableStateOf("15.0") }
 

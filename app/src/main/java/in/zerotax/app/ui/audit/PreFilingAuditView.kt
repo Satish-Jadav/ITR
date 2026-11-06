@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.audit
+package `in`.zerotax.app.ui.audit
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -174,7 +174,8 @@ fun PreFilingAuditView(
                         )
                     }
                     Spacer(Modifier.width(10.dp))
-                    Button(
+                    ZeroTaxPrimaryButton(
+                        text = if (isLegalAcknowledgementSigned) "File Direct →" else "Review & Sign →",
                         onClick = {
                             if (!isLegalAcknowledgementSigned) {
                                 showLegalDialog = true
@@ -183,17 +184,8 @@ fun PreFilingAuditView(
                             }
                         },
                         enabled = auditReport.canFileDirectly,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isLegalAcknowledgementSigned) EnterpriseTeal600 else AmberWarning
-                        ),
-                        modifier = Modifier.height(44.dp)
-                    ) {
-                        Text(
-                            text = if (isLegalAcknowledgementSigned) "File Direct →" else "Review & Sign →",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
+                        modifier = Modifier.heightIn(min = 44.dp)
+                    )
                 }
             }
         }
@@ -422,19 +414,11 @@ fun PreFilingAuditView(
                             color = Slate700
                         )
                         Spacer(Modifier.height(10.dp))
-                        OutlinedButton(
+                        ZeroTaxOutlinedButton(
+                            text = if (isLegalAcknowledgementSigned) "View Signed Legal Terms & Cloud Sync Status" else "Review & Sign Statutory Terms (Mandatory) →",
                             onClick = { showLegalDialog = true },
-                            shape = RoundedCornerShape(4.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = if (isLegalAcknowledgementSigned) EnterpriseTeal700 else AmberWarning
-                            ),
-                            modifier = Modifier.fillMaxWidth().height(40.dp)
-                        ) {
-                            Text(
-                                text = if (isLegalAcknowledgementSigned) "View Signed Legal Terms & Cloud Sync Status" else "Review & Sign Statutory Terms (Mandatory) →",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
-                            )
-                        }
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }
@@ -669,8 +653,8 @@ fun PreFilingAuditView(
                     netTaxableIncomeRupees = computation.netTaxableNormalIncomeRounded288A,
                     totalTaxLiabilityRupees = computation.totalTaxLiabilityRounded288B,
                     refundDueRupees = salarySummary.aggregateTdsAllowed - computation.totalTaxLiabilityRounded288B,
-                    bankName = bankAccount?.bankName ?: "State Bank of India",
-                    bankAccountMasked = bankAccount?.accountNumber ?: "••••1234",
+                    bankName = bankAccount?.bankName?.ifBlank { "Primary Pre-Validated Bank" } ?: "Primary Pre-Validated Bank",
+                    bankAccountMasked = bankAccount?.accountNumber?.ifBlank { "Direct CBDT ECS Credit" } ?: "Direct CBDT ECS Credit",
                     consentSha256Hash = sha256
                 )
                 scope.launch {

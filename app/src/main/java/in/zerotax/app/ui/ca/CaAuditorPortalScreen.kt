@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.ca
+package `in`.zerotax.app.ui.ca
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,8 +38,8 @@ import `in`.zerotax.core.model.*
 @Composable
 fun CaAuditorPortalScreen(
     caProfile: CaProfile = CaProfile(
-        membershipNumber = "514289",
-        caName = "CA Rajesh Sharma, FCA",
+        membershipNumber = "ICAI-MEMBER",
+        caName = "Chartered Accountant (ICAI Verified)",
         firmRegistrationNumber = "012345N",
         email = "rajesh.sharma@icaimembers.org",
         phone = "+91 98110 54321",
@@ -55,52 +56,7 @@ fun CaAuditorPortalScreen(
 
     // In-memory roster of client returns attached to this CA
     var clientRoster by remember {
-        mutableStateOf(
-            listOf(
-                ClientPairingSession(
-                    pairingCode = "ZT-4921",
-                    clientPan = "AAACB1234M",
-                    clientName = "Zenith Infra LLP",
-                    grossTurnoverOrIncome = 1_85_00_000L,
-                    auditType = AuditType.LLP_AUDIT_ITR5,
-                    itrForm = "ITR-5",
-                    taxPayableOrRefund = 3_40_000L,
-                    isRefund = false,
-                    createdAtEpochMs = System.currentTimeMillis() - 7200000L,
-                    expiresAtEpochMs = System.currentTimeMillis() + 86400000L,
-                    isLinked = true,
-                    auditStatus = ClientAuditStatus.PENDING_REVIEW
-                ),
-                ClientPairingSession(
-                    pairingCode = "ZT-8832",
-                    clientPan = "BLZPK9876C",
-                    clientName = "Aditi Verma (Consulting)",
-                    grossTurnoverOrIncome = 48_50_000L,
-                    auditType = AuditType.TAX_AUDIT_44AB,
-                    itrForm = "ITR-4",
-                    taxPayableOrRefund = 42_000L,
-                    isRefund = true,
-                    createdAtEpochMs = System.currentTimeMillis() - 14400000L,
-                    expiresAtEpochMs = System.currentTimeMillis() + 86400000L,
-                    isLinked = true,
-                    auditStatus = ClientAuditStatus.APPROVED_SIGNED_OFF
-                ),
-                ClientPairingSession(
-                    pairingCode = "ZT-6104",
-                    clientPan = "AADCE5678K",
-                    clientName = "Apex Logistics Pvt Ltd",
-                    grossTurnoverOrIncome = 8_20_00_000L,
-                    auditType = AuditType.COMPANY_AUDIT_ITR6,
-                    itrForm = "ITR-6",
-                    taxPayableOrRefund = 12_80_000L,
-                    isRefund = false,
-                    createdAtEpochMs = System.currentTimeMillis() - 28800000L,
-                    expiresAtEpochMs = System.currentTimeMillis() + 86400000L,
-                    isLinked = true,
-                    auditStatus = ClientAuditStatus.IN_AUDIT
-                )
-            )
-        )
+        mutableStateOf(emptyList<ClientPairingSession>())
     }
 
     Scaffold(
@@ -125,7 +81,7 @@ fun CaAuditorPortalScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onExitCaPortal) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Exit CA Portal", tint = MaterialTheme.colorScheme.onSurface)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Exit CA Portal", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 actions = {
@@ -237,82 +193,82 @@ fun CaAuditorPortalScreen(
 
     // Modal: Attach Client via 6-Digit Pairing Code
     if (showPairClientDialog) {
-        AlertDialog(
+        ZeroTaxBottomSheet(
             onDismissRequest = {
                 showPairClientDialog = false
                 pairingErrorMessage = null
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            title = {
+            }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.VpnKey, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.VpnKey, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(24.dp))
                     Spacer(Modifier.width(8.dp))
                     Text("Attach Client via Pairing Code", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                 }
-            },
-            text = {
-                Column {
-                    Text(
-                        "Ask your client to open ZeroTax and tap 'Share with CA' to generate a single-use 6-digit secure pairing code (e.g. ZT-9481).",
-                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    )
-                    Spacer(Modifier.height(14.dp))
-                    OutlinedTextField(
-                        value = pairingCodeInput,
-                        onValueChange = { pairingCodeInput = it.uppercase() },
-                        label = { Text("6-Digit Client Code (e.g., ZT-9481)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    )
-                    if (pairingErrorMessage != null) {
-                        Spacer(Modifier.height(6.dp))
-                        Text(pairingErrorMessage!!, color = CrimsonDanger, style = MaterialTheme.typography.labelSmall)
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val cleanedCode = pairingCodeInput.trim().uppercase()
-                        // VUL-05 FIX: Validate pairing code format before creating any client session.
-                        // Only accept "ZT-" followed by exactly 4 digits. Any other format is rejected.
-                        // This prevents phantom client injection via arbitrary strings.
-                        val validCodeFormat = Regex("^ZT-[0-9]{4}$")
-                        if (validCodeFormat.matches(cleanedCode)) {
-                            val newClient = ClientPairingSession(
-                                pairingCode = cleanedCode,
-                                clientPan = "AABCG${(1000..9999).random()}Q",
-                                clientName = "Client ($cleanedCode)",
-                                grossTurnoverOrIncome = 95_00_000L,
-                                auditType = AuditType.TAX_AUDIT_44AB,
-                                itrForm = "ITR-3",
-                                taxPayableOrRefund = 1_85_000L,
-                                isRefund = false,
-                                createdAtEpochMs = System.currentTimeMillis(),
-                                expiresAtEpochMs = System.currentTimeMillis() + 86400000L,
-                                isLinked = true,
-                                auditStatus = ClientAuditStatus.PENDING_REVIEW
-                            )
-                            clientRoster = listOf(newClient) + clientRoster
-                            pairingCodeInput = ""
-                            showPairClientDialog = false
-                            selectedClientForAudit = newClient
-                        } else {
-                            pairingErrorMessage = "Invalid code format. Enter a valid code like ZT-1234."
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                ) {
-                    Text("Verify & Attach Client", fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showPairClientDialog = false }) {
-                    Text("Cancel", color = Slate600)
+                IconButton(onClick = {
+                    showPairClientDialog = false
+                    pairingErrorMessage = null
+                }) {
+                    Icon(Icons.Default.Close, contentDescription = "Close")
                 }
             }
-        )
+
+            Spacer(Modifier.height(14.dp))
+
+            Text(
+                "Ask your client to open ZeroTax and tap 'Share with CA' to generate a single-use 6-digit secure pairing code (e.g. ZT-9481).",
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+            Spacer(Modifier.height(14.dp))
+            OutlinedTextField(
+                value = pairingCodeInput,
+                onValueChange = { pairingCodeInput = it.uppercase() },
+                label = { Text("6-Digit Client Code (e.g., ZT-9481)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            )
+            if (pairingErrorMessage != null) {
+                Spacer(Modifier.height(6.dp))
+                Text(pairingErrorMessage!!, color = CrimsonDanger, style = MaterialTheme.typography.labelSmall)
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            ZeroTaxPrimaryButton(
+                text = "Verify & Attach Client",
+                onClick = {
+                    val cleanedCode = pairingCodeInput.trim().uppercase()
+                    val validCodeFormat = Regex("^ZT-[0-9]{4}$")
+                    if (validCodeFormat.matches(cleanedCode)) {
+                        val newClient = ClientPairingSession(
+                            pairingCode = cleanedCode,
+                            clientPan = "AABCG${(1000..9999).random()}Q",
+                            clientName = "Client ($cleanedCode)",
+                            grossTurnoverOrIncome = 95_00_000L,
+                            auditType = AuditType.TAX_AUDIT_44AB,
+                            itrForm = "ITR-3",
+                            taxPayableOrRefund = 1_85_000L,
+                            isRefund = false,
+                            createdAtEpochMs = System.currentTimeMillis(),
+                            expiresAtEpochMs = System.currentTimeMillis() + 86400000L,
+                            isLinked = true,
+                            auditStatus = ClientAuditStatus.PENDING_REVIEW
+                        )
+                        clientRoster = listOf(newClient) + clientRoster
+                        pairingCodeInput = ""
+                        showPairClientDialog = false
+                        selectedClientForAudit = newClient
+                    } else {
+                        pairingErrorMessage = "Invalid code format. Enter a valid code like ZT-1234."
+                    }
+                }
+            )
+        }
     }
 
     // Modal: Comprehensive CA Audit Review & Statutory Sign-Off Desk
@@ -455,10 +411,14 @@ private fun CaAuditReviewModal(
     var draftUdin by remember { mutableStateOf("26${caProfile.membershipNumber}AAAA${(1000..9999).random()}Q") }
     var isSigningOff by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        title = {
+    ZeroTaxBottomSheet(
+        onDismissRequest = onDismiss
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(24.dp))
                 Spacer(Modifier.width(8.dp))
@@ -467,91 +427,83 @@ private fun CaAuditReviewModal(
                     Text("${client.clientName} • PAN: ${client.clientPan}", style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
             }
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Audit Scope:", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                            Text(client.auditType.title, style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
-                        }
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Turnover Verified:", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                            Text("₹${"%,d".format(client.grossTurnoverOrIncome)}", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
-                        }
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Assessment Year:", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                            Text("AY 2026-27", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
-                        }
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Auditor M.No:", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                            Text(caProfile.membershipNumber, style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700))
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                Text("Auditor Observations & Clause Notes:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
-                Spacer(Modifier.height(4.dp))
-                OutlinedTextField(
-                    value = auditObservationsText,
-                    onValueChange = { auditObservationsText = it },
-                    modifier = Modifier.fillMaxWidth().height(90.dp),
-                    textStyle = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
-                )
-
-                Spacer(Modifier.height(10.dp))
-
-                Text("Draft UDIN (Unique Document Identification Number):", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
-                Spacer(Modifier.height(4.dp))
-                OutlinedTextField(
-                    value = draftUdin,
-                    onValueChange = { draftUdin = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = EnterpriseTeal700)
-                )
-            }
-        },
-        confirmButton = {
-            if (client.auditStatus != ClientAuditStatus.APPROVED_SIGNED_OFF) {
-                Button(
-                    onClick = {
-                        isSigningOff = true
-                        val updatedClient = client.copy(
-                            auditStatus = ClientAuditStatus.APPROVED_SIGNED_OFF
-                        )
-                        onSignOff(updatedClient)
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Approve & Sign-Off Return", fontWeight = FontWeight.Bold)
-                    }
-                }
-            } else {
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(containerColor = Slate700)
-                ) {
-                    Text("Close", fontWeight = FontWeight.Bold)
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.Default.Close, contentDescription = "Close")
             }
         }
-    )
-}
 
+        Spacer(Modifier.height(14.dp))
+
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Audit Scope:", style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    Text(client.auditType.title, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Turnover Verified:", style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    Text("₹${"%,d".format(client.grossTurnoverOrIncome)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Assessment Year:", style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    Text("AY 2026-27", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Auditor M.No:", style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    Text(caProfile.membershipNumber, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700))
+                }
+            }
+        }
+
+        Spacer(Modifier.height(14.dp))
+
+        Text("Auditor Observations & Clause Notes:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
+        Spacer(Modifier.height(4.dp))
+        OutlinedTextField(
+            value = auditObservationsText,
+            onValueChange = { auditObservationsText = it },
+            modifier = Modifier.fillMaxWidth().height(90.dp),
+            textStyle = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text("Draft UDIN (Unique Document Identification Number):", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
+        Spacer(Modifier.height(4.dp))
+        OutlinedTextField(
+            value = draftUdin,
+            onValueChange = { draftUdin = it },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = EnterpriseTeal700)
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        if (client.auditStatus != ClientAuditStatus.APPROVED_SIGNED_OFF) {
+            ZeroTaxPrimaryButton(
+                text = "Approve & Sign-Off Return",
+                onClick = {
+                    isSigningOff = true
+                    val updatedClient = client.copy(
+                        auditStatus = ClientAuditStatus.APPROVED_SIGNED_OFF
+                    )
+                    onSignOff(updatedClient)
+                },
+                leadingIcon = {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PureWhite, modifier = Modifier.size(18.dp))
+                }
+            )
+        } else {
+            ZeroTaxPrimaryButton(
+                text = "Close",
+                onClick = onDismiss
+            )
+        }
+    }
+}

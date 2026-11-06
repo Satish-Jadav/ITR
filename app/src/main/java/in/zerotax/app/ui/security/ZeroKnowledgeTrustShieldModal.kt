@@ -1,5 +1,6 @@
-﻿package `in`.zerotax.app.ui.security
+package `in`.zerotax.app.ui.security
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import `in`.zerotax.app.ui.components.ZeroTaxBottomSheet
 import `in`.zerotax.app.ui.components.BadgeTone
 import `in`.zerotax.app.ui.components.StatutoryBadge
 import `in`.zerotax.app.ui.theme.*
@@ -40,10 +42,14 @@ fun ZeroKnowledgeTrustShieldModal(
 ) {
     var dpdpConsentGiven by remember { mutableStateOf(true) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = PureWhite,
-        title = {
+    ZeroTaxBottomSheet(
+        onDismissRequest = onDismiss
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Security,
@@ -54,7 +60,7 @@ fun ZeroKnowledgeTrustShieldModal(
                 Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
-                        "🔒 End-to-End Encrypted",
+                        "End-to-End Encrypted",
                         style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                     )
                     Text(
@@ -63,14 +69,17 @@ fun ZeroKnowledgeTrustShieldModal(
                     )
                 }
             }
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.Default.Close, contentDescription = "Close")
+            }
+        }
+
+        Spacer(Modifier.height(14.dp))
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
                 Text(
                     text = "As a modern privacy-first tax technology, ZeroTax is built on a mathematical zero-knowledge principle: We cannot see, store, or sell your financial data even if we wanted to.",
                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 16.sp)
@@ -89,15 +98,15 @@ fun ZeroKnowledgeTrustShieldModal(
                             Icon(Icons.Default.VisibilityOff, contentDescription = null, tint = EmeraldSuccess, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                "What ZeroTax Servers Can See: ABSOLUTELY NOTHING",
+                                "What ZeroTax Cloud Servers Can See: ZERO UNENCRYPTED DATA",
                                 style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = if (isSystemInDarkTheme()) Color(0xFF6EE7B7) else EmeraldDark)
                             )
                         }
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "• Zero financial numbers, salary, bank accounts, or PAN sent to our cloud.\n" +
+                            text = "• All financial numbers, salary, bank accounts, and PAN are AES-256-GCM encrypted locally before cloud backup.\n" +
                                    "• Zero telemetry or third-party behavioral ad trackers.\n" +
-                                   "• Zero remote server databases storing your tax draft.",
+                                   "• Zero unencrypted remote server databases storing your tax draft.",
                             style = TextStyle(fontSize = 11.sp, color = if (isSystemInDarkTheme()) Slate200 else Slate700, lineHeight = 16.sp)
                         )
                     }
@@ -171,36 +180,26 @@ fun ZeroKnowledgeTrustShieldModal(
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = "I acknowledge that my financial returns are encrypted 100% on my device and ZeroTax does not possess or store my unencrypted tax records.",
+                            text = "I acknowledge that my financial returns are computed locally with end-to-end encrypted cloud backup, and ZeroTax does not store unencrypted tax records.",
                             style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurface, lineHeight = 14.sp)
                         )
                     }
                 }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (dpdpConsentGiven) {
-                        onAcknowledge()
-                    }
-                },
-                enabled = dpdpConsentGiven,
-                colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("I Acknowledge & Trust", fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(16.dp))
+        ZeroTaxPrimaryButton(
+            text = "I Acknowledge & Trust",
+            onClick = {
+                if (dpdpConsentGiven) {
+                    onAcknowledge()
                 }
+            },
+            enabled = dpdpConsentGiven,
+            leadingIcon = {
+                Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Close", color = Slate600)
-            }
-        }
-    )
+        )
+    }
 }
 
 /**
@@ -223,7 +222,7 @@ fun ZeroKnowledgeTrustBadge(
         ) {
             Icon(Icons.Default.Security, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(12.dp))
             Spacer(Modifier.width(4.dp))
-            Text("Zero-Knowledge Vault", style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+            Text("Zero-Knowledge Local + Cloud", style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
         }
     }
 }

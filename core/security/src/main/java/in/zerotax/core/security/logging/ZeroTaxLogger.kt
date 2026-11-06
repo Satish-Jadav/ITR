@@ -1,7 +1,7 @@
 package `in`.zerotax.core.security.logging
 
 /**
- * Enterprise Diagnostic Logger for ZeroTax-Local.
+ * Enterprise Diagnostic Logger for ZeroTax.
  * Dispatches to Android Logcat when running in Android OS, and standard output/error in JVM test environments.
  */
 object ZeroTaxLogger {

@@ -1,5 +1,6 @@
 package `in`.zerotax.app.ui.notice
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -77,7 +78,7 @@ fun TaxNoticeDefenseAssistantScreen(
 ) {
     var selectedNotice by remember { mutableStateOf(NoticeCategory.SEC_143_1_DEMAND) }
     var dinNumber by remember { mutableStateOf("CPC/2526/1431/98765432") }
-    var demandAmountStr by remember { mutableStateOf("14250") }
+    var demandAmountStr by remember { mutableStateOf("") }
     var selectedDisallowanceReason by remember { mutableStateOf("TDS Mismatch (Form 26AS credit not matched by employer deductor)") }
     var copyStatusMessage by remember { mutableStateOf<String?>(null) }
     val clipboardManager = LocalClipboardManager.current

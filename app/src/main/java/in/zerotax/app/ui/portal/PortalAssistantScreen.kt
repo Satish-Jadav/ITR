@@ -1,5 +1,7 @@
 package `in`.zerotax.app.ui.portal
 
+import `in`.zerotax.app.ui.components.ZeroTaxOutlinedButton
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import `in`.zerotax.core.model.AssessmentYearProfile
 import `in`.zerotax.core.model.CitizenCategory
 import `in`.zerotax.core.taxengine.calculator.DeterministicIndianTaxEngine
@@ -70,6 +72,7 @@ fun PortalAssistantScreen(
     netTaxableSalary: Long,
     taxLiability: Long,
     tdsClaimed: Long,
+    bankAccount: BankAccountDetails? = null,
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -82,12 +85,12 @@ fun PortalAssistantScreen(
     var currentStage by remember { mutableStateOf(InAppFilingStage.REVIEW_AND_CONSENT) }
 
     // Form & Bank selection states
-    var selectedBank by remember {
+    var selectedBank by remember(bankAccount) {
         mutableStateOf(
-            BankAccountDetails(
-                bankName = "State Bank of India",
-                accountNumber = "••••••••1234",
-                ifscCode = "SBIN0001234",
+            bankAccount?.takeIf { it.bankName.isNotBlank() } ?: BankAccountDetails(
+                bankName = "Primary Pre-Validated Bank",
+                accountNumber = "Pre-Validated CBDT ECS",
+                ifscCode = "SBIN0000691",
                 accountType = "SAVINGS",
                 isRefundAccount = true,
                 isPreValidated = true

@@ -1,5 +1,6 @@
 package `in`.zerotax.app.ui.business
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -46,12 +47,12 @@ fun SmallBusinessAuditSuiteScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedBusinessType by remember { mutableStateOf(BusinessType.ELIGIBLE_BUSINESS_44AD) }
-    var turnoverText by remember { mutableStateOf("15000000") } // ₹1.5 Cr
-    var digitalTurnoverText by remember { mutableStateOf("14500000") } // ₹1.45 Cr
-    var cashTurnoverText by remember { mutableStateOf("500000") } // ₹5 Lakhs
-    var declaredProfitText by remember { mutableStateOf("1050000") } // ₹10.5 Lakhs (7%)
-    var totalPaymentsText by remember { mutableStateOf("12000000") }
-    var cashPaymentsText by remember { mutableStateOf("400000") }
+    var turnoverText by remember { mutableStateOf("") } // ₹1.5 Cr
+    var digitalTurnoverText by remember { mutableStateOf("") } // ₹1.45 Cr
+    var cashTurnoverText by remember { mutableStateOf("") } // ₹5 Lakhs
+    var declaredProfitText by remember { mutableStateOf("") } // ₹10.5 Lakhs (7%)
+    var totalPaymentsText by remember { mutableStateOf("") }
+    var cashPaymentsText by remember { mutableStateOf("") }
     var optedOutInPast5Years by remember { mutableStateOf(false) }
 
     // Form 3CD Disallowances

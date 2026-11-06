@@ -1,6 +1,7 @@
 package `in`.zerotax.feature.aiextractor
 
 import `in`.zerotax.core.model.AssessmentYearProfile
+import `in`.zerotax.core.model.CopilotActionCardData
 import `in`.zerotax.core.model.TaxRegime
 import `in`.zerotax.core.taxengine.advanced.HomeLoanAndDeductionCalculator
 import `in`.zerotax.core.taxengine.advanced.HraAndInterestEngine
@@ -38,7 +39,9 @@ data class ChatMessage(
     val timestamp: String = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
     val quickReplies: List<String> = emptyList(),
     val attachedDataSummary: String? = null,
-    val isAdvisorTip: Boolean = false
+    val isAdvisorTip: Boolean = false,
+    val actionCard: CopilotActionCardData? = null,
+    val citations: List<String> = emptyList()
 )
 
 data class LiveTaxComputationSnapshot(
@@ -58,8 +61,8 @@ data class LiveTaxComputationSnapshot(
     val oldRegimeTaxLiability: Long = 0L,
     val recommendedRegime: String = "New Regime (Default u/s 115BAC)",
     val taxSavedByRecommendedRegime: Long = 0L,
-    val estimatedTdsCredit: Long = 60_000L,
-    val estimatedRefundDue: Long = 60_000L,
+    val estimatedTdsCredit: Long = 0L,
+    val estimatedRefundDue: Long = 0L,
     val proactiveTaxTips: List<String> = emptyList()
 )
 
@@ -72,7 +75,7 @@ class ConversationalTaxFilingBot {
         private set
 
     private var employerCount: Int = 1
-    private var bankNameAndAccount: String = "State Bank of India (••••1234)"
+    private var bankNameAndAccount: String = "Verified Primary Bank Account"
 
     fun getInitialGreeting(): List<ChatMessage> {
         return listOf(
@@ -366,7 +369,7 @@ class ConversationalTaxFilingBot {
                     ChatMessage(
                         sender = ChatSender.BOT,
                         text = "Which bank account should the Central Processing Centre (CPC Bengaluru) send your tax refund to?",
-                        quickReplies = listOf("State Bank of India (••••1234)", "HDFC Bank (••••8819)", "ICICI Bank (••••9012)")
+                        quickReplies = listOf("Use Primary Pre-Validated Bank", "Enter Bank Account Details")
                     )
                 )
             }
@@ -534,13 +537,19 @@ class ConversationalTaxFilingBot {
         val recommended = if (isNewBetter) "New Regime (Default u/s 115BAC)" else "Old Regime (With Exemptions)"
         val diff = if (isNewBetter) oldTax - newTax else newTax - oldTax
 
-        val tds = if (snapshot.grossSalary > 12_00_000L) {
-            maxOf(snapshot.estimatedTdsCredit, 140_000L)
+        val statutorySection192Tds = if (snapshot.grossSalary > 12_75_000L) {
+            DeterministicIndianTaxEngine.computeNewRegime(
+                TaxpayerFinancialInput(
+                    grossSalary = snapshot.grossSalary,
+                    assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+                )
+            ).totalTaxLiabilityRounded288B
         } else {
-            snapshot.estimatedTdsCredit
+            0L
         }
+        val tds = if (snapshot.estimatedTdsCredit > 0L) snapshot.estimatedTdsCredit else statutorySection192Tds
         val activeTax = if (isNewBetter) newTax else oldTax
-        val refund = if (tds > activeTax) tds - activeTax else 0L
+        val refund = maxOf(0L, tds - activeTax)
 
         val tips = mutableListOf<String>()
         if (snapshot.nps80ccd1b == 0L) tips.add("Claim ₹50,000 NPS u/s 80CCD(1B)")

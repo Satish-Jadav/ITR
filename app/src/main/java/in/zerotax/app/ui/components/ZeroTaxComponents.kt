@@ -8,12 +8,18 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +31,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -783,10 +790,11 @@ fun SmartIndividualPanField(
         // Real-time Entity & Eligibility Status Badges
         if (panValue.length >= 4) {
             Spacer(modifier = Modifier.height(4.dp))
-            Row(
+            @OptIn(ExperimentalLayoutApi::class)
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 when (decoded.entityType) {
                     PanEntityType.INDIVIDUAL -> {
@@ -1041,14 +1049,18 @@ fun Section270AStatutoryOverrideDialog(
 ) {
     var declarationChecked by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onCancelAndRestoreVerifiedValue,
-        shape = RoundedCornerShape(6.dp),
-        title = {
+    ZeroTaxBottomSheet(
+        onDismissRequest = onCancelAndRestoreVerifiedValue
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(8.dp)
+                        .size(10.dp)
                         .clip(CircleShape)
                         .background(CrimsonDanger)
                 )
@@ -1059,71 +1071,79 @@ fun Section270AStatutoryOverrideDialog(
                     color = CrimsonDanger
                 )
             }
-        },
-        text = {
-            Column(modifier = Modifier.padding(vertical = 4.dp)) {
+            IconButton(onClick = onCancelAndRestoreVerifiedValue) {
+                Icon(Icons.Default.Close, contentDescription = "Close")
+            }
+        }
+
+        Spacer(Modifier.height(14.dp))
+
+        Text(
+            text = "You are reducing $fieldName from the authoritative verified figure of ${Rupee(verifiedSystemValueRupees)} down to ${Rupee(userProposedValueRupees)}.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(Modifier.height(12.dp))
+        Card(
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = CrimsonDangerBg),
+            border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(CrimsonDanger.copy(alpha = 0.4f)))
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    text = "You are reducing $fieldName from the authoritative verified figure of ${Rupee(verifiedSystemValueRupees)} down to ${Rupee(userProposedValueRupees)}.",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "Statutory Penalties under Income-tax Act, 1961:",
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = CrimsonDanger
                 )
-                Spacer(Modifier.height(10.dp))
-                Card(
-                    shape = RoundedCornerShape(4.dp),
-                    colors = CardDefaults.cardColors(containerColor = CrimsonDangerBg),
-                    border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(CrimsonDanger.copy(alpha = 0.4f)))
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = "Statutory Penalties under Income-tax Act, 1961:",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = CrimsonDanger
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = "• Section 270A(1): 50% penalty on tax payable on under-reported income.\n• Section 270A(8): 200% penalty for misreporting of income.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = CrimsonDanger
-                        )
-                    }
-                }
-                Spacer(Modifier.height(12.dp))
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Checkbox(
-                        checked = declarationChecked,
-                        onCheckedChange = { declarationChecked = it },
-                        modifier = Modifier.size(20.dp).padding(top = 2.dp)
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Text(
-                        text = "I possess verified documentary evidence justifying this difference and take legal liability under Section 140.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "• Section 270A(1): 50% penalty on tax payable on under-reported income.\n• Section 270A(8): 200% penalty for misreporting of income.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = CrimsonDanger
+                )
             }
-        },
-        confirmButton = {
-            Button(
-                enabled = declarationChecked,
-                onClick = { onConfirmOverrideWithAuditLog("USER_DOCUMENTED_OVERRIDE_SEC_140") },
-                shape = RoundedCornerShape(4.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CrimsonDanger)
-            ) {
-                Text("Log Reason & Override", style = MaterialTheme.typography.labelMedium)
-            }
-        },
-        dismissButton = {
+        }
+        Spacer(Modifier.height(14.dp))
+        Row(
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Checkbox(
+                checked = declarationChecked,
+                onCheckedChange = { declarationChecked = it },
+                modifier = Modifier.size(20.dp).padding(top = 2.dp)
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(
+                text = "I possess verified documentary evidence justifying this difference and take legal liability under Section 140.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
             OutlinedButton(
                 onClick = onCancelAndRestoreVerifiedValue,
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.weight(1f).height(46.dp)
             ) {
                 Text("Retain Verified", style = MaterialTheme.typography.labelMedium)
             }
+            Button(
+                enabled = declarationChecked,
+                onClick = { onConfirmOverrideWithAuditLog("USER_DOCUMENTED_OVERRIDE_SEC_140") },
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = CrimsonDanger),
+                modifier = Modifier.weight(1.2f).height(46.dp)
+            ) {
+                Text("Log Reason & Override", style = MaterialTheme.typography.labelMedium)
+            }
         }
-    )
+    }
 }
 
 @Composable
@@ -1380,6 +1400,7 @@ fun ZeroTaxTopAppBar(
 
 /**
  * Standardized Primary Button adhering strictly to the Enterprise Teal 600 palette.
+ * Inherently responsive with full-width scaling, minHeight 48.dp, and accessible touch target.
  */
 @Composable
 fun ZeroTaxPrimaryButton(
@@ -1387,23 +1408,35 @@ fun ZeroTaxPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    isLoading: Boolean = false,
+    containerColor: Color = EnterpriseTeal600,
+    contentColor: Color = PureWhite,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Button(
-        onClick = onClick,
-        modifier = modifier.heightIn(min = 44.dp),
-        enabled = enabled,
-        shape = RoundedCornerShape(8.dp),
+        onClick = { if (!isLoading) onClick() },
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp),
+        enabled = enabled && !isLoading,
+        shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = EnterpriseTeal600,
-            contentColor = PureWhite,
+            containerColor = containerColor,
+            contentColor = contentColor,
             disabledContainerColor = Slate300,
             disabledContentColor = Slate500
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp, pressedElevation = 2.dp)
     ) {
-        if (leadingIcon != null) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                color = contentColor,
+                strokeWidth = 2.dp
+            )
+            Spacer(Modifier.width(8.dp))
+        } else if (leadingIcon != null) {
             leadingIcon()
             Spacer(Modifier.width(8.dp))
         }
@@ -1411,7 +1444,7 @@ fun ZeroTaxPrimaryButton(
             text = text,
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.2.sp)
         )
-        if (trailingIcon != null) {
+        if (!isLoading && trailingIcon != null) {
             Spacer(Modifier.width(8.dp))
             trailingIcon()
         }
@@ -1419,7 +1452,7 @@ fun ZeroTaxPrimaryButton(
 }
 
 /**
- * Standardized Outlined Button with subtle Enterprise Teal borders and hover states.
+ * Standardized Outlined Button with subtle Enterprise Teal borders and responsive touch targets.
  */
 @Composable
 fun ZeroTaxOutlinedButton(
@@ -1427,18 +1460,74 @@ fun ZeroTaxOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    leadingIcon: @Composable (() -> Unit)? = null
+    isLoading: Boolean = false,
+    borderColor: Color? = null,
+    contentColor: Color? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
+    val effectiveBorderColor = borderColor ?: if (enabled) EnterpriseTeal600 else Slate300
+    val effectiveContentColor = contentColor ?: EnterpriseTeal600
     OutlinedButton(
-        onClick = onClick,
-        modifier = modifier.heightIn(min = 44.dp),
-        enabled = enabled,
-        shape = RoundedCornerShape(8.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, if (enabled) EnterpriseTeal600 else Slate300),
+        onClick = { if (!isLoading) onClick() },
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp),
+        enabled = enabled && !isLoading,
+        shape = RoundedCornerShape(10.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, effectiveBorderColor),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = EnterpriseTeal600,
+            contentColor = effectiveContentColor,
             disabledContentColor = Slate400
         )
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                color = effectiveContentColor,
+                strokeWidth = 2.dp
+            )
+            Spacer(Modifier.width(8.dp))
+        } else if (leadingIcon != null) {
+            leadingIcon()
+            Spacer(Modifier.width(8.dp))
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+        )
+        if (!isLoading && trailingIcon != null) {
+            Spacer(Modifier.width(8.dp))
+            trailingIcon()
+        }
+    }
+}
+
+/**
+ * Standardized Secondary Button with soft tinted background.
+ */
+@Composable
+fun ZeroTaxSecondaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    leadingIcon: @Composable (() -> Unit)? = null
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 44.dp),
+        enabled = enabled,
+        shape = RoundedCornerShape(10.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = EnterpriseTeal50,
+            contentColor = EnterpriseTeal700,
+            disabledContainerColor = Slate100,
+            disabledContentColor = Slate400
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
         if (leadingIcon != null) {
             leadingIcon()
@@ -1453,29 +1542,140 @@ fun ZeroTaxOutlinedButton(
 
 /**
  * Standardized Sovereign Slate Card with unified radius and elevated borders.
+ * Responsive by default with adaptive padding and full width.
  */
 @Composable
 fun ZeroTaxCard(
     modifier: Modifier = Modifier,
     accentBorderColor: Color? = null,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
     shape: RoundedCornerShape = RoundedCornerShape(12.dp),
+    contentPadding: PaddingValues = PaddingValues(16.dp),
+    onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val baseModifier = modifier
+        .fillMaxWidth()
+        .border(
+            width = 1.dp,
+            color = accentBorderColor ?: MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+            shape = shape
+        )
+    val cardModifier = if (onClick != null) {
+        baseModifier
+            .clip(shape)
+            .clickable(onClick = onClick)
+    } else {
+        baseModifier
+    }
+
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = accentBorderColor ?: MaterialTheme.colorScheme.outlineVariant,
-                shape = shape
-            ),
+        modifier = cardModifier,
         shape = shape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(contentPadding),
             content = content
         )
+    }
+}
+
+/**
+ * Standardized High-Conversion Action / Nudge Card.
+ * Ideal for 1-Tap actions: Form 16 upload, Portal Live Sync, Account Aggregator, etc.
+ * Inherently responsive with flexible icon, text wrapping, and optional badge.
+ */
+@Composable
+fun ZeroTaxActionCard(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    badgeText: String? = null,
+    badgeTone: BadgeTone = BadgeTone.STATUTORY,
+    iconTint: Color = EnterpriseTeal600,
+    iconBgColor: Color = EnterpriseTeal50,
+    accentBorderColor: Color? = null,
+    containerColor: Color? = null
+) {
+    val isDark = isSystemInDarkTheme()
+    val defaultBg = containerColor ?: if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f) else EnterpriseTeal50.copy(alpha = 0.4f)
+    val defaultBorder = accentBorderColor ?: EnterpriseTeal600.copy(alpha = 0.4f)
+
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = defaultBg,
+        border = androidx.compose.foundation.BorderStroke(1.dp, defaultBorder),
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(iconBgColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (badgeText != null) {
+                            StatutoryBadge(text = badgeText, tone = badgeTone)
+                        }
+                    }
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp
+                        )
+                    )
+                }
+            }
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }
 
@@ -1516,7 +1716,7 @@ fun ZeroTaxStatCard(
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            text = "₹${Rupee.formatInr(amountRupees)}",
+            text = "₹" + Rupee.formatInr(amountRupees),
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.Bold,
                 color = when (tone) {
@@ -1524,7 +1724,7 @@ fun ZeroTaxStatCard(
                     BadgeTone.DANGER -> CrimsonDanger
                     BadgeTone.WARNING -> AmberWarning
                     BadgeTone.STATUTORY -> EnterpriseTeal700
-                    BadgeTone.NEUTRAL -> Slate900
+                    BadgeTone.NEUTRAL -> MaterialTheme.colorScheme.onSurface
                 }
             )
         )
@@ -1578,6 +1778,220 @@ fun ZeroTaxSectionHeader(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp),
                 modifier = Modifier.padding(start = 12.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Standardized Responsive Text Field adhering to the ZeroTax Design System.
+ */
+@Composable
+fun ZeroTaxTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    helperText: String? = null,
+    isError: Boolean = false,
+    errorMessage: String? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    prefix: @Composable (() -> Unit)? = null,
+    suffix: @Composable (() -> Unit)? = null,
+    singleLine: Boolean = true,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    enabled: Boolean = true,
+    readOnly: Boolean = false
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(label) },
+            placeholder = placeholder?.let { { Text(it, color = Slate400) } },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            isError = isError,
+            enabled = enabled,
+            readOnly = readOnly,
+            singleLine = singleLine,
+            keyboardOptions = keyboardOptions,
+            visualTransformation = visualTransformation,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
+            prefix = prefix,
+            suffix = suffix,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = EnterpriseTeal600,
+                focusedLabelColor = EnterpriseTeal700,
+                cursorColor = EnterpriseTeal600
+            ),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+        )
+        if (isError && errorMessage != null) {
+            Spacer(Modifier.height(3.dp))
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.labelSmall.copy(color = CrimsonDanger),
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        } else if (helperText != null) {
+            Spacer(Modifier.height(3.dp))
+            Text(
+                text = helperText,
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp),
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Standardized Responsive Currency / Rupee Amount Input Field.
+ */
+@Composable
+fun ZeroTaxAmountField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    helperText: String? = null,
+    enabled: Boolean = true
+) {
+    ZeroTaxTextField(
+        value = value,
+        onValueChange = { input ->
+            if (input.all { it.isDigit() }) onValueChange(input)
+        },
+        label = label,
+        modifier = modifier,
+        helperText = helperText,
+        enabled = enabled,
+        prefix = { Text("₹ ", fontWeight = FontWeight.Bold, color = EnterpriseTeal700) },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+    )
+}
+
+/**
+ * Standardized Responsive Key-Value Metric Row.
+ */
+@Composable
+fun ZeroTaxKeyValueRow(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    sublabel: String? = null,
+    isHighlighted: Boolean = false,
+    valueColor: Color? = null,
+    badgeText: String? = null,
+    badgeTone: BadgeTone = BadgeTone.NEUTRAL
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f, fill = false)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = label,
+                    style = if (isHighlighted) MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                    else MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (badgeText != null) {
+                    StatutoryBadge(text = badgeText, tone = badgeTone)
+                }
+            }
+            if (sublabel != null) {
+                Text(
+                    text = sublabel,
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                )
+            }
+        }
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = value,
+            style = if (isHighlighted) MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            else MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = valueColor ?: if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.End
+        )
+    }
+}
+
+/**
+ * Standardized ZeroTax Bottom Sheet Popup.
+ * Core Design Invariant:
+ * 1. Always opens full-width across the device screen from the bottom (ModalBottomSheet)
+ * 2. Top corners have a smooth curve (24.dp)
+ * 3. Body content is completely scrollable so no text, input, or button is ever cut off
+ * 4. Includes an ergonomic drag handle and safe area navigation bar insets
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ZeroTaxBottomSheet(
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    scrollable: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    ZeroTaxBottomSheet(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        scrollable = scrollable,
+        content = content
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ZeroTaxBottomSheet(
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    sheetState: SheetState,
+    scrollable: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                width = 44.dp,
+                height = 4.dp
+            )
+        },
+        modifier = modifier.fillMaxWidth()
+    ) {
+        if (scrollable) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 36.dp)
+                    .navigationBarsPadding(),
+                content = content
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 36.dp)
+                    .navigationBarsPadding(),
+                content = content
             )
         }
     }

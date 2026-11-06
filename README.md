@@ -1,4 +1,4 @@
-# ZeroTax-Local — 100% On-Device Deterministic Indian Tax Filing & Intelligence Suite
+# ZeroTax — Hybrid Local-First Compute + End-to-End Encrypted Cloud Indian Tax Filing Suite
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple.svg)](https://kotlinlang.org)
 [![Android SDK](https://img.shields.io/badge/Android%20SDK-35%20(VanillaIceCream)-green.svg)](https://developer.android.com)
@@ -7,7 +7,7 @@
 [![Tax Engine](https://img.shields.io/badge/Tax%20Engine-Pure--JVM%20Deterministic-orange.svg)](#core-tax-engine-zero-llm-math-policy)
 [![CBDT Forms](https://img.shields.io/badge/CBDT%20AY%202026--27-ITR--1%20%7C%20ITR--2%20%7C%20ITR--4%20%7C%20ITR--U-teal.svg)](#supported-forms--schedules)
 
-> **ZeroTax-Local** is a privacy-first, on-device Android application designed to prepare, audit, optimize, and directly file Indian Income Tax Returns (ITR-1, ITR-2, ITR-4, and ITR-U) for **AY 2026-27 (FY 2025-26)** with **zero cloud uploads**, **zero spam calls**, and **100% deterministic pure-JVM tax calculations**.
+> **ZeroTax-Local** is a privacy-first, on-device Android application designed to prepare, audit, optimize, and directly file Indian Income Tax Returns (ITR-1, ITR-2, ITR-4, and ITR-U) for **AY 2026-27 (FY 2025-26)** with **end-to-end encrypted cloud vault backup**, **zero spam calls**, and **100% deterministic pure-JVM local tax calculations**.
 
 ---
 

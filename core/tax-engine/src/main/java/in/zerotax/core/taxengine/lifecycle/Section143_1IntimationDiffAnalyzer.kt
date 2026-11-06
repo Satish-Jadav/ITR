@@ -201,7 +201,7 @@ object Section143_1IntimationDiffAnalyzer {
                 }
             }
             IntimationDiscrepancyVerdict.TAX_CREDIT_MISMATCH_SECTION_154 -> {
-                append("Recommended Action: Submit an online Rectification Request under Section 154 on the e-Filing portal for 'Tax Credit Mismatch Correction'. You can use the auto-generated Section 154 payload from ZeroTax-Local.")
+                append("Recommended Action: Submit an online Rectification Request under Section 154 on the e-Filing portal for 'Tax Credit Mismatch Correction'. You can use the auto-generated Section 154 payload from ZeroTax.")
             }
             IntimationDiscrepancyVerdict.INCOME_OMISSION_SECTION_139_5 -> {
                 append("Recommended Action: File a Revised Return under Section 139(5) to incorporate the omitted income before the December 31 statutory cut-off to avoid penalty u/s 270A.")

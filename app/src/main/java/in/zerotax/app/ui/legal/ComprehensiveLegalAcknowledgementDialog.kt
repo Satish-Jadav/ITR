@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.legal
+package `in`.zerotax.app.ui.legal
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,8 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import `in`.zerotax.app.ui.components.BadgeTone
-import `in`.zerotax.app.ui.components.StatutoryBadge
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.security.CanonicalWarningHasher
 import java.time.Instant
@@ -76,27 +77,15 @@ fun ComprehensiveLegalAcknowledgementDialog(
         To the maximum extent permitted by Indian Law, the taxpayer agrees to hold harmless and indemnify ZeroTax, its developers, directors, and affiliates against any statutory interest (Sections 234A, 234B, 234C), late fees (Section 234F), portal gateway downtime on eportal.incometax.gov.in, or verification delays arising from taxpayer-entered figures. The platform's total cumulative liability is capped at ₹1,000 or the software subscription fee paid.
     """.trimIndent()
 
-    Dialog(
+    ZeroTaxBottomSheet(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        scrollable = false
     ) {
-        Surface(
-            modifier = modifier
-                .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.92f)
-                .clip(RoundedCornerShape(8.dp)),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp,
-            border = CardDefaults.outlinedCardBorder().copy(
-                width = 1.dp,
-                brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600.copy(alpha = 0.5f))
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -236,7 +225,6 @@ fun ComprehensiveLegalAcknowledgementDialog(
                         )
                     }
                 }
-            }
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿package `in`.zerotax.app.ui.portal
+package `in`.zerotax.app.ui.portal
 
+import `in`.zerotax.app.ui.components.ZeroTaxOutlinedButton
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import android.annotation.SuppressLint
 import android.webkit.WebView
 import androidx.compose.animation.*
@@ -27,6 +29,7 @@ import androidx.compose.ui.window.DialogProperties
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge
 import `in`.zerotax.feature.portalbridge.ItdTransactionFetcher
+import `in`.zerotax.core.model.AisCategory
 import `in`.zerotax.feature.portalbridge.PortalBridgeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -73,8 +76,12 @@ fun ItdOfficialWebLoginSheet(
             is PortalBridgeState.CompletedAndSanitized -> {
                 statusMessage = "All tax records captured. Sanitizing session memory..."
                 delay(400)
-                // Default synthesis if payloads captured
-                onSyncSuccess(4, 5250L, 20700L)
+                val allTxns = fetcher.fetchAisTransactions(pan).getOrDefault(emptyList())
+                val totalTds = allTxns.sumOf { it.tdsWithheld }
+                val totalInterest = allTxns
+                    .filter { it.category == AisCategory.SAVINGS_INTEREST }
+                    .sumOf { it.grossAmount }
+                onSyncSuccess(allTxns.size, totalTds, totalInterest)
             }
             is PortalBridgeState.OfflineFallbackTriggered -> {
                 statusMessage = "Notice: ${state.reason}"
@@ -83,21 +90,30 @@ fun ItdOfficialWebLoginSheet(
         }
     }
 
-    Dialog(
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
         onDismissRequest = {
             bridge.sanitizePortalSessionImmediately {
                 webViewRef?.destroy()
                 onDismiss()
             }
         },
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            dismissOnBackPress = true,
-            dismissOnClickOutside = false
-        )
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        dragHandle = {
+            Surface(
+                modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                shape = RoundedCornerShape(2.dp)
+            ) {
+                Box(modifier = Modifier.size(width = 36.dp, height = 4.dp))
+            }
+        }
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.95f),
             topBar = {
                 Surface(
                     color = MaterialTheme.colorScheme.surface,
