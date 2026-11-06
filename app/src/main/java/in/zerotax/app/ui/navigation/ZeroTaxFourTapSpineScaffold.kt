@@ -602,7 +602,7 @@ private fun Stage1IdentityConsent(
     onOpenChatbot: () -> Unit = {}
 ) {
     val isPanValid = pan.length == 10 && (pan[3] == 'P' || pan[3] == 'H')
-    val canProceed = isPanValid && hasPlanExplicitlySelected
+    val canProceed = isPanValid
     var isVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -663,7 +663,7 @@ private fun Stage1IdentityConsent(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "Select your filing plan and verify your basic details for AY 2026-27.",
+                    text = "Active Plan: " + filingTier.title + " (" + filingTier.itrForm + "). Verify your details or tap below to switch plan.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -790,22 +790,13 @@ private fun Stage1IdentityConsent(
         Spacer(Modifier.height(24.dp))
 
         // Validation hint row
-        if (!hasPlanExplicitlySelected || !isPanValid) {
+        if (!isPanValid && pan.isNotBlank()) {
             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-                if (!hasPlanExplicitlySelected) {
-                    Text(
-                        text = "Please select a filing plan above to continue.",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-                if (!isPanValid && pan.isNotBlank()) {
-                    Text(
-                        text = "PAN must be 10 characters: 5 letters, 4 digits, 1 letter (personal: 4th char P or H).",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
+                Text(
+                    text = "PAN must be 10 characters: 5 letters, 4 digits, 1 letter (personal: 4th char P or H).",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
 
@@ -824,16 +815,12 @@ private fun Stage1IdentityConsent(
                 .height(50.dp)
         ) {
             Text(
-                text = when {
-                    !hasPlanExplicitlySelected -> "Select a Filing Plan to Continue"
-                    !isPanValid -> "Enter Valid PAN to Continue"
-                    else -> "Continue to Step 2: Income"
-                },
+                text = if (!isPanValid) "Enter Valid PAN to Continue" else "Continue to Step 2: Income (" + filingTier.title + ") →",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
 
         // Secondary Chatbot entry
         OutlinedButton(
