@@ -43,7 +43,8 @@ import `in`.zerotax.core.model.Rupee
 
 /**
  * Sovereign Brand Logo Component for ZeroTax.
- * Renders the clean, iconic Indian Rupee symbol (₹).
+ * Outer Sovereign Shield containing the clean, bold Indian Rupee symbol (₹).
+ * Designed with zero overlapping checkmarks or clutter so the Rupee icon is pure and prominent.
  */
 @Composable
 fun ZeroTaxBrandLogo(
@@ -58,25 +59,55 @@ fun ZeroTaxBrandLogo(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Box(
-            modifier = Modifier
-                .size(size)
-                .clip(CircleShape)
-                .background(
-                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
-                        colors = listOf(EnterpriseTeal700, EnterpriseTeal500)
-                    )
-                ),
+            modifier = Modifier.size(size),
             contentAlignment = Alignment.Center
         ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val w = this.size.width
+                val h = this.size.height
+
+                // Outer Sovereign Shield Boundary
+                val shieldPath = Path().apply {
+                    moveTo(w * 0.5f, h * 0.05f)
+                    lineTo(w * 0.90f, h * 0.20f)
+                    cubicTo(w * 0.90f, h * 0.58f, w * 0.74f, h * 0.84f, w * 0.5f, h * 0.96f)
+                    cubicTo(w * 0.26f, h * 0.84f, w * 0.10f, h * 0.58f, w * 0.10f, h * 0.20f)
+                    close()
+                }
+
+                // Shield background fill with sovereign teal gradient
+                drawPath(
+                    path = shieldPath,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(EnterpriseTeal700, EnterpriseTeal950)
+                    )
+                )
+
+                // Shield outer border outline
+                drawPath(
+                    path = shieldPath,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(EnterpriseTeal400, EnterpriseTeal600)
+                    ),
+                    style = Stroke(
+                        width = w * 0.065f,
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round
+                    )
+                )
+            }
+
+            // Clean Indian Rupee symbol inside the shield (zero overlapping lines)
             Text(
                 text = "₹",
                 style = TextStyle(
                     color = Color.White,
-                    fontSize = (size.value * 0.58f).sp,
+                    fontSize = (size.value * 0.48f).sp,
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.SansSerif,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
+                ),
+                modifier = Modifier.padding(bottom = size * 0.04f)
             )
         }
 

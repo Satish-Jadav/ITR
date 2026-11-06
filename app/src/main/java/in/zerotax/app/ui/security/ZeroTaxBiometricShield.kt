@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.security
+package `in`.zerotax.app.ui.security
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -94,16 +94,7 @@ fun BiometricShieldGate(
                     verticalArrangement = Arrangement.Center
                 ) {
                     // Sovereign Brand Shield Logo
-                    Box(
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape)
-                            .background(EnterpriseTeal900.copy(alpha = 0.6f))
-                            .border(2.dp, EnterpriseTeal500, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        ZeroTaxBrandLogo(size = 52.dp, showText = false)
-                    }
+                    ZeroTaxBrandLogo(size = 72.dp, showText = false)
 
                     Spacer(Modifier.height(24.dp))
 
