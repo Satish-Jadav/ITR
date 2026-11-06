@@ -1,5 +1,7 @@
 package `in`.zerotax.app.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 // ============================================================================
@@ -84,3 +86,26 @@ object ZeroTaxBrandColors {
     val Statutory = IndigoStatutory
     val StatutoryBg = IndigoStatutoryBg
 }
+
+// Theme-Adaptive Color Tokens for High-Contrast Light & Dark Mode
+@Composable
+fun getEmeraldSuccessBg(): Color = if (isSystemInDarkTheme()) EmeraldSuccessBgDark else EmeraldSuccessBg
+
+@Composable
+fun getAmberWarningBg(): Color = if (isSystemInDarkTheme()) AmberWarningBgDark else AmberWarningBg
+
+@Composable
+fun getCrimsonDangerBg(): Color = if (isSystemInDarkTheme()) CrimsonDangerBgDark else CrimsonDangerBg
+
+@Composable
+fun getIndigoStatutoryBg(): Color = if (isSystemInDarkTheme()) IndigoStatutoryBgDark else IndigoStatutoryBg
+
+@Composable
+fun getTealHighlightBg(): Color = if (isSystemInDarkTheme()) EnterpriseTeal800 else EnterpriseTeal50
+
+@Composable
+fun getTealHighlightText(): Color = if (isSystemInDarkTheme()) EnterpriseTeal100 else EnterpriseTeal900
+
+@Composable
+fun getTealHighlightIcon(): Color = if (isSystemInDarkTheme()) EnterpriseTeal300 else EnterpriseTeal700
+

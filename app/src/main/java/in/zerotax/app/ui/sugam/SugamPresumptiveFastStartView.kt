@@ -83,7 +83,7 @@ fun SugamPresumptiveFastStartView(
         // 1-TAP IN-APP ITD PORTAL SYNC CARD
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = EnterpriseTeal50,
+            color = getTealHighlightBg(),
             border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,18 +103,18 @@ fun SugamPresumptiveFastStartView(
                     Icon(
                         imageVector = Icons.Default.Sync,
                         contentDescription = null,
-                        tint = EnterpriseTeal700,
+                        tint = getTealHighlightIcon(),
                         modifier = Modifier.size(22.dp)
                     )
                     Spacer(Modifier.width(10.dp))
                     Column {
                         Text(
                             "Sync 26AS Client TDS (Sec 194J/194C)",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = getTealHighlightText())
                         )
                         Text(
                             "Pull verified TDS credits & turnover directly from ITD portal in-app.",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         )
                     }
                 }
@@ -126,7 +126,7 @@ fun SugamPresumptiveFastStartView(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+            colors = CardDefaults.cardColors(containerColor = getTealHighlightBg()),
             border = CardDefaults.outlinedCardBorder().copy(
                 width = 1.5.dp,
                 brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600)
@@ -142,18 +142,18 @@ fun SugamPresumptiveFastStartView(
                         Icon(
                             imageVector = Icons.Default.Bolt,
                             contentDescription = null,
-                            tint = EnterpriseTeal700,
+                            tint = getTealHighlightIcon(),
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(Modifier.width(8.dp))
                         Column {
                             Text(
                                 "Fast-Start Presumptive Deck",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = getTealHighlightText())
                             )
                             Text(
                                 "ITR-4 (SUGAM) • Zero Books of Accounts Required",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                             )
                         }
                     }
@@ -163,16 +163,16 @@ fun SugamPresumptiveFastStartView(
                 Spacer(Modifier.height(14.dp))
 
                 // Presumptive Scheme Selector Chips
-                Text("Select your activity:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate700))
+                Text("Select your activity:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                 Spacer(Modifier.height(6.dp))
                 PresumptiveType.entries.forEach { type ->
                     val isSelected = selectedType == type
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (isSelected) EnterpriseTeal600 else Slate100,
+                        color = if (isSelected) EnterpriseTeal600 else MaterialTheme.colorScheme.surfaceVariant,
                         border = androidx.compose.foundation.BorderStroke(
                             1.dp,
-                            if (isSelected) EnterpriseTeal600 else Slate300
+                            if (isSelected) EnterpriseTeal600 else MaterialTheme.colorScheme.outlineVariant
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -194,13 +194,13 @@ fun SugamPresumptiveFastStartView(
                                     text = type.title,
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) PureWhite else Slate800
+                                        color = if (isSelected) PureWhite else MaterialTheme.colorScheme.onSurface
                                     )
                                 )
                                 Text(
                                     text = "Limit: ${type.threshold} • Min Rate: ${type.defaultRatePercent}%",
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = if (isSelected) EnterpriseTeal100 else Slate500,
+                                        color = if (isSelected) EnterpriseTeal100 else MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 10.sp
                                     )
                                 )

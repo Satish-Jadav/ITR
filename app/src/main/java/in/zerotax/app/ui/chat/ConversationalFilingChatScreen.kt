@@ -159,8 +159,8 @@ fun ConversationalFilingChatScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Slate100)
-                                    .border(0.5.dp, Slate300, RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
                                     .clickable {
                                         sendMessage(
                                             userText = prompt,

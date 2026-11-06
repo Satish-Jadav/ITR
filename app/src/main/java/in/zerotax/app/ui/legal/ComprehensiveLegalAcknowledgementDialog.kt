@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -127,21 +128,23 @@ fun ComprehensiveLegalAcknowledgementDialog(
 
                 Spacer(Modifier.height(12.dp))
 
+                val isDark = isSystemInDarkTheme()
+
                 // Scrollable Legal Terms Body
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(4.dp))
-                        .background(Slate50)
-                        .border(0.75.dp, Slate200, RoundedCornerShape(4.dp))
+                        .background(if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate50)
+                        .border(0.75.dp, if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate200, RoundedCornerShape(4.dp))
                         .padding(12.dp)
                         .verticalScroll(scrollState)
                 ) {
                     Column {
                         Text(
                             text = "Please read the following statutory declarations and regulatory terms before proceeding:",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate700)
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate700)
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
@@ -246,14 +249,21 @@ private fun AcknowledgementCheckboxRow(
     subtitle: String,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(4.dp))
-            .background(if (checked) EnterpriseTeal50 else Slate100)
+            .background(
+                if (checked) {
+                    if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50
+                } else {
+                    if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100
+                }
+            )
             .border(
                 width = 0.5.dp,
-                color = if (checked) EnterpriseTeal600.copy(alpha = 0.5f) else Slate300,
+                color = if (checked) EnterpriseTeal600.copy(alpha = 0.5f) else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300,
                 shape = RoundedCornerShape(4.dp)
             )
             .clickable { onCheckedChange(!checked) }
@@ -272,12 +282,16 @@ private fun AcknowledgementCheckboxRow(
                 text = title,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = if (checked) EnterpriseTeal900 else Slate900
+                    color = if (checked) {
+                        if (isDark) EnterpriseTeal300 else EnterpriseTeal900
+                    } else {
+                        if (isDark) MaterialTheme.colorScheme.onSurface else Slate900
+                    }
                 )
             )
             Text(
                 text = subtitle,
-                style = TextStyle(fontSize = 10.sp, lineHeight = 13.sp, color = Slate600)
+                style = TextStyle(fontSize = 10.sp, lineHeight = 13.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600)
             )
         }
     }

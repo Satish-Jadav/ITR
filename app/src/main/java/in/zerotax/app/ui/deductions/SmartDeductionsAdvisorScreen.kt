@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -13,9 +14,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,7 @@ fun SmartDeductionsAdvisorScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val copilot = remember { OnDeviceTaxCopilot(context) }
+    val isDark = isSystemInDarkTheme()
 
     // Selected Life Events
     var selectedLifeEvents by remember {
@@ -133,7 +135,7 @@ fun SmartDeductionsAdvisorScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -183,7 +185,7 @@ fun SmartDeductionsAdvisorScreen(
                         )
                         Text(
                             text = Rupee(taxableIncomeImpact.newTaxableIncome).toString(),
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal300 else EnterpriseTeal900)
                         )
                         Text(
                             text = "Tax Saved: ~₹${taxableIncomeImpact.netCashTaxSaved}",
@@ -232,13 +234,28 @@ fun SmartDeductionsAdvisorScreen(
                 ) {
                     items(LifeEventTag.entries) { tag ->
                         val isSelected = tag in selectedLifeEvents
+                        val tagIcon = when (tag) {
+                            LifeEventTag.HOME_LOAN -> Icons.Default.Home
+                            LifeEventTag.HEALTH_INSURANCE -> Icons.Default.LocalHospital
+                            LifeEventTag.NPS_INVESTMENT -> Icons.AutoMirrored.Filled.TrendingUp
+                            LifeEventTag.EDUCATION_LOAN -> Icons.Default.School
+                            LifeEventTag.CHILDREN_FEES -> Icons.Default.School
+                            LifeEventTag.RENT_NO_HRA -> Icons.Default.Key
+                            LifeEventTag.CHARITABLE_DONATION -> Icons.Default.Favorite
+                            LifeEventTag.EV_CAR_LOAN -> Icons.Default.DirectionsCar
+                            LifeEventTag.SAVINGS_INTEREST -> Icons.Default.AccountBalance
+                            LifeEventTag.DISABLED_DEPENDENT, LifeEventTag.SELF_DISABILITY -> Icons.Default.Accessible
+                            LifeEventTag.CRITICAL_ILLNESS -> Icons.Default.Medication
+                            LifeEventTag.POLITICAL_DONATION -> Icons.Default.Policy
+                            LifeEventTag.SENIOR_DEPOSITS -> Icons.Default.Person
+                        }
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(if (isSelected) EnterpriseTeal600 else Slate100)
+                                .background(if (isSelected) EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100)
                                 .border(
                                     width = 1.dp,
-                                    color = if (isSelected) EnterpriseTeal700 else Slate300,
+                                    color = if (isSelected) EnterpriseTeal700 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300,
                                     shape = RoundedCornerShape(6.dp)
                                 )
                                 .clickable {
@@ -253,12 +270,17 @@ fun SmartDeductionsAdvisorScreen(
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(tag.icon, fontSize = 14.sp)
+                                Icon(
+                                    imageVector = tagIcon,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (isSelected) PureWhite else if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate800
+                                )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
                                     text = tag.label,
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = if (isSelected) PureWhite else Slate800,
+                                        color = if (isSelected) PureWhite else if (isDark) MaterialTheme.colorScheme.onSurface else Slate800,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
                                 )
@@ -280,7 +302,9 @@ fun SmartDeductionsAdvisorScreen(
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
                         shape = RoundedCornerShape(4.dp),
-                        colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else EnterpriseTeal50
+                        ),
                         border = CardDefaults.outlinedCardBorder().copy(
                             width = 1.dp,
                             brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600.copy(alpha = 0.5f))
@@ -292,19 +316,26 @@ fun SmartDeductionsAdvisorScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     Icon(
                                         imageVector = Icons.Default.Home,
                                         contentDescription = null,
-                                        tint = EnterpriseTeal900,
+                                        tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal900,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     Text(
                                         text = "Home Loan EMI & Taxable Income Simulator",
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isDark) MaterialTheme.colorScheme.onSurface else EnterpriseTeal900
+                                        )
                                     )
                                 }
+                                Spacer(Modifier.width(8.dp))
                                 StatutoryBadge(text = "Live Amortization", tone = BadgeTone.SUCCESS)
                             }
 
@@ -312,7 +343,7 @@ fun SmartDeductionsAdvisorScreen(
                             Text(
                                 text = "Enter your monthly EMI to see how your taxable income and cash tax savings are automatically computed.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = EnterpriseTeal800
+                                color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else EnterpriseTeal800
                             )
 
                             Spacer(Modifier.height(12.dp))
@@ -343,7 +374,7 @@ fun SmartDeductionsAdvisorScreen(
                                         Box(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(4.dp))
-                                                .background(if (monthlyEmiInput == amount) EnterpriseTeal600 else PureWhite)
+                                                .background(if (monthlyEmiInput == amount) EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.surface else PureWhite)
                                                 .border(0.5.dp, EnterpriseTeal600, RoundedCornerShape(4.dp))
                                                 .clickable { monthlyEmiInput = amount }
                                                 .padding(horizontal = 8.dp, vertical = 6.dp)
@@ -353,7 +384,7 @@ fun SmartDeductionsAdvisorScreen(
                                                 style = TextStyle(
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = if (monthlyEmiInput == amount) PureWhite else EnterpriseTeal800
+                                                    color = if (monthlyEmiInput == amount) PureWhite else if (isDark) EnterpriseTeal300 else EnterpriseTeal800
                                                 )
                                             )
                                         }
@@ -366,15 +397,23 @@ fun SmartDeductionsAdvisorScreen(
                             // Amortization & Deduction Breakdown
                             Text(
                                 text = "Annual EMI Breakdown & Statutory Caps:",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate700)
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
+                                )
                             )
                             Spacer(Modifier.height(6.dp))
 
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = PureWhite),
-                                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isDark) MaterialTheme.colorScheme.surface else PureWhite
+                                ),
+                                border = CardDefaults.outlinedCardBorder().copy(
+                                    width = 0.5.dp,
+                                    brush = androidx.compose.ui.graphics.SolidColor(if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300)
+                                )
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     EnterpriseLedgerRow(label = "Total Annual EMI Paid", amount = homeLoanImpact.annualTotalEmiPaid)
@@ -403,15 +442,23 @@ fun SmartDeductionsAdvisorScreen(
                             // Taxable Income Impact Ledger
                             Text(
                                 text = "Direct Impact on Your Taxable Income:",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate700)
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
+                                )
                             )
                             Spacer(Modifier.height(6.dp))
 
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = EmeraldSuccessBg),
-                                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess.copy(alpha = 0.4f)))
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isDark) EmeraldSuccessBgDark else EmeraldSuccessBg
+                                ),
+                                border = CardDefaults.outlinedCardBorder().copy(
+                                    width = 0.5.dp,
+                                    brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess.copy(alpha = 0.4f))
+                                )
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     EnterpriseLedgerRow(label = "Original Gross Salary", amount = taxableIncomeImpact.grossSalary)
@@ -431,11 +478,11 @@ fun SmartDeductionsAdvisorScreen(
                                     ) {
                                         Text(
                                             text = "Estimated Direct Cash Tax Saved:",
-                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal300 else EmeraldSuccess)
                                         )
                                         Text(
                                             text = "₹${taxableIncomeImpact.netCashTaxSaved}",
-                                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal300 else EmeraldSuccess)
                                         )
                                     }
                                 }
@@ -448,7 +495,7 @@ fun SmartDeductionsAdvisorScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(Slate100)
+                                    .background(if (isDark) MaterialTheme.colorScheme.surface else Slate100)
                                     .padding(10.dp)
                             ) {
                                 Column {
@@ -456,7 +503,7 @@ fun SmartDeductionsAdvisorScreen(
                                         Icon(
                                             imageVector = Icons.Default.AccountBalance,
                                             contentDescription = null,
-                                            tint = Slate700,
+                                            tint = if (isDark) EnterpriseTeal300 else Slate700,
                                             modifier = Modifier.size(14.dp)
                                         )
                                         Spacer(Modifier.width(6.dp))
@@ -533,7 +580,7 @@ fun SmartDeductionsAdvisorScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(3.dp))
-                                .background(Slate100)
+                                .background(if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100)
                                 .padding(8.dp)
                         ) {
                             Column {
@@ -541,7 +588,7 @@ fun SmartDeductionsAdvisorScreen(
                                     Icon(
                                         imageVector = Icons.Default.AccountBalance,
                                         contentDescription = null,
-                                        tint = Slate700,
+                                        tint = if (isDark) EnterpriseTeal300 else Slate700,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Spacer(Modifier.width(6.dp))
@@ -558,7 +605,7 @@ fun SmartDeductionsAdvisorScreen(
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     text = "How to Fetch: ${spec.whereToFetchInstructions}",
-                                    style = TextStyle(fontSize = 11.sp, color = Slate600)
+                                    style = TextStyle(fontSize = 11.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600)
                                 )
                             }
                         }
@@ -567,7 +614,7 @@ fun SmartDeductionsAdvisorScreen(
                         Text(
                             text = spec.howItAppliesExplanation,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Slate700
+                            color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
                         )
 
                         Spacer(Modifier.height(10.dp))
@@ -666,7 +713,7 @@ fun SmartDeductionsAdvisorScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(3.dp))
-                                    .background(if (isSel) EnterpriseTeal600 else Slate100)
+                                    .background(if (isSel) EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100)
                                     .clickable {
                                         selectedLocale = loc
                                         if (currentExplanation != null) {
@@ -681,7 +728,7 @@ fun SmartDeductionsAdvisorScreen(
                             ) {
                                 Text(
                                     text = loc.code.take(2).uppercase(),
-                                    style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSel) PureWhite else Slate600)
+                                    style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSel) PureWhite else if (isDark) MaterialTheme.colorScheme.onSurface else Slate600)
                                 )
                             }
                         }
@@ -704,8 +751,8 @@ fun SmartDeductionsAdvisorScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(Slate100)
-                                .border(0.5.dp, Slate300, RoundedCornerShape(4.dp))
+                                .background(if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100)
+                                .border(0.5.dp, if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300, RoundedCornerShape(4.dp))
                             .clickable {
                                 scope.launch {
                                     isCopilotThinking = true

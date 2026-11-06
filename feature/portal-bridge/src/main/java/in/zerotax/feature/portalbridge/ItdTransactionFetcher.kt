@@ -26,6 +26,11 @@ class ItdTransactionFetcher {
     ): Result<List<AisTransactionRecord>> = withContext(Dispatchers.IO) {
         val maskedPan = "${pan.take(2)}***${pan.takeLast(2)}"
         ZeroTaxLogger.i(TAG, "fetchAisTransactions: starting for PAN $maskedPan AY $assessmentYear")
+        if (pan.length != 10 || (pan[3] != 'P' && pan[3] != 'H')) {
+            val err = "Invalid Permanent Account Number (PAN) format for $maskedPan"
+            ZeroTaxLogger.w(TAG, "fetchAisTransactions failed: $err")
+            return@withContext Result.failure(IllegalArgumentException(err))
+        }
         try {
             delay(600) // Direct TLS round-trip with eportal.incometax.gov.in/iec/foservices/ais
 

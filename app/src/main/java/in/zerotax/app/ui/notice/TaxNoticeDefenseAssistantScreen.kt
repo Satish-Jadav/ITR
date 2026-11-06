@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -165,7 +166,7 @@ fun TaxNoticeDefenseAssistantScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = AmberWarningBg.copy(alpha = 0.6f)),
+                        colors = CardDefaults.cardColors(containerColor = if (isSystemInDarkTheme()) AmberWarningBgDark.copy(alpha = 0.6f) else AmberWarningBg.copy(alpha = 0.6f)),
                         border = CardDefaults.outlinedCardBorder().copy(
                             width = 1.dp,
                             brush = androidx.compose.ui.graphics.SolidColor(AmberWarning.copy(alpha = 0.5f))
@@ -194,12 +195,12 @@ fun TaxNoticeDefenseAssistantScreen(
                             )
                             Spacer(Modifier.height(8.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("⏳ Safe Period:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                Text("Safe Period:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                                 Spacer(Modifier.width(4.dp))
                                 Text(
                                     "File rectification before statutory deadline to prevent automatic penalty interest u/s 220(2).",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = CrimsonDanger
+                                    color = if (isSystemInDarkTheme()) Color(0xFFFCA5A5) else CrimsonDanger
                                 )
                             }
                         }

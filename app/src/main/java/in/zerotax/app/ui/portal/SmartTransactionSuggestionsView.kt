@@ -210,7 +210,7 @@ fun SmartTransactionSuggestionsView(
                                     Text(
                                         text = "$declarantName • $flatStreet, $city ($pincode)",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Slate700
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }

@@ -8,6 +8,14 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 class SilentPdfUnlocker {
+    companion object {
+        fun initPdfBox(context: android.content.Context) {
+            if (!com.tom_roush.pdfbox.android.PDFBoxResourceLoader.isReady()) {
+                com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(context.applicationContext)
+            }
+        }
+    }
+
     /**
      * Generates the 15 standard permutations for Indian Form 16 / AIS / Bank Statement password unlocking:
      * PAN (lower/upper) + DOB (DDMMYYYY), DOB, First 4 of name + DOB, PAN + YYYY, PAN + DDMMYY, etc.
@@ -83,7 +91,12 @@ class SilentPdfUnlocker {
             )
         }
 
-        for (pwd in generate15StandardCandidates(pan, dobDdMmYyyy, firstName, bankCustomerId, bankAccountLast4)) {
+        val allCandidates = mutableListOf<String>()
+        // If file is unencrypted, empty password works immediately
+        allCandidates.add("")
+        allCandidates.addAll(generate15StandardCandidates(pan, dobDdMmYyyy, firstName, bankCustomerId, bankAccountLast4))
+
+        for (pwd in allCandidates) {
             // Guard 3: 5-second timeout per password attempt prevents hanging on corrupt PDFs.
             val result = withTimeoutOrNull(5_000L) {
                 runCatching {
@@ -91,7 +104,7 @@ class SilentPdfUnlocker {
                         doc.setAllSecurityToBeRemoved(true)
                         val out = ByteArrayOutputStream()
                         doc.save(out)
-                        out.toByteArray() to pwd
+                        out.toByteArray() to (if (pwd.isEmpty()) "Unencrypted (No Password)" else pwd)
                     }
                 }.getOrNull()
             }
@@ -100,5 +113,35 @@ class SilentPdfUnlocker {
             }
         }
         Result.failure(SecurityException("Custom PDF password required outside standard permutations"))
+    }
+
+    suspend fun unlockWithCustomPassword(
+        pdfBytes: ByteArray,
+        passwordRaw: String
+    ): Result<ByteArray> = withContext(Dispatchers.Default) {
+        val result = withTimeoutOrNull(5_000L) {
+            runCatching {
+                PDDocument.load(ByteArrayInputStream(pdfBytes), passwordRaw).use { doc ->
+                    doc.setAllSecurityToBeRemoved(true)
+                    val out = ByteArrayOutputStream()
+                    doc.save(out)
+                    out.toByteArray()
+                }
+            }.getOrNull()
+        }
+        if (result != null) {
+            Result.success(result)
+        } else {
+            Result.failure(IllegalArgumentException("Incorrect password for this PDF document."))
+        }
+    }
+
+    suspend fun extractTextFromDecrypted(decryptedPdfBytes: ByteArray): Result<String> = withContext(Dispatchers.Default) {
+        runCatching {
+            PDDocument.load(ByteArrayInputStream(decryptedPdfBytes)).use { doc ->
+                val stripper = com.tom_roush.pdfbox.text.PDFTextStripper()
+                stripper.getText(doc)
+            }
+        }
     }
 }

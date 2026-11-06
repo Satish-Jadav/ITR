@@ -1,6 +1,10 @@
 package `in`.zerotax.app.ui.components
 
 import android.graphics.Bitmap
+import android.net.Uri
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,15 +24,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.model.EmployerSalarySource
 import `in`.zerotax.core.model.FilingTierMode
 import `in`.zerotax.core.model.InstitutionPdfPasswordRegistry
 import `in`.zerotax.core.model.InstitutionPdfPasswordRule
@@ -36,6 +45,8 @@ import `in`.zerotax.core.model.Rupee
 import `in`.zerotax.core.model.ScheduleItChallanEntry
 import `in`.zerotax.core.model.TaxPaymentChannel
 import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
+import `in`.zerotax.feature.pdfunlocker.DeterministicTracesRegexParser
+import `in`.zerotax.feature.pdfunlocker.SilentPdfUnlocker
 import `in`.zerotax.feature.portalbridge.ChallanTaxType
 import `in`.zerotax.feature.portalbridge.UpiChallan280IntentLauncher
 
@@ -261,19 +272,54 @@ fun Presumptive44AdaAnd44AdSliderCard(
 }
 
 /**
- * Interactive helper dialog providing institutional password patterns for Form 16, AIS, e-Aadhaar, banks, and CAS.
+ * Active PDF Password Decryptor, Form 16 Data Importer & Institutional Password Calculator.
+ * Enables real in-memory decryption, password removal, document export, and 1-tap statutory salary import.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InstitutionPdfPasswordCheatsheetModal(
+    pan: String = "",
     onDismiss: () -> Unit,
-    onSelectHint: ((String) -> Unit)? = null
+    onSelectHint: ((String) -> Unit)? = null,
+    onSalaryExtracted: ((grossSalary: Long, tds: Long, employerTan: String, sec80C: Long, sec80D: Long) -> Unit)? = null
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val clipboardManager = LocalClipboardManager.current
+    val unlocker = remember { SilentPdfUnlocker() }
+
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabTitles = listOf("Decrypt File", "My Passwords", "Directory")
+
+    // User inputs for dynamic password calculation and decryption
+    var assesseePan by remember { mutableStateOf(pan.uppercase()) }
+    var dateOfBirth by remember { mutableStateOf("") }
+    var assesseeFirstName by remember { mutableStateOf("") }
+    var bankAccountLast4 by remember { mutableStateOf("") }
+    var manualPassword by remember { mutableStateOf("") }
+
+    // File picking and decryption state
+    var selectedPdfUri by remember { mutableStateOf<Uri?>(null) }
+    var pdfFileName by remember { mutableStateOf("") }
+    var pdfBytes by remember { mutableStateOf<ByteArray?>(null) }
+    var isProcessing by remember { mutableStateOf(false) }
+    var decryptStatusMessage by remember { mutableStateOf<String?>(null) }
+    var isSuccess by remember { mutableStateOf(false) }
+    var unlockedPassword by remember { mutableStateOf<String?>(null) }
+    var decryptedBytes by remember { mutableStateOf<ByteArray?>(null) }
+    var extractedForm16 by remember { mutableStateOf<EmployerSalarySource?>(null) }
+    var isSalaryImported by remember { mutableStateOf(false) }
+    var saveSuccessMessage by remember { mutableStateOf<String?>(null) }
+    var copiedPasswordFeedback by remember { mutableStateOf<String?>(null) }
+
+    // Directory rules
     var selectedCategory by remember { mutableStateOf("All") }
     val categories = listOf("All", "Tax & Identity", "Banking", "Investments")
     var allRules by remember { mutableStateOf(InstitutionPdfPasswordRegistry.rules) }
 
     LaunchedEffect(Unit) {
         runCatching {
+            SilentPdfUnlocker.initPdfBox(context)
             val json = ZeroTaxCloudApiBridge.fetchInstitutionPdfRules().getOrNull()
             val array = json?.optJSONArray("rules")
             if (array != null && array.length() > 0) {
@@ -298,9 +344,142 @@ fun InstitutionPdfPasswordCheatsheetModal(
         }
     }
 
-    val filteredRules = remember(selectedCategory, allRules) {
-        if (selectedCategory == "All") allRules
-        else allRules.filter { it.documentCategory == selectedCategory }
+    val pdfPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedPdfUri = uri
+            var name = "document.pdf"
+            runCatching {
+                context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    val nameIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (cursor.moveToFirst() && nameIdx >= 0) {
+                        name = cursor.getString(nameIdx)
+                    }
+                }
+            }
+            pdfFileName = name
+            isProcessing = true
+            decryptStatusMessage = "Loading document into memory..."
+            decryptedBytes = null
+            unlockedPassword = null
+            extractedForm16 = null
+            isSalaryImported = false
+            saveSuccessMessage = null
+            isSuccess = false
+
+            coroutineScope.launch(Dispatchers.IO) {
+                runCatching {
+                    SilentPdfUnlocker.initPdfBox(context)
+                    context.contentResolver.openInputStream(uri)?.use { stream ->
+                        pdfBytes = stream.readBytes()
+                    }
+                }.fold(
+                    onSuccess = {
+                        decryptStatusMessage = "Document loaded (${pdfBytes?.size ?: 0} bytes). Ready to unlock."
+                    },
+                    onFailure = { err ->
+                        decryptStatusMessage = "Unable to read file: ${err.localizedMessage}"
+                    }
+                )
+                isProcessing = false
+            }
+        }
+    }
+
+    val pdfSaverLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri: Uri? ->
+        if (uri != null && decryptedBytes != null) {
+            coroutineScope.launch(Dispatchers.IO) {
+                runCatching {
+                    context.contentResolver.openOutputStream(uri)?.use { stream ->
+                        stream.write(decryptedBytes)
+                    }
+                }.fold(
+                    onSuccess = {
+                        saveSuccessMessage = "Decrypted PDF saved successfully without password."
+                    },
+                    onFailure = {
+                        saveSuccessMessage = "Save failed: ${it.localizedMessage}"
+                    }
+                )
+            }
+        }
+    }
+
+    fun executeAutoUnlock() {
+        val bytes = pdfBytes ?: return
+        isProcessing = true
+        decryptStatusMessage = "Evaluating deterministic password permutations..."
+        saveSuccessMessage = null
+        isSuccess = false
+
+        coroutineScope.launch {
+            SilentPdfUnlocker.initPdfBox(context)
+            val result = unlocker.attemptUnlock(
+                pdfBytes = bytes,
+                pan = assesseePan,
+                dobDdMmYyyy = dateOfBirth,
+                firstName = assesseeFirstName,
+                bankCustomerId = bankAccountLast4,
+                bankAccountLast4 = bankAccountLast4
+            )
+            result.fold(
+                onSuccess = { (unlockedPdf, winningPwd) ->
+                    decryptedBytes = unlockedPdf
+                    unlockedPassword = winningPwd
+                    isSuccess = true
+                    decryptStatusMessage = "Document unlocked successfully."
+
+                    val textRes = unlocker.extractTextFromDecrypted(unlockedPdf)
+                    textRes.onSuccess { text ->
+                        val parsed = DeterministicTracesRegexParser.parseStandardTracesForm16(text).getOrNull()
+                        extractedForm16 = parsed
+                    }
+                    isProcessing = false
+                },
+                onFailure = {
+                    isSuccess = false
+                    decryptStatusMessage = "Auto-unlock could not match standard rules. Enter your custom password below."
+                    isProcessing = false
+                }
+            )
+        }
+    }
+
+    fun executeManualUnlock() {
+        val bytes = pdfBytes ?: return
+        if (manualPassword.isBlank()) return
+        isProcessing = true
+        decryptStatusMessage = "Verifying custom password..."
+        saveSuccessMessage = null
+        isSuccess = false
+
+        coroutineScope.launch {
+            SilentPdfUnlocker.initPdfBox(context)
+            val result = unlocker.unlockWithCustomPassword(bytes, manualPassword.trim())
+            result.fold(
+                onSuccess = { unlockedPdf ->
+                    decryptedBytes = unlockedPdf
+                    unlockedPassword = manualPassword.trim()
+                    isSuccess = true
+                    decryptStatusMessage = "Unlocked with custom password."
+
+                    val textRes = unlocker.extractTextFromDecrypted(unlockedPdf)
+                    textRes.onSuccess { text ->
+                        val parsed = DeterministicTracesRegexParser.parseStandardTracesForm16(text).getOrNull()
+                        extractedForm16 = parsed
+                    }
+                    isProcessing = false
+                },
+                onFailure = {
+                    isSuccess = false
+                    decryptStatusMessage = "Decryption failed: Incorrect password provided."
+                    isProcessing = false
+                }
+            )
+        }
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -309,9 +488,10 @@ fun InstitutionPdfPasswordCheatsheetModal(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.85f)
+                .fillMaxHeight(0.92f)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
+                // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -322,84 +502,737 @@ fun InstitutionPdfPasswordCheatsheetModal(
                             imageVector = Icons.Default.VpnKey,
                             contentDescription = null,
                             tint = EnterpriseTeal600,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "PDF Password Cheatsheet",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
+                        Column {
+                            Text(
+                                "PDF Decryptor & Password Hub",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Text(
+                                "Unlock, decrypt, export, and extract Form 16 / AIS",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                     IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Slate500)
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
 
-                Text(
-                    "Standard deterministic password conventions used across Indian tax authorities and financial institutions:",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Slate600,
-                    modifier = Modifier.padding(vertical = 6.dp)
-                )
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Category chips
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.padding(vertical = 4.dp)
+                // Navigation Tabs
+                PrimaryTabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    divider = {}
                 ) {
-                    items(categories) { cat ->
-                        FilterChip(
-                            selected = selectedCategory == cat,
-                            onClick = { selectedCategory = cat },
-                            label = { Text(cat, fontSize = 11.sp) }
+                    tabTitles.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = {
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium
+                                    ),
+                                    maxLines = 1
+                                )
+                            }
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(filteredRules) { rule ->
-                        Card(
-                            shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Slate50),
-                            border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate200)),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onSelectHint?.invoke(rule.exampleInput) }
+                // Tab Content
+                when (selectedTab) {
+                    0 -> {
+                        // TAB 1: ACTIVE DECRYPT FILE
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                            // File selection card
+                            item {
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text(
-                                        text = rule.institutionName,
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                                    )
-                                    StatutoryBadge(
-                                        text = rule.documentCategory,
-                                        tone = when (rule.documentCategory) {
-                                            "Tax & Identity" -> BadgeTone.STATUTORY
-                                            "Banking" -> BadgeTone.SUCCESS
-                                            else -> BadgeTone.NEUTRAL
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Text(
+                                            "1. Select Encrypted Document",
+                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        if (selectedPdfUri == null) {
+                                            OutlinedButton(
+                                                onClick = { pdfPickerLauncher.launch("application/pdf") },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                shape = RoundedCornerShape(8.dp)
+                                            ) {
+                                                Icon(Icons.Default.UploadFile, contentDescription = null, modifier = Modifier.size(18.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Choose Protected PDF")
+                                            }
+                                        } else {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier.weight(1f)
+                                                ) {
+                                                    Icon(Icons.Default.Description, contentDescription = null, tint = EnterpriseTeal600, modifier = Modifier.size(20.dp))
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Column {
+                                                        Text(
+                                                            pdfFileName,
+                                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                                            maxLines = 1
+                                                        )
+                                                        Text(
+                                                            "${(pdfBytes?.size ?: 0) / 1024} KB Loaded",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                        )
+                                                    }
+                                                }
+                                                TextButton(onClick = { pdfPickerLauncher.launch("application/pdf") }) {
+                                                    Text("Change")
+                                                }
+                                            }
                                         }
+                                    }
+                                }
+                            }
+
+                            // Assessee parameters for permutation engine
+                            item {
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Text(
+                                            "2. Taxpayer Credentials for Auto-Unlock",
+                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            OutlinedTextField(
+                                                value = assesseePan,
+                                                onValueChange = { assesseePan = it.uppercase().take(10) },
+                                                label = { Text("PAN", fontSize = 11.sp) },
+                                                placeholder = { Text("e.g. ABCDE1234F", fontSize = 11.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+                                            )
+                                            OutlinedTextField(
+                                                value = dateOfBirth,
+                                                onValueChange = { dateOfBirth = it.replace(Regex("[^0-9]"), "").take(8) },
+                                                label = { Text("DOB (DDMMYYYY)", fontSize = 11.sp) },
+                                                placeholder = { Text("15081992", fontSize = 11.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            OutlinedTextField(
+                                                value = assesseeFirstName,
+                                                onValueChange = { assesseeFirstName = it.take(20) },
+                                                label = { Text("First Name (Optional)", fontSize = 11.sp) },
+                                                placeholder = { Text("for Aadhaar/ICICI", fontSize = 11.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp)
+                                            )
+                                            OutlinedTextField(
+                                                value = bankAccountLast4,
+                                                onValueChange = { bankAccountLast4 = it.take(10) },
+                                                label = { Text("Bank / Cust ID (Optional)", fontSize = 11.sp) },
+                                                placeholder = { Text("Last 4 digits", fontSize = 11.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Unlock CTA
+                            item {
+                                Button(
+                                    onClick = { executeAutoUnlock() },
+                                    enabled = pdfBytes != null && !isProcessing,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    if (isProcessing) {
+                                        CircularProgressIndicator(
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            strokeWidth = 2.dp,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Decrypting in Secure Memory...")
+                                    } else {
+                                        Icon(Icons.Default.LockOpen, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Unlock & Remove Security")
+                                    }
+                                }
+                            }
+
+                            // Status message banner
+                            if (decryptStatusMessage != null) {
+                                item {
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = if (isSuccess) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                        else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = if (isSuccess) Icons.Default.CheckCircle else Icons.Default.ErrorOutline,
+                                                contentDescription = null,
+                                                tint = if (isSuccess) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                decryptStatusMessage ?: "",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = if (isSuccess) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Decryption result card & export actions
+                            if (isSuccess && unlockedPassword != null) {
+                                item {
+                                    Card(
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Column(modifier = Modifier.padding(12.dp)) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    "Decryption Successful",
+                                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
+                                                )
+                                                StatutoryBadge(text = "UNLOCKED", tone = BadgeTone.SUCCESS)
+                                            }
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text(
+                                                    "Decrypted Password:",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Surface(
+                                                        shape = RoundedCornerShape(4.dp),
+                                                        color = MaterialTheme.colorScheme.surface,
+                                                        border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
+                                                    ) {
+                                                        Text(
+                                                            text = unlockedPassword ?: "",
+                                                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 12.sp),
+                                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                        )
+                                                    }
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    IconButton(
+                                                        onClick = {
+                                                            clipboardManager.setText(AnnotatedString(unlockedPassword ?: ""))
+                                                            copiedPasswordFeedback = "Copied to clipboard"
+                                                        },
+                                                        modifier = Modifier.size(28.dp)
+                                                    ) {
+                                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy Password", modifier = Modifier.size(16.dp))
+                                                    }
+                                                }
+                                            }
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Button(
+                                                onClick = {
+                                                    val cleanName = pdfFileName.substringBeforeLast(".")
+                                                    pdfSaverLauncher.launch("${cleanName}_decrypted.pdf")
+                                                },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                shape = RoundedCornerShape(8.dp)
+                                            ) {
+                                                Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Save Decrypted PDF (No Password)")
+                                            }
+                                            if (saveSuccessMessage != null) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    saveSuccessMessage ?: "",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = EnterpriseTeal700
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Form 16 extraction result and statutory return import
+                            if (extractedForm16 != null) {
+                                item {
+                                    Card(
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                        border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600)),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Column(modifier = Modifier.padding(12.dp)) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    "TRACES Form 16 Data Detected",
+                                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                                )
+                                                StatutoryBadge(text = "FORM 16", tone = BadgeTone.STATUTORY)
+                                            }
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text(
+                                                "Deductor TAN: ${extractedForm16?.employerTan}",
+                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+                                            )
+                                            Text(
+                                                "Gross Salary: ₹${Rupee.formatInr(extractedForm16?.grossSalary ?: 0L)}",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                            Text(
+                                                "TDS Deposited: ₹${Rupee.formatInr(extractedForm16?.tdsReported ?: 0L)}",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                            if ((extractedForm16?.sec80C ?: 0L) > 0L) {
+                                                Text(
+                                                    "Section 80C Deductions: ₹${Rupee.formatInr(extractedForm16?.sec80C ?: 0L)}",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            if (!isSalaryImported) {
+                                                Button(
+                                                    onClick = {
+                                                        val f16 = extractedForm16
+                                                        if (f16 != null) {
+                                                            onSalaryExtracted?.invoke(
+                                                                f16.grossSalary,
+                                                                f16.tdsReported,
+                                                                f16.employerTan,
+                                                                f16.sec80C,
+                                                                f16.sec80D
+                                                            )
+                                                            isSalaryImported = true
+                                                        }
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    shape = RoundedCornerShape(8.dp)
+                                                ) {
+                                                    Icon(Icons.Default.Done, contentDescription = null, modifier = Modifier.size(18.dp))
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text("Import Salary & TDS into Return")
+                                                }
+                                            } else {
+                                                Surface(
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    color = EnterpriseTeal700.copy(alpha = 0.15f),
+                                                    modifier = Modifier.fillMaxWidth()
+                                                ) {
+                                                    Row(
+                                                        modifier = Modifier.padding(8.dp),
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Icon(Icons.Default.Check, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(18.dp))
+                                                        Spacer(modifier = Modifier.width(6.dp))
+                                                        Text(
+                                                            "Imported into active return computation",
+                                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold, color = EnterpriseTeal700)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Manual password fallback section
+                            item {
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                                    border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Text(
+                                            "Manual Custom Password (Fallback)",
+                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            "If auto-unlock failed, enter your specific password to decrypt:",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            OutlinedTextField(
+                                                value = manualPassword,
+                                                onValueChange = { manualPassword = it },
+                                                placeholder = { Text("Enter PDF password", fontSize = 12.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp)
+                                            )
+                                            Button(
+                                                onClick = { executeManualUnlock() },
+                                                enabled = pdfBytes != null && manualPassword.isNotBlank() && !isProcessing,
+                                                shape = RoundedCornerShape(8.dp)
+                                            ) {
+                                                Text("Unlock")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    1 -> {
+                        // TAB 2: MY PASSWORDS CALCULATOR
+                        val cleanPan = assesseePan.uppercase().trim()
+                        val cleanDob = dateOfBirth.replace(Regex("[^0-9]"), "").trim()
+                        val cleanName = assesseeFirstName.trim()
+                        val cleanLast4 = bankAccountLast4.trim()
+
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            // Taxpayer credentials input header
+                            item {
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Text(
+                                            "Taxpayer Parameters",
+                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            "Enter details once to generate all your institutional passwords:",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            OutlinedTextField(
+                                                value = assesseePan,
+                                                onValueChange = { assesseePan = it.uppercase().take(10) },
+                                                label = { Text("PAN", fontSize = 11.sp) },
+                                                placeholder = { Text("ABCDE1234F", fontSize = 11.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+                                            )
+                                            OutlinedTextField(
+                                                value = dateOfBirth,
+                                                onValueChange = { dateOfBirth = it.replace(Regex("[^0-9]"), "").take(8) },
+                                                label = { Text("DOB (DDMMYYYY)", fontSize = 11.sp) },
+                                                placeholder = { Text("15081992", fontSize = 11.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            OutlinedTextField(
+                                                value = assesseeFirstName,
+                                                onValueChange = { assesseeFirstName = it.take(20) },
+                                                label = { Text("First Name", fontSize = 11.sp) },
+                                                placeholder = { Text("Taxpayer First Name", fontSize = 11.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp)
+                                            )
+                                            OutlinedTextField(
+                                                value = bankAccountLast4,
+                                                onValueChange = { bankAccountLast4 = it.take(10) },
+                                                label = { Text("Bank Last 4 / Cust ID", fontSize = 11.sp) },
+                                                placeholder = { Text("1234", fontSize = 11.sp) },
+                                                singleLine = true,
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = TextStyle(fontSize = 12.sp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (copiedPasswordFeedback != null) {
+                                item {
+                                    Text(
+                                        text = copiedPasswordFeedback ?: "",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = EnterpriseTeal700,
+                                        modifier = Modifier.padding(horizontal = 4.dp)
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Formula: ${rule.passwordPatternRule}",
-                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = EnterpriseTeal700)
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "${rule.exampleDescription} -> ${rule.exampleInput}",
-                                    style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Slate600)
-                                )
+                            }
+
+                            // Computed list of items
+                            val items = listOf(
+                                Triple(
+                                    "TRACES Form 16 (Part A & B)",
+                                    "Tax & Identity",
+                                    if (cleanPan.length == 10 && cleanDob.length == 8) cleanPan.uppercase() + cleanDob else null
+                                ) to "Formula: PAN in UPPERCASE + Date of Birth (DDMMYYYY)",
+                                Triple(
+                                    "AIS / TIS (Annual Information Statement)",
+                                    "Tax & Identity",
+                                    if (cleanPan.length == 10 && cleanDob.length == 8) cleanPan.lowercase() + cleanDob else null
+                                ) to "Formula: PAN in lowercase + Date of Birth (DDMMYYYY)",
+                                Triple(
+                                    "e-Aadhaar (UIDAI Masked / Regular)",
+                                    "Tax & Identity",
+                                    if (cleanName.length >= 4 && cleanDob.length == 8) cleanName.take(4).uppercase() + cleanDob.takeLast(4) else null
+                                ) to "Formula: First 4 letters of Name (UPPERCASE) + Year of Birth (YYYY)",
+                                Triple(
+                                    "ICICI Bank Statement",
+                                    "Banking",
+                                    if (cleanName.length >= 4 && cleanDob.length >= 4) cleanName.take(4).lowercase() + cleanDob.take(4) else null
+                                ) to "Formula: First 4 letters of Name (lowercase) + DOB (DDMM)",
+                                Triple(
+                                    "Axis Bank Statement",
+                                    "Banking",
+                                    if (cleanName.length >= 4 && cleanLast4.length >= 4) cleanName.take(4).uppercase() + cleanLast4.takeLast(4) else null
+                                ) to "Formula: First 4 letters of Name (UPPERCASE) + Last 4 digits of Account",
+                                Triple(
+                                    "Zerodha Tax P&L / Statement",
+                                    "Investments",
+                                    if (cleanPan.length == 10) cleanPan.uppercase() else null
+                                ) to "Formula: PAN in UPPERCASE",
+                                Triple(
+                                    "SBI Bank Statement",
+                                    "Banking",
+                                    if (cleanLast4.length >= 4 && cleanDob.length >= 6) cleanLast4.takeLast(5) + cleanDob.take(4) + cleanDob.takeLast(2) else null
+                                ) to "Formula: Last 5 digits of mobile + DOB (DDMMYY) or 11-digit account number",
+                                Triple(
+                                    "HDFC Bank Statement",
+                                    "Banking",
+                                    if (cleanLast4.isNotBlank()) cleanLast4 else null
+                                ) to "Formula: NetBanking Customer ID",
+                                Triple(
+                                    "Kotak Mahindra Bank",
+                                    "Banking",
+                                    if (cleanDob.length == 8) cleanDob else null
+                                ) to "Formula: Date of Birth (DDMMYYYY) or CRN Number",
+                                Triple(
+                                    "CAMS / KFintech Consolidated Account Statement",
+                                    "Investments",
+                                    "Defined during email request"
+                                ) to "Formula: Password specified by investor during mail CAS generation"
+                            )
+
+                            items(items) { (info, formula) ->
+                                val (title, category, computedPwd) = info
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                    border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                title,
+                                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                            )
+                                            StatutoryBadge(
+                                                text = category,
+                                                tone = when (category) {
+                                                    "Tax & Identity" -> BadgeTone.STATUTORY
+                                                    "Banking" -> BadgeTone.SUCCESS
+                                                    else -> BadgeTone.NEUTRAL
+                                                }
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            formula,
+                                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        if (computedPwd != null) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Surface(
+                                                    shape = RoundedCornerShape(4.dp),
+                                                    color = MaterialTheme.colorScheme.surface,
+                                                    border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
+                                                ) {
+                                                    Text(
+                                                        text = computedPwd,
+                                                        style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = EnterpriseTeal700),
+                                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                    )
+                                                }
+                                                OutlinedButton(
+                                                    onClick = {
+                                                        clipboardManager.setText(AnnotatedString(computedPwd))
+                                                        copiedPasswordFeedback = "Copied \"$title\" password to clipboard"
+                                                    },
+                                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    modifier = Modifier.height(32.dp)
+                                                ) {
+                                                    Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(14.dp))
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    Text("Copy", fontSize = 11.sp)
+                                                }
+                                            }
+                                        } else {
+                                            Text(
+                                                "Fill PAN, DOB or Name above to calculate your exact password.",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.outline
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    2 -> {
+                        // TAB 3: SEARCHABLE DIRECTORY
+                        val filteredRules = remember(selectedCategory, allRules) {
+                            if (selectedCategory == "All") allRules
+                            else allRules.filter { it.documentCategory == selectedCategory }
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            // Category chips
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            ) {
+                                items(categories) { cat ->
+                                    FilterChip(
+                                        selected = selectedCategory == cat,
+                                        onClick = { selectedCategory = cat },
+                                        label = { Text(cat, fontSize = 11.sp) }
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                items(filteredRules) { rule ->
+                                    Card(
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                        border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                clipboardManager.setText(AnnotatedString(rule.exampleInput))
+                                                onSelectHint?.invoke(rule.exampleInput)
+                                            }
+                                    ) {
+                                        Column(modifier = Modifier.padding(10.dp)) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = rule.institutionName,
+                                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                                )
+                                                StatutoryBadge(
+                                                    text = rule.documentCategory,
+                                                    tone = when (rule.documentCategory) {
+                                                        "Tax & Identity" -> BadgeTone.STATUTORY
+                                                        "Banking" -> BadgeTone.SUCCESS
+                                                        else -> BadgeTone.NEUTRAL
+                                                    }
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = "Formula: ${rule.passwordPatternRule}",
+                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = EnterpriseTeal700)
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = "${rule.exampleDescription} -> ${rule.exampleInput}",
+                                                style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -411,7 +1244,7 @@ fun InstitutionPdfPasswordCheatsheetModal(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Got It")
+                    Text("Close")
                 }
             }
         }
@@ -663,7 +1496,12 @@ fun FilingTierSelectorCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(currentTier.badgeIcon, fontSize = 16.sp)
+                    val tierIcon = when (currentTier) {
+                        FilingTierMode.SAHAJ_SIMPLE -> Icons.Default.Speed
+                        FilingTierMode.INVESTOR_PRO -> Icons.Default.TrendingUp
+                        FilingTierMode.ENTERPRISE_AUDIT -> Icons.Default.Shield
+                    }
+                    Icon(tierIcon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "Filing Plan: ${currentTier.title}",
@@ -687,6 +1525,11 @@ fun FilingTierSelectorCard(
                 val topTwoTiers = listOf(FilingTierMode.SAHAJ_SIMPLE, FilingTierMode.INVESTOR_PRO)
                 topTwoTiers.forEach { tier ->
                     val isSelected = currentTier == tier
+                    val tierItemIcon = when (tier) {
+                        FilingTierMode.SAHAJ_SIMPLE -> Icons.Default.Speed
+                        FilingTierMode.INVESTOR_PRO -> Icons.Default.TrendingUp
+                        FilingTierMode.ENTERPRISE_AUDIT -> Icons.Default.Shield
+                    }
                     Card(
                         modifier = Modifier
                             .weight(1f)
@@ -705,7 +1548,7 @@ fun FilingTierSelectorCard(
                                 .padding(vertical = 10.dp, horizontal = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(tier.badgeIcon, fontSize = 16.sp)
+                            Icon(tierItemIcon, contentDescription = null, tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 text = tier.title,
@@ -745,7 +1588,7 @@ fun FilingTierSelectorCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(FilingTierMode.ENTERPRISE_AUDIT.badgeIcon, fontSize = 16.sp)
+                        Icon(Icons.Default.Shield, contentDescription = null, tint = if (isEnterpriseSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Column {
                             Text(
@@ -898,11 +1741,11 @@ fun TaxPaymentAndChallanHubModal(
                                     .clickable { selectedChannel = channel },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) EnterpriseTeal50 else Slate50
+                                    containerColor = if (isSelected) getTealHighlightBg() else MaterialTheme.colorScheme.surfaceVariant
                                 ),
                                 border = if (isSelected) {
                                     CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600))
-                                } else CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate200))
+                                } else CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
                             ) {
                                 Row(
                                     modifier = Modifier

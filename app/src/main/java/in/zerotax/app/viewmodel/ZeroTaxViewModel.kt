@@ -137,6 +137,29 @@ class ZeroTaxViewModel : ViewModel() {
         recompute()
     }
 
+    fun importForm16Salary(
+        grossSalary: Long,
+        tds: Long,
+        employerTan: String,
+        employerName: String = "",
+        sec80C: Long = 0L,
+        sec80D: Long = 0L,
+        sec80CCD1B: Long = 0L
+    ) {
+        _uiState.update {
+            it.copy(
+                grossSalaryRupees = maxOf(0L, grossSalary),
+                employerTan = employerTan.uppercase().trim().take(10),
+                employerName = if (employerName.isNotBlank()) employerName else if (it.employerName.isBlank()) "TRACES ($employerTan)" else it.employerName,
+                tdsDeposited26As = maxOf(0L, tds),
+                section80CInvestments = if (sec80C > 0L) sec80C else it.section80CInvestments,
+                section80DSelf = if (sec80D > 0L) sec80D else it.section80DSelf,
+                section80CCD1BNps = if (sec80CCD1B > 0L) sec80CCD1B else it.section80CCD1BNps
+            )
+        }
+        recompute()
+    }
+
     fun onSection80CChanged(amount: Long) {
         _uiState.update { it.copy(section80CInvestments = maxOf(0L, amount)) }
         recompute()
@@ -206,25 +229,6 @@ class ZeroTaxViewModel : ViewModel() {
                 grossSalaryRupees = maxOf(0L, grossSalary),
                 section80CInvestments = minOf(150_000L, maxOf(0L, totalDeductions)),
                 currentTap = OnboardingTap.Tap4RegimeShowdown
-            )
-        }
-        recompute()
-    }
-
-    /**
-     * Optional sample profile loader for previewing calculation capabilities
-     */
-    fun loadSampleDemoData() {
-        _uiState.update {
-            it.copy(
-                pan = "ABCDE1234F",
-                grossSalaryRupees = 12_75_000L,
-                employerName = "Tech Innovations Pvt Ltd",
-                employerTan = "BLRM01234D",
-                tdsDeposited26As = 60_000L,
-                section80CInvestments = 1_50_000L,
-                section80DSelf = 25_000L,
-                section80CCD1BNps = 50_000L
             )
         }
         recompute()

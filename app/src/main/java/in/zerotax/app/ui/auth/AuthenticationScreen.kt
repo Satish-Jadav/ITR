@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -366,9 +367,11 @@ fun AuthenticationScreen(
 
             // Expandable CA Auditor Portal Login Form
             AnimatedVisibility(visible = showCaSection) {
+                val isDark = isSystemInDarkTheme()
+                val caHeaderColor = if (isDark) Color(0xFF93C5FD) else IndigoStatutory
                 Card(
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = IndigoStatutoryBg.copy(alpha = 0.6f)),
+                    colors = CardDefaults.cardColors(containerColor = if (isDark) IndigoStatutoryBgDark.copy(alpha = 0.6f) else IndigoStatutoryBg.copy(alpha = 0.6f)),
                     border = androidx.compose.foundation.BorderStroke(1.dp, IndigoStatutory.copy(alpha = 0.3f)),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -376,9 +379,9 @@ fun AuthenticationScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = IndigoStatutory, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = caHeaderColor, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Chartered Accountant / Auditor Portal", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = IndigoStatutory))
+                            Text("Chartered Accountant / Auditor Portal", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = caHeaderColor))
                         }
                         Spacer(Modifier.height(10.dp))
 

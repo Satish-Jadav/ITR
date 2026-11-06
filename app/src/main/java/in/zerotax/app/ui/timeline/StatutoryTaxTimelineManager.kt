@@ -240,14 +240,25 @@ fun StatutoryTimelineBanner(
                 shape = RoundedCornerShape(6.dp),
                 color = if (daysLeft <= 15) AmberWarning else EnterpriseTeal600
             ) {
-                Text(
-                    text = "⏱️ $daysLeft Days Left",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = if (daysLeft <= 15) Slate900 else PureWhite
-                    ),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = null,
+                        tint = if (daysLeft <= 15) Slate900 else PureWhite,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "$daysLeft Days Left",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = if (daysLeft <= 15) Slate900 else PureWhite
+                        )
+                    )
+                }
             }
         }
     }
@@ -277,7 +288,12 @@ fun StatutoryReminderModal(
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("⏰", fontSize = 22.sp)
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = null,
+                    tint = EnterpriseTeal600,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(Modifier.width(8.dp))
                 Column {
                     Text(
@@ -286,7 +302,7 @@ fun StatutoryReminderModal(
                     )
                     Text(
                         "Assessment Year 2026-27 (FY 2025-26)",
-                        style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                     )
                 }
             }

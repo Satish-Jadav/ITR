@@ -139,7 +139,7 @@ object CanonicalWarningHasher {
             signer.update(auditData)
             signer.sign()
         }.getOrElse {
-            // Fallback to SHA-256 hash if AndroidKeyStore ECDSA unavailable in mock/unit test env
+            // Fallback to SHA-256 hash if AndroidKeyStore ECDSA unavailable in test env
             MessageDigest.getInstance("SHA-256").digest(auditData)
         }
     }

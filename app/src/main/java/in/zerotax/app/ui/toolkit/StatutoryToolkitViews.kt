@@ -57,7 +57,7 @@ fun WhatIfScenarioSimulatorView(
         )
     }
 
-    val sampleQueries = listOf(
+    val suggestedQueries = listOf(
         "Contribute 50k in NPS",
         "Buy 25k health insurance",
         "Pay 2 lakh home loan interest",
@@ -157,16 +157,16 @@ fun WhatIfScenarioSimulatorView(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        sampleQueries.take(3).forEach { sample ->
+                        suggestedQueries.take(3).forEach { queryItem ->
                             SuggestionChip(
                                 onClick = {
-                                    queryText = sample
+                                    queryText = queryItem
                                     simulationResult = OfflineWhatIfTaxSimulator.simulateWhatIfScenario(
                                         TaxpayerFinancialInput(grossSalary = grossSalary, section80CInvestments = 1_50_000L),
-                                        sample
+                                        queryItem
                                     )
                                 },
-                                label = { Text(sample, fontSize = 11.sp) }
+                                label = { Text(queryItem, fontSize = 11.sp) }
                             )
                         }
                     }

@@ -133,7 +133,7 @@ fun ZeroTaxBrandLogo(
                         text = "Zero",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            color = Slate900,
+                            color = MaterialTheme.colorScheme.onSurface,
                             letterSpacing = (-0.5).sp
                         )
                     )
@@ -338,6 +338,7 @@ fun EnterpriseTopHeader(
             Spacer(Modifier.height(8.dp))
 
             // Horizontally Scrollable Fast Actions Strip (Responsive on all screen sizes, never wraps or overflows)
+            val isTopDark = isSystemInDarkTheme()
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -347,7 +348,7 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = EnterpriseTeal50,
+                            color = if (isTopDark) EnterpriseTeal800 else EnterpriseTeal50,
                             border = androidx.compose.foundation.BorderStroke(0.75.dp, EnterpriseTeal600),
                             modifier = Modifier.clickable { onOpenChatbot() }
                         ) {
@@ -358,11 +359,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.SmartToy,
                                     contentDescription = null,
-                                    tint = EnterpriseTeal800,
+                                    tint = if (isTopDark) EnterpriseTeal200 else EnterpriseTeal800,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("AI Copilot", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                                Text("AI Copilot", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) EnterpriseTeal100 else EnterpriseTeal900))
                             }
                         }
                     }
@@ -372,7 +373,7 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = IndigoStatutoryBg,
+                            color = if (isTopDark) IndigoStatutoryBgDark else IndigoStatutoryBg,
                             border = androidx.compose.foundation.BorderStroke(0.75.dp, IndigoStatutory),
                             modifier = Modifier.clickable { onOpenToolkit() }
                         ) {
@@ -383,11 +384,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Build,
                                     contentDescription = null,
-                                    tint = IndigoStatutory,
+                                    tint = if (isTopDark) Color(0xFF93C5FD) else IndigoStatutory,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
+                                Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) Color(0xFF93C5FD) else IndigoStatutory))
                             }
                         }
                     }
@@ -397,7 +398,7 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = EmeraldSuccessBg,
+                            color = if (isTopDark) EmeraldSuccessBgDark else EmeraldSuccessBg,
                             border = androidx.compose.foundation.BorderStroke(0.75.dp, EmeraldSuccess),
                             modifier = Modifier.clickable { onOpenAnalytics() }
                         ) {
@@ -408,11 +409,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.BarChart,
                                     contentDescription = null,
-                                    tint = EmeraldSuccess,
+                                    tint = if (isTopDark) EnterpriseTeal300 else EmeraldSuccess,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Insights", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                                Text("Insights", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) EnterpriseTeal300 else EmeraldSuccess))
                             }
                         }
                     }
@@ -422,7 +423,7 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = AmberWarningBg,
+                            color = if (isTopDark) AmberWarningBgDark else AmberWarningBg,
                             border = androidx.compose.foundation.BorderStroke(0.75.dp, AmberWarning),
                             modifier = Modifier.clickable { onOpenNotices() }
                         ) {
@@ -433,11 +434,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Security,
                                     contentDescription = null,
-                                    tint = AmberWarning,
+                                    tint = if (isTopDark) Color(0xFFFDE68A) else AmberWarning,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AmberWarning))
+                                Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) Color(0xFFFDE68A) else AmberWarning))
                             }
                         }
                     }
@@ -1527,7 +1528,7 @@ fun ZeroTaxSectionHeader(
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Slate900)
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 )
             }
             if (badgeText != null) {
@@ -1538,7 +1539,7 @@ fun ZeroTaxSectionHeader(
             Spacer(Modifier.height(2.dp))
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 12.sp),
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp),
                 modifier = Modifier.padding(start = 12.dp)
             )
         }

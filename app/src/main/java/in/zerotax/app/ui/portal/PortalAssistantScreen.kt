@@ -9,6 +9,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +31,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.*
@@ -74,6 +75,7 @@ fun PortalAssistantScreen(
     val scope = rememberCoroutineScope()
     val copilot = remember { OnDeviceTaxCopilot(context) }
     val itdClient = remember { ItdDirectFilingClient() }
+    var assesseePan by remember(pan) { mutableStateOf(pan.trim().uppercase()) }
 
     var currentStage by remember { mutableStateOf(InAppFilingStage.REVIEW_AND_CONSENT) }
 
@@ -92,9 +94,10 @@ fun PortalAssistantScreen(
     }
     var isStatutoryDeclarationAccepted by remember { mutableStateOf(false) }
 
-    // In-App Authentication inputs
-    var loginMethod by remember { mutableStateOf("PASSWORD") } // PASSWORD or AADHAAR_OTP
-    var portalPassword by remember { mutableStateOf("") }
+    // In-App Authentication inputs (Zero Password Captured Architecture)
+    var loginMethod by remember { mutableStateOf("AADHAAR_OTP") } // AADHAAR_OTP or OFFICIAL_WEB
+    var aadhaarOtpAuth by remember { mutableStateOf("") }
+    var showWebLoginSheet by remember { mutableStateOf(false) }
     var isAuthenticating by remember { mutableStateOf(false) }
     var authError by remember { mutableStateOf<String?>(null) }
 
@@ -253,7 +256,7 @@ fun PortalAssistantScreen(
             ) { stage ->
                 when (stage) {
                     InAppFilingStage.REVIEW_AND_CONSENT -> ReviewAndConsentStage(
-                        pan = pan,
+                        pan = assesseePan,
                         grossSalary = grossSalary,
                         netTaxableSalary = netTaxableSalary,
                         taxLiability = taxLiability,
@@ -266,31 +269,33 @@ fun PortalAssistantScreen(
                     )
 
                     InAppFilingStage.IN_APP_AUTH -> InAppAuthenticationStage(
-                        pan = pan,
+                        pan = assesseePan,
+                        onPanChanged = { assesseePan = it },
                         loginMethod = loginMethod,
                         onLoginMethodChanged = { loginMethod = it },
-                        password = portalPassword,
-                        onPasswordChanged = { portalPassword = it },
+                        aadhaarOtp = aadhaarOtpAuth,
+                        onAadhaarOtpChanged = { if (it.length <= 6 && it.all { c -> c.isDigit() }) aadhaarOtpAuth = it },
+                        onOpenWebLogin = { showWebLoginSheet = true },
                         isAuthenticating = isAuthenticating,
                         authError = authError,
                         onBack = { currentStage = InAppFilingStage.REVIEW_AND_CONSENT },
-                        onAuthenticate = {
+                        onAuthenticateOtp = {
                             scope.launch {
                                 isAuthenticating = true
                                 authError = null
-                                val res = itdClient.authenticateInApp(pan, portalPassword.toCharArray())
+                                val res = itdClient.authenticateInApp(assesseePan, null, aadhaarOtp = aadhaarOtpAuth)
                                 isAuthenticating = false
                                 if (res.isSuccess) {
                                     currentStage = InAppFilingStage.DIRECT_SUBMISSION
                                 } else {
-                                    authError = res.exceptionOrNull()?.message ?: "Authentication failed. Check credentials."
+                                    authError = res.exceptionOrNull()?.message ?: "Authentication failed. Check OTP."
                                 }
                             }
                         }
                     )
 
                     InAppFilingStage.DIRECT_SUBMISSION -> DirectSubmissionStage(
-                        pan = pan,
+                        pan = assesseePan,
                         grossSalary = grossSalary,
                         netTaxableSalary = netTaxableSalary,
                         taxLiability = taxLiability,
@@ -318,19 +323,19 @@ fun PortalAssistantScreen(
                                     totalDiscrepancyAmount = 0L
                                 )
                                 val cbdtJson = CbdtItr1JsonCompiler.compileItr1Json(
-                                    pan = pan,
+                                    pan = assesseePan,
                                     assessmentYear = "2026-27",
                                     salarySummary = realSalarySummary,
                                     computation = realComputation,
                                     bankAccount = selectedBank,
                                     filingSection = FilingSection.ON_OR_BEFORE_DUE_DATE_139_1,
-                                    declaration = TaxpayerDeclaration(fullName = "Taxpayer", pan = pan)
+                                    declaration = TaxpayerDeclaration(fullName = "Taxpayer", pan = assesseePan)
                                 )
 
                                 submissionStepText = "Establishing encrypted TLS session with ITD Gateway..."
                                 delay(500)
                                 submissionStepText = "Dispatching ITR-1 Sahaj Return to CPC Bengaluru..."
-                                val subRes = itdClient.submitItrDirectly(pan, cbdtJson, selectedBank)
+                                val subRes = itdClient.submitItrDirectly(assesseePan, cbdtJson, selectedBank)
                                 isSubmitting = false
 
                                 if (subRes.isSuccess) {
@@ -355,7 +360,7 @@ fun PortalAssistantScreen(
                                 isVerifyingOtp = true
                                 otpError = null
                                 val ack = submissionResult?.acknowledgmentNumber ?: "102684910293"
-                                val res = itdClient.verifyReturnWithAadhaarOtp(pan, ack, aadhaarOtpInput)
+                                val res = itdClient.verifyReturnWithAadhaarOtp(assesseePan, ack, aadhaarOtpInput)
                                 isVerifyingOtp = false
                                 if (res.isSuccess) {
                                     verificationResult = res.getOrNull()
@@ -368,13 +373,13 @@ fun PortalAssistantScreen(
                         onResendOtp = {
                             scope.launch {
                                 val ack = submissionResult?.acknowledgmentNumber ?: "102684910293"
-                                itdClient.requestInAppAadhaarOtp(pan, ack)
+                                itdClient.requestInAppAadhaarOtp(assesseePan, ack)
                             }
                         }
                     )
 
                     InAppFilingStage.COMPLETED_CONFIRMATION -> CompletedConfirmationStage(
-                        pan = pan,
+                        pan = assesseePan,
                         acknowledgmentNumber = verificationResult?.itrVAcknowledgmentNumber ?: (submissionResult?.acknowledgmentNumber ?: "102684910293"),
                         cpcRef = verificationResult?.cpcVerificationRef ?: "CPC/EVC/2026-27/4910294",
                         timestamp = verificationResult?.timestamp ?: "2026-07-15 14:32:10",
@@ -388,6 +393,24 @@ fun PortalAssistantScreen(
                 }
             }
         }
+    }
+
+    if (showWebLoginSheet) {
+        ItdOfficialWebLoginSheet(
+            pan = assesseePan,
+            onDismiss = { showWebLoginSheet = false },
+            onSyncSuccess = { count, tds, interest ->
+                showWebLoginSheet = false
+                scope.launch {
+                    val authRes = itdClient.authenticateInApp(assesseePan, null, null)
+                    if (authRes.isSuccess) {
+                        currentStage = InAppFilingStage.DIRECT_SUBMISSION
+                    } else {
+                        authError = authRes.exceptionOrNull()?.message ?: "Session establishment failed."
+                    }
+                }
+            }
+        )
     }
 
     // ========================================================================
@@ -428,7 +451,7 @@ fun PortalAssistantScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(3.dp))
-                                    .background(if (isSel) EnterpriseTeal600 else Slate100)
+                                    .background(if (isSel) EnterpriseTeal600 else if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else Slate100)
                                     .clickable {
                                         selectedLocale = loc
                                         if (currentExplanation != null) {
@@ -443,7 +466,7 @@ fun PortalAssistantScreen(
                             ) {
                                 Text(
                                     text = loc.code.take(2).uppercase(),
-                                    style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSel) PureWhite else Slate600)
+                                    style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSel) PureWhite else if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurface else Slate600)
                                 )
                             }
                         }
@@ -466,8 +489,8 @@ fun PortalAssistantScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(Slate100)
-                                .border(0.5.dp, Slate300, RoundedCornerShape(4.dp))
+                                .background(if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else Slate100)
+                                .border(0.5.dp, if (isSystemInDarkTheme()) MaterialTheme.colorScheme.outlineVariant else Slate300, RoundedCornerShape(4.dp))
                                 .clickable {
                                     scope.launch {
                                         isCopilotThinking = true
@@ -620,7 +643,7 @@ private fun ReviewAndConsentStage(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = IndigoStatutoryBg),
+                colors = CardDefaults.cardColors(containerColor = getIndigoStatutoryBg()),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(IndigoStatutory.copy(alpha = 0.4f)))
             ) {
                 Row(
@@ -637,7 +660,7 @@ private fun ReviewAndConsentStage(
                     Text(
                         text = "I solemnly declare that to the best of my knowledge and belief, the information given in the return is correct, complete, and in accordance with the provisions of the Income-tax Act, 1961.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Slate700
+                        color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurface else Slate700
                     )
                 }
             }
@@ -661,20 +684,24 @@ private fun ReviewAndConsentStage(
 }
 
 // ============================================================================
-// STAGE 2: IN-APP AUTHENTICATION (NO BROWSER VISITS)
+// STAGE 2: IN-APP AUTHENTICATION (ZERO PASSWORDS STORED)
 // ============================================================================
 @Composable
 private fun InAppAuthenticationStage(
     pan: String,
+    onPanChanged: (String) -> Unit = {},
     loginMethod: String,
     onLoginMethodChanged: (String) -> Unit,
-    password: String,
-    onPasswordChanged: (String) -> Unit,
+    aadhaarOtp: String,
+    onAadhaarOtpChanged: (String) -> Unit,
+    onOpenWebLogin: () -> Unit,
     isAuthenticating: Boolean,
     authError: String?,
     onBack: () -> Unit,
-    onAuthenticate: () -> Unit
+    onAuthenticateOtp: () -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -696,7 +723,7 @@ private fun InAppAuthenticationStage(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
-            colors = CardDefaults.cardColors(containerColor = EmeraldSuccessBg),
+            colors = CardDefaults.cardColors(containerColor = getEmeraldSuccessBg()),
             border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess.copy(alpha = 0.4f)))
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
@@ -709,15 +736,15 @@ private fun InAppAuthenticationStage(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "DPDP Act 2023 §12(3) Guaranteed Ephemeral Security",
+                        text = "DPDP Act 2023 §12(3) Zero-Password Ephemeral Guarantee",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess)
                     )
                 }
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "Your password is never saved to disk. In-memory buffers are cryptographically zero-wiped within 500ms of session creation.",
+                    text = "Zero passwords stored or requested. Authenticate seamlessly using Instant Aadhaar OTP or log in directly on the official CBDT portal.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Slate700
+                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
                 )
             }
         }
@@ -726,21 +753,126 @@ private fun InAppAuthenticationStage(
 
         SmartIndividualPanField(
             panValue = pan,
-            onPanChanged = {},
-            isReadOnly = true
+            onPanChanged = onPanChanged,
+            isReadOnly = pan.isNotBlank() && pan.length == 10
         )
 
         Spacer(Modifier.height(14.dp))
 
-        OutlinedTextField(
-            value = password,
-            onValueChange = onPasswordChanged,
-            label = { Text("Income Tax Portal Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            singleLine = true,
+        // Auth Method Selector
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp)
-        )
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = if (loginMethod == "AADHAAR_OTP") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    if (loginMethod == "AADHAAR_OTP") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onLoginMethodChanged("AADHAAR_OTP") }
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Bolt,
+                            contentDescription = null,
+                            tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal900,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "Instant Aadhaar OTP",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = if (isDark) MaterialTheme.colorScheme.onSurface else EnterpriseTeal900
+                        )
+                    }
+                    Text("No password needed", fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
+                }
+            }
+
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = if (loginMethod == "OFFICIAL_WEB") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    if (loginMethod == "OFFICIAL_WEB") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onLoginMethodChanged("OFFICIAL_WEB") }
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = null,
+                            tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal900,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "Official Web Login",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = if (isDark) MaterialTheme.colorScheme.onSurface else EnterpriseTeal900
+                        )
+                    }
+                    Text("Log in once on portal", fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
+                }
+            }
+        }
+
+        Spacer(Modifier.height(14.dp))
+
+        if (loginMethod == "AADHAAR_OTP") {
+            Text(
+                "Enter 6-digit Aadhaar OTP sent to UIDAI registered mobile:",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = if (isDark) MaterialTheme.colorScheme.onSurface else Slate700)
+            )
+            Spacer(Modifier.height(6.dp))
+            OutlinedTextField(
+                value = aadhaarOtp,
+                onValueChange = onAadhaarOtpChanged,
+                placeholder = { Text("Enter 6-Digit OTP (e.g. 543210)", color = Slate400) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(4.dp)
+            )
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(6.dp),
+                colors = CardDefaults.cardColors(containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate50),
+                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600.copy(alpha = 0.4f)))
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = null,
+                            tint = EnterpriseTeal600,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            "One-Time Official Web Portal Session",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        )
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "Opens eportal.incometax.gov.in securely in an isolated in-app window. You authenticate directly with CBDT. ZeroTax never sees your password. Once authenticated, the return transmission session is established immediately.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600, fontSize = 11.sp, lineHeight = 16.sp)
+                    )
+                }
+            }
+        }
 
         if (authError != null) {
             Spacer(Modifier.height(8.dp))
@@ -763,17 +895,31 @@ private fun InAppAuthenticationStage(
             ) {
                 Text("Back", style = MaterialTheme.typography.labelMedium)
             }
-            Button(
-                onClick = onAuthenticate,
-                enabled = !isAuthenticating && password.isNotBlank(),
-                shape = RoundedCornerShape(4.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-                modifier = Modifier.weight(2f).height(44.dp)
-            ) {
-                if (isAuthenticating) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), color = PureWhite, strokeWidth = 2.dp)
-                } else {
-                    Text("Authenticate & Connect →", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+            if (loginMethod == "AADHAAR_OTP") {
+                Button(
+                    onClick = onAuthenticateOtp,
+                    enabled = !isAuthenticating && aadhaarOtp.length == 6 && pan.length == 10,
+                    shape = RoundedCornerShape(4.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                    modifier = Modifier.weight(2f).height(44.dp)
+                ) {
+                    if (isAuthenticating) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = PureWhite, strokeWidth = 2.dp)
+                    } else {
+                        Text("Authenticate via OTP →", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                    }
+                }
+            } else {
+                Button(
+                    onClick = onOpenWebLogin,
+                    enabled = pan.length == 10,
+                    shape = RoundedCornerShape(4.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                    modifier = Modifier.weight(2f).height(44.dp)
+                ) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Launch, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Open Official Web Login →", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                 }
             }
         }
@@ -982,7 +1128,7 @@ private fun CompletedConfirmationStage(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
-            colors = CardDefaults.cardColors(containerColor = EmeraldSuccessBg),
+            colors = CardDefaults.cardColors(containerColor = getEmeraldSuccessBg()),
             border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EmeraldSuccess.copy(alpha = 0.5f)))
         ) {
             Column(
@@ -1058,7 +1204,7 @@ private fun CompletedConfirmationStage(
                 Text(
                     text = "• CPC Bengaluru will process your return under Section 143(1).\n• Intimation will be sent to your registered email.\n• Refund of ₹${netRefund} will be credited directly to your pre-validated bank account.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Slate700
+                    color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
                 )
             }
         }

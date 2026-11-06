@@ -125,7 +125,7 @@ fun CaAuditorPortalScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onExitCaPortal) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Exit CA Portal", tint = Slate700)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Exit CA Portal", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 actions = {
@@ -142,7 +142,7 @@ fun CaAuditorPortalScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = PureWhite)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         }
     ) { innerPadding ->
@@ -150,7 +150,7 @@ fun CaAuditorPortalScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Slate100)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
@@ -159,8 +159,8 @@ fun CaAuditorPortalScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = PureWhite),
-                    border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate200))
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -169,8 +169,8 @@ fun CaAuditorPortalScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("Firm: ${caProfile.firmRegistrationNumber ?: "Proprietorship"}", style = MaterialTheme.typography.labelSmall.copy(color = Slate500))
-                                Text("Statutory Audit Roster", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900))
+                                Text("Firm: ${caProfile.firmRegistrationNumber ?: "Proprietorship"}", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                Text("Statutory Audit Roster", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(20.dp))
@@ -333,17 +333,17 @@ fun CaAuditorPortalScreen(
 private fun MetricSummaryBox(
     label: String,
     value: String,
-    valueColor: androidx.compose.ui.graphics.Color = Slate900,
+    valueColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
     modifier: Modifier = Modifier
 ) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = Slate50,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Slate200),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = modifier
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
-            Text(label, style = MaterialTheme.typography.labelSmall.copy(color = Slate500, fontSize = 10.sp))
+            Text(label, style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp))
             Spacer(Modifier.height(4.dp))
             Text(value, style = TextStyle(fontWeight = FontWeight.Bold, color = valueColor, fontSize = 16.sp))
         }
@@ -358,8 +358,8 @@ private fun ClientAuditRosterCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = PureWhite),
-        border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate200))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
@@ -417,7 +417,7 @@ private fun ClientAuditRosterCard(
             ) {
                 Text(
                     text = "Audit: ${client.auditType.title}",
-                    style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 )
                 Button(
                     onClick = onReviewClick,
@@ -549,7 +549,7 @@ private fun CaAuditReviewModal(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Slate600)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )
