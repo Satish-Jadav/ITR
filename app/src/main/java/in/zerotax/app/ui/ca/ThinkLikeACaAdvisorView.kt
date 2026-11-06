@@ -253,6 +253,10 @@ fun ThinkLikeACaAdvisorView(
                     }
                 )
             }
+
+            item {
+                Spacer(Modifier.height(80.dp))
+            }
         }
     }
 }

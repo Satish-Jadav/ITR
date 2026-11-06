@@ -355,7 +355,8 @@ fun ZeroTaxFourTapSpineScaffold(
                     border = CardDefaults.outlinedCardBorder().copy(
                         width = 0.5.dp,
                         brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
-                    )
+                    ),
+                    modifier = Modifier.navigationBarsPadding()
                 ) {
                     DiscreteStatutoryStepper(
                         currentTap = uiState.currentTap!!,
@@ -378,6 +379,8 @@ fun ZeroTaxFourTapSpineScaffold(
             // Directional smooth horizontal slide & fade transitions between steps
             AnimatedContent(
                 targetState = uiState.currentTap,
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter,
                 transitionSpec = {
                     val initialIdx = initialState?.ordinal ?: 4
                     val targetIdx = targetState?.ordinal ?: 4
@@ -603,11 +606,6 @@ private fun Stage1IdentityConsent(
 ) {
     val isPanValid = pan.length == 10 && (pan[3] == 'P' || pan[3] == 'H')
     val canProceed = isPanValid
-    var isVisible by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        isVisible = true
-    }
 
     Column(
         modifier = Modifier
@@ -652,67 +650,47 @@ private fun Stage1IdentityConsent(
 
         Spacer(Modifier.height(6.dp))
 
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 3 }
-        ) {
-            Column {
-                Text(
-                    text = "Step 1 of 4: Plan & Identity",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "Active Plan: " + filingTier.title + " (" + filingTier.itrForm + "). Verify your details or tap below to switch plan.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.height(8.dp))
-                WhatsAppEndToEndEncryptionBanner(
-                    onClick = {},
-                    customText = "Your tax return is end-to-end encrypted. No one outside of this device, not even ZeroTax, can read your salary or PAN. Tap to verify."
-                )
-            }
+        Column {
+            Text(
+                text = "Step 1 of 4: Plan & Identity",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "Active Plan: " + filingTier.title + " (" + filingTier.recommendedItrForms.joinToString { it.name.replace("_", "-") } + "). Verify your details or tap below to switch plan.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(8.dp))
+            WhatsAppEndToEndEncryptionBanner(
+                onClick = {},
+                customText = "Your tax return is end-to-end encrypted. No one outside of this device, not even ZeroTax, can read your salary or PAN. Tap to verify."
+            )
         }
 
         Spacer(Modifier.height(14.dp))
 
         // Prominent Filing Plan / Tier Selection (Blinkit-style 2-top, 1-bottom card layout)
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(tween(350, delayMillis = 60)) + slideInVertically(tween(350, delayMillis = 60)) { it / 3 }
-        ) {
-            FilingTierSelectorCard(
-                currentTier = filingTier,
-                recommendedTier = filingTier,
-                onTierSelected = onTierSelected
-            )
-        }
+        FilingTierSelectorCard(
+            currentTier = filingTier,
+            recommendedTier = filingTier,
+            onTierSelected = onTierSelected
+        )
 
         Spacer(Modifier.height(14.dp))
 
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(tween(400, delayMillis = 100)) + slideInVertically(tween(400, delayMillis = 100)) { it / 3 }
-        ) {
-            SmartIndividualPanField(
-                panValue = pan,
-                onPanChanged = onPanChanged
-            )
-        }
+        SmartIndividualPanField(
+            panValue = pan,
+            onPanChanged = onPanChanged
+        )
 
         Spacer(Modifier.height(12.dp))
 
         // Age Category & Statutory Basic Exemption Selector
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(tween(400, delayMillis = 150)) + slideInVertically(tween(400, delayMillis = 150)) { it / 3 }
-        ) {
-            CitizenCategoryAgeSelector(
-                selectedCategory = citizenCategory,
-                onCategoryChanged = onCitizenCategoryChanged
-            )
-        }
+        CitizenCategoryAgeSelector(
+            selectedCategory = citizenCategory,
+            onCategoryChanged = onCitizenCategoryChanged
+        )
 
         Spacer(Modifier.height(12.dp))
 
@@ -845,7 +823,7 @@ private fun Stage1IdentityConsent(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(88.dp))
     }
 }
 
@@ -1138,7 +1116,7 @@ private fun Stage2DocumentDiscovery(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(88.dp))
     }
 }
 
@@ -1410,7 +1388,7 @@ private fun Stage3Reconciliation(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(88.dp))
     }
 }
 
@@ -1569,7 +1547,7 @@ private fun Stage4RegimeShowdown(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(88.dp))
     }
 }
 
@@ -1639,11 +1617,14 @@ private fun ProWorkspaceView(
                 )
             },
             label = "WorkspaceTabTransition",
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.weight(1f).fillMaxWidth()
         ) { currentTab ->
             when (currentTab) {
                 WorkspaceTab.FilingAndRefundHub -> {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 88.dp)
+                    ) {
                         item {
                             FilingTierSelectorCard(
                                 currentTier = uiState.filingTierMode,
@@ -1714,7 +1695,10 @@ private fun ProWorkspaceView(
                     LaunchedEffect(Unit) {
                         onLoadAuditTrail()
                     }
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 88.dp)
+                    ) {
                         item {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1796,7 +1780,10 @@ private fun ProWorkspaceView(
                 }
 
                 WorkspaceTab.PrivacyAndSettings -> {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 88.dp)
+                    ) {
                         // Statutory Legal Protection & Cloud Shield Summary Card
                         item {
                             Card(

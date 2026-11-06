@@ -1474,6 +1474,10 @@ private fun CapitalGainsLedgerView() {
                 }
             }
         }
+
+        item {
+            Spacer(Modifier.height(88.dp))
+        }
     }
 }
 
@@ -1689,6 +1693,10 @@ private fun PropertyLtcgView() {
                     }
                 }
             }
+        }
+
+        item {
+            Spacer(Modifier.height(88.dp))
         }
     }
 }
@@ -1911,6 +1919,10 @@ private fun Form10EReliefView(pan: String) {
                 }
             }
         }
+
+        item {
+            Spacer(Modifier.height(88.dp))
+        }
     }
 }
 
@@ -2065,6 +2077,10 @@ private fun ItrUView() {
                     }
                 }
             }
+        }
+
+        item {
+            Spacer(Modifier.height(88.dp))
         }
     }
 }

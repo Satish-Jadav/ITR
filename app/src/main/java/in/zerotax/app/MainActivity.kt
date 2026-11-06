@@ -1,4 +1,4 @@
-package `in`.zerotax.app
+﻿package `in`.zerotax.app
 
 import android.os.Bundle
 import android.view.WindowManager

@@ -353,6 +353,8 @@ fun SugamPresumptiveFastStartView(
                 Text("Verify Client TDS u/s 194J / 194C in AIS", style = MaterialTheme.typography.labelSmall.copy(color = Slate700))
             }
         }
+
+        Spacer(Modifier.height(48.dp))
     }
 
     if (showBiometricFilingDialog) {

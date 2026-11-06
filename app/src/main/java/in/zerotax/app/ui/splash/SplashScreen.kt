@@ -1,4 +1,4 @@
-package `in`.zerotax.app.ui.splash
+﻿package `in`.zerotax.app.ui.splash
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*

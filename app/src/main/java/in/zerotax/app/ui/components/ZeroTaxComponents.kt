@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -42,8 +43,7 @@ import `in`.zerotax.core.model.Rupee
 
 /**
  * Sovereign Brand Logo Component for ZeroTax.
- * Combines the Indian Rupee symbol (₹), the Sovereign Privacy Shield,
- * and the Emerald Verification Zenith in minimalist geometry.
+ * Renders the clean, iconic Indian Rupee symbol (₹).
  */
 @Composable
 fun ZeroTaxBrandLogo(
@@ -61,69 +61,23 @@ fun ZeroTaxBrandLogo(
             modifier = Modifier
                 .size(size)
                 .clip(CircleShape)
-                .background(Slate950),
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                        colors = listOf(EnterpriseTeal700, EnterpriseTeal500)
+                    )
+                ),
             contentAlignment = Alignment.Center
         ) {
-            Canvas(modifier = Modifier.size(size * 0.84f)) {
-                val w = this.size.width
-                val h = this.size.height
-
-                // Shield Path
-                val shieldPath = Path().apply {
-                    moveTo(w * 0.5f, h * 0.08f)
-                    lineTo(w * 0.88f, h * 0.22f)
-                    cubicTo(w * 0.88f, h * 0.58f, w * 0.72f, h * 0.82f, w * 0.5f, h * 0.94f)
-                    cubicTo(w * 0.28f, h * 0.82f, w * 0.12f, h * 0.58f, w * 0.12f, h * 0.22f)
-                    close()
-                }
-                drawPath(path = shieldPath, color = EnterpriseTeal900)
-                drawPath(
-                    path = shieldPath,
-                    color = EnterpriseTeal500,
-                    style = Stroke(width = w * 0.06f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                )
-
-                val strokeW = w * 0.065f
-
-                // Rupee Top Horizontal Bar
-                drawLine(
+            Text(
+                text = "₹",
+                style = TextStyle(
                     color = Color.White,
-                    start = Offset(w * 0.32f, h * 0.30f),
-                    end = Offset(w * 0.68f, h * 0.30f),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
+                    fontSize = (size.value * 0.58f).sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontFamily = FontFamily.SansSerif,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
-
-                // Rupee Second Horizontal Bar
-                drawLine(
-                    color = Color.White,
-                    start = Offset(w * 0.32f, h * 0.44f),
-                    end = Offset(w * 0.62f, h * 0.44f),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-                )
-
-                // Rupee Vertical Stem & Loop
-                val loopPath = Path().apply {
-                    moveTo(w * 0.42f, h * 0.30f)
-                    lineTo(w * 0.42f, h * 0.58f)
-                    cubicTo(w * 0.66f, h * 0.58f, w * 0.66f, h * 0.36f, w * 0.42f, h * 0.36f)
-                }
-                drawPath(
-                    path = loopPath,
-                    color = Color.White,
-                    style = Stroke(width = strokeW, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                )
-
-                // Emerald Verification Leg / Dynamic Checkmark
-                drawLine(
-                    color = EmeraldSuccess,
-                    start = Offset(w * 0.42f, h * 0.58f),
-                    end = Offset(w * 0.68f, h * 0.78f),
-                    strokeWidth = strokeW * 1.15f,
-                    cap = StrokeCap.Round
-                )
-            }
+            )
         }
 
         if (showText) {
@@ -597,8 +551,6 @@ fun EnterpriseTopHeader(
         }
     }
 }
-
-@Composable
 
 /**
  * WhatsApp-Style End-to-End Encryption Banner

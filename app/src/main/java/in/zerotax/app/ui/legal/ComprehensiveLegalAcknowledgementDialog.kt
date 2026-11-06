@@ -1,4 +1,4 @@
-package `in`.zerotax.app.ui.legal
+﻿package `in`.zerotax.app.ui.legal
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background

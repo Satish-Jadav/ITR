@@ -451,6 +451,8 @@ fun EnterpriseAuditFastStartView(
             onClick = onLaunchPortalAssistant,
             modifier = Modifier.fillMaxWidth().height(50.dp)
         )
+
+        Spacer(Modifier.height(48.dp))
     }
 }
 

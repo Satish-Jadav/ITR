@@ -373,8 +373,10 @@ fun ConversationalFilingChatScreen(
             LazyColumn(
                 state = listState,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 // WhatsApp-Style End-to-End Encryption Banner at top of chat
                 item {

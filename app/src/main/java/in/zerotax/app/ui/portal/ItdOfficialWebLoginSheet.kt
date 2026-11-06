@@ -1,4 +1,4 @@
-package `in`.zerotax.app.ui.portal
+﻿package `in`.zerotax.app.ui.portal
 
 import android.annotation.SuppressLint
 import android.webkit.WebView
