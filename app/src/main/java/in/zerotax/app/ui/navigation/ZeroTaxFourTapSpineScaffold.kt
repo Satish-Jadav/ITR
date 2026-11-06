@@ -240,6 +240,7 @@ fun ZeroTaxFourTapSpineScaffold(
         topBar = {
             if (uiState.currentTap != null) {
                 Surface(
+                    modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.surface,
                     tonalElevation = 1.dp,
                     border = androidx.compose.foundation.BorderStroke(

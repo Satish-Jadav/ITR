@@ -79,7 +79,7 @@ fun ZeroTaxBrandLogo(
                 drawPath(
                     path = shieldPath,
                     brush = Brush.verticalGradient(
-                        colors = listOf(EnterpriseTeal700, EnterpriseTeal950)
+                        colors = listOf(EnterpriseTeal700, EnterpriseTeal900)
                     )
                 )
 
@@ -235,6 +235,7 @@ fun EnterpriseTopHeader(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .statusBarsPadding()
                 .padding(vertical = 8.dp)
         ) {
             // Blinkit-style Minimal Top Bar (Brand + Identity + Profile/Lock)
