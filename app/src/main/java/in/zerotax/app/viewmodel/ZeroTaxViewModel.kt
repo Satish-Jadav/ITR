@@ -51,7 +51,7 @@ data class ZeroTaxUiState(
     val showPasswordCheatsheet: Boolean = false,
     val filingTierMode: FilingTierMode = FilingTierMode.SAHAJ_SIMPLE,
     val recommendedTierMode: FilingTierMode = FilingTierMode.SAHAJ_SIMPLE,
-    val hasPlanExplicitlySelected: Boolean = false,
+    val hasPlanExplicitlySelected: Boolean = true,
     val authSessionState: AuthSessionState = AuthSessionState.Unauthenticated,
     val authErrorMessage: String? = null,
     val isAuthLoading: Boolean = false,
