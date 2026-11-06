@@ -105,8 +105,8 @@ object HraAndInterestEngine {
         )
         val baseExemption = computeHraExemptionRule2A(computationInput)
         val isRentAbove1Lakh = input.actualRentPaidAnnual > 1_00_000L
-        val effectivePan = landlordPan ?: if (input.landlordPanProvided) "DUMMYPAN1A" else null
-        val isValidPan = !effectivePan.isNullOrBlank() && (PAN_REGEX.matches(effectivePan.trim().uppercase()) || effectivePan == "DUMMYPAN1A")
+        val effectivePan = landlordPan?.trim()?.uppercase()
+        val isValidPan = input.landlordPanProvided || (!effectivePan.isNullOrBlank() && PAN_REGEX.matches(effectivePan))
 
         val isBlocked = isRentAbove1Lakh && !isValidPan
         val allowedExemption = if (isBlocked) 0L else baseExemption

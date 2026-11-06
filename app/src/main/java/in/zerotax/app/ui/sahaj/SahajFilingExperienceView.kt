@@ -71,7 +71,7 @@ fun SahajFilingExperienceView(
         // 1-TAP IN-APP ITD PORTAL SYNC CARD
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = EnterpriseTeal50,
+            color = getTealHighlightBg(),
             border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
             modifier = Modifier
                 .fillMaxWidth()
@@ -91,18 +91,18 @@ fun SahajFilingExperienceView(
                     Icon(
                         imageVector = Icons.Default.Sync,
                         contentDescription = null,
-                        tint = EnterpriseTeal700,
+                        tint = getTealHighlightIcon(),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(10.dp))
                     Column {
                         Text(
                             "Sync Directly from Income Tax Portal",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = getTealHighlightText())
                         )
                         Text(
                             "Pull Form 26AS, AIS/TIS & prefill in-app. Never leave ZeroTax!",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         )
                     }
                 }

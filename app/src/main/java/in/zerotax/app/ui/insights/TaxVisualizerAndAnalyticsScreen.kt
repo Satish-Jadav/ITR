@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -139,15 +140,18 @@ private fun IncomeFlowVisualizerView(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+                colors = CardDefaults.cardColors(containerColor = getTealHighlightBg()),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600))
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
-                    Text("Income Waterfall Flow (Gross to Refund)", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Text(
+                        text = "Income Waterfall Flow (Gross to Refund)",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = getTealHighlightText())
+                    )
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = "Visual transparency of every single rupee from earnings to government tax credits.",
-                        style = TextStyle(fontSize = 11.sp, color = Slate600)
+                        style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                 }
             }
@@ -186,7 +190,7 @@ private fun IncomeFlowVisualizerView(
                 label = "4. Net Taxable Income u/s 288A",
                 amount = netTaxableIncome,
                 percentageOfGross = ((netTaxableIncome.toFloat() / grossSalary.toFloat()) * 100).toInt(),
-                color = Slate700,
+                color = if (isSystemInDarkTheme()) EnterpriseTeal400 else Slate700,
                 description = "Income subject to progressive tax brackets",
                 isNet = true
             )
@@ -276,11 +280,11 @@ private fun WaterfallBarItem(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isHighlighted) EmeraldSuccessBg else MaterialTheme.colorScheme.surface
+            containerColor = if (isHighlighted) getEmeraldSuccessBg() else MaterialTheme.colorScheme.surface
         ),
         border = CardDefaults.outlinedCardBorder().copy(
             width = if (isHighlighted) 1.dp else 0.5.dp,
-            brush = androidx.compose.ui.graphics.SolidColor(if (isHighlighted) EmeraldSuccess else Slate300)
+            brush = androidx.compose.ui.graphics.SolidColor(if (isHighlighted) EmeraldSuccess else MaterialTheme.colorScheme.outlineVariant)
         )
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -289,7 +293,13 @@ private fun WaterfallBarItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(label, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = if (isHighlighted && isSystemInDarkTheme()) EnterpriseTeal200 else MaterialTheme.colorScheme.onSurface
+                    )
+                )
                 Text(
                     text = (if (amount < 0) "- " else "") + "₹${Rupee.formatInr(kotlin.math.abs(amount))}",
                     style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = color)
@@ -300,10 +310,10 @@ private fun WaterfallBarItem(
                 progress = { animatedProgress },
                 modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
                 color = color,
-                trackColor = Slate200
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
             Spacer(Modifier.height(4.dp))
-            Text(description, style = TextStyle(fontSize = 10.sp, color = Slate500))
+            Text(description, style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
         }
     }
 }
@@ -314,8 +324,8 @@ private fun TaxBracketRow(range: String, rate: String, isActive: Boolean) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 2.5.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(range, style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = if (isActive) Slate900 else Slate400))
-        Text(rate, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = if (isActive) EnterpriseTeal600 else Slate400))
+        Text(range, style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = if (isActive) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)))
+        Text(rate, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = if (isActive) EnterpriseTeal600 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)))
     }
 }
 
@@ -334,7 +344,7 @@ private fun ThreeWayReconciliationRadarView(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = if (isAutoHealed) EmeraldSuccessBg else AmberWarningBg),
+                colors = CardDefaults.cardColors(containerColor = if (isAutoHealed) getEmeraldSuccessBg() else getAmberWarningBg()),
                 border = CardDefaults.outlinedCardBorder().copy(
                     width = 0.5.dp,
                     brush = androidx.compose.ui.graphics.SolidColor(if (isAutoHealed) EmeraldSuccess else AmberWarning)
@@ -346,7 +356,13 @@ private fun ThreeWayReconciliationRadarView(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("3-Source Triangulation Radar", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        Text(
+                            text = "3-Source Triangulation Radar",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSystemInDarkTheme()) (if (isAutoHealed) EnterpriseTeal200 else Color(0xFFFDE68A)) else MaterialTheme.colorScheme.onSurface
+                            )
+                        )
                         StatutoryBadge(
                             text = if (isAutoHealed) "100% Reconciled" else "Review Recommended",
                             tone = if (isAutoHealed) BadgeTone.SUCCESS else BadgeTone.WARNING
@@ -359,7 +375,7 @@ private fun ThreeWayReconciliationRadarView(
                         } else {
                             "Triangulating data from Employer Form 16, TRACES Form 26AS, and ITD Annual Information Statement (AIS) to prevent Section 143(1)(a) demand notices."
                         },
-                        style = TextStyle(fontSize = 11.sp, color = Slate700)
+                        style = TextStyle(fontSize = 11.sp, color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate700)
                     )
                 }
             }
@@ -489,7 +505,7 @@ private fun StatutoryTaxCalendarView() {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = IndigoStatutoryBg),
+                colors = CardDefaults.cardColors(containerColor = getIndigoStatutoryBg()),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(IndigoStatutory))
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
@@ -498,17 +514,28 @@ private fun StatutoryTaxCalendarView() {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("CBDT Statutory Compliance Calendar", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        Text(
+                            text = "CBDT Statutory Compliance Calendar",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSystemInDarkTheme()) Color(0xFF93C5FD) else IndigoStatutory
+                            )
+                        )
                         StatutoryBadge(text = "AY 2026-27", tone = BadgeTone.STATUTORY)
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = "Regular ITR Filing Deadline: July 31, 2026",
-                        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory)
+                        style = TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSystemInDarkTheme()) Color(0xFF93C5FD) else IndigoStatutory
+                        )
                     )
                     Text(
-                        text = "⏳ $daysLeftForFiling days remaining to file u/s 139(1) with zero late fees.",
-                        style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Slate700)
+                        text = "$daysLeftForFiling days remaining to file u/s 139(1) with zero late fees.",
+                        style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                 }
             }

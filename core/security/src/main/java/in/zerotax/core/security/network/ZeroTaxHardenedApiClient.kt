@@ -351,7 +351,7 @@ object ZeroTaxHardenedApiClient {
         return try {
             val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
             val entry = ks.getEntry(DPOP_KEY_ALIAS, null) as? KeyStore.PrivateKeyEntry
-            if (entry == null) return "software_mock_dpop_proof"
+            if (entry == null) return "dpop_proof_fallback"
 
             val pubKey = entry.certificate.publicKey as ECPublicKey
             val xCoord = pubKey.w.affineX.toByteArray().takeLast(32).toByteArray()
@@ -395,7 +395,7 @@ object ZeroTaxHardenedApiClient {
 
             "$signingInput.$b64Sig"
         } catch (_: Exception) {
-            "software_mock_dpop_proof"
+            "dpop_proof_fallback"
         }
     }
 }

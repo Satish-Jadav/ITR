@@ -342,7 +342,7 @@ fun Itr5FirmCalculatorView(pan: String) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Statutory Compliance Findings", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     result.statutoryNotes.forEach { note ->
-                        Text("• $note", fontSize = 11.sp, color = Slate700)
+                        Text("• $note", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -550,7 +550,7 @@ fun Itr6CorporateCalculatorView(pan: String) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Statutory Compliance Findings", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     result.statutoryNotes.forEach { note ->
-                        Text("• $note", fontSize = 11.sp, color = Slate700)
+                        Text("• $note", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -780,7 +780,7 @@ fun Itr7TrustCalculatorView(pan: String) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Statutory Compliance Findings", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     result.statutoryNotes.forEach { note ->
-                        Text("• $note", fontSize = 11.sp, color = Slate700)
+                        Text("• $note", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

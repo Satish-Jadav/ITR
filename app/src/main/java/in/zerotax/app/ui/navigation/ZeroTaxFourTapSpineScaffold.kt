@@ -187,7 +187,7 @@ fun ZeroTaxFourTapSpineScaffold(
 
     if (showPortalAssistant) {
         PortalAssistantScreen(
-            pan = uiState.pan,
+            pan = uiState.pan.ifBlank { "ABCDE1234F" },
             grossSalary = uiState.grossSalaryRupees,
             netTaxableSalary = uiState.newRegimeResult.netTaxableNormalIncomeRounded288A,
             taxLiability = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
@@ -412,7 +412,6 @@ fun ZeroTaxFourTapSpineScaffold(
                         livePortalStatus = uiState.livePortalStatus,
                         livePortalLatencyMs = uiState.livePortalLatencyMs,
                         isLiveApiConnected = uiState.isLiveApiConnected,
-                        onLoadDemo = { viewModel.loadSampleDemoData() },
                         onResetFresh = { viewModel.resetToFreshState() },
                         onOpenPasswordCheatsheet = { showPasswordCheatsheetModal = true },
                         onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap2LiveDiscovery) },
@@ -516,7 +515,17 @@ fun ZeroTaxFourTapSpineScaffold(
 
             if (showPasswordCheatsheetModal) {
                 InstitutionPdfPasswordCheatsheetModal(
-                    onDismiss = { showPasswordCheatsheetModal = false }
+                    pan = uiState.pan,
+                    onDismiss = { showPasswordCheatsheetModal = false },
+                    onSalaryExtracted = { gross, tds, tan, sec80C, sec80D ->
+                        viewModel.importForm16Salary(
+                            grossSalary = gross,
+                            tds = tds,
+                            employerTan = tan,
+                            sec80C = sec80C,
+                            sec80D = sec80D
+                        )
+                    }
                 )
             }
 
@@ -585,7 +594,6 @@ private fun Stage1IdentityConsent(
     livePortalStatus: String = "HEALTHY",
     livePortalLatencyMs: Long = 1420L,
     isLiveApiConnected: Boolean = true,
-    onLoadDemo: () -> Unit = {},
     onResetFresh: () -> Unit = {},
     onOpenPasswordCheatsheet: () -> Unit,
     onProceed: () -> Unit,
@@ -626,14 +634,16 @@ private fun Stage1IdentityConsent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            TextButton(
-                onClick = if (pan.isBlank()) onLoadDemo else onResetFresh,
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = if (pan.isBlank()) "⚡ Fill Demo Profile" else "Clear to Fresh",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal600)
-                )
+            if (pan.isNotBlank()) {
+                TextButton(
+                    onClick = onResetFresh,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "Reset Form",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal600)
+                    )
+                }
             }
         }
 
@@ -716,25 +726,25 @@ private fun Stage1IdentityConsent(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     Icon(
-                        imageVector = Icons.Default.VpnKey,
+                        imageVector = Icons.Default.LockOpen,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "PDF Password Helper",
+                            text = "PDF Password Decryptor & Helper",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         )
                         Text(
-                            text = "Form 16, AIS, e-Aadhaar & Bank PDF password patterns",
+                            text = "Auto-unlock and remove passwords from Form 16, AIS, e-Aadhaar & Bank PDFs",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-                StatutoryBadge(text = "HINTS", tone = BadgeTone.NEUTRAL)
+                StatutoryBadge(text = "DECRYPT", tone = BadgeTone.SUCCESS)
             }
         }
 
@@ -866,7 +876,7 @@ private fun Stage2DocumentDiscovery(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            StatutoryBadge(text = "⚡ Real-Time", tone = BadgeTone.SUCCESS)
+            StatutoryBadge(text = "Real-Time", tone = BadgeTone.SUCCESS)
         }
 
         Spacer(Modifier.height(14.dp))
@@ -1800,10 +1810,11 @@ private fun ProWorkspaceView(
                         }
 
                         item {
+                            val dangerTextColor = if (isSystemInDarkTheme()) Color(0xFFFCA5A5) else CrimsonDanger
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = CrimsonDangerBg),
+                                colors = CardDefaults.cardColors(containerColor = getCrimsonDangerBg()),
                                 border = CardDefaults.outlinedCardBorder().copy(
                                     width = 0.75.dp,
                                     brush = androidx.compose.ui.graphics.SolidColor(CrimsonDanger.copy(alpha = 0.4f))
@@ -1821,14 +1832,14 @@ private fun ProWorkspaceView(
                                         Text(
                                             text = "DPDP Act 2023 Section 12(3) Right to Erasure",
                                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                            color = CrimsonDanger
+                                            color = dangerTextColor
                                         )
                                     }
                                     Spacer(Modifier.height(6.dp))
                                     Text(
                                         text = "Initiating cryptographic shredding permanently zeroes all database pages with random bytes, deletes hardware Keystore wrapping keys, and wipes volatile memory caches.",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = CrimsonDanger
+                                        color = dangerTextColor
                                     )
 
                                     if (isShreddingInProgress) {

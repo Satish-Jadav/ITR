@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -124,7 +125,9 @@ fun DualRegionNriComplianceScreen(
                         .fillMaxWidth()
                         .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (residencyDecision.status == ResidencyStatus.NON_RESIDENT_INDIAN) EnterpriseTeal50 else IndigoStatutoryBg
+                        containerColor = if (residencyDecision.status == ResidencyStatus.NON_RESIDENT_INDIAN) {
+                            if (isSystemInDarkTheme()) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50
+                        } else getIndigoStatutoryBg()
                     ),
                     border = CardDefaults.outlinedCardBorder().copy(
                         width = 1.dp,
@@ -364,7 +367,7 @@ fun DualRegionNriComplianceScreen(
                         ) {
                             Card(
                                 modifier = Modifier.weight(1f),
-                                colors = CardDefaults.cardColors(containerColor = EmeraldSuccessBg)
+                                colors = CardDefaults.cardColors(containerColor = getEmeraldSuccessBg())
                             ) {
                                 Column(modifier = Modifier.padding(8.dp)) {
                                     Text("Sec 10(4) Exempted", style = TextStyle(fontSize = 10.sp, color = EmeraldSuccess))
@@ -373,19 +376,19 @@ fun DualRegionNriComplianceScreen(
                             }
                             Card(
                                 modifier = Modifier.weight(1f),
-                                colors = CardDefaults.cardColors(containerColor = Slate100)
+                                colors = CardDefaults.cardColors(containerColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else Slate100)
                             ) {
                                 Column(modifier = Modifier.padding(8.dp)) {
-                                    Text("NRO TDS Withheld", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                    Text("NRO TDS Withheld", style = TextStyle(fontSize = 10.sp, color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate600))
                                     Text("₹${"%,d".format(taxResult.nroTdsDeductedAt30Percent)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
                                 }
                             }
                             Card(
                                 modifier = Modifier.weight(1f),
-                                colors = CardDefaults.cardColors(containerColor = if (taxResult.estimatedRefundOrBalancePayable >= 0) EmeraldSuccessBg else AmberWarningBg)
+                                colors = CardDefaults.cardColors(containerColor = if (taxResult.estimatedRefundOrBalancePayable >= 0) getEmeraldSuccessBg() else getAmberWarningBg())
                             ) {
                                 Column(modifier = Modifier.padding(8.dp)) {
-                                    Text(if (taxResult.estimatedRefundOrBalancePayable >= 0) "Estimated Refund" else "Balance Payable", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                    Text(if (taxResult.estimatedRefundOrBalancePayable >= 0) "Estimated Refund" else "Balance Payable", style = TextStyle(fontSize = 10.sp, color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate600))
                                     Text("₹${"%,d".format(kotlin.math.abs(taxResult.estimatedRefundOrBalancePayable))}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
                                 }
                             }

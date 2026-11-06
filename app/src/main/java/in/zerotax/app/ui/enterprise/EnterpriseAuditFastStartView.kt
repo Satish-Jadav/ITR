@@ -62,7 +62,7 @@ fun EnterpriseAuditFastStartView(
         // 1-TAP IN-APP ITD PORTAL SYNC CARD
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = EnterpriseTeal50,
+            color = getTealHighlightBg(),
             border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
             modifier = Modifier
                 .fillMaxWidth()
@@ -82,18 +82,18 @@ fun EnterpriseAuditFastStartView(
                     Icon(
                         imageVector = Icons.Default.Sync,
                         contentDescription = null,
-                        tint = EnterpriseTeal700,
+                        tint = getTealHighlightIcon(),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(10.dp))
                     Column {
                         Text(
                             "Sync Corporate 26AS, AIS/TIS & Advance Tax",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = getTealHighlightText())
                         )
                         Text(
                             "Pull verified corporate prepaid taxes, Challan 280 & MAT credits in-app.",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         )
                     }
                 }
@@ -105,8 +105,8 @@ fun EnterpriseAuditFastStartView(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
-            colors = CardDefaults.cardColors(containerColor = Slate50),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Slate300)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Row(

@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -120,7 +122,7 @@ fun PreFilingAuditView(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onSurface))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -208,7 +210,7 @@ fun PreFilingAuditView(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (auditReport.riskLevel == NoticeRiskLevel.LOW_RISK_SAFE) EmeraldSuccessBg else IndigoStatutoryBg
+                        containerColor = if (auditReport.riskLevel == NoticeRiskLevel.LOW_RISK_SAFE) getEmeraldSuccessBg() else getIndigoStatutoryBg()
                     ),
                     border = CardDefaults.outlinedCardBorder().copy(
                         width = 1.dp,
@@ -271,7 +273,7 @@ fun PreFilingAuditView(
                         Text(
                             text = auditReport.noticeProtectionGuarantee,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Slate700
+                            color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
                         )
                     }
                 }
@@ -337,7 +339,7 @@ fun PreFilingAuditView(
                         Text(
                             text = gate.description,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Slate700
+                            color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
                         )
                         Spacer(Modifier.height(4.dp))
                         Row(
@@ -376,7 +378,7 @@ fun PreFilingAuditView(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isLegalAcknowledgementSigned) EnterpriseTeal50 else AmberWarningBg
+                        containerColor = if (isLegalAcknowledgementSigned) getTealHighlightBg() else getAmberWarningBg()
                     ),
                     border = CardDefaults.outlinedCardBorder().copy(
                         width = 1.dp,
@@ -454,34 +456,54 @@ fun PreFilingAuditView(
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("1️⃣", fontSize = 14.sp)
+                            Box(
+                                modifier = Modifier.size(20.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("1", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer))
+                            }
                             Spacer(Modifier.width(8.dp))
                             Column {
                                 Text("In-App Direct Submission u/s 139(1)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                                Text("CBDT JSON transmission to ITD Gateway (< 30 seconds)", style = TextStyle(fontSize = 11.sp, color = Slate600))
+                                Text("CBDT JSON transmission to ITD Gateway (< 30 seconds)", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                             }
                         }
                         Spacer(Modifier.height(10.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("2️⃣", fontSize = 14.sp)
+                            Box(
+                                modifier = Modifier.size(20.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("2", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer))
+                            }
                             Spacer(Modifier.width(8.dp))
                             Column {
                                 Text("Instant Aadhaar OTP e-Verification u/s 140A", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                                Text("Official 15-digit ITR-V Ack generated in-app", style = TextStyle(fontSize = 11.sp, color = Slate600))
+                                Text("Official 15-digit ITR-V Ack generated in-app", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                             }
                         }
                         Spacer(Modifier.height(10.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("3️⃣", fontSize = 14.sp)
+                            Box(
+                                modifier = Modifier.size(20.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("3", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer))
+                            }
                             Spacer(Modifier.width(8.dp))
                             Column {
                                 Text("Automated CPC Processing u/s 143(1)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                                Text("Intimation order sent to registered email (Avg. 14 to 21 days)", style = TextStyle(fontSize = 11.sp, color = Slate600))
+                                Text("Intimation order sent to registered email (Avg. 14 to 21 days)", style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                             }
                         }
                         Spacer(Modifier.height(10.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("4️⃣", fontSize = 14.sp)
+                            Box(
+                                modifier = Modifier.size(20.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("4", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer))
+                            }
                             Spacer(Modifier.width(8.dp))
                             Column {
                                 Text("Direct ECS Refund Credit into Pre-validated Bank", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))

@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -140,11 +141,16 @@ fun SmallBusinessAuditSuiteScreen(
                     Triple(BusinessType.OTHER_REGULAR_BUSINESS, "Regular Business", "Turnover > ₹1 Cr / ₹10 Cr")
                 ).forEach { (type, title, subtitle) ->
                     val isSelected = selectedBusinessType == type
+                    val isDark = isSystemInDarkTheme()
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(6.dp))
-                            .background(if (isSelected) EnterpriseTeal50 else MaterialTheme.colorScheme.surface)
+                            .background(
+                                if (isSelected) {
+                                    if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50
+                                } else MaterialTheme.colorScheme.surface
+                            )
                             .border(
                                 width = if (isSelected) 1.5.dp else 0.5.dp,
                                 color = if (isSelected) EnterpriseTeal600 else MaterialTheme.colorScheme.outlineVariant,
@@ -161,12 +167,14 @@ fun SmallBusinessAuditSuiteScreen(
                                 text = title,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) EnterpriseTeal900 else MaterialTheme.colorScheme.onSurface
+                                    color = if (isSelected) {
+                                        if (isDark) EnterpriseTeal300 else EnterpriseTeal900
+                                    } else MaterialTheme.colorScheme.onSurface
                                 )
                             )
                             Text(
                                 text = subtitle,
-                                style = TextStyle(fontSize = 10.sp, color = Slate500)
+                                style = TextStyle(fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
                             )
                         }
                     }
@@ -189,7 +197,7 @@ fun SmallBusinessAuditSuiteScreen(
                             .fillMaxWidth()
                             .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isMandatory) AmberWarningBg else EmeraldSuccessBg
+                            containerColor = if (isMandatory) getAmberWarningBg() else getEmeraldSuccessBg()
                         ),
                         border = CardDefaults.outlinedCardBorder().copy(
                             width = 1.dp,
@@ -586,7 +594,7 @@ fun SmallBusinessAuditSuiteScreen(
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = CardDefaults.cardColors(
-                                        containerColor = if (form10IeaDecision.isEligibleToOptOut) AmberWarningBg else CrimsonDangerBg
+                                        containerColor = if (form10IeaDecision.isEligibleToOptOut) getAmberWarningBg() else getCrimsonDangerBg()
                                     )
                                 ) {
                                     Column(modifier = Modifier.padding(10.dp)) {

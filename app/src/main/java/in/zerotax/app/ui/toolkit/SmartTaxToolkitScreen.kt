@@ -6,6 +6,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -215,7 +216,7 @@ private fun HraOptimizerView(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
+                colors = CardDefaults.cardColors(containerColor = getTealHighlightBg()),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600))
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
@@ -224,13 +225,16 @@ private fun HraOptimizerView(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Section 10(13A) & Rule 2A Exemption", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        Text(
+                            text = "Section 10(13A) & Rule 2A Exemption",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = getTealHighlightText())
+                        )
                         StatutoryBadge(text = "Old Regime Exemption", tone = BadgeTone.SUCCESS)
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = "Exempt HRA Amount: ₹${Rupee.formatInr(hraExemption)} / year",
-                        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = if (isSystemInDarkTheme()) EnterpriseTeal200 else EnterpriseTeal900)
                     )
                     Text(
                         text = "Estimated Tax Saved: ₹${Rupee.formatInr(estimatedTaxSavings)} (at 30% marginal bracket)",
@@ -319,7 +323,7 @@ private fun HraOptimizerView(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
-                    colors = CardDefaults.cardColors(containerColor = AmberWarningBg),
+                    colors = CardDefaults.cardColors(containerColor = getAmberWarningBg()),
                     border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(AmberWarning))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
@@ -335,7 +339,7 @@ private fun HraOptimizerView(
                         }
                         Text(
                             text = "Annual rent exceeds ₹1,00,000 (Current: ₹${Rupee.formatInr(annualRent)}). You must report the Landlord's PAN to your employer to claim HRA exemption without TDS deduction.",
-                            style = TextStyle(fontSize = 11.sp, color = Slate700)
+                            style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     }
                 }
@@ -380,7 +384,7 @@ private fun HraOptimizerView(
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("RENT RECEIPT (SAMPLE MONTH)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                            Text("RENT RECEIPT (APRIL 2025)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                             Text("₹${Rupee.formatInr(monthlyRent)}", style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold))
                         }
                         Spacer(Modifier.height(6.dp))
@@ -439,7 +443,7 @@ private fun AdvanceTaxRadarView(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (requiresAdvanceTax) AmberWarningBg else EmeraldSuccessBg
+                    containerColor = if (requiresAdvanceTax) getAmberWarningBg() else getEmeraldSuccessBg()
                 ),
                 border = CardDefaults.outlinedCardBorder().copy(
                     width = 0.5.dp,

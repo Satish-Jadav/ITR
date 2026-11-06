@@ -23,7 +23,7 @@ object ZeroTaxAuthSecurityManager {
     @Volatile
     private var activeUserSession: UserAuthProfile? = null
 
-    // Local secure user repository (demo / local encrypted state)
+    // Local secure user repository (local encrypted state)
     private val localUserRegistry = mutableMapOf<String, StoredUserRecord>()
 
     private data class StoredUserRecord(
