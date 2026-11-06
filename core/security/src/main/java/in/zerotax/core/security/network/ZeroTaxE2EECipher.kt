@@ -99,7 +99,7 @@ object ZeroTaxE2EECipher {
             ecdhSharedSecret(ephemeralKeyPair.private, decodeServerPublicKey())
         } else {
             // Fallback: derive from ephemeral key pair itself (self-wrap) until server key pinned
-            ephemeralKeyPair.private.encoded.copyOf(32)
+            ecdhSharedSecret(ephemeralKeyPair.private, getOrCreateDeviceEcKeyPair().public)
         }
 
         // 3. HKDF-SHA256 → 32-byte AES key
