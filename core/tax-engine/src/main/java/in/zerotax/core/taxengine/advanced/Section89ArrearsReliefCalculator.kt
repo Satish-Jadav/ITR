@@ -60,10 +60,10 @@ object Section89ArrearsReliefCalculator {
         val eligibleSection89ReliefRupees: Long get() = reliefAllowableUnderSection89
     }
 
-    fun computeSection89Relief(input: Section89ComputationInput, pan: String = "ABCDE1234F"): Section89ReliefResult =
+    fun computeSection89Relief(input: Section89ComputationInput, pan: String = ""): Section89ReliefResult =
         computeRelief(input, pan)
 
-    fun computeRelief(input: Section89ComputationInput, pan: String = "ABCDE1234F"): Section89ReliefResult {
+    fun computeRelief(input: Section89ComputationInput, pan: String = ""): Section89ReliefResult {
         val incomeWithoutArrears = max(0L, input.currentYearNormalSalaryExcludingArrears)
         val incomeWithArrears = incomeWithoutArrears + max(0L, input.totalArrearsReceivedInCurrentYear)
 

@@ -228,7 +228,9 @@ object ZeroTaxCloudApiBridge {
     }
 
     /**
-     * Uploads an E2EE encrypted .ztvault snapshot to Cloud Storage via API
+     * Uploads an E2EE encrypted .ztvault snapshot to Cloud Storage via API.
+     * PAN is never sent in plaintext — it is wrapped in an ECDH-AES-256-GCM envelope.
+     * The server identifies the user via [panBlindIndexHmac] (HMAC of PAN, not the PAN itself).
      */
     suspend fun syncEncryptedVault(
         panBlindIndexHmac: String,
@@ -239,10 +241,19 @@ object ZeroTaxCloudApiBridge {
         aesGcmIvHex: String,
         aesGcmAuthTagHex: String,
         ciphertextPayloadBase64: String,
-        ciphertextSha256Hex: String
+        ciphertextSha256Hex: String,
+        /** Optional raw PAN for E2EE wrapping; if null, panBlindIndexHmac is used only. */
+        rawPanForE2EE: String? = null
     ): Result<JSONObject> = withContext(Dispatchers.IO) {
         ZeroTaxLogger.d(TAG, "syncEncryptedVault: AY=$assessmentYear version=$expectedPreviousVersion")
         runCatching {
+            // E2EE-encrypt PAN when provided — never send it plaintext
+            val panE2EEEnvelope: Map<String, String>? = rawPanForE2EE?.takeIf { it.length == 10 }?.let {
+                try { ZeroTaxE2EECipher.encryptField(it).toMap() } catch (e: Exception) {
+                    ZeroTaxLogger.w(TAG, "E2EE PAN encryption skipped: ${e.message}"); null
+                }
+            }
+
             val payload = JSONObject().apply {
                 put("panBlindIndexHmac", panBlindIndexHmac)
                 put("assessmentYear", assessmentYear)
@@ -253,6 +264,9 @@ object ZeroTaxCloudApiBridge {
                 put("aesGcmAuthTagHex", aesGcmAuthTagHex)
                 put("ciphertextPayloadBase64", ciphertextPayloadBase64)
                 put("ciphertextSha256Hex", ciphertextSha256Hex)
+                // Attach E2EE envelope when available
+                panE2EEEnvelope?.let { put("panE2EE", JSONObject(it)) }
+                put("devicePublicKeyB64", ZeroTaxE2EECipher.devicePublicKeyB64())
             }
 
             val request = Request.Builder()
@@ -380,6 +394,17 @@ object ZeroTaxCloudApiBridge {
             ZeroTaxLogger.e(TAG, "syncChatSession failed: ${error.message}", error)
         }
     }
+
+    /**
+     * Encrypts document bytes (PDF, Form 16, AIS export) using ECDH-AES-256-GCM
+     * before uploading to the vault. Returns the encrypted envelope as a JSON map.
+     *
+     * Usage before syncEncryptedVault:
+     *   val envelope = encryptDocument(pdfBytes)
+     *   // Include envelope.toMap() as "encryptedDocument" field in payload
+     */
+    fun encryptDocument(documentBytes: ByteArray): ZeroTaxE2EECipher.EncryptedEnvelope =
+        ZeroTaxE2EECipher.encryptBytes(documentBytes)
 
     /**
      * Fetches user's chat filing history

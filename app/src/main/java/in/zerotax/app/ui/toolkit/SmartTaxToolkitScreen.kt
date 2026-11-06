@@ -184,8 +184,8 @@ private fun HraOptimizerView(
     var monthlyBasicText by remember { mutableStateOf("65000") }
     var monthlyHraText by remember { mutableStateOf("32500") }
     var isMetroCity by remember { mutableStateOf(true) }
-    var landlordName by remember { mutableStateOf("Rameshwar Verma") }
-    var landlordPan by remember { mutableStateOf("ABCDE9876Z") }
+    var landlordName by remember { mutableStateOf("") }
+    var landlordPan by remember { mutableStateOf("") }
     var showRentReceiptPreview by remember { mutableStateOf(false) }
 
     val monthlyRent = monthlyRentText.toLongOrNull() ?: 0L

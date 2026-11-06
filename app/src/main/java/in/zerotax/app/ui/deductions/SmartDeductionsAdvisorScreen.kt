@@ -647,11 +647,20 @@ fun SmartDeductionsAdvisorScreen(
                                             if (it.sectionCode == spec.sectionCode) it.copy(userClaimedAmount = capped, isSelected = capped > 0) else it
                                         }
                                     },
-                                    label = { Text("Claim ₹") },
+                                    label = { Text("Claim Rs.") },
                                     singleLine = true,
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp, fontWeight = FontWeight.Bold),
-                                    modifier = Modifier.width(130.dp)
+                                    modifier = Modifier.width(130.dp),
+                                    isError = spec.userClaimedAmount > spec.maxLimitRupees,
+                                    supportingText = {
+                                        if (spec.userClaimedAmount > 0) {
+                                            Text(
+                                                "Max: ${Rupee(spec.maxLimitRupees)}",
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
+                                    }
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 TextButton(

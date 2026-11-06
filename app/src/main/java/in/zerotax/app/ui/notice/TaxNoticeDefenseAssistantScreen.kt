@@ -200,7 +200,7 @@ fun TaxNoticeDefenseAssistantScreen(
                                 Text(
                                     "File rectification before statutory deadline to prevent automatic penalty interest u/s 220(2).",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = if (isSystemInDarkTheme()) Color(0xFFFCA5A5) else CrimsonDanger
+                                    color = if (isSystemInDarkTheme()) CrimsonDangerDark else CrimsonDanger
                                 )
                             }
                         }

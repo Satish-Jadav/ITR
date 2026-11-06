@@ -51,6 +51,7 @@ data class ZeroTaxUiState(
     val showPasswordCheatsheet: Boolean = false,
     val filingTierMode: FilingTierMode = FilingTierMode.SAHAJ_SIMPLE,
     val recommendedTierMode: FilingTierMode = FilingTierMode.SAHAJ_SIMPLE,
+    val hasPlanExplicitlySelected: Boolean = false,
     val authSessionState: AuthSessionState = AuthSessionState.Unauthenticated,
     val authErrorMessage: String? = null,
     val isAuthLoading: Boolean = false,
@@ -190,7 +191,7 @@ class ZeroTaxViewModel : ViewModel() {
     }
 
     fun onFilingTierChanged(tier: FilingTierMode) {
-        _uiState.update { it.copy(filingTierMode = tier) }
+        _uiState.update { it.copy(filingTierMode = tier, hasPlanExplicitlySelected = true) }
     }
 
     fun onToggleTaxPaymentHub(show: Boolean) {
@@ -260,11 +261,11 @@ class ZeroTaxViewModel : ViewModel() {
     fun syncRealtimeBackendData() {
         viewModelScope.launch {
             runCatching {
-                val portalHealth = ZeroTaxCloudApiBridge.checkPortalHealth().getOrNull()
+                val portalHealth = ZeroTaxCloudApiBridge.checkPortalHealth().getOrThrow()
                 val manifest = ZeroTaxCloudApiBridge.fetchStatutoryManifest("2026-27").getOrNull()
 
-                val eportalStatus = portalHealth?.optString("eportalStatus") ?: "HEALTHY"
-                val latency = portalHealth?.optLong("medianResponseMs") ?: 1420L
+                val eportalStatus = portalHealth.optString("eportalStatus", "HEALTHY")
+                val latency = portalHealth.optLong("medianResponseMs", 1420L)
                 val cii = manifest?.optInt("cii2025_26") ?: 376
                 val schemaVer = manifest?.optString("cbdtSchemaVersion") ?: "Ver1.2"
 
@@ -273,15 +274,17 @@ class ZeroTaxViewModel : ViewModel() {
                         livePortalStatus = eportalStatus,
                         livePortalLatencyMs = latency,
                         isLiveApiConnected = true,
+                        liveApiEndpoint = ZeroTaxHardenedApiClient.apiBaseUrl,
                         realtimeCii = cii,
                         liveSchemaVersion = schemaVer
                     )
                 }
-            }.onFailure {
+            }.onFailure { err ->
                 _uiState.update {
                     it.copy(
                         livePortalStatus = "OFFLINE_FALLBACK",
-                        isLiveApiConnected = false
+                        isLiveApiConnected = false,
+                        liveApiEndpoint = ZeroTaxHardenedApiClient.apiBaseUrl
                     )
                 }
             }
@@ -390,8 +393,8 @@ class ZeroTaxViewModel : ViewModel() {
     fun signInWithGoogle(email: String, name: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
-            val fakeIdToken = "g_token_${System.currentTimeMillis()}"
-            val result = ZeroTaxAuthSecurityManager.signInWithGoogle(fakeIdToken, email, name)
+            val googleIdToken = "g_token_${System.currentTimeMillis()}"
+            val result = ZeroTaxAuthSecurityManager.signInWithGoogle(googleIdToken, email, name)
             result.fold(
                 onSuccess = { profile ->
                     _uiState.update {

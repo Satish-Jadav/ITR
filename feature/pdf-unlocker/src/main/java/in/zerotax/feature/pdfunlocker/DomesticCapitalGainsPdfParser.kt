@@ -115,9 +115,11 @@ object DomesticCapitalGainsPdfParser {
             }
         }
 
+        val extractedPan = Regex("[A-Z]{5}[0-9]{4}[A-Z]").find(fullText)?.value.orEmpty()
+
         return DomesticCapitalGainsReport(
             brokerOrRtaName = brokerName,
-            pan = "ABCDE1234F",
+            pan = extractedPan,
             equity112ALots = equity112AList,
             tradeLots = lots,
             totalShortTermGainPaise = totalStcg,

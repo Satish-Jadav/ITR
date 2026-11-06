@@ -50,8 +50,11 @@ val CrimsonDangerBg    = Color(0xFFFEF2F2)
 val CrimsonDangerBgDark = Color(0xFF450A0A)
 
 val IndigoStatutory    = Color(0xFF1E40AF) // Statutory Act / Clause Ref
+val IndigoStatutoryDark = Color(0xFF93C5FD) // Dark mode Blue-300
 val IndigoStatutoryBg  = Color(0xFFEFF6FF)
 val IndigoStatutoryBgDark = Color(0xFF172554)
+val AmberWarningDark = Color(0xFFFDE68A) // Dark mode Amber-200
+val CrimsonDangerDark = Color(0xFFFCA5A5) // Dark mode Red-300
 
 // ============================================================================
 // ZERO TAX BRAND COLOR TOKENS (Single Source of Truth)

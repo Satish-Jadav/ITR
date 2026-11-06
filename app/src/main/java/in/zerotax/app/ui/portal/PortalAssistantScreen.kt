@@ -842,7 +842,16 @@ private fun InAppAuthenticationStage(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(4.dp),
+                isError = aadhaarOtp.isNotBlank() && aadhaarOtp.length != 6,
+                supportingText = {
+                    when {
+                        aadhaarOtp.isNotBlank() && aadhaarOtp.length != 6 ->
+                            Text("OTP must be exactly 6 digits", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                        aadhaarOtp.length == 6 ->
+                            Text("OTP entered — tap Verify to proceed", color = EmeraldSuccess, style = MaterialTheme.typography.labelSmall)
+                    }
+                }
             )
         } else {
             Card(

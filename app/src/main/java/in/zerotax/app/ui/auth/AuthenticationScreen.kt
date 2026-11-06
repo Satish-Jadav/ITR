@@ -368,7 +368,7 @@ fun AuthenticationScreen(
             // Expandable CA Auditor Portal Login Form
             AnimatedVisibility(visible = showCaSection) {
                 val isDark = isSystemInDarkTheme()
-                val caHeaderColor = if (isDark) Color(0xFF93C5FD) else IndigoStatutory
+                val caHeaderColor = if (isDark) IndigoStatutoryDark else IndigoStatutory
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = if (isDark) IndigoStatutoryBgDark.copy(alpha = 0.6f) else IndigoStatutoryBg.copy(alpha = 0.6f)),
