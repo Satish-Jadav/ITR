@@ -70,7 +70,7 @@ fun DpdpSection6MultilingualConsentCard(
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Your financial and tax data is processed strictly on-device inside hardware-encrypted vault (StrongBox AES-256-GCM). Zero network egress.",
+                "Your financial and tax data is processed locally inside a hardware-encrypted vault (StrongBox AES-256-GCM) with end-to-end encrypted cloud backup. Zero unencrypted network exposure.",
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -90,7 +90,7 @@ fun DpdpSection6MultilingualConsentCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("Grant Local On-Device Consent")
+                Text("Grant E2EE Local & Cloud Consent")
             }
         }
     }
@@ -150,31 +150,36 @@ fun BlackMoneyActForeignAssetModal(
     onDismiss: () -> Unit,
     onAcknowledged: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ZeroTaxBottomSheet(onDismissRequest = onDismiss) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Black Money Act Warning", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.error)
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    "Failure to disclose foreign shares (RSU/ESPP) in Schedule FA attracts a statutory penalty of ₹10,00,000 under Section 42 & 43 of the Black Money Act, 2015, even if foreign tax was withheld.",
-                    fontSize = 13.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = onAcknowledged,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("I Acknowledge & Will Fill Schedule FA")
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(24.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Black Money Act Warning", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.error)
             }
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.Default.Close, contentDescription = "Close")
+            }
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        Text(
+            "Failure to disclose foreign shares (RSU/ESPP) in Schedule FA attracts a statutory penalty of ₹10,00,000 under Section 42 & 43 of the Black Money Act, 2015, even if foreign tax was withheld.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            lineHeight = 20.sp
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = onAcknowledged,
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text("I Acknowledge & Will Fill Schedule FA", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -483,15 +488,11 @@ fun InstitutionPdfPasswordCheatsheetModal(
         }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.92f)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+    ZeroTaxBottomSheet(
+        onDismissRequest = onDismiss,
+        scrollable = false
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -864,6 +865,7 @@ fun InstitutionPdfPasswordCheatsheetModal(
                                                                 f16.sec80D
                                                             )
                                                             isSalaryImported = true
+                                                            onDismiss()
                                                         }
                                                     },
                                                     modifier = Modifier.fillMaxWidth(),
@@ -1248,7 +1250,6 @@ fun InstitutionPdfPasswordCheatsheetModal(
                     Text("Close")
                 }
             }
-        }
     }
 }
 
@@ -1641,12 +1642,16 @@ fun FilingTierSelectorCard(
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                )
+                                ),
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                             Text(
                                 text = plan.eligibility,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
                         Spacer(Modifier.width(6.dp))
@@ -1668,9 +1673,9 @@ fun FilingTierSelectorCard(
 
                     Spacer(Modifier.height(10.dp))
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(8.dp))
 
-                    // Income limit chip
+                    // Income limit chip — always visible
                     Surface(
                         shape = RoundedCornerShape(6.dp),
                         color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
@@ -1692,46 +1697,84 @@ fun FilingTierSelectorCard(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
+                                ),
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
                     }
 
                     Spacer(Modifier.height(8.dp))
 
-                    if (isSelected) {
-                        // Forms covered
-                        Text(
-                            text = "Forms Covered",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.fillMaxWidth()
+                    // Primary form tag row — always visible (no word-wrap)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
                         ) {
-                            items(plan.forms) { form ->
-                                Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
-                                ) {
-                                    Text(
-                                        text = form,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                        ),
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                                    )
+                            Text(
+                                text = plan.forms.firstOrNull() ?: "",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                ),
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                maxLines = 1
+                            )
+                        }
+                        if (!isSelected) {
+                            Text(
+                                text = "Tap to select →",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                        }
+                    }
+
+                    // Expanded detail — only for selected plan
+                    if (isSelected) {
+                        Spacer(Modifier.height(10.dp))
+
+                        // All forms in scrollable row
+                        if (plan.forms.size > 1) {
+                            Text(
+                                text = "All Forms Covered",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(plan.forms) { form ->
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
+                                    ) {
+                                        Text(
+                                            text = form,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                            ),
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                        )
+                                    }
                                 }
                             }
+                            Spacer(Modifier.height(10.dp))
                         }
-
-                        Spacer(Modifier.height(10.dp))
 
                         // Key features list
                         Text(
@@ -1744,7 +1787,9 @@ fun FilingTierSelectorCard(
                         Spacer(Modifier.height(6.dp))
                         plan.features.forEach { feature ->
                             Row(
-                                modifier = Modifier.padding(vertical = 2.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
                                 Icon(
@@ -1757,31 +1802,10 @@ fun FilingTierSelectorCard(
                                 Text(
                                     text = feature,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
-                        }
-                    } else {
-                        // Compact preview for Galaxy S23 viewport efficiency
-                        Spacer(Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = plan.forms.joinToString(" • "),
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            )
-                            Text(
-                                text = "Tap to switch →",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            )
                         }
                     }
                 }
@@ -1821,15 +1845,11 @@ fun TaxPaymentAndChallanHubModal(
 
     val amountLong = paymentAmountInput.filter { it.isDigit() }.toLongOrNull() ?: taxPayableRupees
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.92f)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+    ZeroTaxBottomSheet(
+        onDismissRequest = onDismiss,
+        scrollable = false
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -2144,8 +2164,5 @@ fun TaxPaymentAndChallanHubModal(
                     }
                 }
             }
-        }
     }
 }
-
-

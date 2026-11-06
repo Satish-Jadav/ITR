@@ -1,5 +1,6 @@
 package `in`.zerotax.app.ui.portal
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,14 +60,14 @@ fun SmartTransactionSuggestionsView(
     var showForm60Dialog by remember { mutableStateOf(false) }
 
     // Form 60 state
-    var declarantName by remember { mutableStateOf("Satish Jadav") }
-    var fatherName by remember { mutableStateOf("Ramesh Jadav") }
-    var flatStreet by remember { mutableStateOf("402, Royal Residency, MG Road") }
-    var city by remember { mutableStateOf("Bengaluru") }
-    var state by remember { mutableStateOf("Karnataka") }
-    var pincode by remember { mutableStateOf("560001") }
-    var mobile by remember { mutableStateOf("9876545819") }
-    var email by remember { mutableStateOf("satish.jadav@envitics.com") }
+    var declarantName by remember { mutableStateOf("") }
+    var fatherName by remember { mutableStateOf("") }
+    var flatStreet by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var state by remember { mutableStateOf("") }
+    var pincode by remember { mutableStateOf("") }
+    var mobile by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var agriIncome by remember { mutableStateOf("0") }
     var isForm60Applied by remember { mutableStateOf(false) }
 
@@ -366,14 +368,10 @@ fun SmartTransactionSuggestionsView(
 
                 item {
                     Spacer(Modifier.height(20.dp))
-                    Button(
-                        onClick = onBack,
-                        shape = RoundedCornerShape(4.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-                        modifier = Modifier.fillMaxWidth().height(44.dp)
-                    ) {
-                        Text("Apply Transactions to Return & Continue", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                    }
+                    ZeroTaxPrimaryButton(
+                        text = "Apply Transactions to Return & Continue",
+                        onClick = onBack
+                    )
                 }
 
                 item {
@@ -384,102 +382,100 @@ fun SmartTransactionSuggestionsView(
     }
 
     // ========================================================================
-    // FORM 60 (RULE 114B) CLIENT PROFILE DIALOG
+    // FORM 60 (RULE 114B) CLIENT PROFILE SHEET
     // ========================================================================
     if (showForm60Dialog) {
-        AlertDialog(
-            onDismissRequest = { showForm60Dialog = false },
-            title = {
+        ZeroTaxBottomSheet(
+            onDismissRequest = { showForm60Dialog = false }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Form 60 (Rule 114B) Client KYC Intake",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
-            },
-            text = {
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    item {
-                        Text(
-                            text = "Statutory declaration for financial transactions & address auto-population under Income-tax Rules, 1962.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Slate600
-                        )
-                        Spacer(Modifier.height(10.dp))
-
-                        OutlinedTextField(
-                            value = declarantName,
-                            onValueChange = { declarantName = it },
-                            label = { Text("Declarant Full Name") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(8.dp))
-
-                        OutlinedTextField(
-                            value = fatherName,
-                            onValueChange = { fatherName = it },
-                            label = { Text("Father's Full Name") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(8.dp))
-
-                        OutlinedTextField(
-                            value = flatStreet,
-                            onValueChange = { flatStreet = it },
-                            label = { Text("Flat / Door / Street Address") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(8.dp))
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(
-                                value = city,
-                                onValueChange = { city = it },
-                                label = { Text("City") },
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = pincode,
-                                onValueChange = { if (it.length <= 6 && it.all { c -> c.isDigit() }) pincode = it },
-                                label = { Text("PIN") },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                        Spacer(Modifier.height(8.dp))
-
-                        OutlinedTextField(
-                            value = agriIncome,
-                            onValueChange = { if (it.all { c -> c.isDigit() }) agriIncome = it },
-                            label = { Text("Estimated Agricultural Income (Exempt u/s 10(1))") },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        isForm60Applied = true
-                        showForm60Dialog = false
-                    },
-                    shape = RoundedCornerShape(4.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                ) {
-                    Text("Save & Auto-Populate Profile")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showForm60Dialog = false }) {
-                    Text("Cancel")
+                IconButton(onClick = { showForm60Dialog = false }) {
+                    Icon(Icons.Default.Close, contentDescription = "Close")
                 }
             }
-        )
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = "Statutory declaration for financial transactions & address auto-population under Income-tax Rules, 1962.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(Modifier.height(14.dp))
+
+            OutlinedTextField(
+                value = declarantName,
+                onValueChange = { declarantName = it },
+                label = { Text("Declarant Full Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = fatherName,
+                onValueChange = { fatherName = it },
+                label = { Text("Father's Full Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = flatStreet,
+                onValueChange = { flatStreet = it },
+                label = { Text("Flat / Door / Street Address") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(8.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = city,
+                    onValueChange = { city = it },
+                    label = { Text("City") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = pincode,
+                    onValueChange = { if (it.length <= 6 && it.all { c -> c.isDigit() }) pincode = it },
+                    label = { Text("PIN") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = agriIncome,
+                onValueChange = { if (it.all { c -> c.isDigit() }) agriIncome = it },
+                label = { Text("Estimated Agricultural Income (Exempt u/s 10(1))") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            ZeroTaxPrimaryButton(
+                text = "Save & Auto-Populate Profile",
+                onClick = {
+                    isForm60Applied = true
+                    showForm60Dialog = false
+                }
+            )
+        }
     }
 }
-

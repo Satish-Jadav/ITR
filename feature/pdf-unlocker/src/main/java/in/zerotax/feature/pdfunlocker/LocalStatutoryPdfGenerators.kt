@@ -53,7 +53,7 @@ data class Form15HData(
 )
 
 /**
- * High-performance, self-contained, 100% on-device statutory PDF generator.
+ * High-performance, self-contained, local statutory PDF generator.
  * Produces valid PDF 1.4 documents conforming to CBDT Rule 26C (Form 12BB)
  * and Section 197A / Rule 29C (Form 15G / 15H).
  * Operates without external asset dependencies or native font file requirements.
@@ -101,7 +101,7 @@ object LocalStatutoryPdfGenerators {
         lines.add(PdfLine("I, ${data.employeeName}, do hereby declare that the particulars given above are complete and correct.", fontSize = 9f))
         lines.add(PdfLine("Place: Bengaluru                                        Date: ${LocalDate.now()}", fontSize = 9f))
         lines.add(PdfLine("Signature of the Employee: ________________________________________________", fontSize = 9f))
-        lines.add(PdfLine("Verified & Generated via ZeroTax-Local (100% On-Device Cryptographic Vault)", fontSize = 8f))
+        lines.add(PdfLine("Verified & Generated via ZeroTax (Local Engine + End-to-End Encrypted Cloud Vault)", fontSize = 8f))
 
         buildPdf(lines)
     }
@@ -137,7 +137,7 @@ object LocalStatutoryPdfGenerators {
         lines.add(PdfLine("computed in accordance with the provisions of the Income-tax Act, 1961 for the assessment year", fontSize = 9f))
         lines.add(PdfLine("${data.assessmentYear} will be NIL, and therefore no tax should be deducted at source u/s 194A.", fontSize = 9f))
         lines.add(PdfLine("Date: ${LocalDate.now()}                                 Signature of the Declarant: _________________", fontSize = 9f))
-        lines.add(PdfLine("Generated via ZeroTax-Local Privacy Engine (Certified for submission to bank branch)", fontSize = 8f))
+        lines.add(PdfLine("Generated via ZeroTax Engine (Local Privacy + Cloud Backup Certified)", fontSize = 8f))
 
         buildPdf(lines)
     }

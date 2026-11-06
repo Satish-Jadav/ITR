@@ -1,5 +1,6 @@
-﻿package `in`.zerotax.app.ui.timeline
+package `in`.zerotax.app.ui.timeline
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
@@ -19,8 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import `in`.zerotax.app.ui.components.BadgeTone
-import `in`.zerotax.app.ui.components.StatutoryBadge
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
 import kotlinx.coroutines.Dispatchers
@@ -283,18 +285,22 @@ fun StatutoryReminderModal(
 ) {
     val milestones = remember { StatutoryTaxTimelineManager.getMilestones() }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+    ZeroTaxBottomSheet(
+        onDismissRequest = onDismiss
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                 Icon(
                     imageVector = Icons.Default.CalendarMonth,
                     contentDescription = null,
                     tint = EnterpriseTeal600,
                     modifier = Modifier.size(24.dp)
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
                         "CBDT Tax Calendar & Reminders",
@@ -306,101 +312,104 @@ fun StatutoryReminderModal(
                     )
                 }
             }
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                // Toggle notification switch
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = EnterpriseTeal50,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "Local Device Notifications",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
-                            )
-                            Text(
-                                "Alerts at start, 30-day, and final 6-day deadlines. Zero cloud sync.",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
-                            )
-                        }
-                        Switch(
-                            checked = remindersEnabled,
-                            onCheckedChange = onToggleReminders,
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = PureWhite,
-                                checkedTrackColor = EnterpriseTeal600
-                            )
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(14.dp))
-
-                Text(
-                    text = "Key Statutory Due Dates:",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate700)
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                milestones.take(5).forEach { milestone ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 6.dp)
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(if (milestone.isCritical) CrimsonDanger else IndigoStatutory)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = milestone.title,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                                )
-                                Text(
-                                    text = milestone.dateText,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (milestone.isCritical) CrimsonDanger else EnterpriseTeal700
-                                    )
-                                )
-                            }
-                            Text(
-                                text = milestone.description,
-                                style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 10.sp)
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-            ) {
-                Text("Got It", fontWeight = FontWeight.Bold)
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.Default.Close, contentDescription = "Close")
             }
         }
-    )
+
+        Spacer(Modifier.height(14.dp))
+
+        // Toggle notification switch
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = EnterpriseTeal50,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Local Device Notifications",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        "Alerts at start, 30-day, and final 6-day deadlines. Local device schedule.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Switch(
+                    checked = remindersEnabled,
+                    onCheckedChange = onToggleReminders,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = PureWhite,
+                        checkedTrackColor = EnterpriseTeal600
+                    )
+                )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = "Key Statutory Due Dates:",
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate700)
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        milestones.forEach { milestone ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 6.dp)
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(if (milestone.isCritical) CrimsonDanger else IndigoStatutory)
+                )
+                Spacer(Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = milestone.title,
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        )
+                        Text(
+                            text = milestone.dateText,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (milestone.isCritical) CrimsonDanger else EnterpriseTeal700
+                            )
+                        )
+                    }
+                    Text(
+                        text = milestone.description,
+                        style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        ZeroTaxPrimaryButton(
+            text = "Got It",
+            onClick = onDismiss
+        )
+    }
 }
 

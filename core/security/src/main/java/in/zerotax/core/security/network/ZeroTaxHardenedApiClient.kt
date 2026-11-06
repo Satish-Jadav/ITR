@@ -43,7 +43,7 @@ data class ApiDiagnosticRecord(
 )
 
 /**
- * Connects ZeroTax-Local APK to the Vercel Node.js API (api.zerotax.in) with:
+ * Connects ZeroTax APK to the Vercel Node.js API (api.zerotax.in) with:
  * 1. Comprehensive Structured Diagnostic Logging for all HTTP traffic & failure root causes
  * 2. SPKI SHA-256 TLS Certificate Pinning (Defeats MITM proxies like Burp Suite / Charles)
  * 3. Android Hardware Keystore ECDSA P-256 DPoP Proof Generation (RFC 9449) per HTTP request

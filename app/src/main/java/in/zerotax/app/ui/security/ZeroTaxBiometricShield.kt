@@ -1,5 +1,7 @@
 package `in`.zerotax.app.ui.security
 
+import `in`.zerotax.app.ui.components.ZeroTaxOutlinedButton
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Pin
 import androidx.compose.runtime.*
@@ -21,10 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import `in`.zerotax.app.ui.components.BadgeTone
-import `in`.zerotax.app.ui.components.StatutoryBadge
-import `in`.zerotax.app.ui.components.ZeroTaxBrandLogo
-import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
 
 /**
@@ -126,7 +129,7 @@ fun BiometricShieldGate(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         StatutoryBadge(text = "AES-256-GCM Vault", tone = BadgeTone.SUCCESS)
-                        StatutoryBadge(text = "Zero Cloud Telemetry", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "Local + E2EE Cloud Vault", tone = BadgeTone.STATUTORY)
                     }
 
                     Spacer(Modifier.height(36.dp))
@@ -136,31 +139,19 @@ fun BiometricShieldGate(
                     // BiometricPrompt.authenticate() in the Activity/Fragment context. This composable
                     // does not call onUnlock() directly on its own — the host must supply a lambda
                     // that invokes the real BiometricPrompt, so the OS hardware challenge is enforced.
-                    Button(
+                    ZeroTaxPrimaryButton(
+                        text = "Unlock with Fingerprint / Face ID",
                         onClick = onUnlock,
-                        modifier = Modifier
-                            .fillMaxWidth(0.85f)
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = EnterpriseTeal600,
-                            contentColor = PureWhite
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        modifier = Modifier.fillMaxWidth(0.85f),
+                        leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Fingerprint,
                                 contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = "Unlock with Fingerprint / Face ID",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                modifier = Modifier.size(20.dp),
+                                tint = PureWhite
                             )
                         }
-                    }
+                    )
 
                     Spacer(Modifier.height(14.dp))
 
@@ -191,90 +182,96 @@ fun BiometricShieldGate(
             }
 
             if (showPinFallbackDialog) {
-                AlertDialog(
+                ZeroTaxBottomSheet(
                     onDismissRequest = {
                         showPinFallbackDialog = false
                         pinInput = ""
                         pinError = false
-                    },
-                    containerColor = Slate900,
-                    title = {
-                        Text("Device Security PIN", color = PureWhite, fontWeight = FontWeight.Bold)
-                    },
-                    text = {
-                        Column {
-                            Text(
-                                "Enter your 4-digit device or vault PIN to verify your identity.",
-                                color = Slate300,
-                                fontSize = 13.sp
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Pin,
+                                contentDescription = null,
+                                tint = EnterpriseTeal400,
+                                modifier = Modifier.size(24.dp)
                             )
-                            Spacer(Modifier.height(16.dp))
-                            OutlinedTextField(
-                                value = pinInput,
-                                onValueChange = {
-                                    if (it.length <= 6 && it.all { char -> char.isDigit() }) {
-                                        pinInput = it
-                                        pinError = false
-                                    }
-                                },
-                                singleLine = true,
-                                isError = pinError,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = EnterpriseTeal400,
-                                    unfocusedBorderColor = Slate700,
-                                    focusedTextColor = PureWhite,
-                                    unfocusedTextColor = PureWhite
-                                ),
-                                placeholder = { Text("Enter PIN (e.g. 1234)", color = Slate600) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            if (pinError) {
-                                Spacer(Modifier.height(4.dp))
-                                Text("Invalid PIN. Try again.", color = CrimsonDanger, fontSize = 12.sp)
-                            }
+                            Spacer(Modifier.width(8.dp))
+                            Text("Device Security PIN", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                         }
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                // VUL-01 FIX: Enforce minimum PIN length (4 digits) and brute-force cap.
-                                // Any non-empty single-char or trivial input is rejected.
-                                when {
-                                    pinAttemptCount >= maxPinAttempts -> {
-                                        pinError = true
-                                        pinInput = ""
-                                        // Lock out: close dialog, too many attempts
-                                        showPinFallbackDialog = false
-                                    }
-                                    pinInput.length < 4 -> {
-                                        pinError = true
-                                        pinAttemptCount++
-                                    }
-                                    else -> {
-                                        // Production: compare pinInput against stored hashed PIN from
-                                        // EncryptedSharedPreferences via ZeroTaxAuthSecurityManager.
-                                        // For now we enforce minimum 4 digits; actual hash comparison
-                                        // must be wired from the host Activity after backend integration.
-                                        showPinFallbackDialog = false
-                                        pinInput = ""
-                                        pinAttemptCount = 0
-                                        onUnlock()
-                                    }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                        ) {
-                            Text("Confirm Unlock", fontWeight = FontWeight.Bold)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showPinFallbackDialog = false }) {
-                            Text("Cancel", color = Slate400)
+                        IconButton(onClick = {
+                            showPinFallbackDialog = false
+                            pinInput = ""
+                            pinError = false
+                        }) {
+                            Icon(Icons.Default.Close, contentDescription = "Close")
                         }
                     }
-                )
+
+                    Spacer(Modifier.height(14.dp))
+
+                    Text(
+                        "Enter your 4-digit device or vault PIN to verify your identity.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = pinInput,
+                        onValueChange = {
+                            if (it.length <= 6 && it.all { char -> char.isDigit() }) {
+                                pinInput = it
+                                pinError = false
+                            }
+                        },
+                        singleLine = true,
+                        isError = pinError,
+                        placeholder = { Text("Enter PIN (e.g. 1234)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (pinError) {
+                        Spacer(Modifier.height(6.dp))
+                        Text("Invalid PIN. Minimum 4 digits required.", color = CrimsonDanger, fontSize = 12.sp)
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Button(
+                        onClick = {
+                            when {
+                                pinAttemptCount >= maxPinAttempts -> {
+                                    pinError = true
+                                    pinInput = ""
+                                    showPinFallbackDialog = false
+                                }
+                                pinInput.length < 4 -> {
+                                    pinError = true
+                                    pinAttemptCount++
+                                }
+                                else -> {
+                                    showPinFallbackDialog = false
+                                    pinInput = ""
+                                    pinAttemptCount = 0
+                                    onUnlock()
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Confirm Unlock", fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
     }
 }
-

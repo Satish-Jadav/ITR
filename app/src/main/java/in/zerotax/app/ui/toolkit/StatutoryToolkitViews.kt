@@ -1,5 +1,6 @@
-﻿package `in`.zerotax.app.ui.toolkit
+package `in`.zerotax.app.ui.toolkit
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,7 +33,7 @@ import `in`.zerotax.core.taxengine.subengines.FamilyTaxArbitrageInput
 import `in`.zerotax.core.taxengine.subengines.ResidencyDayCountInput
 import `in`.zerotax.core.taxengine.subengines.ResidentialStatusAndFamilyArbitrageEngine
 import `in`.zerotax.feature.aiextractor.OfflineWhatIfTaxSimulator
-import `in`.zerotax.feature.aiextractor.WhatIfSimulationResult
+import `in`.zerotax.core.model.WhatIfSimulationResult
 import `in`.zerotax.feature.pdfunlocker.Form12BbData
 import `in`.zerotax.feature.pdfunlocker.Form15HData
 import `in`.zerotax.feature.pdfunlocker.LocalStatutoryPdfGenerators
@@ -264,13 +265,13 @@ fun Form12BbDeclarationView(
 ) {
     val coroutineScope = rememberCoroutineScope()
     var employerName by remember { mutableStateOf("") }
-    var rentPaidText by remember { mutableStateOf("300000") }
+    var rentPaidText by remember { mutableStateOf("") }
     var landlordName by remember { mutableStateOf("") }
     var landlordPan by remember { mutableStateOf("") }
-    var sec80CText by remember { mutableStateOf("150000") }
-    var sec80CCD1BText by remember { mutableStateOf("50000") }
-    var sec80DText by remember { mutableStateOf("25000") }
-    var homeLoanInterestText by remember { mutableStateOf("180000") }
+    var sec80CText by remember { mutableStateOf("") }
+    var sec80CCD1BText by remember { mutableStateOf("") }
+    var sec80DText by remember { mutableStateOf("") }
+    var homeLoanInterestText by remember { mutableStateOf("") }
     var pdfGeneratedBytes by remember { mutableStateOf<ByteArray?>(null) }
     var isGenerating by remember { mutableStateOf(false) }
 
@@ -455,13 +456,13 @@ fun Form12BbDeclarationView(
 fun Form15GOr15HZeroTdsView(pan: String) {
     val coroutineScope = rememberCoroutineScope()
     var isSeniorCitizen by remember { mutableStateOf(true) }
-    var declarantName by remember { mutableStateOf("Ramakant Joshi") }
-    var dobIso by remember { mutableStateOf("1954-08-15") }
-    var bankName by remember { mutableStateOf("State Bank of India") }
-    var branchName by remember { mutableStateOf("MG Road, Bengaluru") }
-    var fdAccountNumber by remember { mutableStateOf("39485729102") }
-    var estimatedFdInterestText by remember { mutableStateOf("48000") }
-    var estimatedTotalIncomeText by remember { mutableStateOf("280000") }
+    var declarantName by remember { mutableStateOf("") }
+    var dobIso by remember { mutableStateOf("") }
+    var bankName by remember { mutableStateOf("") }
+    var branchName by remember { mutableStateOf("") }
+    var fdAccountNumber by remember { mutableStateOf("") }
+    var estimatedFdInterestText by remember { mutableStateOf("") }
+    var estimatedTotalIncomeText by remember { mutableStateOf("") }
     var pdfGeneratedBytes by remember { mutableStateOf<ByteArray?>(null) }
     var isGenerating by remember { mutableStateOf(false) }
 

@@ -18,7 +18,7 @@ class OnDeviceTaxCopilot(
 
     /**
      * Answers taxpayer queries contextually during portal filing.
-     * Guaranteed zero cloud telemetry: runs on-device via AICore with statutory deterministic fallback.
+     * Privacy-preserving: runs on-device via AICore with statutory deterministic fallback and E2EE cloud backup.
      */
     suspend fun explainContextualTaxTopic(
         query: String,

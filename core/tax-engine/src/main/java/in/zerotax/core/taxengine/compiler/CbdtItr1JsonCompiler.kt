@@ -133,7 +133,7 @@ object CbdtItr1JsonCompiler {
 
         root.put("ITR1", formItr1)
         root.put("SchemaVersion", "AY2026-27_v1.0")
-        root.put("CompiledBy", "ZeroTax-Local-Deterministic-Engine")
+        root.put("CompiledBy", "ZeroTax-Deterministic-Engine")
         return root.toString(2)
     }
 }

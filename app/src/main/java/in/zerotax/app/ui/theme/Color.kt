@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.theme
+package `in`.zerotax.app.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable

@@ -175,6 +175,7 @@ fun ZeroTaxFourTapSpineScaffold(
     if (showChatbotFiling) {
         ConversationalFilingChatScreen(
             pan = uiState.pan,
+            viewModel = viewModel,
             onBack = { showChatbotFiling = false },
             onProceedToFullReview = { grossSalary, _, _, deductions, _ ->
                 viewModel.applyChatbotFiling(grossSalary, deductions)
@@ -192,6 +193,7 @@ fun ZeroTaxFourTapSpineScaffold(
             netTaxableSalary = uiState.newRegimeResult.netTaxableNormalIncomeRounded288A,
             taxLiability = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
             tdsClaimed = uiState.salarySummary.aggregateTdsAllowed,
+            bankAccount = uiState.bankAccount,
             onClose = { showPortalAssistant = false }
         )
         return
@@ -218,14 +220,7 @@ fun ZeroTaxFourTapSpineScaffold(
             pan = uiState.pan,
             salarySummary = uiState.salarySummary,
             computation = uiState.newRegimeResult,
-            bankAccount = `in`.zerotax.core.model.BankAccountDetails(
-                bankName = "State Bank of India",
-                accountNumber = "••••••••1234",
-                ifscCode = "SBIN0001234",
-                accountType = "SAVINGS",
-                isRefundAccount = true,
-                isPreValidated = true
-            ),
+            bankAccount = uiState.bankAccount,
             onBack = { showPreFilingAudit = false },
             onProceedToFiling = {
                 showPreFilingAudit = false
@@ -419,6 +414,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         isLiveApiConnected = uiState.isLiveApiConnected,
                         onResetFresh = { viewModel.resetToFreshState() },
                         onOpenPasswordCheatsheet = { showPasswordCheatsheetModal = true },
+                        onOpenPortalSync = { showPortalSyncModal = true },
                         onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap2LiveDiscovery) },
                         onOpenChatbot = { showChatbotFiling = true }
                     )
@@ -430,6 +426,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         employerTan = uiState.employerTan,
                         onEmployerChanged = { name, tan -> viewModel.onEmployerChanged(name, tan, uiState.tdsDeposited26As) },
                         onOpenAisTransactions = { showAisTransactions = true },
+                        onOpenForm16Upload = { showPasswordCheatsheetModal = true },
                         onBack = { viewModel.onNavigateToTap(OnboardingTap.Tap1IdentityConsent) },
                         onProceed = { viewModel.onNavigateToTap(OnboardingTap.Tap3NudgeCards) }
                     )
@@ -503,6 +500,7 @@ fun ZeroTaxFourTapSpineScaffold(
                     pan = uiState.pan,
                     onDismiss = { showPortalSyncModal = false },
                     onSyncCompleted = { count, tds, interest ->
+                        viewModel.applyPortalSyncData(tds, interest)
                         showPortalSyncModal = false
                     }
                 )
@@ -602,6 +600,7 @@ private fun Stage1IdentityConsent(
     isLiveApiConnected: Boolean = true,
     onResetFresh: () -> Unit = {},
     onOpenPasswordCheatsheet: () -> Unit,
+    onOpenPortalSync: () -> Unit = {},
     onProceed: () -> Unit,
     onOpenChatbot: () -> Unit = {}
 ) {
@@ -651,6 +650,32 @@ private fun Stage1IdentityConsent(
 
         Spacer(Modifier.height(6.dp))
 
+        // 1-TAP ITD PORTAL LIVE SYNC FAST ACTION
+        ZeroTaxActionCard(
+            title = "Sync Directly from Income Tax Portal",
+            description = "Pull Form 26AS, AIS/TIS & prefill in-app. Never type manually!",
+            icon = Icons.Default.Sync,
+            onClick = onOpenPortalSync,
+            badgeText = "1-Tap Sync →",
+            badgeTone = BadgeTone.SUCCESS
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        // 1-TAP IN-APP FORM 16 PDF UPLOAD & AUTO-DECRYPTION
+        ZeroTaxActionCard(
+            title = "Upload Form 16 PDF (Auto-Fill Return)",
+            description = "Auto-unlocks password & pre-fills salary, TAN, TDS & 80C/80D.",
+            icon = Icons.Default.Description,
+            onClick = onOpenPasswordCheatsheet,
+            badgeText = "Auto-Fill →",
+            badgeTone = BadgeTone.STATUTORY,
+            iconTint = Color(0xFF2563EB),
+            iconBgColor = Color(0xFFEFF6FF)
+        )
+
+        Spacer(Modifier.height(10.dp))
+
         Column {
             Text(
                 text = "Step 1 of 4: Plan & Identity",
@@ -665,7 +690,7 @@ private fun Stage1IdentityConsent(
             Spacer(Modifier.height(8.dp))
             WhatsAppEndToEndEncryptionBanner(
                 onClick = {},
-                customText = "Your tax return is end-to-end encrypted. No one outside of this device, not even ZeroTax, can read your salary or PAN. Tap to verify."
+                customText = "Your tax return is end-to-end encrypted and synced with the secure cloud API. No one outside of this device, not even ZeroTax, can read your salary or PAN."
             )
         }
 
@@ -756,7 +781,7 @@ private fun Stage1IdentityConsent(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "100% On-Device Encryption: Your PAN and financials are never stored on external servers.",
+                    text = "Local Privacy + Encrypted Cloud Vault: Your financials are processed locally and backed up with end-to-end encryption (AES-256-GCM).",
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -780,49 +805,26 @@ private fun Stage1IdentityConsent(
         }
 
         // Primary Action CTA
-        Button(
+        ZeroTaxPrimaryButton(
+            text = if (!isPanValid) "Enter Valid PAN to Continue" else "Continue to Step 2: Income (" + filingTier.title + ") →",
             onClick = onProceed,
-            enabled = canProceed,
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = EnterpriseTeal600,
-                contentColor = PureWhite
-            ),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-        ) {
-            Text(
-                text = if (!isPanValid) "Enter Valid PAN to Continue" else "Continue to Step 2: Income (" + filingTier.title + ") →",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
-        }
+            enabled = canProceed
+        )
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
 
         // Secondary Chatbot entry
-        OutlinedButton(
+        ZeroTaxOutlinedButton(
+            text = "Prefer Guided Chat? Open AI Tax Assistant",
             onClick = onOpenChatbot,
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(46.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.SmartToy,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "Prefer Guided Chat? Open AI Tax Assistant",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                    modifier = Modifier.size(18.dp)
                 )
             }
-        }
+        )
 
         Spacer(Modifier.height(88.dp))
     }
@@ -839,6 +841,7 @@ private fun Stage2DocumentDiscovery(
     employerTan: String,
     onEmployerChanged: (String, String) -> Unit,
     onOpenAisTransactions: () -> Unit,
+    onOpenForm16Upload: () -> Unit = {},
     onBack: () -> Unit,
     onProceed: () -> Unit
 ) {
@@ -878,6 +881,20 @@ private fun Stage2DocumentDiscovery(
         }
 
         Spacer(Modifier.height(14.dp))
+
+        // 1-TAP FORM 16 IMPORT FAST ACTION
+        ZeroTaxActionCard(
+            title = "Have Form 16 PDF? Auto-Fill Salary & TAN",
+            description = "Upload employer Form 16 to skip typing salary numbers manually.",
+            icon = Icons.Default.CloudUpload,
+            onClick = onOpenForm16Upload,
+            badgeText = "1-Tap Import →",
+            badgeTone = BadgeTone.STATUTORY,
+            iconTint = Color(0xFF2563EB),
+            iconBgColor = Color(0xFFEFF6FF)
+        )
+
+        Spacer(Modifier.height(12.dp))
 
         // Real-Time Salary Input Card
         Card(
@@ -1092,29 +1109,17 @@ private fun Stage2DocumentDiscovery(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            OutlinedButton(
+            ZeroTaxOutlinedButton(
+                text = "← Back",
                 onClick = onBack,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.weight(1f).height(48.dp)
-            ) {
-                Text("Back", style = MaterialTheme.typography.titleSmall)
-            }
-            Button(
+                modifier = Modifier.weight(1f)
+            )
+            ZeroTaxPrimaryButton(
+                text = if (grossSalary > 0L) "Continue to Deductions →" else "Enter Salary to Continue",
                 onClick = onProceed,
                 enabled = grossSalary > 0L,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = EnterpriseTeal600,
-                    contentColor = PureWhite
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-                modifier = Modifier.weight(2f).height(48.dp)
-            ) {
-                Text(
-                    text = if (grossSalary > 0L) "Continue to Deductions" else "Enter Salary to Continue",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                )
-            }
+                modifier = Modifier.weight(2f)
+            )
         }
 
         Spacer(Modifier.height(88.dp))
@@ -1368,25 +1373,16 @@ private fun Stage3Reconciliation(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            OutlinedButton(
+            ZeroTaxOutlinedButton(
+                text = "← Back",
                 onClick = onBack,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.weight(1f).height(48.dp)
-            ) {
-                Text("← Back", style = MaterialTheme.typography.titleSmall)
-            }
-            Button(
+                modifier = Modifier.weight(1f)
+            )
+            ZeroTaxPrimaryButton(
+                text = "Compare Tax Regimes →",
                 onClick = onProceed,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = EnterpriseTeal600,
-                    contentColor = PureWhite
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-                modifier = Modifier.weight(2f).height(48.dp)
-            ) {
-                Text("Compare Tax Regimes →", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-            }
+                modifier = Modifier.weight(2f)
+            )
         }
 
         Spacer(Modifier.height(88.dp))
@@ -1527,25 +1523,16 @@ private fun Stage4RegimeShowdown(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            OutlinedButton(
+            ZeroTaxOutlinedButton(
+                text = "← Back",
                 onClick = onBack,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.weight(1f).height(50.dp)
-            ) {
-                Text("← Back", style = MaterialTheme.typography.titleSmall)
-            }
-            Button(
+                modifier = Modifier.weight(1f)
+            )
+            ZeroTaxPrimaryButton(
+                text = "E-File Tax Return Now →",
                 onClick = onLaunchPortalAssistant,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = EnterpriseTeal600,
-                    contentColor = PureWhite
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-                modifier = Modifier.weight(2.2f).height(50.dp)
-            ) {
-                Text("E-File Tax Return Now →", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-            }
+                modifier = Modifier.weight(2.2f)
+            )
         }
 
         Spacer(Modifier.height(88.dp))

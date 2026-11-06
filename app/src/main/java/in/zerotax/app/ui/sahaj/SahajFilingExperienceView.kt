@@ -1,5 +1,7 @@
 package `in`.zerotax.app.ui.sahaj
 
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,7 +38,8 @@ import kotlin.math.max
 fun SahajFilingExperienceView(
     pan: String,
     grossSalary: Long,
-    bankInterest: Long = 14_200L,
+    bankInterest: Long = 0L,
+    bankAccount: `in`.zerotax.core.model.BankAccountDetails? = null,
     tdsClaimed: Long,
     newRegimeTax: Long,
     oldRegimeTax: Long,
@@ -399,29 +402,21 @@ fun SahajFilingExperienceView(
 
             Spacer(Modifier.height(10.dp))
 
-            OutlinedButton(
-                onClick = onOpenDeductionsAdvisor,
-                modifier = Modifier.fillMaxWidth().height(38.dp),
-                shape = RoundedCornerShape(6.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600)
-            ) {
-                Text("Have Extra Deductions? (Home Loan, 80D, Rent)", style = MaterialTheme.typography.labelSmall.copy(color = EnterpriseTeal700, fontWeight = FontWeight.Bold))
-            }
+            ZeroTaxOutlinedButton(
+                text = "Have Extra Deductions? (Home Loan, 80D, Rent)",
+                onClick = onOpenDeductionsAdvisor
+            )
 
             Spacer(Modifier.height(8.dp))
 
-            Button(
+            ZeroTaxPrimaryButton(
+                text = "Maximize Refund: Think Like a CA (Turn Tax to ₹0)",
                 onClick = onOpenThinkLikeCa,
-                modifier = Modifier.fillMaxWidth().height(40.dp),
-                shape = RoundedCornerShape(6.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.TrendingUp, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Maximize Refund: Think Like a CA (Turn Tax to ₹0)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = PureWhite))
+                containerColor = EmeraldSuccess,
+                leadingIcon = {
+                    Icon(Icons.AutoMirrored.Filled.TrendingUp, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
                 }
-            }
+            )
         }
 
         // STEP 4: REFUND BANK ACCOUNT
@@ -456,12 +451,15 @@ fun SahajFilingExperienceView(
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(Modifier.width(10.dp))
+                        val displayBank = bankAccount?.bankName?.ifBlank { null } ?: "Direct CBDT Validated Bank"
+                        val displayAcc = if (bankAccount != null && bankAccount.accountNumber.isNotBlank()) "Account: ${bankAccount.accountNumber} • IFSC: ${bankAccount.ifscCode}" else "Direct Credit to Pre-Validated Bank Account"
+                        val isPreVal = bankAccount?.isPreValidated ?: true
                         Column {
-                            Text("State Bank of India", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
-                            Text("Account: ••••••••1234 • IFSC: SBIN0001234", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                            Text(displayBank, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
+                            Text(displayAcc, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         }
                     }
-                    StatutoryBadge(text = "Primary Refund", tone = BadgeTone.SUCCESS)
+                    StatutoryBadge(text = if (bankAccount?.isPreValidated == true) "Pre-Validated" else "Primary Refund", tone = BadgeTone.SUCCESS)
                 }
             }
         }
@@ -499,95 +497,82 @@ fun SahajFilingExperienceView(
             modifier = Modifier.fillMaxWidth().height(50.dp)
         )
 
-        OutlinedButton(
+        ZeroTaxOutlinedButton(
+            text = "Review AIS Tax Transactions & Form 26AS",
             onClick = onOpenAisTransactions,
-            modifier = Modifier.fillMaxWidth().height(42.dp),
-            shape = RoundedCornerShape(8.dp),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Slate300)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
+            leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = null,
-                    tint = Slate700,
-                    modifier = Modifier.size(16.dp)
+                    tint = EnterpriseTeal700,
+                    modifier = Modifier.size(18.dp)
                 )
-                Spacer(Modifier.width(8.dp))
-                Text("Review AIS Tax Transactions & Form 26AS", style = MaterialTheme.typography.labelSmall.copy(color = Slate700))
             }
-        }
+        )
 
         Spacer(Modifier.height(48.dp))
     }
 
-    // Biometric e-Filing Verification Dialog
+    // Biometric e-Filing Verification Sheet
     if (showBiometricFilingDialog) {
-        AlertDialog(
-            onDismissRequest = { showBiometricFilingDialog = false },
-            containerColor = Slate900,
-            title = {
+        ZeroTaxBottomSheet(
+            onDismissRequest = { showBiometricFilingDialog = false }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Security,
                         contentDescription = null,
                         tint = EmeraldSuccess,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         "Confirm Biometric Signature",
-                        color = PureWhite,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                 }
-            },
-            text = {
-                Column {
-                    Text(
-                        text = "You are filing ITR-1 (SAHAJ) for AY 2026-27 under Section 139(1).\n\n" +
-                               "• Permanent Account Number: $pan\n" +
-                               "• Taxable Earnings: ₹${Rupee.formatInr(netTaxableEarnings)}\n" +
-                               "• " + (if (refundDue > 0) "Expected Refund: ₹${Rupee.formatInr(refundDue)}" else "Tax Payable: ₹${Rupee.formatInr(taxPayable)}") + "\n\n" +
-                               "Scan your fingerprint or face to cryptographically sign your CBDT return package.",
-                        color = Slate300,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp
-                    )
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showBiometricFilingDialog = false
-                        onLaunchPortalAssistant()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Fingerprint,
-                            contentDescription = null,
-                            tint = PureWhite,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Verify & Dispatch to CBDT", fontWeight = FontWeight.Bold)
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showBiometricFilingDialog = false }) {
-                    Text("Cancel", color = Slate400)
+                IconButton(onClick = { showBiometricFilingDialog = false }) {
+                    Icon(Icons.Default.Close, contentDescription = "Close")
                 }
             }
-        )
+
+            Spacer(Modifier.height(14.dp))
+
+            Text(
+                text = "You are filing ITR-1 (SAHAJ) for AY 2026-27 under Section 139(1).\n\n" +
+                       "• Permanent Account Number: $pan\n" +
+                       "• Taxable Earnings: ₹${Rupee.formatInr(netTaxableEarnings)}\n" +
+                       "• " + (if (refundDue > 0) "Expected Refund: ₹${Rupee.formatInr(refundDue)}" else "Tax Payable: ₹${Rupee.formatInr(taxPayable)}") + "\n\n" +
+                       "Scan your fingerprint or face to cryptographically sign your CBDT return package.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 20.sp
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            ZeroTaxPrimaryButton(
+                text = "Verify & Dispatch to CBDT",
+                onClick = {
+                    showBiometricFilingDialog = false
+                    onLaunchPortalAssistant()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Fingerprint,
+                        contentDescription = null,
+                        tint = PureWhite,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            )
+        }
     }
 }
 

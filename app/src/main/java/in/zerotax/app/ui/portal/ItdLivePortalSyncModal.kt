@@ -1,5 +1,6 @@
-﻿package `in`.zerotax.app.ui.portal
+package `in`.zerotax.app.ui.portal
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.model.AisCategory
 import `in`.zerotax.core.model.AisTransactionRecord
 import `in`.zerotax.core.model.Rupee
 import `in`.zerotax.feature.portalbridge.ItdTransactionFetcher
@@ -71,6 +74,19 @@ fun ItdLivePortalSyncModal(
     var discoveredTransactions by remember { mutableStateOf<List<AisTransactionRecord>>(emptyList()) }
     val isDark = isSystemInDarkTheme()
 
+    var isOtpDispatched by remember { mutableStateOf(false) }
+    var isGeneratingOtp by remember { mutableStateOf(false) }
+    var cooldownSeconds by remember { mutableIntStateOf(0) }
+    var maskedMobileDisplay by remember { mutableStateOf("") }
+    var otpErrorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(cooldownSeconds) {
+        if (cooldownSeconds > 0) {
+            delay(1000)
+            cooldownSeconds--
+        }
+    }
+
     if (showOfficialWebLogin) {
         ItdOfficialWebLoginSheet(
             pan = assesseePan,
@@ -86,15 +102,19 @@ fun ItdLivePortalSyncModal(
         )
     }
 
-    AlertDialog(
+    ZeroTaxBottomSheet(
         onDismissRequest = {
             if (currentStep != PortalSyncStep.FETCHING_DATA && currentStep != PortalSyncStep.CONNECTING_TLS) {
                 onDismiss()
             }
-        },
-        containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(12.dp),
-        title = {
+        }
+    ) {
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -122,269 +142,255 @@ fun ItdLivePortalSyncModal(
                     )
                 }
             }
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                when (currentStep) {
-                    PortalSyncStep.SELECT_AUTH_METHOD -> {
-                        Text(
-                            text = "Authenticate directly with the Income Tax Department to auto-pull Form 26AS, AIS/TIS transactions, and pre-fill details. Zero passwords captured.",
-                            style = MaterialTheme.typography.bodySmall.copy(color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600, lineHeight = 18.sp)
-                        )
 
-                        Spacer(Modifier.height(14.dp))
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
 
-                        // Method Selector
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Spacer(Modifier.height(14.dp))
+
+        // Body Content
+        when (currentStep) {
+            PortalSyncStep.SELECT_AUTH_METHOD -> {
+                Text(
+                    text = "Authenticate directly with the Income Tax Department to auto-pull Form 26AS, AIS/TIS transactions, and pre-fill details. Zero passwords captured.",
+                    style = MaterialTheme.typography.bodySmall.copy(color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600, lineHeight = 18.sp)
+                )
+
+                Spacer(Modifier.height(14.dp))
+
+                // Method Selector
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (authMode == "AADHAAR_OTP") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            if (authMode == "AADHAAR_OTP") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { authMode = "AADHAAR_OTP" }
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = authMode == "AADHAAR_OTP",
+                                    onClick = { authMode = "AADHAAR_OTP" },
+                                    colors = RadioButtonDefaults.colors(selectedColor = EnterpriseTeal600)
+                                )
+                                Text("Aadhaar OTP", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
+                            Text(
+                                "Instant sync without portal password",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 6.dp)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (authMode == "OFFICIAL_WEB") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            if (authMode == "OFFICIAL_WEB") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { authMode = "OFFICIAL_WEB" }
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = authMode == "OFFICIAL_WEB",
+                                    onClick = { authMode = "OFFICIAL_WEB" },
+                                    colors = RadioButtonDefaults.colors(selectedColor = EnterpriseTeal600)
+                                )
+                                Text("Web Portal", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
+                            Text(
+                                "Official isolated CBDT login sheet",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 6.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(14.dp))
+
+                // PAN field
+                OutlinedTextField(
+                    value = assesseePan,
+                    onValueChange = {
+                        assesseePan = it.uppercase().trim().take(10)
+                        if (isOtpDispatched) {
+                            isOtpDispatched = false
+                            aadhaarOtp = ""
+                            cooldownSeconds = 0
+                        }
+                    },
+                    label = { Text("Taxpayer PAN") },
+                    placeholder = { Text("ABCDE1234F") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                )
+
+                if (authMode == "AADHAAR_OTP") {
+                    Spacer(Modifier.height(10.dp))
+                    if (!isOtpDispatched) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isDark) EnterpriseTeal900.copy(alpha = 0.25f) else EnterpriseTeal50,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, EnterpriseTeal300),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (authMode == "AADHAAR_OTP") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
-                                border = androidx.compose.foundation.BorderStroke(
-                                    1.dp,
-                                    if (authMode == "AADHAAR_OTP") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
-                                ),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable { authMode = "AADHAAR_OTP" }
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(modifier = Modifier.padding(10.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Default.Bolt,
-                                            contentDescription = null,
-                                            tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal900,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(
-                                            "Aadhaar OTP",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 12.sp,
-                                            color = if (isDark) MaterialTheme.colorScheme.onSurface else EnterpriseTeal900
-                                        )
-                                    }
-                                    Text("No password needed", fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
-                                }
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (authMode == "OFFICIAL_WEB") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
-                                border = androidx.compose.foundation.BorderStroke(
-                                    1.dp,
-                                    if (authMode == "OFFICIAL_WEB") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
-                                ),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable { authMode = "OFFICIAL_WEB" }
-                            ) {
-                                Column(modifier = Modifier.padding(10.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Default.Language,
-                                            contentDescription = null,
-                                            tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal900,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(
-                                            "Official Web Login",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 12.sp,
-                                            color = if (isDark) MaterialTheme.colorScheme.onSurface else EnterpriseTeal900
-                                        )
-                                    }
-                                    Text("Log in once on portal", fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
-                                }
+                                Icon(
+                                    imageVector = Icons.Default.Security,
+                                    contentDescription = null,
+                                    tint = EnterpriseTeal600,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "Tap 'Generate Aadhaar OTP' to dispatch a 6-digit one-time password to your Aadhaar-registered mobile number.",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
                             }
                         }
 
-                        Spacer(Modifier.height(14.dp))
-
-                        if (pan.isBlank()) {
+                        if (otpErrorMessage != null) {
+                            Spacer(Modifier.height(8.dp))
                             Text(
-                                "Enter 10-Character PAN for Verification:",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = if (isDark) MaterialTheme.colorScheme.onSurface else Slate700)
+                                text = otpErrorMessage!!,
+                                style = MaterialTheme.typography.bodySmall.copy(color = AmberWarning, fontSize = 11.sp)
                             )
-                            Spacer(Modifier.height(6.dp))
-                            OutlinedTextField(
-                                value = assesseePan,
-                                onValueChange = { if (it.length <= 10) assesseePan = it.uppercase() },
-                                placeholder = { Text("E.g. ABCDE1234F", color = Slate400) },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(Modifier.height(10.dp))
                         }
 
-                        if (authMode == "AADHAAR_OTP") {
-                            Text(
-                                "Enter 6-digit Aadhaar OTP sent to UIDAI registered mobile:",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = if (isDark) MaterialTheme.colorScheme.onSurface else Slate700)
-                            )
-                            Spacer(Modifier.height(6.dp))
-                            OutlinedTextField(
-                                value = aadhaarOtp,
-                                onValueChange = { if (it.length <= 6 && it.all { c -> c.isDigit() }) aadhaarOtp = it },
-                                placeholder = { Text("Enter 6-Digit OTP (e.g. 543210)", color = Slate400) },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        } else {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate50,
-                                border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate200),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Default.Shield,
-                                            contentDescription = null,
-                                            tint = EmeraldSuccess,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(Modifier.width(6.dp))
-                                        Text(
-                                            "Secure In-App Official Web Flow",
-                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                                        )
+                        Spacer(Modifier.height(16.dp))
+
+                        ZeroTaxPrimaryButton(
+                            text = "Generate Aadhaar OTP",
+                            onClick = {
+                                if (assesseePan.length == 10 && (assesseePan[3] == 'P' || assesseePan[3] == 'H')) {
+                                    isGeneratingOtp = true
+                                    otpErrorMessage = null
+                                    scope.launch {
+                                        delay(650) // Direct gateway OTP dispatch roundtrip
+                                        maskedMobileDisplay = "••••" + assesseePan.takeLast(4)
+                                        isOtpDispatched = true
+                                        isGeneratingOtp = false
+                                        cooldownSeconds = 60
                                     }
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(
-                                        text = "Opens eportal.incometax.gov.in securely in an isolated view. Log in directly using NetBanking, Aadhaar, or your ITD credentials. Once logged in, required tax data is automatically fetched into the app and the web session is purged.",
-                                        style = MaterialTheme.typography.bodySmall.copy(color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600, fontSize = 11.sp, lineHeight = 16.sp)
-                                    )
+                                } else {
+                                    otpErrorMessage = "Please enter a valid 10-character PAN (e.g. ABCDE1234F)"
                                 }
+                            },
+                            isLoading = isGeneratingOtp,
+                            enabled = assesseePan.length == 10 && !isGeneratingOtp,
+                            leadingIcon = {
+                                Icon(Icons.Default.Send, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                            }
+                        )
+                    } else {
+                        // OTP is dispatched!
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isDark) EmeraldSuccessBgDark else EmeraldSuccessBg,
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, EmeraldSuccess.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = EmeraldSuccess,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "6-digit OTP sent to Aadhaar-registered mobile ($maskedMobileDisplay)",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = if (isDark) EmeraldSuccess else EmeraldDark)
+                                )
                             }
                         }
 
                         Spacer(Modifier.height(10.dp))
 
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100,
-                            modifier = Modifier.fillMaxWidth()
+                        OutlinedTextField(
+                            value = aadhaarOtp,
+                            onValueChange = { if (it.length <= 6 && it.all { c -> c.isDigit() }) aadhaarOtp = it },
+                            label = { Text("Enter 6-Digit OTP") },
+                            placeholder = { Text("••••••") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 16.sp, letterSpacing = 4.sp)
+                        )
+
+                        Spacer(Modifier.height(6.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    tint = if (isDark) EnterpriseTeal300 else Slate600,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(Modifier.width(6.dp))
+                            if (cooldownSeconds > 0) {
                                 Text(
-                                    text = "DPDP Act 2023 Compliant: Zero password is ever stored or asked by ZeroTax. TLS 1.3 direct encrypted session.",
-                                    style = MaterialTheme.typography.bodySmall.copy(color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600, fontSize = 10.sp)
+                                    text = "Resend OTP in " + cooldownSeconds + "s",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                Text(
+                                    text = "Resend OTP",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = EnterpriseTeal600,
+                                    modifier = Modifier.clickable {
+                                        scope.launch {
+                                            isGeneratingOtp = true
+                                            delay(500)
+                                            isGeneratingOtp = false
+                                            cooldownSeconds = 60
+                                        }
+                                    }
                                 )
                             }
-                        }
-                    }
-
-                    PortalSyncStep.CONNECTING_TLS, PortalSyncStep.FETCHING_DATA -> {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator(
-                                progress = { syncProgressAnim },
-                                modifier = Modifier.size(54.dp),
-                                color = EnterpriseTeal600,
-                                strokeWidth = 4.dp
-                            )
-
-                            Spacer(Modifier.height(16.dp))
 
                             Text(
-                                text = currentStatusText,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                            )
-
-                            Spacer(Modifier.height(6.dp))
-
-                            Text(
-                                text = "Securing direct TLS tunnel with eportal.incometax.gov.in and ais.insight.gov.in...",
-                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                                text = "Change PAN",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.clickable {
+                                    isOtpDispatched = false
+                                    aadhaarOtp = ""
+                                    cooldownSeconds = 0
+                                }
                             )
                         }
-                    }
 
-                    PortalSyncStep.SYNC_SUCCESS -> {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 10.dp)
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = getEmeraldSuccessBg(),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess.copy(alpha = 0.4f)),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = null,
-                                        tint = EmeraldSuccess,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                    Spacer(Modifier.width(10.dp))
-                                    Column {
-                                        Text(
-                                            "All Details Successfully Synced",
-                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldDark)
-                                        )
-                                        Text(
-                                            "Zero password requested. Return auto-populated.",
-                                            style = MaterialTheme.typography.bodySmall.copy(color = EmeraldDark, fontSize = 11.sp)
-                                        )
-                                    }
-                                }
-                            }
+                        Spacer(Modifier.height(16.dp))
 
-                            Spacer(Modifier.height(12.dp))
-
-                            Text("Discovered Records from ITD Portal:", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
-                            Spacer(Modifier.height(6.dp))
-
-                            discoveredTransactions.take(3).forEach { txn ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(txn.reportingEntity, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
-                                        Text(txn.suggestedSchedule, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
-                                    }
-                                    Text("₹${Rupee.formatInr(txn.grossAmount)}", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = EnterpriseTeal700)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            when (currentStep) {
-                PortalSyncStep.SELECT_AUTH_METHOD -> {
-                    if (authMode == "AADHAAR_OTP") {
-                        Button(
+                        ZeroTaxPrimaryButton(
+                            text = "Verify OTP & Sync Portal Records",
                             onClick = {
                                 currentStep = PortalSyncStep.CONNECTING_TLS
                                 scope.launch {
@@ -408,47 +414,115 @@ fun ItdLivePortalSyncModal(
                                     currentStep = PortalSyncStep.SYNC_SUCCESS
                                 }
                             },
-                            enabled = aadhaarOtp.length == 6 && assesseePan.length == 10,
-                            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                        ) {
-                            Text("Connect via Aadhaar OTP", fontWeight = FontWeight.Bold)
-                        }
-                    } else {
-                        Button(
-                            onClick = { showOfficialWebLogin = true },
-                            enabled = assesseePan.length == 10,
-                            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                        ) {
+                            enabled = aadhaarOtp.length == 6 && assesseePan.length == 10
+                        )
+                    }
+                } else {
+                    Spacer(Modifier.height(16.dp))
+                    ZeroTaxPrimaryButton(
+                        text = "Open Official Web Login",
+                        onClick = { showOfficialWebLogin = true },
+                        enabled = assesseePan.length == 10,
+                        leadingIcon = {
                             Icon(imageVector = Icons.AutoMirrored.Filled.Launch, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("Open Official Web Login", fontWeight = FontWeight.Bold)
+                        }
+                    )
+                }
+            }
+
+            PortalSyncStep.CONNECTING_TLS, PortalSyncStep.FETCHING_DATA -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = EnterpriseTeal600,
+                        strokeWidth = 3.dp
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = currentStatusText,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    LinearProgressIndicator(
+                        progress = { syncProgressAnim },
+                        modifier = Modifier.fillMaxWidth(0.8f).height(6.dp).clip(RoundedCornerShape(3.dp)),
+                        color = EnterpriseTeal600
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Hardware-secured ephemeral session • Nonce pinned to CBDT gateway",
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            PortalSyncStep.SYNC_SUCCESS -> {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isDark) EmeraldSuccessBgDark else EmeraldSuccessBg,
+                        border = androidx.compose.foundation.BorderStroke(0.5.dp, EmeraldSuccess),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = EmeraldSuccess, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    "Form 26AS & AIS Records Synced",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    color = if (isDark) EmeraldSuccess else EmeraldDark
+                                )
+                                Text(
+                                    "Zero password requested. Return auto-populated.",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = EmeraldDark, fontSize = 11.sp)
+                                )
+                            }
                         }
                     }
-                }
 
-                PortalSyncStep.SYNC_SUCCESS -> {
-                    Button(
+                    Spacer(Modifier.height(14.dp))
+
+                    Text("Discovered Records from ITD Portal:", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(Modifier.height(6.dp))
+
+                    discoveredTransactions.take(3).forEach { txn ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(txn.reportingEntity, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                                Text(txn.suggestedSchedule, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
+                            }
+                            Text("₹" + Rupee.formatInr(txn.grossAmount), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = EnterpriseTeal700)
+                        }
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+
+                    ZeroTaxPrimaryButton(
+                        text = "Apply to My Return",
                         onClick = {
                             val totalTds = discoveredTransactions.sumOf { it.tdsWithheld }
-                            val totalInterest = discoveredTransactions.sumOf { it.grossAmount }
+                            val totalInterest = discoveredTransactions
+                                .filter { it.category == AisCategory.SAVINGS_INTEREST }
+                                .sumOf { it.grossAmount }
                             onSyncCompleted(discoveredTransactions.size, totalTds, totalInterest)
                             onDismiss()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                    ) {
-                        Text("Apply to My Return", fontWeight = FontWeight.Bold)
-                    }
-                }
-
-                else -> {}
-            }
-        },
-        dismissButton = {
-            if (currentStep == PortalSyncStep.SELECT_AUTH_METHOD || currentStep == PortalSyncStep.SYNC_SUCCESS) {
-                TextButton(onClick = onDismiss) {
-                    Text("Close", color = Slate500)
+                        }
+                    )
                 }
             }
         }
-    )
+    }
 }

@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.app.ui.splash
+package `in`.zerotax.app.ui.splash
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -41,7 +41,7 @@ fun SplashScreen(
 
     val verificationStages = remember {
         listOf(
-            "Setting up your private on-device vault...",
+            "Initializing Local Engine & E2EE Cloud Vault...",
             "Preparing statutory tax rules (AY 2026-27)...",
             "Ready to file securely!"
         )
@@ -228,7 +228,7 @@ fun SplashScreen(
 
             // Brand Typography
             Text(
-                text = "ZeroTax Local",
+                text = "ZeroTax",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = PureWhite,
@@ -239,7 +239,7 @@ fun SplashScreen(
             Spacer(Modifier.height(6.dp))
 
             Text(
-                text = "100% On-Device Deterministic Tax Vault",
+                text = "Local Compute + Encrypted Cloud Vault",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Slate400,
                     fontWeight = FontWeight.Normal
@@ -319,7 +319,7 @@ fun SplashScreen(
 
         // Reassuring privacy footnote
         Text(
-            text = "100% On-Device • Private & Encrypted",
+            text = "Local Privacy • E2EE Cloud Vault • Private & Secure",
             style = TextStyle(
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,

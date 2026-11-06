@@ -1,5 +1,6 @@
 package `in`.zerotax.app.ui.sugam
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,6 +42,7 @@ enum class PresumptiveType(val section: String, val title: String, val threshold
 @Composable
 fun SugamPresumptiveFastStartView(
     pan: String,
+    initialGrossReceipts: Long = 0L,
     onLaunchPortalAssistant: () -> Unit,
     onOpenTaxPaymentHub: () -> Unit,
     onOpenAisTransactions: () -> Unit,
@@ -48,7 +50,7 @@ fun SugamPresumptiveFastStartView(
     modifier: Modifier = Modifier
 ) {
     var selectedType by remember { mutableStateOf(PresumptiveType.SEC_44ADA_PROFESSIONAL) }
-    var grossReceiptsInput by remember { mutableStateOf("2400000") }
+    var grossReceiptsInput by remember { mutableStateOf(if (initialGrossReceipts > 0L) initialGrossReceipts.toString() else "") }
     var declaredProfitPercent by remember { mutableIntStateOf(selectedType.defaultRatePercent) }
     var showBiometricFilingDialog by remember { mutableStateOf(false) }
 
@@ -333,66 +335,81 @@ fun SugamPresumptiveFastStartView(
             modifier = Modifier.fillMaxWidth().height(50.dp)
         )
 
-        OutlinedButton(
+        ZeroTaxOutlinedButton(
+            text = "Verify Client TDS u/s 194J / 194C in AIS",
             onClick = onOpenAisTransactions,
-            modifier = Modifier.fillMaxWidth().height(42.dp),
-            shape = RoundedCornerShape(8.dp),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Slate300)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
+            leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = null,
-                    tint = Slate700,
-                    modifier = Modifier.size(16.dp)
+                    tint = EnterpriseTeal700,
+                    modifier = Modifier.size(18.dp)
                 )
-                Spacer(Modifier.width(8.dp))
-                Text("Verify Client TDS u/s 194J / 194C in AIS", style = MaterialTheme.typography.labelSmall.copy(color = Slate700))
             }
-        }
+        )
 
         Spacer(Modifier.height(48.dp))
     }
 
     if (showBiometricFilingDialog) {
-        AlertDialog(
-            onDismissRequest = { showBiometricFilingDialog = false },
-            containerColor = Slate900,
-            title = {
-                Text("Confirm Biometric Signature for ITR-4", color = PureWhite, fontWeight = FontWeight.Bold)
-            },
-            text = {
-                Text(
-                    "You are filing ITR-4 (SUGAM) for PAN $pan.\n\n" +
-                    "• Section: ${selectedType.section}\n" +
-                    "• Gross Turnover: ₹${Rupee.formatInr(grossReceipts)}\n" +
-                    "• Presumptive Profit (${effectiveProfitPercent}%): ₹${Rupee.formatInr(presumptiveProfit)}\n" +
-                    "• Estimated Tax: ₹${Rupee.formatInr(estimatedTax)}\n\n" +
-                    "Scan fingerprint or face to dispatch to CBDT.",
-                    color = Slate300,
-                    fontSize = 13.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showBiometricFilingDialog = false
-                        onLaunchPortalAssistant()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600)
-                ) {
-                    Text("Verify & Submit to CBDT", fontWeight = FontWeight.Bold)
+        ZeroTaxBottomSheet(
+            onDismissRequest = { showBiometricFilingDialog = false }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = null,
+                        tint = EmeraldSuccess,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Confirm Biometric Signature for ITR-4",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showBiometricFilingDialog = false }) {
-                    Text("Cancel", color = Slate400)
+                IconButton(onClick = { showBiometricFilingDialog = false }) {
+                    Icon(Icons.Default.Close, contentDescription = "Close")
                 }
             }
-        )
+
+            Spacer(Modifier.height(14.dp))
+
+            Text(
+                text = "You are filing ITR-4 (SUGAM) for PAN $pan.\n\n" +
+                       "• Section: ${selectedType.section}\n" +
+                       "• Gross Turnover: ₹${Rupee.formatInr(grossReceipts)}\n" +
+                       "• Presumptive Profit (${effectiveProfitPercent}%): ₹${Rupee.formatInr(presumptiveProfit)}\n" +
+                       "• Estimated Tax: ₹${Rupee.formatInr(estimatedTax)}\n\n" +
+                       "Scan fingerprint or face to dispatch to CBDT.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 20.sp
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            ZeroTaxPrimaryButton(
+                text = "Verify & Submit to CBDT",
+                onClick = {
+                    showBiometricFilingDialog = false
+                    onLaunchPortalAssistant()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Fingerprint,
+                        contentDescription = null,
+                        tint = PureWhite,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            )
+        }
     }
 }
-

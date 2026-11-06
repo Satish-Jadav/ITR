@@ -434,4 +434,107 @@ object ZeroTaxCloudApiBridge {
             ZeroTaxLogger.e(TAG, "fetchChatHistory failed: ${error.message}", error)
         }
     }
+
+    /**
+     * Live IFSC lookup from statutory directory API (Cached for 24h)
+     */
+    suspend fun lookupIfsc(ifscCode: String): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanIfsc = ifscCode.trim().uppercase()
+        val cacheKey = "IFSC_" + cleanIfsc
+        getCached(cacheKey, 86400_000L)?.let {
+            ZeroTaxLogger.d(TAG, "lookupIfsc: serving from cache (" + cleanIfsc + ")")
+            return@withContext Result.success(it)
+        }
+
+        ZeroTaxLogger.d(TAG, "lookupIfsc: querying /api/v1/statutory/ifsc/" + cleanIfsc)
+        runCatching {
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/statutory/ifsc/" + cleanIfsc)
+                .get()
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    val json = JSONObject(bodyStr)
+                    putCache(cacheKey, json)
+                    ZeroTaxLogger.i(TAG, "lookupIfsc succeeded for " + cleanIfsc + ": " + json.optString("bankName"))
+                    json
+                } else {
+                    val err = "IFSC lookup failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "lookupIfsc failed: " + error.message, error)
+        }
+    }
+
+    /**
+     * Creates an encrypted CA client review link via compliance API
+     */
+    suspend fun createCaShareLink(
+        encryptedDossierB64: String,
+        ivHex: String,
+        maxViews: Int = 3,
+        durationHours: Int = 48
+    ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "createCaShareLink: creating share token")
+        runCatching {
+            val payload = JSONObject().apply {
+                put("encryptedDossierBlobBase64", encryptedDossierB64)
+                put("aesGcmIvHex", ivHex)
+                put("maxViews", maxViews)
+                put("durationHours", durationHours)
+            }
+
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/compliance/ca-share/create")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "createCaShareLink succeeded")
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "CA share link creation failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "createCaShareLink failed: " + error.message, error)
+        }
+    }
+
+    /**
+     * Fetches a live CA shared client audit dossier using the share token
+     */
+    suspend fun fetchCaSharedDossier(token: String): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanToken = token.trim()
+        ZeroTaxLogger.d(TAG, "fetchCaSharedDossier: querying /api/v1/compliance/ca-share/" + cleanToken)
+        runCatching {
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/compliance/ca-share/" + cleanToken)
+                .get()
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "fetchCaSharedDossier succeeded for token")
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "CA shared dossier fetch failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "fetchCaSharedDossier failed: " + error.message, error)
+        }
+    }
 }

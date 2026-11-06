@@ -1,5 +1,6 @@
 package `in`.zerotax.app.ui.ca
 
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

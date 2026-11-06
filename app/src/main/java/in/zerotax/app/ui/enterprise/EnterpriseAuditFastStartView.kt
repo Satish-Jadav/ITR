@@ -1,5 +1,9 @@
 package `in`.zerotax.app.ui.enterprise
 
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import `in`.zerotax.app.ui.components.ZeroTaxOutlinedButton
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -131,50 +135,40 @@ fun EnterpriseAuditFastStartView(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
+                    ZeroTaxOutlinedButton(
+                        text = "Share with CA",
                         onClick = onOpenShareWithCa,
-                        modifier = Modifier.weight(1f).height(40.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, IndigoStatutory)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        modifier = Modifier.weight(1f),
+                        borderColor = IndigoStatutory,
+                        contentColor = IndigoStatutory,
+                        leadingIcon = {
                             Icon(Icons.Default.Share, contentDescription = null, tint = IndigoStatutory, modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text("Share with CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IndigoStatutory))
                         }
-                    }
+                    )
 
-                    Button(
+                    ZeroTaxPrimaryButton(
+                        text = "Think Like a CA",
                         onClick = onOpenThinkLikeCa,
-                        modifier = Modifier.weight(1f).height(40.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.TrendingUp, contentDescription = null, tint = PureWhite, modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text("Think Like a CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureWhite))
+                        modifier = Modifier.weight(1f),
+                        containerColor = EmeraldSuccess,
+                        leadingIcon = {
+                            Icon(Icons.AutoMirrored.Filled.TrendingUp, contentDescription = null, tint = PureWhite, modifier = Modifier.size(14.dp))
                         }
-                    }
+                    )
                 }
 
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedButton(
+                ZeroTaxOutlinedButton(
+                    text = "Open CA Auditor Portal",
                     onClick = onOpenCaPortal,
-                    modifier = Modifier.fillMaxWidth().height(40.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Assignment, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(14.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Open CA Auditor Portal", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700))
+                    modifier = Modifier.fillMaxWidth(),
+                    borderColor = EnterpriseTeal600,
+                    contentColor = EnterpriseTeal700,
+                    leadingIcon = {
+                        Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(16.dp))
                     }
-                }
+                )
             }
         }
 
@@ -248,7 +242,7 @@ fun EnterpriseAuditFastStartView(
                                 Text("Corporate & Trust", fontWeight = FontWeight.Bold, color = EnterpriseTeal300, fontSize = 12.sp)
                             }
                             Spacer(Modifier.height(2.dp))
-                            Text("ITR-5 Firm, ITR-6 MAT, ITR-7 Trust", color = Slate300, fontSize = 10.sp)
+                            Text("ITR-5 Firm, ITR-6 MAT, ITR-7 Trust", color = Slate300, fontSize = 10.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             Spacer(Modifier.height(6.dp))
                             StatutoryBadge(text = "Launch Desk →", tone = BadgeTone.STATUTORY)
                         }
@@ -367,40 +361,36 @@ fun EnterpriseAuditFastStartView(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedButton(
+                ZeroTaxOutlinedButton(
+                    text = "Tax Toolkit",
                     onClick = onOpenToolkit,
-                    modifier = Modifier.weight(1f).height(40.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    modifier = Modifier.weight(1f),
+                    borderColor = EnterpriseTeal600,
+                    contentColor = EnterpriseTeal700,
+                    leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Build,
                             contentDescription = null,
                             tint = EnterpriseTeal700,
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(14.dp)
                         )
-                        Spacer(Modifier.width(4.dp))
-                        Text("Tax Toolkit", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
                     }
-                }
-                OutlinedButton(
+                )
+                ZeroTaxOutlinedButton(
+                    text = "Radar Analytics",
                     onClick = onOpenAnalytics,
-                    modifier = Modifier.weight(1f).height(40.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    modifier = Modifier.weight(1f),
+                    borderColor = EmeraldSuccess,
+                    contentColor = EmeraldSuccess,
+                    leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.BarChart,
                             contentDescription = null,
                             tint = EmeraldSuccess,
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(14.dp)
                         )
-                        Spacer(Modifier.width(4.dp))
-                        Text("Radar Analytics", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess)
                     }
-                }
+                )
             }
         }
 
@@ -409,41 +399,36 @@ fun EnterpriseAuditFastStartView(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Button(
+            ZeroTaxPrimaryButton(
+                text = "Pay Challan 280",
                 onClick = onOpenTaxPaymentHub,
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
-                modifier = Modifier.weight(1f).height(46.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                modifier = Modifier.weight(1f),
+                containerColor = AmberWarning,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.CreditCard,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(16.dp)
                     )
-                    Spacer(Modifier.width(6.dp))
-                    Text("Pay Challan 280", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                 }
-            }
+            )
 
-            Button(
+            ZeroTaxPrimaryButton(
+                text = "Run 6-Gate Audit",
                 onClick = onRunAudit,
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess),
-                modifier = Modifier.weight(1f).height(46.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                modifier = Modifier.weight(1f),
+                containerColor = EmeraldSuccess,
+                leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Security,
                         contentDescription = null,
                         tint = PureWhite,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(16.dp)
                     )
-                    Spacer(Modifier.width(6.dp))
-                    Text("Run 6-Gate Audit", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = PureWhite))
                 }
-            }
+            )
         }
 
         ZeroTaxPrimaryButton(
