@@ -1,5 +1,8 @@
 package `in`.zerotax.app.ui.chat
 
+import `in`.zerotax.app.ui.security.ZeroKnowledgeTrustShieldModal
+import `in`.zerotax.app.ui.components.WhatsAppEndToEndEncryptionBanner
+
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -55,6 +58,7 @@ fun ConversationalFilingChatScreen(
     var messages by remember { mutableStateOf(bot.getInitialGreeting()) }
     var inputText by remember { mutableStateOf("") }
     var isBotThinking by remember { mutableStateOf(false) }
+    var showTrustModal by remember { mutableStateOf(false) }
 
     val currentSnapshot = bot.snapshot
     val isReadyForReview = bot.currentStep == ChatStep.COMPLETED_AWAITING_REVIEW
@@ -372,6 +376,14 @@ fun ConversationalFilingChatScreen(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
+                // WhatsApp-Style End-to-End Encryption Banner at top of chat
+                item {
+                    WhatsAppEndToEndEncryptionBanner(
+                        onClick = { showTrustModal = true },
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        customText = "🔒 Messages & tax calculations are end-to-end encrypted. No one outside of this chat, not even ZeroTax, can read them. Tap to verify."
+                    )
+                }
                 items(
                     items = messages,
                     key = { it.id }
@@ -393,6 +405,10 @@ fun ConversationalFilingChatScreen(
                     }
                 }
             }
+        }
+
+        if (showTrustModal) {
+            ZeroKnowledgeTrustShieldModal(onDismiss = { showTrustModal = false })
         }
     }
 }

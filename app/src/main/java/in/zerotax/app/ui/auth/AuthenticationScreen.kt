@@ -80,8 +80,8 @@ fun AuthenticationScreen(
             // 1. Trust Pill Badge
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                color = if (isSystemInDarkTheme()) Color(0xFF232014) else Color(0xFFFEF9C3),
+                border = androidx.compose.foundation.BorderStroke(0.75.dp, if (isSystemInDarkTheme()) Color(0xFF713F12) else Color(0xFFFDE047)),
                 modifier = Modifier.clickable { showTrustShieldModal = true }
             ) {
                 Row(
@@ -89,17 +89,17 @@ fun AuthenticationScreen(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Shield,
+                        imageVector = Icons.Default.Lock,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = if (isSystemInDarkTheme()) Color(0xFFFBBF24) else Color(0xFFD97706),
                         modifier = Modifier.size(15.dp)
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "100% Private On-Device • Free & Safe",
+                        text = "🔒 End-to-End Encrypted • 100% On-Device",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = if (isSystemInDarkTheme()) Color(0xFFFDE68A) else Color(0xFF713F12)
                         )
                     )
                 }

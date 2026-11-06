@@ -54,11 +54,11 @@ fun ZeroKnowledgeTrustShieldModal(
                 Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
-                        "Zero-Knowledge Hardware Vault",
+                        "🔒 End-to-End Encrypted",
                         style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                     )
                     Text(
-                        "100% On-Device End-to-End Encryption Guarantee",
+                        "WhatsApp-Grade Zero-Knowledge Privacy Guarantee",
                         style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                 }
