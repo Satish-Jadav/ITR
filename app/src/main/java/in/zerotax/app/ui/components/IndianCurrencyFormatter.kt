@@ -36,5 +36,6 @@ object IndianCurrencyFormatter {
             else -> formatRupees(amount)
         }
     }
-}
 
+    fun formatToInr(amount: Long): String = formatRupees(amount)
+}

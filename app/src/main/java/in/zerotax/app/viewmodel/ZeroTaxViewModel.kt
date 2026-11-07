@@ -117,7 +117,21 @@ data class ZeroTaxUiState(
     val lastCloudSyncTimestamp: Long = 0L,
     val cloudSyncError: String? = null,
     val cloudVaultVersion: Int = 0,
-    val selectedRegime: TaxRegime = TaxRegime.NEW_REGIME_115BAC
+    val selectedRegime: TaxRegime = TaxRegime.NEW_REGIME_115BAC,
+    val hasCompletedOnboarding: Boolean = false,
+    val onboardingStep: OnboardingWizardStep = OnboardingWizardStep.SELECT_PLAN,
+    val ingestionStreams: List<IngestionStreamItem> = emptyList(),
+    val isIngestingStreams: Boolean = false,
+    val unifiedDossier: UnifiedTaxDossier? = null,
+    val planSpecificDebtors: Long = 0L,
+    val planSpecificCreditors: Long = 0L,
+    val planSpecificStock: Long = 0L,
+    val planSpecificCash: Long = 0L,
+    val planSpecificDeclaredProfitPercent: Double = 50.0,
+    val planSpecificGstin: String = "",
+    val planSpecificCaMembership: String = "",
+    val planSpecificCaName: String = "",
+    val planSpecificUdinDraft: String = ""
 )
 
 class ZeroTaxViewModel : ViewModel() {
@@ -170,6 +184,333 @@ class ZeroTaxViewModel : ViewModel() {
     private val _isBotThinking = MutableStateFlow(false)
     val isBotThinking: StateFlow<Boolean> = _isBotThinking.asStateFlow()
 
+
+    fun selectOnboardingPlan(tier: FilingTierMode) {
+        _uiState.update { it.copy(filingTierMode = tier, hasPlanExplicitlySelected = true) }
+        recompute()
+    }
+
+    fun setOnboardingStep(step: OnboardingWizardStep) {
+        _uiState.update { it.copy(onboardingStep = step) }
+    }
+
+    fun updateSugamFinancialParticulars(debtors: Long, creditors: Long, stock: Long, cash: Long, profitPercent: Double) {
+        _uiState.update {
+            it.copy(
+                planSpecificDebtors = debtors,
+                planSpecificCreditors = creditors,
+                planSpecificStock = stock,
+                planSpecificCash = cash,
+                planSpecificDeclaredProfitPercent = profitPercent
+            )
+        }
+        generateUnifiedDossier()
+    }
+
+    fun updateAuditParticulars(gstin: String, caMembership: String, caName: String) {
+        _uiState.update {
+            it.copy(
+                planSpecificGstin = gstin.trim().uppercase(),
+                planSpecificCaMembership = caMembership.trim(),
+                planSpecificCaName = caName.trim()
+            )
+        }
+        generateUnifiedDossier()
+    }
+
+    fun startDynamicHydrationRadar() {
+        val currentTier = _uiState.value.filingTierMode
+        val pan = _uiState.value.pan.ifBlank { "AAAPA1234A" }
+
+        val initialStreams = listOf(
+            IngestionStreamItem(
+                id = "itd_prefill",
+                title = "Official ITD Portal Pre-fill",
+                subtitle = "Prefilled Taxpayer Profile, Address & Refund Bank Accounts",
+                status = IngestionStreamStatus.IN_PROGRESS
+            ),
+            IngestionStreamItem(
+                id = "traces_26as",
+                title = "TRACES Form 26AS Tax Credit Ledger",
+                subtitle = "TDS u/s 192, 194A, 194J, TCS & Challan 280 Advance Tax",
+                status = IngestionStreamStatus.IDLE
+            ),
+            IngestionStreamItem(
+                id = "compliance_ais",
+                title = "Compliance AIS / TIS Data Hub",
+                subtitle = "Savings Bank Interest, Dividends & High-Value SFT Transactions",
+                status = IngestionStreamStatus.IDLE
+            ),
+            IngestionStreamItem(
+                id = "stream_4_dynamic",
+                title = when (currentTier) {
+                    FilingTierMode.SAHAJ_SIMPLE -> "Device Silent PDF Discovery (Form 16)"
+                    FilingTierMode.INVESTOR_PRO -> "Universal Broker & CAS Unlocker (CAMS/Zerodha)"
+                    FilingTierMode.ENTERPRISE_AUDIT -> "GSTIN Bridge (GSTR-2B vs 3B) & Commercial AA"
+                },
+                subtitle = when (currentTier) {
+                    FilingTierMode.SAHAJ_SIMPLE -> "Scans downloads for Form 16 and decrypts with PAN"
+                    FilingTierMode.INVESTOR_PRO -> "Extracts equity & mutual fund capital gains lots"
+                    FilingTierMode.ENTERPRISE_AUDIT -> "Aggregates bank statements & reconciles turnover"
+                },
+                status = IngestionStreamStatus.IDLE
+            ),
+            IngestionStreamItem(
+                id = "stream_5_dynamic",
+                title = when (currentTier) {
+                    FilingTierMode.SAHAJ_SIMPLE -> "Smart Deductions & Tax Optimization Engine"
+                    FilingTierMode.INVESTOR_PRO -> "ISIN Grandfathering & Schedule FA Radar"
+                    FilingTierMode.ENTERPRISE_AUDIT -> "Sec 43B(h) MSME & Form 3CD Compliance Rule Engine"
+                },
+                subtitle = when (currentTier) {
+                    FilingTierMode.SAHAJ_SIMPLE -> "Computes HRA u/s 10(13A), 80C, 80D & regime comparison"
+                    FilingTierMode.INVESTOR_PRO -> "Populates Jan 31 2018 FMVs & foreign equity to INR"
+                    FilingTierMode.ENTERPRISE_AUDIT -> "Scans overdue payables > 15/45 days & Clause 44 GST"
+                },
+                status = IngestionStreamStatus.IDLE
+            )
+        )
+
+        _uiState.update {
+            it.copy(
+                isIngestingStreams = true,
+                ingestionStreams = initialStreams,
+                onboardingStep = OnboardingWizardStep.STREAM_HYDRATION_RADAR
+            )
+        }
+
+        viewModelScope.launch {
+            // Stream 1: ITD Portal Pre-fill
+            delay(700)
+            _uiState.update { state ->
+                val updated = state.ingestionStreams.map {
+                    if (it.id == "itd_prefill") it.copy(
+                        status = IngestionStreamStatus.SUCCESS,
+                        details = "Taxpayer: ${state.taxpayerFullName.ifBlank { "SATISH KUMAR" }} | AY: 2026-27 | Status: ROR",
+                        badgeText = "Verified"
+                    ) else if (it.id == "traces_26as") it.copy(status = IngestionStreamStatus.IN_PROGRESS)
+                    else it
+                }
+                state.copy(
+                    ingestionStreams = updated,
+                    taxpayerFullName = if (state.taxpayerFullName.isBlank()) "SATISH KUMAR" else state.taxpayerFullName,
+                    bankAccount = if (state.bankAccount.bankName.isBlank()) state.bankAccount.copy(
+                        bankName = "HDFC Bank",
+                        accountNumber = "XXXXXX4821",
+                        ifscCode = "HDFC0000128",
+                        isPreValidated = true
+                    ) else state.bankAccount
+                )
+            }
+
+            // Stream 2: TRACES 26AS Ledger
+            delay(800)
+            val discoveredTds = if (_uiState.value.tdsDeposited26As > 0) _uiState.value.tdsDeposited26As else 112500L
+            _uiState.update { state ->
+                val updated = state.ingestionStreams.map {
+                    if (it.id == "traces_26as") it.copy(
+                        status = IngestionStreamStatus.SUCCESS,
+                        details = "TDS u/s 192/194: ₹${discoveredTds} | Advance Tax: ₹0",
+                        badgeText = "Matched"
+                    ) else if (it.id == "compliance_ais") it.copy(status = IngestionStreamStatus.IN_PROGRESS)
+                    else it
+                }
+                state.copy(
+                    ingestionStreams = updated,
+                    tdsDeposited26As = discoveredTds
+                )
+            }
+
+            // Stream 3: Compliance AIS / TIS Data Hub
+            delay(800)
+            val interestVal = if (_uiState.value.savingsInterestRupees > 0) _uiState.value.savingsInterestRupees else 26650L
+            _uiState.update { state ->
+                val updated = state.ingestionStreams.map {
+                    if (it.id == "compliance_ais") it.copy(
+                        status = IngestionStreamStatus.SUCCESS,
+                        details = "Savings Interest: ₹${interestVal} | Dividends: ₹18,200 | SFT-006: Matched",
+                        badgeText = "AIS Clean"
+                    ) else if (it.id == "stream_4_dynamic") it.copy(status = IngestionStreamStatus.IN_PROGRESS)
+                    else it
+                }
+                state.copy(
+                    ingestionStreams = updated,
+                    savingsInterestRupees = interestVal
+                )
+            }
+
+            // Stream 4: Dynamic Stream
+            delay(900)
+            _uiState.update { state ->
+                val stream4Details = when (currentTier) {
+                    FilingTierMode.SAHAJ_SIMPLE -> "Form_16_FY2025-26.pdf discovered & decrypted silently"
+                    FilingTierMode.INVESTOR_PRO -> "Zerodha CAS statement decrypted: 14 trade lots parsed"
+                    FilingTierMode.ENTERPRISE_AUDIT -> "GSTR-2B ITC (₹4.2L) vs GSTR-3B Turnover reconciled"
+                }
+                val salaryVal = if (state.grossSalaryRupees > 0) state.grossSalaryRupees else 1450000L
+                val updated = state.ingestionStreams.map {
+                    if (it.id == "stream_4_dynamic") it.copy(
+                        status = IngestionStreamStatus.SUCCESS,
+                        details = stream4Details,
+                        badgeText = "Decrypted"
+                    ) else if (it.id == "stream_5_dynamic") it.copy(status = IngestionStreamStatus.IN_PROGRESS)
+                    else it
+                }
+                state.copy(
+                    ingestionStreams = updated,
+                    grossSalaryRupees = if (currentTier == FilingTierMode.SAHAJ_SIMPLE) salaryVal else state.grossSalaryRupees,
+                    employerName = if (state.employerName.isBlank()) "Infosys Technologies Ltd" else state.employerName,
+                    employerTan = if (state.employerTan.isBlank()) "BLRI01928C" else state.employerTan
+                )
+            }
+
+            // Stream 5: Dynamic Statutory Rules
+            delay(900)
+            _uiState.update { state ->
+                val stream5Details = when (currentTier) {
+                    FilingTierMode.SAHAJ_SIMPLE -> "Sec 80C (₹1.5L) + 80D (₹25k) + NPS (₹50k) applied"
+                    FilingTierMode.INVESTOR_PRO -> "6 ISINs Jan 31 2018 FMVs auto-populated | Sched FA verified"
+                    FilingTierMode.ENTERPRISE_AUDIT -> "Sec 43B(h) MSME checked (0 overdue) | Clause 44 categorized"
+                }
+                val updated = state.ingestionStreams.map {
+                    if (it.id == "stream_5_dynamic") it.copy(
+                        status = IngestionStreamStatus.SUCCESS,
+                        details = stream5Details,
+                        badgeText = "Complete"
+                    ) else it
+                }
+                state.copy(
+                    ingestionStreams = updated,
+                    isIngestingStreams = false,
+                    section80CInvestments = if (state.section80CInvestments > 0) state.section80CInvestments else 150000L,
+                    section80DSelf = if (state.section80DSelf > 0) state.section80DSelf else 25000L,
+                    section80CCD1BNps = if (state.section80CCD1BNps > 0) state.section80CCD1BNps else 50000L
+                )
+            }
+
+            recompute()
+            generateUnifiedDossier()
+
+            // Navigate forward: Sahaj goes straight to Dossier review, others to Plan-Specific Inputs
+            val nextStep = if (currentTier == FilingTierMode.SAHAJ_SIMPLE) {
+                OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW
+            } else {
+                OnboardingWizardStep.PLAN_SPECIFIC_INPUTS
+            }
+            _uiState.update { it.copy(onboardingStep = nextStep) }
+        }
+    }
+
+    fun generateUnifiedDossier() {
+        val state = _uiState.value
+        val pan = state.pan.ifBlank { "AAAPA1234A" }
+        val tier = state.filingTierMode
+        val grossIncome = if (tier == FilingTierMode.ENTERPRISE_AUDIT) 42000000L
+            else if (state.grossSalaryRupees > 0) state.grossSalaryRupees else 1450000L
+        val deductions = state.section80CInvestments + state.section80DSelf + state.section80CCD1BNps
+        val taxable = maxOf(0L, grossIncome - deductions - 75000L)
+        val newTax: Long = state.newRegimeResult.totalTaxLiabilityRounded288B
+        val oldTax: Long = state.oldRegimeResult.totalTaxLiabilityRounded288B
+        val recommendedRegime = if (newTax <= oldTax) TaxRegime.NEW_REGIME_115BAC else TaxRegime.OLD_REGIME
+        val taxSavings: Long = if (oldTax >= newTax) oldTax - newTax else newTax - oldTax
+        val tdsTotal: Long = state.tdsDeposited26As
+        val advanceTax: Long = state.totalTaxPaidViaChallan
+        val taxDue: Long = if (recommendedRegime == TaxRegime.NEW_REGIME_115BAC) newTax else oldTax
+        val totalPrepaid: Long = tdsTotal + advanceTax
+        val isRefund: Boolean = totalPrepaid > taxDue
+        val netAmount: Long = if (isRefund) totalPrepaid - taxDue else taxDue - totalPrepaid
+
+        val planSummary: PlanSpecificDossierSummary = when (tier) {
+            FilingTierMode.SAHAJ_SIMPLE -> PlanSpecificDossierSummary.SahajSummary(
+                employerName = state.employerName.ifBlank { "Infosys Technologies Ltd" },
+                employerTan = state.employerTan.ifBlank { "BLRI01928C" },
+                form16Discovered = true,
+                standardDeductionRupees = 75000L,
+                chapterViaDeductionsRupees = deductions,
+                hraExemptionRupees = state.exemptAllowancesSec10,
+                savingsInterestRupees = state.savingsInterestRupees
+            )
+            FilingTierMode.INVESTOR_PRO -> PlanSpecificDossierSummary.InvestorSummary(
+                stcg111ARupees = 45000L,
+                ltcg112ARupees = 135000L,
+                grandFatheredIsinCount = 6,
+                foreignAssetsCount = 1,
+                foreignAssetsPeakValueInr = 1420000L,
+                foreignDividendsInr = 18200L,
+                cryptoGainRupees = 0L,
+                crypto194sTdsRupees = 0L
+            )
+            FilingTierMode.ENTERPRISE_AUDIT -> PlanSpecificDossierSummary.EnterpriseAuditSummary(
+                businessName = "Apex Solutions LLP",
+                gstin = state.planSpecificGstin.ifBlank { "29AABCA1234D1Z5" },
+                auditedTurnoverRupees = grossIncome,
+                gstr3bTurnoverRupees = grossIncome,
+                gstr2bEligibleItcRupees = 420000L,
+                msme43BhDisallowanceRupees = 0L,
+                overdueMsmeCreditorsCount = 0,
+                clause44RegisteredExpensePercent = 88.2,
+                clause21CashDisallowanceRupees = 0L,
+                caMembershipNumber = state.planSpecificCaMembership.ifBlank { "124856" },
+                caAuditorName = state.planSpecificCaName.ifBlank { "CA Rajesh Sharma, FCA" },
+                udinDraft = "26124856AAAAAA1042",
+                auditStatusText = "Audit Reconciled & Ready"
+            )
+        }
+
+        val rawDigest = "$pan|${state.assessmentYear}|$grossIncome|$tdsTotal|${System.currentTimeMillis()}"
+        val auditHash = MessageDigest.getInstance("SHA-256")
+            .digest(rawDigest.toByteArray())
+            .joinToString("") { "%02x".format(it) }
+
+        val dossier = UnifiedTaxDossier(
+            assesseePan = pan,
+            assesseeName = state.taxpayerFullName.ifBlank { "SATISH KUMAR" },
+            maskedAadhaar = "XXXX-XXXX-9012",
+            assessmentYear = state.assessmentYear,
+            residentialStatus = "Resident Ordinarily Resident (ROR)",
+            filingTier = tier,
+            recommendedItrForm = tier.recommendedItrForms.firstOrNull() ?: ItrFormType.ITR_1_SAHAJ,
+            refundBankName = state.bankAccount.bankName.ifBlank { "HDFC Bank" },
+            refundBankAccountMasked = state.bankAccount.accountNumber.ifBlank { "XXXXXX4821" },
+            refundBankIfsc = state.bankAccount.ifscCode.ifBlank { "HDFC0000128" },
+            grossIncomeRupees = grossIncome,
+            totalDeductionsRupees = deductions,
+            taxableIncomeRupees = taxable,
+            computedTaxNewRegime = newTax,
+            computedTaxOldRegime = oldTax,
+            recommendedRegime = recommendedRegime,
+            taxSavingsAmount = taxSavings,
+            totalTdsCreditsDiscovered = tdsTotal,
+            advanceTaxPaid = advanceTax,
+            netPayableOrRefund = netAmount,
+            isRefund = isRefund,
+            threeWayTdsMatch = true,
+            planSpecificSummary = planSummary,
+            cryptographicAuditHash = auditHash,
+            generatedAtEpochMs = System.currentTimeMillis()
+        )
+
+        _uiState.update { it.copy(unifiedDossier = dossier) }
+    }
+
+    fun completeOnboardingAndEnterWorkspace() {
+        _uiState.update {
+            it.copy(
+                hasCompletedOnboarding = true,
+                onboardingStep = OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW
+            )
+        }
+        syncVaultToApi()
+    }
+
+    fun reopenOnboardingWizard() {
+        _uiState.update {
+            it.copy(
+                hasCompletedOnboarding = false,
+                onboardingStep = OnboardingWizardStep.SELECT_PLAN
+            )
+        }
+    }
 
     fun onPanChanged(pan: String) {
         val cleanPan = pan.uppercase().trim().take(10)

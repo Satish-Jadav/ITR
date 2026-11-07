@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.zerotax.app.ui.auth.AuthenticationScreen
 import `in`.zerotax.app.ui.ca.CaAuditorPortalScreen
 import `in`.zerotax.app.ui.navigation.ZeroTaxFourTapSpineScaffold
+import `in`.zerotax.app.ui.onboarding.AutomatedOnboardingScreen
 import `in`.zerotax.app.ui.splash.SplashScreen
 import `in`.zerotax.app.ui.theme.ZeroTaxTheme
 import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
@@ -48,13 +49,17 @@ class MainActivity : ComponentActivity() {
                         )
                     } else {
                         AnimatedContent(
-                            targetState = isSplashFinished to (uiState.authSessionState is AuthSessionState.Authenticated),
+                            targetState = Triple(
+                                isSplashFinished,
+                                uiState.authSessionState is AuthSessionState.Authenticated,
+                                uiState.hasCompletedOnboarding
+                            ),
                             transitionSpec = {
                                 fadeIn(animationSpec = tween(400, easing = FastOutSlowInEasing)) togetherWith
                                 fadeOut(animationSpec = tween(300, easing = FastOutSlowInEasing))
                             },
                             label = "AppLaunchTransition"
-                        ) { (splashFinished, isAuthenticated) ->
+                        ) { (splashFinished, isAuthenticated, hasCompletedOnboarding) ->
                             if (!splashFinished) {
                                 SplashScreen(
                                     onInitializationComplete = { isSplashFinished = true }
@@ -76,6 +81,16 @@ class MainActivity : ComponentActivity() {
                                     },
                                     isLoading = uiState.isAuthLoading,
                                     errorMessage = uiState.authErrorMessage
+                                )
+                            } else if (!hasCompletedOnboarding) {
+                                AutomatedOnboardingScreen(
+                                    viewModel = viewModel,
+                                    onOnboardingFinished = {
+                                        // Transition handled via uiState.hasCompletedOnboarding
+                                    },
+                                    onLaunchCaPortal = {
+                                        showCaPortalInMain = true
+                                    }
                                 )
                             } else {
                                 ZeroTaxFourTapSpineScaffold(viewModel = viewModel)
