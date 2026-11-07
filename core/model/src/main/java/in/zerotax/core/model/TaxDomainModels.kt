@@ -155,6 +155,7 @@ data class AadhaarVerificationResult(
 
 @Serializable
 enum class AisCategory(val code: String, val displayName: String) {
+    SALARY("SAL", "Salary / Pension u/s 192"),
     SAVINGS_INTEREST("INT-SB", "Savings Bank Account Interest"),
     TIME_DEPOSIT_INTEREST("INT-TD", "Fixed / Term Deposit Interest"),
     DIVIDENDS("DIV", "Dividend from Shares / Mutual Funds"),

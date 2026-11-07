@@ -58,7 +58,10 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
             "eportal.incometax.gov.in",
             "www.incometax.gov.in",
             "contents.tdscpc.gov.in",
-            "ais.insight.gov.in"
+            "ais.insight.gov.in",
+            "digilocker.meripehchan.gov.in",
+            "api.digitallocker.gov.in",
+            "accounts.google.com"
         )
         const val PORTAL_TIMEOUT_MS = 15_000L
         // VUL-09 FIX: Extend Aadhaar scrub regex to also cover hyphen and dot separators.
@@ -81,7 +84,14 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val host = request?.url?.host?.lowercase() ?: return true
-                return !ALLOWED_HOSTS.contains(host)
+                val isAllowed = ALLOWED_HOSTS.contains(host) ||
+                    host.endsWith(".incometax.gov.in") ||
+                    host.endsWith(".gov.in") ||
+                    host.endsWith(".bank.sbi") ||
+                    host.endsWith(".onlinesbi.sbi") ||
+                    host.endsWith(".hdfcbank.com") ||
+                    host.endsWith(".icicibank.com")
+                return !isAllowed
             }
             override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
                 val code = errorResponse?.statusCode ?: 0
@@ -245,7 +255,7 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                         dt.items.add(file);
                         fileInput.files = dt.files;
                         fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-                        window.ZeroTaxBridge.onAutoFillComplete(1);
+                        window.ZeroTaxClientBridge.onAutoFillComplete(1);
                     }
                 } catch(e) {
                     console.error('CBDT JSON Injection error', e);
@@ -306,7 +316,7 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                     const statusRow = document.querySelector('tr[data-ack="' + ack + '"]') || document.querySelector('.cpc-status-card');
                     if (statusRow) {
                         const text = statusRow.innerText || '';
-                        window.ZeroTaxBridge.onCpcStatusPolled(ack, text, 0);
+                        window.ZeroTaxClientBridge.onCpcStatusPolled(ack, text, 0);
                     }
                 } catch(e) {}
             })();
