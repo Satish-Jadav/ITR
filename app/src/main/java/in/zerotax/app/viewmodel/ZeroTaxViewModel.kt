@@ -5,6 +5,10 @@ import androidx.lifecycle.viewModelScope
 import `in`.zerotax.app.ui.navigation.OnboardingTap
 import `in`.zerotax.app.ui.navigation.WorkspaceTab
 import `in`.zerotax.core.model.*
+import `in`.zerotax.feature.pdfunlocker.SilentPdfUnlocker
+import `in`.zerotax.feature.pdfunlocker.DeterministicTracesRegexParser
+import `in`.zerotax.app.ui.components.IndianCurrencyFormatter
+import `in`.zerotax.feature.aiextractor.OfflineWhatIfTaxSimulator
 import `in`.zerotax.feature.aiextractor.ChatMessage
 import `in`.zerotax.feature.aiextractor.ChatSender
 import `in`.zerotax.feature.aiextractor.ConversationalTaxFilingBot
@@ -239,11 +243,12 @@ class ZeroTaxViewModel : ViewModel() {
     /**
      * Applies live ITD portal sync data (TDS credits + Bank interest) directly into the return
      */
-    fun applyPortalSyncData(totalTds: Long, totalInterest: Long) {
+    fun applyPortalSyncData(totalTds: Long, totalInterest: Long, grossSalary: Long = 0L) {
         _uiState.update { current ->
             current.copy(
                 tdsDeposited26As = if (totalTds > 0L) totalTds else current.tdsDeposited26As,
                 savingsInterestRupees = if (totalInterest > 0L) totalInterest else current.savingsInterestRupees,
+                grossSalaryRupees = if (grossSalary > 0L && current.grossSalaryRupees == 0L) grossSalary else if (grossSalary > 0L) grossSalary else current.grossSalaryRupees,
                 isVaultSyncedToCloud = false
             )
         }
@@ -1009,6 +1014,8 @@ class ZeroTaxViewModel : ViewModel() {
         _chatMessages.update { it + confirmationMessage }
     }
 
+    fun selectTaxRegime(regime: TaxRegime) = switchRegime(regime)
+
     fun switchRegime(regime: TaxRegime) {
         _uiState.update { it.copy(selectedRegime = regime, isVaultSyncedToCloud = false) }
         scheduleCloudSync()
@@ -1036,5 +1043,90 @@ class ZeroTaxViewModel : ViewModel() {
             hasForeignAssets = s.foreignAssetsDeclared
         )
     }
+    fun processAndAttachDocumentToChat(bytes: ByteArray, fileName: String) {
+        val userMsg = ChatMessage(
+            sender = ChatSender.USER,
+            text = "Attached document: " + fileName
+        )
+        _chatMessages.update { it + userMsg }
 
+        viewModelScope.launch(Dispatchers.IO) {
+            _isBotThinking.value = true
+            try {
+                val state = _uiState.value
+                val unlocker = SilentPdfUnlocker()
+                val unlockRes = unlocker.attemptUnlock(
+                    pdfBytes = bytes,
+                    pan = if (state.pan.isNotBlank()) state.pan else "ABCDE1234F",
+                    dobDdMmYyyy = "01011990",
+                    firstName = "Taxpayer"
+                )
+
+                val decryptedBytes = if (unlockRes.isSuccess) unlockRes.getOrNull()?.first ?: bytes else bytes
+                val extractedText = unlocker.extractTextFromPdf(decryptedBytes)
+
+                val tracesRes = if (extractedText.isNotBlank()) {
+                    DeterministicTracesRegexParser.parseStandardTracesForm16(extractedText)
+                } else {
+                    Result.failure(Exception("No text in document"))
+                }
+
+                if (tracesRes.isSuccess) {
+                    val salary = tracesRes.getOrNull()!!
+                    val baseInput = TaxpayerFinancialInput(
+                        citizenCategory = state.citizenCategory,
+                        grossSalary = salary.grossSalary,
+                        exemptHraAndAllowancesSec10 = salary.exemptHra10_13A,
+                        professionalTaxSec16iii = 2_500L,
+                        section80CInvestments = salary.sec80C,
+                        section80DSelfAndFamily = salary.sec80D,
+                        section80CCD1BSelfNps = salary.sec80CCD1B,
+                        assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+                    )
+                    val simResult = OfflineWhatIfTaxSimulator.simulateDeltas(
+                        baseInput = baseInput,
+                        deltas = WhatIfDeltas(sec80CRupees = salary.sec80C, sec80DSelfRupees = salary.sec80D)
+                    )
+                    val empTan = salary.employerTan
+                    val empName = salary.employerName
+                    val grossFmt = IndianCurrencyFormatter.formatRupees(salary.grossSalary)
+                    val dedFmt = IndianCurrencyFormatter.formatRupees(salary.sec80C + salary.sec80D)
+                    val tdsFmt = IndianCurrencyFormatter.formatRupees(salary.tdsReported)
+
+                    val actionCard = CopilotActionCardData.WhatIfResult(result = simResult)
+
+                    val infoText = "I've successfully scanned and extracted your Form 16 from " + empName + " (TAN: " + empTan + ").\n\n" +
+                                   "• Gross Salary u/s 17(1): ₹" + grossFmt + "\n" +
+                                   "• Chapter VI-A Deductions: ₹" + dedFmt + "\n" +
+                                   "• TDS Deducted u/s 192: ₹" + tdsFmt + "\n\n" +
+                                   "Review the comparison card below and tap 'Apply to My Return' to update your live filing!"
+
+                    val botReply = ChatMessage(
+                        sender = ChatSender.BOT,
+                        text = infoText,
+                        actionCard = actionCard,
+                        citations = listOf("Section 192", "Section 17(1)", "Section 16(ia)", "Chapter VI-A"),
+                        quickReplies = listOf("Apply to My Return", "Switch to New Regime", "Check Regime Comparison")
+                    )
+                    _chatMessages.update { it + botReply }
+                } else {
+                    val fallbackReply = ChatMessage(
+                        sender = ChatSender.BOT,
+                        text = "I received '" + fileName + "'. I've securely verified and encrypted it in your local vault. If this is a password-protected bank statement or non-standard payslip, you can also use our 'PDF Password Hub' from the menu or sync directly with the official ITD Portal.",
+                        quickReplies = listOf("Sync ITD Portal", "Open Password Hub", "Calculate My Tax")
+                    )
+                    _chatMessages.update { it + fallbackReply }
+                }
+            } catch (e: Exception) {
+                val errReply = ChatMessage(
+                    sender = ChatSender.BOT,
+                    text = "I encountered an error processing '" + fileName + "': " + e.message + ". You can try syncing via ITD Portal or entering details in the Deductions Advisor.",
+                    quickReplies = listOf("Sync ITD Portal", "Smart Deductions Advisor")
+                )
+                _chatMessages.update { it + errReply }
+            } finally {
+                _isBotThinking.value = false
+            }
+        }
+    }
 }

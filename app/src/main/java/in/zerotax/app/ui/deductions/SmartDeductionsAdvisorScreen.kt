@@ -689,16 +689,10 @@ fun SmartDeductionsAdvisorScreen(
     // ON-DEVICE GEMINI TAX COPILOT SHEET
     // ========================================================================
     if (isCopilotSheetVisible) {
-        ModalBottomSheet(
+        ZeroTaxBottomSheet(
             onDismissRequest = { isCopilotSheetVisible = false },
-            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-            containerColor = MaterialTheme.colorScheme.surface
+            scrollable = true
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -816,7 +810,6 @@ fun SmartDeductionsAdvisorScreen(
                 }
 
                 Spacer(Modifier.height(20.dp))
-            }
         }
     }
 }

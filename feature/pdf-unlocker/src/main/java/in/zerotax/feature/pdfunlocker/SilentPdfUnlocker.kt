@@ -9,6 +9,10 @@ import java.io.ByteArrayOutputStream
 
 class SilentPdfUnlocker {
     companion object {
+        fun zeroize(bytes: ByteArray) {
+            bytes.fill(0)
+        }
+
         fun initPdfBox(context: android.content.Context) {
             if (!com.tom_roush.pdfbox.android.PDFBoxResourceLoader.isReady()) {
                 com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(context.applicationContext)
@@ -77,7 +81,7 @@ class SilentPdfUnlocker {
         // resulting in ANR when all 25 candidates are tried sequentially.
         //
         // Guard 1: File size cap (50 MB). Reject oversized files immediately.
-        val MAX_PDF_BYTES = 50 * 1024 * 1024
+        val MAX_PDF_BYTES = 16 * 1024 * 1024
         if (pdfBytes.size > MAX_PDF_BYTES) {
             return@withContext Result.failure(
                 SecurityException("PDF exceeds 50 MB size limit. Please ensure this is a valid Indian tax document.")
@@ -142,6 +146,16 @@ class SilentPdfUnlocker {
                 val stripper = com.tom_roush.pdfbox.text.PDFTextStripper()
                 stripper.getText(doc)
             }
+        }
+    }
+
+    fun extractTextFromPdf(pdfBytes: ByteArray): String {
+        return try {
+            PDDocument.load(ByteArrayInputStream(pdfBytes)).use { doc ->
+                com.tom_roush.pdfbox.text.PDFTextStripper().getText(doc)
+            }
+        } catch (_: Exception) {
+            ""
         }
     }
 }

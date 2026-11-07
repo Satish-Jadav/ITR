@@ -355,6 +355,7 @@ fun PortalAssistantScreen(
                     )
 
                     InAppFilingStage.AADHAAR_E_VERIFICATION -> AadhaarEVerificationStage(
+                        pan = assesseePan,
                         acknowledgmentNumber = submissionResult?.acknowledgmentNumber ?: "102684910293",
                         otpCode = aadhaarOtpInput,
                         onOtpChanged = { if (it.length <= 6 && it.all { char -> char.isDigit() }) aadhaarOtpInput = it },
@@ -422,16 +423,10 @@ fun PortalAssistantScreen(
     // EMBEDDED ON-DEVICE GEMINI COPILOT SHEET
     // ========================================================================
     if (isCopilotSheetVisible) {
-        ModalBottomSheet(
+        ZeroTaxBottomSheet(
             onDismissRequest = { isCopilotSheetVisible = false },
-            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-            containerColor = MaterialTheme.colorScheme.surface
+            scrollable = true
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -549,7 +544,6 @@ fun PortalAssistantScreen(
                 }
 
                 Spacer(Modifier.height(20.dp))
-            }
         }
     }
 }
@@ -1038,6 +1032,7 @@ private fun DirectSubmissionStage(
 // ============================================================================
 @Composable
 private fun AadhaarEVerificationStage(
+    pan: String,
     acknowledgmentNumber: String,
     otpCode: String,
     onOtpChanged: (String) -> Unit,
@@ -1046,6 +1041,7 @@ private fun AadhaarEVerificationStage(
     onVerify: () -> Unit,
     onResendOtp: () -> Unit
 ) {
+    val maskedMobile = "•••••" + pan.takeLast(4)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1066,7 +1062,7 @@ private fun AadhaarEVerificationStage(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp),
+            shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
         ) {
@@ -1082,7 +1078,7 @@ private fun AadhaarEVerificationStage(
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "A 6-digit verification OTP has been sent by UIDAI to your mobile ending with ••••5819.",
+                    text = "A 6-digit verification OTP has been sent by UIDAI to your mobile ending with " + maskedMobile + ".",
                     style = MaterialTheme.typography.bodySmall,
                     color = Slate600
                 )
@@ -1098,7 +1094,7 @@ private fun AadhaarEVerificationStage(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp)
+            shape = RoundedCornerShape(8.dp)
         )
 
         if (error != null) {
@@ -1116,19 +1112,13 @@ private fun AadhaarEVerificationStage(
 
         Spacer(Modifier.height(24.dp))
 
-        Button(
+        ZeroTaxPrimaryButton(
+            text = "Complete e-Verification u/s 140A",
             onClick = onVerify,
             enabled = !isVerifying && otpCode.length == 6,
-            shape = RoundedCornerShape(4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-            modifier = Modifier.fillMaxWidth().height(44.dp)
-        ) {
-            if (isVerifying) {
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), color = PureWhite, strokeWidth = 2.dp)
-            } else {
-                Text("Complete e-Verification u/s 140A", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-            }
-        }
+            isLoading = isVerifying,
+            modifier = Modifier.fillMaxWidth().height(48.dp)
+        )
 
         Spacer(Modifier.height(88.dp))
     }

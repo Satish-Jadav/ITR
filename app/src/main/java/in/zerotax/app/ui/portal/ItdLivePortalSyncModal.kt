@@ -1,5 +1,9 @@
 package `in`.zerotax.app.ui.portal
 
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
+import org.json.JSONObject
+import org.json.JSONArray
+
 import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -58,7 +62,8 @@ fun ItdLivePortalSyncModal(
     onSyncCompleted: (
         syncedTransactionsCount: Int,
         totalTdsDiscovered: Long,
-        totalSavingsInterest: Long
+        totalSavingsInterest: Long,
+        discoveredGrossSalary: Long
     ) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -79,6 +84,7 @@ fun ItdLivePortalSyncModal(
     var cooldownSeconds by remember { mutableIntStateOf(0) }
     var maskedMobileDisplay by remember { mutableStateOf("") }
     var otpErrorMessage by remember { mutableStateOf<String?>(null) }
+    var activeTxnId by remember { mutableStateOf("") }
 
     LaunchedEffect(cooldownSeconds) {
         if (cooldownSeconds > 0) {
@@ -289,11 +295,17 @@ fun ItdLivePortalSyncModal(
                                     isGeneratingOtp = true
                                     otpErrorMessage = null
                                     scope.launch {
-                                        delay(650) // Direct gateway OTP dispatch roundtrip
-                                        maskedMobileDisplay = "••••" + assesseePan.takeLast(4)
-                                        isOtpDispatched = true
+                                        val reqRes = ZeroTaxCloudApiBridge.requestPortalOtp(assesseePan, "LOGIN_PORTAL")
                                         isGeneratingOtp = false
-                                        cooldownSeconds = 60
+                                        if (reqRes.isSuccess) {
+                                            val json = reqRes.getOrNull()
+                                            activeTxnId = json?.optString("txnId").orEmpty()
+                                            maskedMobileDisplay = json?.optString("maskedMobile") ?: ("••••••" + assesseePan.takeLast(4))
+                                            isOtpDispatched = true
+                                            cooldownSeconds = json?.optInt("cooldownSeconds") ?: 60
+                                        } else {
+                                            otpErrorMessage = reqRes.exceptionOrNull()?.message ?: "Failed to dispatch OTP. Please check PAN."
+                                        }
                                     }
                                 } else {
                                     otpErrorMessage = "Please enter a valid 10-character PAN (e.g. ABCDE1234F)"
@@ -367,9 +379,15 @@ fun ItdLivePortalSyncModal(
                                     modifier = Modifier.clickable {
                                         scope.launch {
                                             isGeneratingOtp = true
-                                            delay(500)
+                                            val reqRes = ZeroTaxCloudApiBridge.requestPortalOtp(assesseePan, "LOGIN_PORTAL")
                                             isGeneratingOtp = false
-                                            cooldownSeconds = 60
+                                            if (reqRes.isSuccess) {
+                                                val json = reqRes.getOrNull()
+                                                activeTxnId = json?.optString("txnId").orEmpty()
+                                                cooldownSeconds = json?.optInt("cooldownSeconds") ?: 60
+                                            } else {
+                                                otpErrorMessage = reqRes.exceptionOrNull()?.message ?: "Failed to resend OTP."
+                                            }
                                         }
                                     }
                                 )
@@ -395,23 +413,63 @@ fun ItdLivePortalSyncModal(
                                 currentStep = PortalSyncStep.CONNECTING_TLS
                                 scope.launch {
                                     syncProgressAnim = 0.25f
-                                    currentStatusText = "Connecting to eportal.incometax.gov.in..."
-                                    delay(600)
+                                    currentStatusText = "Verifying Aadhaar OTP u/s 140A..."
+                                    val verifyRes = ZeroTaxCloudApiBridge.verifyPortalOtp(assesseePan, activeTxnId, aadhaarOtp)
+                                    if (verifyRes.isFailure) {
+                                        currentStep = PortalSyncStep.SELECT_AUTH_METHOD
+                                        otpErrorMessage = verifyRes.exceptionOrNull()?.message ?: "Invalid OTP entered."
+                                        return@launch
+                                    }
+
+                                    val verifyJson = verifyRes.getOrNull()
+                                    val verificationToken = verifyJson?.optString("verificationToken").orEmpty()
 
                                     currentStep = PortalSyncStep.FETCHING_DATA
                                     syncProgressAnim = 0.60f
                                     currentStatusText = "Downloading Form 26AS & AIS/TIS Records..."
 
-                                    val result = fetcher.fetchAisTransactions(assesseePan)
-                                    val txns = result.getOrDefault(emptyList())
-                                    discoveredTransactions = txns
+                                    val syncRes = ZeroTaxCloudApiBridge.syncPortalRecords(assesseePan, activeTxnId, verificationToken, "2026-27")
+                                    if (syncRes.isSuccess) {
+                                        val syncJson = syncRes.getOrNull()
+                                        val txnsArray = syncJson?.optJSONArray("transactions")
+                                        val parsedTxns = mutableListOf<AisTransactionRecord>()
+                                        if (txnsArray != null) {
+                                            for (i in 0 until txnsArray.length()) {
+                                                val obj = txnsArray.getJSONObject(i)
+                                                parsedTxns.add(
+                                                    AisTransactionRecord(
+                                                        transactionId = obj.optString("id"),
+                                                        category = when (obj.optString("category")) {
+                                                            "SAVINGS_INTEREST" -> AisCategory.SAVINGS_INTEREST
+                                                            "TIME_DEPOSIT_INTEREST" -> AisCategory.TIME_DEPOSIT_INTEREST
+                                                            "DIVIDENDS" -> AisCategory.DIVIDENDS
+                                                            "SALE_OF_SECURITIES" -> AisCategory.SALE_OF_SECURITIES
+                                                            "RENT_RECEIVED" -> AisCategory.RENT_RECEIVED
+                                                            else -> AisCategory.HIGH_VALUE_CASH
+                                                        },
+                                                        reportingEntity = obj.optString("deductorOrIssuerName"),
+                                                        accountOrFolioNumber = obj.optString("deductorTan"),
+                                                        grossAmount = obj.optLong("grossAmount"),
+                                                        tdsWithheld = obj.optLong("tdsWithheld"),
+                                                        quarterOrDate = obj.optString("transactionDate"),
+                                                        suggestedSchedule = obj.optString("statutoryScheduleHint")
+                                                    )
+                                                )
+                                            }
+                                        }
+                                        ItdTransactionFetcher.updateLiveTransactions(parsedTxns)
+                                        discoveredTransactions = parsedTxns
 
-                                    syncProgressAnim = 0.90f
-                                    currentStatusText = "Reconciling Pre-fill Data & Bank Details..."
-                                    delay(500)
+                                        syncProgressAnim = 0.90f
+                                        currentStatusText = "Reconciling Pre-fill Data & Bank Details..."
+                                        delay(400)
 
-                                    syncProgressAnim = 1.0f
-                                    currentStep = PortalSyncStep.SYNC_SUCCESS
+                                        syncProgressAnim = 1.0f
+                                        currentStep = PortalSyncStep.SYNC_SUCCESS
+                                    } else {
+                                        currentStep = PortalSyncStep.SELECT_AUTH_METHOD
+                                        otpErrorMessage = syncRes.exceptionOrNull()?.message ?: "Portal sync failed."
+                                    }
                                 }
                             },
                             enabled = aadhaarOtp.length == 6 && assesseePan.length == 10
@@ -517,7 +575,10 @@ fun ItdLivePortalSyncModal(
                             val totalInterest = discoveredTransactions
                                 .filter { it.category == AisCategory.SAVINGS_INTEREST }
                                 .sumOf { it.grossAmount }
-                            onSyncCompleted(discoveredTransactions.size, totalTds, totalInterest)
+                            val grossSalary = discoveredTransactions
+                                .filter { it.suggestedSchedule.contains("Salary", ignoreCase = true) }
+                                .sumOf { it.grossAmount }
+                            onSyncCompleted(discoveredTransactions.size, totalTds, totalInterest, grossSalary)
                             onDismiss()
                         }
                     )

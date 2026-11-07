@@ -216,15 +216,35 @@ fun ZeroTaxFourTapSpineScaffold(
     }
 
     if (showPreFilingAudit) {
+        val optimalComputation = if (uiState.oldRegimeResult.totalTaxLiabilityRounded288B < uiState.newRegimeResult.totalTaxLiabilityRounded288B) {
+            uiState.oldRegimeResult
+        } else {
+            uiState.newRegimeResult
+        }
         PreFilingAuditView(
             pan = uiState.pan,
             salarySummary = uiState.salarySummary,
-            computation = uiState.newRegimeResult,
+            computation = optimalComputation,
             bankAccount = uiState.bankAccount,
             onBack = { showPreFilingAudit = false },
             onProceedToFiling = {
                 showPreFilingAudit = false
                 showPortalAssistant = true
+            },
+            onAutoFixDiscrepancy = {
+                viewModel.onEmployerChanged(
+                    name = uiState.employerName,
+                    tan = uiState.employerTan,
+                    tdsPaid = uiState.salarySummary.aggregateTdsAllowed
+                )
+            },
+            onAutoOptimizeRegime = {
+                val bestRegime = if (uiState.oldRegimeResult.totalTaxLiabilityRounded288B < uiState.newRegimeResult.totalTaxLiabilityRounded288B) {
+                    `in`.zerotax.core.model.TaxRegime.OLD_REGIME
+                } else {
+                    `in`.zerotax.core.model.TaxRegime.NEW_REGIME_115BAC
+                }
+                viewModel.selectTaxRegime(bestRegime)
             }
         )
         return
@@ -499,8 +519,8 @@ fun ZeroTaxFourTapSpineScaffold(
                 ItdLivePortalSyncModal(
                     pan = uiState.pan,
                     onDismiss = { showPortalSyncModal = false },
-                    onSyncCompleted = { count, tds, interest ->
-                        viewModel.applyPortalSyncData(tds, interest)
+                    onSyncCompleted = { count, tds, interest, grossSalary ->
+                        viewModel.applyPortalSyncData(tds, interest, grossSalary)
                         showPortalSyncModal = false
                     }
                 )

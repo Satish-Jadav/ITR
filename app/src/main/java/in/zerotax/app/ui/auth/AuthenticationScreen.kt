@@ -190,6 +190,23 @@ fun AuthenticationScreen(
                 }
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 4b. Biometric Vault Quick Unlock
+            ZeroTaxOutlinedButton(
+                text = "Biometric Vault Quick-Unlock",
+                onClick = onBiometricUnlock,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Fingerprint,
+                        contentDescription = null,
+                        tint = EnterpriseTeal600,
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(14.dp))
 
             // Divider: OR

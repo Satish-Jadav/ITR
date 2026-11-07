@@ -537,4 +537,105 @@ object ZeroTaxCloudApiBridge {
             ZeroTaxLogger.e(TAG, "fetchCaSharedDossier failed: " + error.message, error)
         }
     }
+
+    /**
+     * Dispatches real Aadhaar / ITD OTP via backend gateway (/api/v1/portal/otp/request)
+     */
+    suspend fun requestPortalOtp(pan: String, purpose: String = "LOGIN_PORTAL"): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanPan = pan.trim().uppercase()
+        ZeroTaxLogger.d(TAG, "requestPortalOtp: requesting OTP for PAN " + cleanPan.take(2) + "***" + cleanPan.takeLast(2))
+        runCatching {
+            val payload = JSONObject().apply {
+                put("pan", cleanPan)
+                put("purpose", purpose)
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/portal/otp/request")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "Portal OTP dispatch failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "requestPortalOtp failed: " + error.message, error)
+        }
+    }
+
+    /**
+     * Verifies the 6-digit Aadhaar / ITD OTP via backend gateway (/api/v1/portal/otp/verify)
+     */
+    suspend fun verifyPortalOtp(pan: String, txnId: String, otp: String): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanPan = pan.trim().uppercase()
+        ZeroTaxLogger.d(TAG, "verifyPortalOtp: verifying OTP for Txn " + txnId)
+        runCatching {
+            val payload = JSONObject().apply {
+                put("pan", cleanPan)
+                put("txnId", txnId)
+                put("otp", otp.trim())
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/portal/otp/verify")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "Portal OTP verification failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "verifyPortalOtp failed: " + error.message, error)
+        }
+    }
+
+    /**
+     * Syncs live AIS/TIS and 26AS records from verified ITD session (/api/v1/portal/sync)
+     */
+    suspend fun syncPortalRecords(
+        pan: String,
+        txnId: String,
+        verificationToken: String,
+        assessmentYear: String = "2026-27"
+    ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanPan = pan.trim().uppercase()
+        ZeroTaxLogger.d(TAG, "syncPortalRecords: syncing AIS for PAN " + cleanPan.take(2) + "***" + cleanPan.takeLast(2))
+        runCatching {
+            val payload = JSONObject().apply {
+                put("pan", cleanPan)
+                put("txnId", txnId)
+                put("verificationToken", verificationToken)
+                put("assessmentYear", assessmentYear)
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/portal/sync")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "Portal sync failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "syncPortalRecords failed: " + error.message, error)
+        }
+    }
 }
