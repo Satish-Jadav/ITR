@@ -109,6 +109,79 @@ fun ItdLivePortalSyncModal(
         }
     }
 
+    val executeVerificationAndSync: () -> Unit = {
+        if (aadhaarOtp.length == 6 && assesseePan.length == 10 && currentStep == PortalSyncStep.SELECT_AUTH_METHOD && !isGeneratingOtp) {
+            currentStep = PortalSyncStep.CONNECTING_TLS
+            scope.launch {
+                syncProgressAnim = 0.25f
+                currentStatusText = "Verifying Aadhaar OTP u/s 140A..."
+                val verifyRes = ZeroTaxCloudApiBridge.verifyPortalOtp(assesseePan, activeTxnId, aadhaarOtp)
+                if (verifyRes.isFailure) {
+                    currentStep = PortalSyncStep.SELECT_AUTH_METHOD
+                    otpErrorMessage = verifyRes.exceptionOrNull()?.message ?: "Invalid OTP entered."
+                    return@launch
+                }
+
+                val verifyJson = verifyRes.getOrNull()
+                val verificationToken = verifyJson?.optString("verificationToken").orEmpty()
+
+                currentStep = PortalSyncStep.FETCHING_DATA
+                syncProgressAnim = 0.60f
+                currentStatusText = "Downloading Form 26AS & AIS/TIS Records..."
+
+                val syncRes = ZeroTaxCloudApiBridge.syncPortalRecords(assesseePan, activeTxnId, verificationToken, "2026-27")
+                if (syncRes.isSuccess) {
+                    val syncJson = syncRes.getOrNull()
+                    val txnsArray = syncJson?.optJSONArray("transactions")
+                    val parsedTxns = mutableListOf<AisTransactionRecord>()
+                    if (txnsArray != null) {
+                        for (i in 0 until txnsArray.length()) {
+                            val obj = txnsArray.getJSONObject(i)
+                            parsedTxns.add(
+                                AisTransactionRecord(
+                                    transactionId = obj.optString("id"),
+                                    category = when (obj.optString("category")) {
+                                        "SAVINGS_INTEREST" -> AisCategory.SAVINGS_INTEREST
+                                        "TIME_DEPOSIT_INTEREST" -> AisCategory.TIME_DEPOSIT_INTEREST
+                                        "DIVIDENDS" -> AisCategory.DIVIDENDS
+                                        "SALE_OF_SECURITIES" -> AisCategory.SALE_OF_SECURITIES
+                                        "RENT_RECEIVED" -> AisCategory.RENT_RECEIVED
+                                        else -> AisCategory.HIGH_VALUE_CASH
+                                    },
+                                    reportingEntity = obj.optString("deductorOrIssuerName"),
+                                    accountOrFolioNumber = obj.optString("deductorTan"),
+                                    grossAmount = obj.optLong("grossAmount"),
+                                    tdsWithheld = obj.optLong("tdsWithheld"),
+                                    quarterOrDate = obj.optString("transactionDate"),
+                                    suggestedSchedule = obj.optString("statutoryScheduleHint")
+                                )
+                            )
+                        }
+                    }
+                    ItdTransactionFetcher.updateLiveTransactions(parsedTxns)
+                    discoveredTransactions = parsedTxns
+
+                    syncProgressAnim = 0.90f
+                    currentStatusText = "Reconciling Pre-fill Data & Bank Details..."
+                    delay(400)
+
+                    syncProgressAnim = 1.0f
+                    currentStep = PortalSyncStep.SYNC_SUCCESS
+                } else {
+                    currentStep = PortalSyncStep.SELECT_AUTH_METHOD
+                    otpErrorMessage = syncRes.exceptionOrNull()?.message ?: "Portal sync failed."
+                }
+            }
+        }
+    }
+
+    // Automated Zero-Click Submission: As soon as SMS Retriever or manual typing captures the 6-digit OTP, auto-trigger verify & sync
+    LaunchedEffect(aadhaarOtp) {
+        if (aadhaarOtp.length == 6 && isOtpDispatched && currentStep == PortalSyncStep.SELECT_AUTH_METHOD) {
+            executeVerificationAndSync()
+        }
+    }
+
     if (showOfficialWebLogin) {
         ItdOfficialWebLoginSheet(
             pan = assesseePan,
@@ -425,69 +498,7 @@ fun ItdLivePortalSyncModal(
 
                         ZeroTaxPrimaryButton(
                             text = "Verify OTP & Sync Portal Records",
-                            onClick = {
-                                currentStep = PortalSyncStep.CONNECTING_TLS
-                                scope.launch {
-                                    syncProgressAnim = 0.25f
-                                    currentStatusText = "Verifying Aadhaar OTP u/s 140A..."
-                                    val verifyRes = ZeroTaxCloudApiBridge.verifyPortalOtp(assesseePan, activeTxnId, aadhaarOtp)
-                                    if (verifyRes.isFailure) {
-                                        currentStep = PortalSyncStep.SELECT_AUTH_METHOD
-                                        otpErrorMessage = verifyRes.exceptionOrNull()?.message ?: "Invalid OTP entered."
-                                        return@launch
-                                    }
-
-                                    val verifyJson = verifyRes.getOrNull()
-                                    val verificationToken = verifyJson?.optString("verificationToken").orEmpty()
-
-                                    currentStep = PortalSyncStep.FETCHING_DATA
-                                    syncProgressAnim = 0.60f
-                                    currentStatusText = "Downloading Form 26AS & AIS/TIS Records..."
-
-                                    val syncRes = ZeroTaxCloudApiBridge.syncPortalRecords(assesseePan, activeTxnId, verificationToken, "2026-27")
-                                    if (syncRes.isSuccess) {
-                                        val syncJson = syncRes.getOrNull()
-                                        val txnsArray = syncJson?.optJSONArray("transactions")
-                                        val parsedTxns = mutableListOf<AisTransactionRecord>()
-                                        if (txnsArray != null) {
-                                            for (i in 0 until txnsArray.length()) {
-                                                val obj = txnsArray.getJSONObject(i)
-                                                parsedTxns.add(
-                                                    AisTransactionRecord(
-                                                        transactionId = obj.optString("id"),
-                                                        category = when (obj.optString("category")) {
-                                                            "SAVINGS_INTEREST" -> AisCategory.SAVINGS_INTEREST
-                                                            "TIME_DEPOSIT_INTEREST" -> AisCategory.TIME_DEPOSIT_INTEREST
-                                                            "DIVIDENDS" -> AisCategory.DIVIDENDS
-                                                            "SALE_OF_SECURITIES" -> AisCategory.SALE_OF_SECURITIES
-                                                            "RENT_RECEIVED" -> AisCategory.RENT_RECEIVED
-                                                            else -> AisCategory.HIGH_VALUE_CASH
-                                                        },
-                                                        reportingEntity = obj.optString("deductorOrIssuerName"),
-                                                        accountOrFolioNumber = obj.optString("deductorTan"),
-                                                        grossAmount = obj.optLong("grossAmount"),
-                                                        tdsWithheld = obj.optLong("tdsWithheld"),
-                                                        quarterOrDate = obj.optString("transactionDate"),
-                                                        suggestedSchedule = obj.optString("statutoryScheduleHint")
-                                                    )
-                                                )
-                                            }
-                                        }
-                                        ItdTransactionFetcher.updateLiveTransactions(parsedTxns)
-                                        discoveredTransactions = parsedTxns
-
-                                        syncProgressAnim = 0.90f
-                                        currentStatusText = "Reconciling Pre-fill Data & Bank Details..."
-                                        delay(400)
-
-                                        syncProgressAnim = 1.0f
-                                        currentStep = PortalSyncStep.SYNC_SUCCESS
-                                    } else {
-                                        currentStep = PortalSyncStep.SELECT_AUTH_METHOD
-                                        otpErrorMessage = syncRes.exceptionOrNull()?.message ?: "Portal sync failed."
-                                    }
-                                }
-                            },
+                            onClick = executeVerificationAndSync,
                             enabled = aadhaarOtp.length == 6 && assesseePan.length == 10
                         )
                     }
