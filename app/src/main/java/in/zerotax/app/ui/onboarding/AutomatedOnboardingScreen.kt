@@ -1,5 +1,6 @@
 package `in`.zerotax.app.ui.onboarding
 
+import `in`.zerotax.app.ui.security.HardwareVaultStatusCard
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -33,7 +34,6 @@ import `in`.zerotax.core.model.FilingTierMode
 import `in`.zerotax.core.model.OnboardingWizardStep
 import `in`.zerotax.core.model.PanEntityDecoder
 import kotlinx.coroutines.delay
-
 /**
  * Dynamic Automated Zero-Friction Onboarding Wizard.
  * Guides taxpayers through plan selection, zero-password authentication,
@@ -49,16 +49,23 @@ fun AutomatedOnboardingScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isDark = isSystemInDarkTheme()
     var showWebLoginSheet by remember { mutableStateOf(false) }
-
     Scaffold(
         topBar = {
             OnboardingTopBar(
                 currentStep = uiState.onboardingStep,
                 onBack = {
                     when (uiState.onboardingStep) {
-                        OnboardingWizardStep.TRUST_AND_AUTH -> viewModel.setOnboardingStep(OnboardingWizardStep.SELECT_PLAN)
+                        OnboardingWizardStep.TRUST_AND_AUTH -> {}
+                        OnboardingWizardStep.STREAM_HYDRATION_RADAR -> viewModel.setOnboardingStep(OnboardingWizardStep.TRUST_AND_AUTH)
+                        OnboardingWizardStep.SELECT_PLAN -> viewModel.setOnboardingStep(OnboardingWizardStep.STREAM_HYDRATION_RADAR)
                         OnboardingWizardStep.PLAN_SPECIFIC_INPUTS -> viewModel.setOnboardingStep(OnboardingWizardStep.STREAM_HYDRATION_RADAR)
-                        OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW -> viewModel.setOnboardingStep(OnboardingWizardStep.PLAN_SPECIFIC_INPUTS)
+                        OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW -> {
+                            if (uiState.filingTierMode == FilingTierMode.SAHAJ_SIMPLE) {
+                                viewModel.setOnboardingStep(OnboardingWizardStep.STREAM_HYDRATION_RADAR)
+                            } else {
+                                viewModel.setOnboardingStep(OnboardingWizardStep.PLAN_SPECIFIC_INPUTS)
+                            }
+                        }
                         else -> {}
                     }
                 }
@@ -86,7 +93,6 @@ fun AutomatedOnboardingScreen(
                             onContinue = { viewModel.setOnboardingStep(OnboardingWizardStep.TRUST_AND_AUTH) }
                         )
                     }
-
                     OnboardingWizardStep.TRUST_AND_AUTH -> {
                         TrustAndAuthStepView(
                             pan = uiState.pan,
@@ -95,14 +101,12 @@ fun AutomatedOnboardingScreen(
                             onLaunchWebLogin = { showWebLoginSheet = true }
                         )
                     }
-
                     OnboardingWizardStep.STREAM_HYDRATION_RADAR -> {
                         AutomatedIngestionRadarView(
                             streams = uiState.ingestionStreams,
                             isIngesting = uiState.isIngestingStreams
                         )
                     }
-
                     OnboardingWizardStep.PLAN_SPECIFIC_INPUTS -> {
                         PlanSpecificHydrationCard(
                             tier = uiState.filingTierMode,
@@ -119,7 +123,6 @@ fun AutomatedOnboardingScreen(
                             }
                         )
                     }
-
                     OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW -> {
                         val dossier = uiState.unifiedDossier
                         if (dossier != null) {
@@ -147,7 +150,6 @@ fun AutomatedOnboardingScreen(
                     }
                 }
             }
-
             // Web Login In-App Sheet
             if (showWebLoginSheet) {
                 ItdOfficialWebLoginSheet(
@@ -163,14 +165,12 @@ fun AutomatedOnboardingScreen(
         }
     }
 }
-
 @Composable
 private fun OnboardingTopBar(
     currentStep: OnboardingWizardStep,
     onBack: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-
     Surface(
         color = if (isDark) Slate900 else PureWhite,
         border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isDark) Slate800 else Slate200),
@@ -187,20 +187,18 @@ private fun OnboardingTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                if (currentStep != OnboardingWizardStep.SELECT_PLAN && currentStep != OnboardingWizardStep.STREAM_HYDRATION_RADAR) {
+                if (currentStep != OnboardingWizardStep.TRUST_AND_AUTH && currentStep != OnboardingWizardStep.STREAM_HYDRATION_RADAR) {
                     IconButton(onClick = onBack, modifier = Modifier.size(28.dp)) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", modifier = Modifier.size(20.dp))
                     }
                 } else {
                     ZeroTaxBrandLogo(size = 28.dp)
                 }
-
                 Text(
                     text = "ZeroTax Setup",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
-
             // Step Indicator Badge
             Surface(
                 shape = RoundedCornerShape(12.dp),
@@ -219,7 +217,6 @@ private fun OnboardingTopBar(
         }
     }
 }
-
 @Composable
 private fun PlanSelectionStepView(
     selectedTier: FilingTierMode,
@@ -228,7 +225,6 @@ private fun PlanSelectionStepView(
 ) {
     val isDark = isSystemInDarkTheme()
     val scrollState = rememberScrollState()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -247,7 +243,6 @@ private fun PlanSelectionStepView(
                 style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
         }
-
         // 3 Tiers Cards
         FilingTierMode.values().forEach { tier ->
             val isSelected = tier == selectedTier
@@ -291,7 +286,6 @@ private fun PlanSelectionStepView(
                             modifier = Modifier.size(22.dp)
                         )
                     }
-
                     Column(modifier = Modifier.weight(1f)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -317,7 +311,6 @@ private fun PlanSelectionStepView(
                 }
             }
         }
-
         // Zero-Password Hook Callout
         Surface(
             shape = RoundedCornerShape(10.dp),
@@ -343,9 +336,7 @@ private fun PlanSelectionStepView(
                 }
             }
         }
-
         Spacer(Modifier.height(8.dp))
-
         ZeroTaxPrimaryButton(
             text = "Continue with ${selectedTier.title}",
             onClick = onContinue,
@@ -353,7 +344,6 @@ private fun PlanSelectionStepView(
         )
     }
 }
-
 @Composable
 private fun TrustAndAuthStepView(
     pan: String,
@@ -365,7 +355,6 @@ private fun TrustAndAuthStepView(
     val scrollState = rememberScrollState()
     val panEntity = remember(pan) { PanEntityDecoder.decode(pan) }
     val isPanValid = remember(pan) { pan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$")) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -373,32 +362,8 @@ private fun TrustAndAuthStepView(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Radical Trust Shield Header
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = if (isDark) EnterpriseTeal900.copy(alpha = 0.4f) else EnterpriseTeal50,
-            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Icon(Icons.Default.Security, null, tint = EnterpriseTeal500, modifier = Modifier.size(24.dp))
-                    Text(
-                        text = "Client-Side Zero-Knowledge Shield",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal300 else EnterpriseTeal700)
-                    )
-                }
-                Text(
-                    text = "• Android KeyStore Hardware Encryption (AES-256-GCM / SQLCipher)\n" +
-                           "• Digital Personal Data Protection (DPDP) Act 2023 Statutory Consent\n" +
-                           "• 1-Tap Complete Data Shredding at any time",
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-            }
-        }
+        // 3-Point Psychological Trust Anchors Card
+        HardwareVaultStatusCard()
 
         // PAN Input Section
         Text(
@@ -414,12 +379,35 @@ private fun TrustAndAuthStepView(
             singleLine = true,
             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
+            trailingIcon = {
+                IconButton(onClick = {
+                    onPanChanged(if (pan.isBlank()) "AAAPA1234A" else pan)
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.QrCodeScanner,
+                        contentDescription = "Scan e-PAN or Aadhaar QR Code",
+                        tint = EnterpriseTeal500
+                    )
+                }
+            },
             supportingText = {
                 if (pan.length == 10) {
-                    Text(
-                        text = "Detected: ${panEntity.entityType.title} (${panEntity.statusSummary})",
-                        color = if (isPanValid) EmeraldSuccess else CrimsonDanger
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isPanValid) Icons.Default.CheckCircle else Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = if (isPanValid) EmeraldSuccess else CrimsonDanger,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "Detected: ${panEntity.entityType.title} (${panEntity.statusSummary})",
+                            color = if (isPanValid) EmeraldSuccess else CrimsonDanger,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         )
@@ -429,7 +417,6 @@ private fun TrustAndAuthStepView(
             text = "Automated Data Ingestion Method",
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
         )
-
         Surface(
             shape = RoundedCornerShape(10.dp),
             color = if (isDark) Slate850 else PureWhite,
@@ -451,7 +438,6 @@ private fun TrustAndAuthStepView(
                 Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
             }
         }
-
         Surface(
             shape = RoundedCornerShape(10.dp),
             color = if (isDark) Slate850 else PureWhite,
@@ -473,9 +459,7 @@ private fun TrustAndAuthStepView(
                 Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
             }
         }
-
         Spacer(Modifier.height(8.dp))
-
         ZeroTaxPrimaryButton(
             text = "Start Automated Data Hydration",
             onClick = onStartHydration,

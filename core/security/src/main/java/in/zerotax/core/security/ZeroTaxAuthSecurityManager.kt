@@ -199,7 +199,22 @@ object ZeroTaxAuthSecurityManager {
         guestProfile
     }
 
-    suspend fun signInWithBiometrics(): Result<UserAuthProfile> = withContext(Dispatchers.Default) {
+    fun verifyBiometricCipher(cipher: javax.crypto.Cipher?): Boolean {
+        if (cipher == null) return false
+        return runCatching {
+            val probe = ByteArray(16)
+            java.security.SecureRandom().nextBytes(probe)
+            val ct = cipher.doFinal(probe)
+            ct != null && ct.isNotEmpty()
+        }.getOrDefault(false)
+    }
+
+    suspend fun signInWithBiometrics(cipher: javax.crypto.Cipher? = null): Result<UserAuthProfile> = withContext(Dispatchers.Default) {
+        if (cipher != null && !verifyBiometricCipher(cipher)) {
+            return@withContext Result.failure(
+                SecurityException("Hardware CryptoObject verification failed: KeyStore cipher was not authorized by biometric hardware.")
+            )
+        }
         // If an existing session exists, refresh it; otherwise create a biometric vault profile
         val current = activeUserSession
         if (current != null) {

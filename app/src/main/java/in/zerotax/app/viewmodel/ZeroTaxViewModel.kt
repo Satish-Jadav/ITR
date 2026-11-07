@@ -119,7 +119,7 @@ data class ZeroTaxUiState(
     val cloudVaultVersion: Int = 0,
     val selectedRegime: TaxRegime = TaxRegime.NEW_REGIME_115BAC,
     val hasCompletedOnboarding: Boolean = false,
-    val onboardingStep: OnboardingWizardStep = OnboardingWizardStep.SELECT_PLAN,
+    val onboardingStep: OnboardingWizardStep = OnboardingWizardStep.TRUST_AND_AUTH,
     val ingestionStreams: List<IngestionStreamItem> = emptyList(),
     val isIngestingStreams: Boolean = false,
     val unifiedDossier: UnifiedTaxDossier? = null,
@@ -221,6 +221,7 @@ class ZeroTaxViewModel : ViewModel() {
     fun startDynamicHydrationRadar() {
         val currentTier = _uiState.value.filingTierMode
         val pan = _uiState.value.pan.ifBlank { "AAAPA1234A" }
+        FilingSpeedTelemetryEngine.markSyncInitiated(currentTier.name)
 
         val initialStreams = listOf(
             IngestionStreamItem(
@@ -385,10 +386,33 @@ class ZeroTaxViewModel : ViewModel() {
             }
 
             recompute()
+
+            // Automatically route to required ITR form / plan based on synced financial profile
+            val autoForm = _uiState.value.formRoutingDecision.recommendedForm
+            val autoTier = when (autoForm) {
+                ItrFormType.ITR_1 -> FilingTierMode.SAHAJ_SIMPLE
+                ItrFormType.ITR_2 -> FilingTierMode.INVESTOR_PRO
+                else -> FilingTierMode.ENTERPRISE_AUDIT
+            }
+            _uiState.update { it.copy(filingTierMode = autoTier, recommendedTierMode = autoTier) }
+
             generateUnifiedDossier()
+            syncVaultToApi()
+
+            // Pre-fetch personalized post-sync briefing
+            viewModelScope.launch(Dispatchers.IO) {
+                val state = _uiState.value
+                val newTax = state.newRegimeResult.totalTaxLiabilityRounded288B
+                val oldTax = state.oldRegimeResult.totalTaxLiabilityRounded288B
+                val bestTax = minOf(newTax, oldTax)
+                ZeroTaxCloudApiBridge.fetchPostSyncBriefing(
+                    pan = state.pan.ifBlank { "AAAPA1234A" },
+                    salaryGross = state.grossSalaryRupees
+                )
+            }
 
             // Navigate forward: Sahaj goes straight to Dossier review, others to Plan-Specific Inputs
-            val nextStep = if (currentTier == FilingTierMode.SAHAJ_SIMPLE) {
+            val nextStep = if (autoTier == FilingTierMode.SAHAJ_SIMPLE) {
                 OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW
             } else {
                 OnboardingWizardStep.PLAN_SPECIFIC_INPUTS
@@ -417,8 +441,8 @@ class ZeroTaxViewModel : ViewModel() {
 
         val planSummary: PlanSpecificDossierSummary = when (tier) {
             FilingTierMode.SAHAJ_SIMPLE -> PlanSpecificDossierSummary.SahajSummary(
-                employerName = state.employerName.ifBlank { "Infosys Technologies Ltd" },
-                employerTan = state.employerTan.ifBlank { "BLRI01928C" },
+                employerName = state.employerName.ifBlank { "" },
+                employerTan = state.employerTan.ifBlank { "" },
                 form16Discovered = true,
                 standardDeductionRupees = 75000L,
                 chapterViaDeductionsRupees = deductions,
@@ -436,8 +460,8 @@ class ZeroTaxViewModel : ViewModel() {
                 crypto194sTdsRupees = 0L
             )
             FilingTierMode.ENTERPRISE_AUDIT -> PlanSpecificDossierSummary.EnterpriseAuditSummary(
-                businessName = "Apex Solutions LLP",
-                gstin = state.planSpecificGstin.ifBlank { "29AABCA1234D1Z5" },
+                businessName = state.taxpayerFullName.ifBlank { "Business Entity" },
+                gstin = state.planSpecificGstin,
                 auditedTurnoverRupees = grossIncome,
                 gstr3bTurnoverRupees = grossIncome,
                 gstr2bEligibleItcRupees = 420000L,
@@ -445,9 +469,9 @@ class ZeroTaxViewModel : ViewModel() {
                 overdueMsmeCreditorsCount = 0,
                 clause44RegisteredExpensePercent = 88.2,
                 clause21CashDisallowanceRupees = 0L,
-                caMembershipNumber = state.planSpecificCaMembership.ifBlank { "124856" },
-                caAuditorName = state.planSpecificCaName.ifBlank { "CA Rajesh Sharma, FCA" },
-                udinDraft = "26124856AAAAAA1042",
+                caMembershipNumber = state.planSpecificCaMembership,
+                caAuditorName = state.planSpecificCaName,
+                udinDraft = state.planSpecificUdinDraft,
                 auditStatusText = "Audit Reconciled & Ready"
             )
         }
@@ -459,15 +483,15 @@ class ZeroTaxViewModel : ViewModel() {
 
         val dossier = UnifiedTaxDossier(
             assesseePan = pan,
-            assesseeName = state.taxpayerFullName.ifBlank { "SATISH KUMAR" },
+            assesseeName = state.taxpayerFullName.ifBlank { pan },
             maskedAadhaar = "XXXX-XXXX-9012",
             assessmentYear = state.assessmentYear,
             residentialStatus = "Resident Ordinarily Resident (ROR)",
             filingTier = tier,
             recommendedItrForm = tier.recommendedItrForms.firstOrNull() ?: ItrFormType.ITR_1_SAHAJ,
-            refundBankName = state.bankAccount.bankName.ifBlank { "HDFC Bank" },
-            refundBankAccountMasked = state.bankAccount.accountNumber.ifBlank { "XXXXXX4821" },
-            refundBankIfsc = state.bankAccount.ifscCode.ifBlank { "HDFC0000128" },
+            refundBankName = state.bankAccount.bankName.ifBlank { "Primary Bank" },
+            refundBankAccountMasked = if (state.bankAccount.accountNumber.isNotBlank()) "••••" + state.bankAccount.accountNumber.takeLast(4) else "••••4821",
+            refundBankIfsc = state.bankAccount.ifscCode,
             grossIncomeRupees = grossIncome,
             totalDeductionsRupees = deductions,
             taxableIncomeRupees = taxable,
@@ -489,6 +513,11 @@ class ZeroTaxViewModel : ViewModel() {
     }
 
     fun completeOnboardingAndEnterWorkspace() {
+        FilingSpeedTelemetryEngine.markSubmissionCompleted()
+        val formattedBadge = FilingSpeedTelemetryEngine.markEVerificationCompleted()
+        viewModelScope.launch(Dispatchers.IO) {
+            FilingSpeedTelemetryEngine.dispatchTelemetry(_uiState.value.assessmentYear)
+        }
         _uiState.update {
             it.copy(
                 hasCompletedOnboarding = true,
@@ -1013,10 +1042,10 @@ class ZeroTaxViewModel : ViewModel() {
         }
     }
 
-    fun signInWithBiometrics() {
+    fun signInWithBiometrics(cipher: javax.crypto.Cipher? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
-            val result = ZeroTaxAuthSecurityManager.signInWithBiometrics()
+            val result = ZeroTaxAuthSecurityManager.signInWithBiometrics(cipher)
             result.fold(
                 onSuccess = { profile ->
                     ZeroTaxCloudApiBridge.activeAccessToken = "zt_access_${profile.uid}"

@@ -666,4 +666,164 @@ object ZeroTaxCloudApiBridge {
             ZeroTaxLogger.e(TAG, "revokeAaConsent failed: " + error.message, error)
         }
     }
+
+    /**
+     * Records verified SLA telemetry for sub-3-minute (< 90-second) filing proof (/api/v1/compliance/filing-speed-telemetry)
+     */
+    suspend fun recordFilingSpeedTelemetry(
+        anonymizedFilingId: String,
+        itrType: String,
+        assessmentYear: String = "2026-27",
+        startTimestampIso: String,
+        submissionTimestampIso: String,
+        everifyTimestampIso: String,
+        totalDurationSeconds: Double,
+        clientPlatform: String = "ANDROID"
+    ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "recordFilingSpeedTelemetry: duration=$totalDurationSeconds itr=$itrType")
+        runCatching {
+            val payload = JSONObject().apply {
+                put("anonymizedFilingId", anonymizedFilingId)
+                put("itrType", itrType)
+                put("assessmentYear", assessmentYear)
+                put("startTimestamp", startTimestampIso)
+                put("submissionTimestamp", submissionTimestampIso)
+                put("everifyTimestamp", everifyTimestampIso)
+                put("totalDurationSeconds", totalDurationSeconds)
+                put("clientPlatform", clientPlatform)
+            }
+            val request = Request.Builder()
+                .url("${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/compliance/filing-speed-telemetry")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "recordFilingSpeedTelemetry succeeded")
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "Filing speed telemetry failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "recordFilingSpeedTelemetry failed: ${error.message}", error)
+        }
+    }
+
+    /**
+     * Fetches instant personalized briefing generated immediately after ITD sync completes (/api/v1/chat/post-sync-briefing)
+     */
+    suspend fun fetchPostSyncBriefing(
+        pan: String,
+        salaryGross: Long = 0L,
+        otherIncomeGross: Long = 0L,
+        tdsCreditTotal: Long = 0L,
+        advanceTaxPaid: Long = 0L,
+        regimeNewTax: Long = 0L,
+        regimeOldTax: Long = 0L,
+        recommendedRegime: String = "NEW",
+        recommendedForm: String = "ITR-1",
+        refundAmount: Long = 0L,
+        taxPayable: Long = 0L,
+        bankAccountMasked: String = "••••••••4821",
+        assessmentYear: String = "2026-27"
+    ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanPan = pan.trim().uppercase()
+        ZeroTaxLogger.d(TAG, "fetchPostSyncBriefing: requesting briefing for PAN ${cleanPan.take(2)}***${cleanPan.takeLast(2)}")
+        runCatching {
+            val summary = JSONObject().apply {
+                put("salaryGross", salaryGross)
+                put("otherIncomeGross", otherIncomeGross)
+                put("tdsCreditTotal", tdsCreditTotal)
+                put("advanceTaxPaid", advanceTaxPaid)
+                put("regimeNewTax", regimeNewTax)
+                put("regimeOldTax", regimeOldTax)
+                put("recommendedRegime", recommendedRegime)
+                put("recommendedForm", recommendedForm)
+                put("refundAmount", refundAmount)
+                put("taxPayable", taxPayable)
+                put("bankAccountMasked", bankAccountMasked)
+            }
+            val payload = JSONObject().apply {
+                put("pan", cleanPan)
+                put("assessmentYear", assessmentYear)
+                put("syncSummary", summary)
+            }
+            val request = Request.Builder()
+                .url("${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/chat/post-sync-briefing")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    ZeroTaxLogger.i(TAG, "fetchPostSyncBriefing succeeded")
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "Post-sync briefing failed (HTTP ${response.code}): $bodyStr"
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "fetchPostSyncBriefing failed: ${error.message}", error)
+        }
+    }
+
+    /**
+     * Connects to SSE chat stream (/api/v1/chat/stream)
+     */
+    suspend fun streamChat(
+        query: String,
+        sessionId: String? = null,
+        locale: String = "en-IN",
+        isSynced: Boolean = false,
+        itrForm: String = "ITR-1",
+        activeRegime: String = "NEW",
+        grossTotalIncome: Long = 0L,
+        onEvent: (event: String, data: String) -> Unit
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "streamChat: querying /api/v1/chat/stream")
+        runCatching {
+            val payload = JSONObject().apply {
+                put("query", query)
+                if (sessionId != null) put("sessionId", sessionId)
+                put("locale", locale)
+                put("taxpayerSnapshot", JSONObject().apply {
+                    put("isSynced", isSynced)
+                    put("itrForm", itrForm)
+                    put("activeRegime", activeRegime)
+                    put("grossTotalIncome", grossTotalIncome)
+                })
+            }
+            val request = Request.Builder()
+                .url("${ZeroTaxHardenedApiClient.apiBaseUrl}/api/v1/chat/stream")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val bodyStr = response.body?.string().orEmpty()
+                    throw IllegalStateException("Chat stream failed (HTTP ${response.code}): $bodyStr")
+                }
+                val source = response.body?.source() ?: return@use
+                var currentEvent = "message"
+                while (!source.exhausted()) {
+                    val line = source.readUtf8Line() ?: break
+                    when {
+                        line.startsWith("event:") -> currentEvent = line.substring(6).trim()
+                        line.startsWith("data:") -> {
+                            val data = line.substring(5).trim()
+                            onEvent(currentEvent, data)
+                        }
+                    }
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "streamChat failed: ${error.message}", error)
+        }
+    }
 }
