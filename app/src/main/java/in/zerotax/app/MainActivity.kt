@@ -39,6 +39,9 @@ class MainActivity : FragmentActivity() {
             )
         }
 
+        // VAPT Break #15 Fix: Hardware-level overlay & tapjacking prevention
+        window.decorView.filterTouchesWhenObscured = true
+
         setContent {
             ZeroTaxTheme {
                 val viewModel: ZeroTaxViewModel = viewModel()

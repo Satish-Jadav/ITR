@@ -31,6 +31,11 @@ class ItdAndAaOtpAutoReader(
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == SMS_RETRIEVED_ACTION) {
                 val extras = intent.extras ?: return
+                val status = extras.get(com.google.android.gms.auth.api.phone.SmsRetriever.EXTRA_STATUS) as? com.google.android.gms.common.api.Status
+                if (status != null && status.statusCode != com.google.android.gms.common.api.CommonStatusCodes.SUCCESS) {
+                    ZeroTaxLogger.w(TAG, "SmsRetriever status not SUCCESS: ${status.statusCode}")
+                    return
+                }
                 val message = extras.getString(EXTRA_SMS_MESSAGE)
                 if (!message.isNullOrBlank()) {
                     ZeroTaxLogger.i(TAG, "SMS received via Retriever API, scanning for 6-digit OTP")
@@ -57,9 +62,20 @@ class ItdAndAaOtpAutoReader(
             // Register broadcast receiver for SMS retriever
             val filter = IntentFilter(SMS_RETRIEVED_ACTION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(smsReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+                context.registerReceiver(
+                    smsReceiver,
+                    filter,
+                    com.google.android.gms.auth.api.phone.SmsRetriever.SEND_PERMISSION,
+                    null,
+                    Context.RECEIVER_EXPORTED
+                )
             } else {
-                context.registerReceiver(smsReceiver, filter)
+                context.registerReceiver(
+                    smsReceiver,
+                    filter,
+                    com.google.android.gms.auth.api.phone.SmsRetriever.SEND_PERMISSION,
+                    null
+                )
             }
             isRegistered = true
 
