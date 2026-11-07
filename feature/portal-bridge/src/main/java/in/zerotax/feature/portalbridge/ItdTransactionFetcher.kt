@@ -51,7 +51,7 @@ class ItdTransactionFetcher {
                 val defaultRecords = listOf(
                     AisTransactionRecord(
                         transactionId = "TXN-SAL-$suffix-01",
-                        category = AisCategory.SAVINGS_INTEREST,
+                        category = AisCategory.SALARY,
                         reportingEntity = "EMPLOYER SERVICES INDIA PVT LTD",
                         accountOrFolioNumber = "BLRE${suffix}01A",
                         grossAmount = deterministicSalary,

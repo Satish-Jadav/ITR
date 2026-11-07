@@ -638,4 +638,32 @@ object ZeroTaxCloudApiBridge {
             ZeroTaxLogger.e(TAG, "syncPortalRecords failed: " + error.message, error)
         }
     }
+    /**
+     * Revokes an active Account Aggregator consent on the backend and AA gateway (/api/v1/aa/consent/revoke)
+     */
+    suspend fun revokeAaConsent(consentIdOrHandle: String): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "revokeAaConsent: revoking consent $consentIdOrHandle")
+        runCatching {
+            val payload = JSONObject().apply {
+                put("consentId", consentIdOrHandle)
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/aa/consent/revoke")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "AA consent revocation failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "revokeAaConsent failed: " + error.message, error)
+        }
+    }
 }

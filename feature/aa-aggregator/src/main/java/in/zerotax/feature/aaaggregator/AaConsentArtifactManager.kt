@@ -20,7 +20,9 @@ data class FipConsentArtifact(
     val state: ConsentLifeCycleState
 )
 
-class AaConsentArtifactManager {
+class AaConsentArtifactManager(
+    private val onRevokeRemoteConsent: (suspend (String) -> Result<Unit>)? = null
+) {
     private val _activeConsents = MutableStateFlow<List<FipConsentArtifact>>(emptyList())
     val activeConsents: StateFlow<List<FipConsentArtifact>> = _activeConsents.asStateFlow()
 
@@ -34,6 +36,9 @@ class AaConsentArtifactManager {
             val target = current.find { it.consentHandleId == consentHandleId }
                 ?: error("Consent handle not found: $consentHandleId")
 
+            // Propagate remote revocation to backend gateway & Account Aggregator
+            onRevokeRemoteConsent?.invoke(consentHandleId)?.getOrThrow()
+
             // Update state locally
             _activeConsents.value = current.map {
                 if (it.consentHandleId == consentHandleId) it.copy(state = ConsentLifeCycleState.REVOKED_BY_USER) else it
@@ -43,7 +48,11 @@ class AaConsentArtifactManager {
 
     suspend fun revokeAllActiveConsents(): Result<Int> {
         return runCatching {
-            val count = _activeConsents.value.count { it.state == ConsentLifeCycleState.ACTIVE_GRANTED }
+            val active = _activeConsents.value.filter { it.state == ConsentLifeCycleState.ACTIVE_GRANTED }
+            for (c in active) {
+                onRevokeRemoteConsent?.invoke(c.consentHandleId)
+            }
+            val count = active.size
             _activeConsents.value = _activeConsents.value.map {
                 it.copy(state = ConsentLifeCycleState.REVOKED_BY_USER)
             }

@@ -131,8 +131,9 @@ class OptimizedTaxCopilotChatbotEngine(
      * 3. Invokes Tier-2 Compact Micro-Prompt on on-device LLM only if needed.
      */
     suspend fun parseUserChatQueryOptimized(rawUserQuery: String): WhatIfDeltaIntent = withContext(Dispatchers.Default) {
-        val cleanQuery = UidaiAadhaarVerhoeffScrubber.scrubAllAadhaarDigits(rawUserQuery.trim(), strictChecksumOnly = true)
-            .take(200)
+        val aadhaarScrubbed = UidaiAadhaarVerhoeffScrubber.scrubAllAadhaarDigits(rawUserQuery.trim(), strictChecksumOnly = true)
+        val panRegex = Regex("""(?i)\b([A-Z]{5}[0-9]{4}[A-Z])\b""")
+        val cleanQuery = aadhaarScrubbed.replace(panRegex, "[PAN Redacted]").take(200)
 
         // STEP 1: Tier-0 Instant Regex Fast-Path (Handles ~85% of queries in < 1ms with 0 AI tokens)
         tryTier0FastPath(cleanQuery)?.let { return@withContext it }

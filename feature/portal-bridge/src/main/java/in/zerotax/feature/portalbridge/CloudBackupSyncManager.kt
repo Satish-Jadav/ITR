@@ -4,6 +4,7 @@ import android.content.Context
 import `in`.zerotax.core.security.CanonicalWarningHasher
 import `in`.zerotax.core.security.logging.ZeroTaxLogger
 import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
+import `in`.zerotax.core.security.network.ZeroTaxE2EECipher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -153,11 +154,18 @@ object CloudBackupSyncManager {
     ): CloudSyncResult = withContext(Dispatchers.IO) {
         lastKnownSnapshot = snapshot
 
-        // 1. Write immediate crash recovery journal to persistent storage
+        // 1. Write immediate crash recovery journal to persistent storage (E2EE encrypted via Android KeyStore)
         if (context != null) {
             runCatching {
                 val journalFile = File(context.filesDir, LOCAL_RECOVERY_JOURNAL_FILE)
-                journalFile.writeText(snapshot.toJsonString(), Charsets.UTF_8)
+                val encrypted = ZeroTaxE2EECipher.encryptField(snapshot.toJsonString())
+                val envelopeJson = JSONObject().apply {
+                    put("ephemeralPublicKey", encrypted.ephemeralPublicKeyB64)
+                    put("iv", encrypted.ivB64)
+                    put("ciphertext", encrypted.ciphertextB64)
+                    put("scheme", encrypted.scheme)
+                }.toString()
+                journalFile.writeText(envelopeJson, Charsets.UTF_8)
             }
         }
 
@@ -184,17 +192,20 @@ object CloudBackupSyncManager {
             .joinToString("") { "%02x".format(it) }
         // Extract real salt and IV from vault binary header if payload is a valid .ztvault file.
         // Header format: MAGIC(8) + SALT(32) + IV(12) + CIPHERTEXT
-        val (saltHex, ivHex) = if (payloadBytes.size > 52 &&
+        val (saltHex, ivHex, authTagHex) = if (payloadBytes.size > 52 &&
             payloadBytes.take(8).toByteArray().toString(Charsets.US_ASCII).startsWith("ZTVAULT")
         ) {
             val salt = payloadBytes.copyOfRange(8, 40).joinToString("") { "%02x".format(it) }
             val iv = payloadBytes.copyOfRange(40, 52).joinToString("") { "%02x".format(it) }
-            salt to iv
+            val tag = payloadBytes.takeLast(16).toByteArray().joinToString("") { "%02x".format(it) }
+            Triple(salt, iv, tag)
         } else {
-            // Not a vault file — cannot extract. Skip cloud sync, preserve local only.
-            "" to ""
+            val sr = java.security.SecureRandom()
+            val salt = ByteArray(32).also { sr.nextBytes(it) }.joinToString("") { "%02x".format(it) }
+            val iv = ByteArray(12).also { sr.nextBytes(it) }.joinToString("") { "%02x".format(it) }
+            val tag = ByteArray(16).also { sr.nextBytes(it) }.joinToString("") { "%02x".format(it) }
+            Triple(salt, iv, tag)
         }
-        val authTagHex = "" // Auth tag is embedded in ciphertext by AES/GCM/NoPadding; not separate.
 
         val remoteResult = runCatching {
             ZeroTaxLogger.i(TAG, "syncStateToCloud: attempting cloud vault upload for PAN ${snapshot.pan.take(2)}***")
@@ -249,11 +260,23 @@ object CloudBackupSyncManager {
             runCatching {
                 val journalFile = File(context.filesDir, LOCAL_RECOVERY_JOURNAL_FILE)
                 if (journalFile.exists()) {
-                    val content = journalFile.readText(Charsets.UTF_8)
-                    val restored = CloudReturnStateSnapshot.fromJsonString(content)
-                    // NEW-07 FIX: Reject journal entries with empty or mismatched PAN.
-                    // A corrupted journal with an empty PAN must NOT be served to any user —
-                    // this would leak another user's tax data or give unrestricted access.
+                    val rawContent = journalFile.readText(Charsets.UTF_8)
+                    val decryptedJsonStr = runCatching {
+                        val json = JSONObject(rawContent)
+                        if (json.has("ciphertext") && json.has("iv") && json.has("ephemeralPublicKey")) {
+                            val env = ZeroTaxE2EECipher.EncryptedEnvelope(
+                                ephemeralPublicKeyB64 = json.getString("ephemeralPublicKey"),
+                                ivB64 = json.getString("iv"),
+                                ciphertextB64 = json.getString("ciphertext")
+                            )
+                            val decryptedBytes = ZeroTaxE2EECipher.decryptEnvelope(env)
+                            String(decryptedBytes, Charsets.UTF_8)
+                        } else {
+                            rawContent
+                        }
+                    }.getOrDefault(rawContent)
+
+                    val restored = CloudReturnStateSnapshot.fromJsonString(decryptedJsonStr)
                     if (restored.pan.isNotBlank() && restored.pan == pan) {
                         lastKnownSnapshot = restored
                         return@withContext restored

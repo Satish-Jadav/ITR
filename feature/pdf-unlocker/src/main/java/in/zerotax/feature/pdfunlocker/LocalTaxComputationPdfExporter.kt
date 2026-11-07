@@ -44,7 +44,16 @@ object LocalTaxComputationPdfExporter {
             var yPosition = 800f
             val leftMargin = 50f
 
+            fun sanitizePdfText(raw: String): String {
+                return raw.map { ch ->
+                    if (ch.code in 32..126) ch
+                    else if (ch == '\n' || ch == '\r') ' '
+                    else '?'
+                }.joinToString("").trim()
+            }
+
             fun writeLine(text: String, isHeader: Boolean = false, fontSize: Float = 11f) {
+                val safeText = sanitizePdfText(text)
                 cs.beginText()
                 if (isHeader) {
                     cs.setFont(PDType1Font.HELVETICA_BOLD, fontSize)
@@ -52,7 +61,7 @@ object LocalTaxComputationPdfExporter {
                     cs.setFont(PDType1Font.HELVETICA, fontSize)
                 }
                 cs.newLineAtOffset(leftMargin, yPosition)
-                cs.showText(text)
+                cs.showText(safeText)
                 cs.endText()
                 yPosition -= (fontSize + 7f)
             }
