@@ -76,17 +76,18 @@ object ZeroTaxE2EECipher {
     // -------------------------------------------------------------------------
 
     /**
-     * Encrypt a sensitive string field (PAN, Aadhaar last-4, etc.)
+     * Encrypt a sensitive string field (PAN, Aadhaar last-4, etc.) with optional AAD binding
+     * to prevent ciphertext transplanting across fields, accounts, or assessment years.
      * @return EncryptedEnvelope ready for JSON serialization
      */
-    fun encryptField(plaintext: String): EncryptedEnvelope =
-        encryptBytes(plaintext.toByteArray(Charsets.UTF_8))
+    fun encryptField(plaintext: String, associatedData: ByteArray? = null): EncryptedEnvelope =
+        encryptBytes(plaintext.toByteArray(Charsets.UTF_8), associatedData)
 
     /**
-     * Encrypt raw bytes (PDF, Form 16 etc.)
+     * Encrypt raw bytes (PDF, Form 16 etc.) with optional AAD binding.
      * @return EncryptedEnvelope ready for JSON serialization
      */
-    fun encryptBytes(plainBytes: ByteArray): EncryptedEnvelope {
+    fun encryptBytes(plainBytes: ByteArray, associatedData: ByteArray? = null): EncryptedEnvelope {
         // 1. Generate ephemeral ECDH key pair for this encryption
         val ephemeralKeyPair = generateEphemeralEcKeyPair()
         val ephemeralPublicKeyBytes = ephemeralKeyPair.public.encoded  // X.509 DER
@@ -106,10 +107,13 @@ object ZeroTaxE2EECipher {
         val aesKeyBytes = hkdfSha256(sharedSecret, salt = "zerotax-e2ee-v1".toByteArray(), length = 32)
         val aesKey = SecretKeySpec(aesKeyBytes, "AES")
 
-        // 4. AES-256-GCM encrypt
+        // 4. AES-256-GCM encrypt with AAD binding
         val iv = ByteArray(12).also { SecureRandom().nextBytes(it) }
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, aesKey, GCMParameterSpec(AES_GCM_TAG_LENGTH, iv))
+        if (associatedData != null && associatedData.isNotEmpty()) {
+            cipher.updateAAD(associatedData)
+        }
         val ciphertextWithTag = cipher.doFinal(plainBytes)
 
         return EncryptedEnvelope(
@@ -123,7 +127,7 @@ object ZeroTaxE2EECipher {
      * Decrypt an envelope received from the API (for vault sync round-trip).
      * Uses the persistent device ECDH private key (Android Keystore).
      */
-    fun decryptEnvelope(envelope: EncryptedEnvelope): ByteArray {
+    fun decryptEnvelope(envelope: EncryptedEnvelope, associatedData: ByteArray? = null): ByteArray {
         val devicePrivateKey = getOrCreateDeviceEcKeyPair().private
         val ephemeralPublicKey = decodePublicKey(Base64.decode(envelope.ephemeralPublicKeyB64, Base64.URL_SAFE))
         val sharedSecret = ecdhSharedSecret(devicePrivateKey, ephemeralPublicKey)
@@ -133,6 +137,9 @@ object ZeroTaxE2EECipher {
         val ciphertextWithTag = Base64.decode(envelope.ciphertextB64, Base64.URL_SAFE)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.DECRYPT_MODE, aesKey, GCMParameterSpec(AES_GCM_TAG_LENGTH, iv))
+        if (associatedData != null && associatedData.isNotEmpty()) {
+            cipher.updateAAD(associatedData)
+        }
         return cipher.doFinal(ciphertextWithTag)
     }
 

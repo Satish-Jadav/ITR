@@ -47,6 +47,7 @@ fun SugamPresumptiveFastStartView(
     onOpenTaxPaymentHub: () -> Unit,
     onOpenAisTransactions: () -> Unit,
     onOpenPortalSync: () -> Unit = {},
+    uiState: ZeroTaxUiState? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedType by remember { mutableStateOf(PresumptiveType.SEC_44ADA_PROFESSIONAL) }
@@ -81,6 +82,14 @@ fun SugamPresumptiveFastStartView(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         StatutoryTimelineBanner()
+
+        // ⚡ 90-Second Express Filing Spine Card
+        if (uiState != null) {
+            Express3MinuteFilingCard(
+                uiState = uiState,
+                onFileAndEVerifyNow = onLaunchPortalAssistant
+            )
+        }
 
         // 1-TAP IN-APP ITD PORTAL SYNC CARD
         Surface(

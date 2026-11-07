@@ -445,6 +445,38 @@ fun ConversationalFilingChatScreen(
                         customText = "🔒 Messages & tax calculations are end-to-end encrypted. No one outside of this chat, not even ZeroTax, can read them. Tap to verify."
                     )
                 }
+
+                // Turn 0: Sync-First Gate Card (Strict statutory rule: zero guessed figures before sync)
+                if (gross == 0L) {
+                    item {
+                        InitialSyncGateCard(
+                            onConnectItdPortal = {
+                                viewModel?.startDynamicHydrationRadar()
+                            },
+                            onScanForm16 = {
+                                docPickerLauncher.launch(arrayOf("application/pdf", "image/*"))
+                            },
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+                } else if (uiState != null) {
+                    // Turn 1: Post-Sync Reconciled Diagnostic Card
+                    item {
+                        PostSyncDiagnosticCard(
+                            uiState = uiState,
+                            onProceedToFiling = {
+                                onProceedToFullReview(
+                                    gross,
+                                    maxOf(0L, gross - deductions),
+                                    taxLiability,
+                                    deductions,
+                                    refundDue
+                                )
+                            },
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+                }
                 items(
                     items = messages,
                     key = { it.id }

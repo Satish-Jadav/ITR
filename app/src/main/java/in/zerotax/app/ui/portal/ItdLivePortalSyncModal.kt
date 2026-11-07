@@ -86,6 +86,22 @@ fun ItdLivePortalSyncModal(
     var otpErrorMessage by remember { mutableStateOf<String?>(null) }
     var activeTxnId by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
+    val otpReader = remember {
+        ItdAndAaOtpAutoReader(context) { code ->
+            aadhaarOtp = code
+        }
+    }
+
+    DisposableEffect(isOtpDispatched) {
+        if (isOtpDispatched) {
+            otpReader.startListening()
+        }
+        onDispose {
+            otpReader.stopListening()
+        }
+    }
+
     LaunchedEffect(cooldownSeconds) {
         if (cooldownSeconds > 0) {
             delay(1000)
