@@ -32,6 +32,7 @@ dependencies {
     implementation(project(":core:tax-engine"))
     implementation(project(":core:security"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("com.google.android.gms:play-services-auth-api-phone:18.1.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
 }

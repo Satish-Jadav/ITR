@@ -1648,7 +1648,8 @@ private fun ProWorkspaceView(
                                     SahajFilingExperienceView(
                                         pan = uiState.pan,
                                         grossSalary = uiState.grossSalaryRupees,
-                                        bankInterest = 14_200L,
+                                        bankInterest = uiState.savingsInterestRupees,
+                                        bankAccount = uiState.bankAccount,
                                         tdsClaimed = uiState.salarySummary.aggregateTdsAllowed,
                                         newRegimeTax = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
                                         oldRegimeTax = uiState.oldRegimeResult.totalTaxLiabilityRounded288B,
@@ -1657,7 +1658,8 @@ private fun ProWorkspaceView(
                                         onOpenTaxPaymentHub = onOpenTaxPaymentHub,
                                         onOpenAisTransactions = onOpenAisTransactions,
                                         onOpenPortalSync = onOpenPortalSync,
-                                        onOpenThinkLikeCa = onOpenThinkLikeCa
+                                        onOpenThinkLikeCa = onOpenThinkLikeCa,
+                                        uiState = uiState
                                     )
                                 }
                             }
@@ -1668,7 +1670,8 @@ private fun ProWorkspaceView(
                                         onLaunchPortalAssistant = onLaunchPortalAssistant,
                                         onOpenTaxPaymentHub = onOpenTaxPaymentHub,
                                         onOpenAisTransactions = onOpenAisTransactions,
-                                        onOpenPortalSync = onOpenPortalSync
+                                        onOpenPortalSync = onOpenPortalSync,
+                                        uiState = uiState
                                     )
                                 }
                             }

@@ -84,6 +84,27 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
 
+    // SMS Retriever 1-Tap OTP
+    implementation("com.google.android.gms:play-services-auth-api-phone:18.1.0")
+
+    // ML Kit & Document Scanner Vision Engine
+    implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("com.google.mlkit:text-recognition-devanagari:16.0.1")
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+
+    // CameraX Foundation
+    implementation("androidx.camera:camera-core:1.3.4")
+    implementation("androidx.camera:camera-camera2:1.3.4")
+    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    implementation("androidx.camera:camera-view:1.3.4")
+
+    // PDFBox & Background Workers & SSE
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

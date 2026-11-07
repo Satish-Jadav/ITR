@@ -280,37 +280,34 @@ class ZeroTaxViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
+            val prefetcher = ParallelOnboardingPrefetcher()
+            val bundle = prefetcher.prefetchEverythingConcurrently(pan)
+
             // Stream 1: ITD Portal Pre-fill
-            delay(700)
             _uiState.update { state ->
                 val updated = state.ingestionStreams.map {
                     if (it.id == "itd_prefill") it.copy(
                         status = IngestionStreamStatus.SUCCESS,
-                        details = "Taxpayer: ${state.taxpayerFullName.ifBlank { "SATISH KUMAR" }} | AY: 2026-27 | Status: ROR",
+                        details = "Taxpayer: ${state.taxpayerFullName.ifBlank { pan }} | AY: 2026-27 | Status: Verified",
                         badgeText = "Verified"
                     ) else if (it.id == "traces_26as") it.copy(status = IngestionStreamStatus.IN_PROGRESS)
                     else it
                 }
                 state.copy(
-                    ingestionStreams = updated,
-                    taxpayerFullName = if (state.taxpayerFullName.isBlank()) "SATISH KUMAR" else state.taxpayerFullName,
-                    bankAccount = if (state.bankAccount.bankName.isBlank()) state.bankAccount.copy(
-                        bankName = "HDFC Bank",
-                        accountNumber = "XXXXXX4821",
-                        ifscCode = "HDFC0000128",
-                        isPreValidated = true
-                    ) else state.bankAccount
+                    ingestionStreams = updated
                 )
             }
 
             // Stream 2: TRACES 26AS Ledger
-            delay(800)
-            val discoveredTds = if (_uiState.value.tdsDeposited26As > 0) _uiState.value.tdsDeposited26As else 112500L
+            val discoveredTds = if (bundle.form26AsTdsRecords.isNotEmpty()) {
+                bundle.form26AsTdsRecords.sumOf { it.taxDeductedRupees }
+            } else _uiState.value.tdsDeposited26As
+
             _uiState.update { state ->
                 val updated = state.ingestionStreams.map {
                     if (it.id == "traces_26as") it.copy(
                         status = IngestionStreamStatus.SUCCESS,
-                        details = "TDS u/s 192/194: ₹${discoveredTds} | Advance Tax: ₹0",
+                        details = "TDS u/s 192/194: ₹${discoveredTds} | Records: ${bundle.form26AsTdsRecords.size}",
                         badgeText = "Matched"
                     ) else if (it.id == "compliance_ais") it.copy(status = IngestionStreamStatus.IN_PROGRESS)
                     else it
@@ -322,13 +319,15 @@ class ZeroTaxViewModel : ViewModel() {
             }
 
             // Stream 3: Compliance AIS / TIS Data Hub
-            delay(800)
-            val interestVal = if (_uiState.value.savingsInterestRupees > 0) _uiState.value.savingsInterestRupees else 26650L
+            val interestVal = if (bundle.aisTisRecords.isNotEmpty()) {
+                bundle.aisTisRecords.filter { it.category == AisCategory.SAVINGS_INTEREST }.sumOf { it.grossAmountRupees }
+            } else _uiState.value.savingsInterestRupees
+
             _uiState.update { state ->
                 val updated = state.ingestionStreams.map {
                     if (it.id == "compliance_ais") it.copy(
                         status = IngestionStreamStatus.SUCCESS,
-                        details = "Savings Interest: ₹${interestVal} | Dividends: ₹18,200 | SFT-006: Matched",
+                        details = "Savings Interest: ₹${interestVal} | AIS Records: ${bundle.aisTisRecords.size}",
                         badgeText = "AIS Clean"
                     ) else if (it.id == "stream_4_dynamic") it.copy(status = IngestionStreamStatus.IN_PROGRESS)
                     else it
@@ -340,14 +339,17 @@ class ZeroTaxViewModel : ViewModel() {
             }
 
             // Stream 4: Dynamic Stream
-            delay(900)
+            val discoveredSalary = if (bundle.form26AsTdsRecords.isNotEmpty()) {
+                bundle.form26AsTdsRecords.filter { it.category == AisCategory.SALARY }.sumOf { it.grossAmountRupees }
+            } else 0L
+
             _uiState.update { state ->
+                val pdfCount = bundle.discoveredLocalPdfs.size
                 val stream4Details = when (currentTier) {
-                    FilingTierMode.SAHAJ_SIMPLE -> "Form_16_FY2025-26.pdf discovered & decrypted silently"
-                    FilingTierMode.INVESTOR_PRO -> "Zerodha CAS statement decrypted: 14 trade lots parsed"
-                    FilingTierMode.ENTERPRISE_AUDIT -> "GSTR-2B ITC (₹4.2L) vs GSTR-3B Turnover reconciled"
+                    FilingTierMode.SAHAJ_SIMPLE -> if (pdfCount > 0) "$pdfCount tax document(s) discovered in Downloads/" else "Local document scan complete"
+                    FilingTierMode.INVESTOR_PRO -> "Broker CAS stream reconciled"
+                    FilingTierMode.ENTERPRISE_AUDIT -> "Commercial turnover reconciled"
                 }
-                val salaryVal = if (state.grossSalaryRupees > 0) state.grossSalaryRupees else 1450000L
                 val updated = state.ingestionStreams.map {
                     if (it.id == "stream_4_dynamic") it.copy(
                         status = IngestionStreamStatus.SUCCESS,
@@ -358,19 +360,16 @@ class ZeroTaxViewModel : ViewModel() {
                 }
                 state.copy(
                     ingestionStreams = updated,
-                    grossSalaryRupees = if (currentTier == FilingTierMode.SAHAJ_SIMPLE) salaryVal else state.grossSalaryRupees,
-                    employerName = if (state.employerName.isBlank()) "Infosys Technologies Ltd" else state.employerName,
-                    employerTan = if (state.employerTan.isBlank()) "BLRI01928C" else state.employerTan
+                    grossSalaryRupees = if (discoveredSalary > 0L) discoveredSalary else state.grossSalaryRupees
                 )
             }
 
             // Stream 5: Dynamic Statutory Rules
-            delay(900)
             _uiState.update { state ->
                 val stream5Details = when (currentTier) {
-                    FilingTierMode.SAHAJ_SIMPLE -> "Sec 80C (₹1.5L) + 80D (₹25k) + NPS (₹50k) applied"
-                    FilingTierMode.INVESTOR_PRO -> "6 ISINs Jan 31 2018 FMVs auto-populated | Sched FA verified"
-                    FilingTierMode.ENTERPRISE_AUDIT -> "Sec 43B(h) MSME checked (0 overdue) | Clause 44 categorized"
+                    FilingTierMode.SAHAJ_SIMPLE -> "Sec 80C + 80D + NPS statutory optimization evaluated"
+                    FilingTierMode.INVESTOR_PRO -> "Grandfathering & Capital Gains schedules verified"
+                    FilingTierMode.ENTERPRISE_AUDIT -> "Presumptive & Business statutory rules applied"
                 }
                 val updated = state.ingestionStreams.map {
                     if (it.id == "stream_5_dynamic") it.copy(
@@ -381,10 +380,7 @@ class ZeroTaxViewModel : ViewModel() {
                 }
                 state.copy(
                     ingestionStreams = updated,
-                    isIngestingStreams = false,
-                    section80CInvestments = if (state.section80CInvestments > 0) state.section80CInvestments else 150000L,
-                    section80DSelf = if (state.section80DSelf > 0) state.section80DSelf else 25000L,
-                    section80CCD1BNps = if (state.section80CCD1BNps > 0) state.section80CCD1BNps else 50000L
+                    isIngestingStreams = false
                 )
             }
 
@@ -405,8 +401,7 @@ class ZeroTaxViewModel : ViewModel() {
         val state = _uiState.value
         val pan = state.pan.ifBlank { "AAAPA1234A" }
         val tier = state.filingTierMode
-        val grossIncome = if (tier == FilingTierMode.ENTERPRISE_AUDIT) 42000000L
-            else if (state.grossSalaryRupees > 0) state.grossSalaryRupees else 1450000L
+        val grossIncome = state.grossSalaryRupees
         val deductions = state.section80CInvestments + state.section80DSelf + state.section80CCD1BNps
         val taxable = maxOf(0L, grossIncome - deductions - 75000L)
         val newTax: Long = state.newRegimeResult.totalTaxLiabilityRounded288B
@@ -582,19 +577,108 @@ class ZeroTaxViewModel : ViewModel() {
     }
 
     /**
-     * Applies live ITD portal sync data (TDS credits + Bank interest) directly into the return
+     * Applies full verified ITD portal and Account Aggregator sync payload into the return.
+     * Reconciles gross salary, TDS credits, savings interest, employer TAN/name, deductions,
+     * and bank account details, persisting them into state and scheduling cloud sync.
      */
-    fun applyPortalSyncData(totalTds: Long, totalInterest: Long, grossSalary: Long = 0L) {
+    fun applyFullPortalAndAaSyncPayload(
+        itdBundle: JSONObject,
+        aaAccounts: List<AisTransactionRecord> = emptyList()
+    ) {
+        FilingSpeedTelemetryEngine.markSyncInitiated()
+
+        val totalTds = itdBundle.optLong("aggregateTdsCredit", itdBundle.optLong("totalTds", 0L))
+        val grossSalary = itdBundle.optLong("aggregateGrossAmount", itdBundle.optLong("grossSalary", 0L))
+        val interest = itdBundle.optLong("savingsInterest", itdBundle.optLong("totalInterest", 0L))
+
+        var extractedGrossSalary = grossSalary
+        var extractedTds = totalTds
+        var extractedSavingsInterest = interest
+        var employerName = itdBundle.optString("employerName", "")
+        var employerTan = itdBundle.optString("employerTan", "")
+        var bankName = itdBundle.optString("bankName", "")
+        var accountNumber = itdBundle.optString("accountNumber", "")
+        var ifscCode = itdBundle.optString("ifscCode", "")
+        val sec80C = itdBundle.optLong("section80C", 0L)
+        val sec80D = itdBundle.optLong("section80D", 0L)
+        val sec80CCD1B = itdBundle.optLong("section80CCD1B", 0L)
+
+        val txns = itdBundle.optJSONArray("transactions")
+        if (txns != null) {
+            var salarySum = 0L
+            var tdsSum = 0L
+            var interestSum = 0L
+            for (i in 0 until txns.length()) {
+                val t = txns.optJSONObject(i) ?: continue
+                val category = t.optString("category", "").uppercase()
+                val section = t.optString("section", "")
+                val gross = t.optLong("grossAmount", 0L)
+                val tds = t.optLong("tdsAmount", 0L)
+                tdsSum += tds
+
+                if (category == "SALARY" || section.contains("192")) {
+                    salarySum += gross
+                    if (employerName.isBlank()) employerName = t.optString("deductorOrIssuerName", t.optString("employerName", ""))
+                    if (employerTan.isBlank()) employerTan = t.optString("deductorOrIssuerTan", t.optString("employerTan", ""))
+                } else if (category == "SAVINGS_INTEREST" || category == "DEPOSIT_INTEREST" || section.contains("194A")) {
+                    interestSum += gross
+                }
+            }
+            if (extractedGrossSalary == 0L && salarySum > 0L) extractedGrossSalary = salarySum
+            if (extractedTds == 0L && tdsSum > 0L) extractedTds = tdsSum
+            if (extractedSavingsInterest == 0L && interestSum > 0L) extractedSavingsInterest = interestSum
+        }
+
+        for (aa in aaAccounts) {
+            if (aa.category == AisCategory.SAVINGS_INTEREST) {
+                extractedSavingsInterest += aa.grossAmountRupees
+            }
+        }
+
+        val bankObj = itdBundle.optJSONObject("bankAccount")
+        if (bankObj != null) {
+            if (bankName.isBlank()) bankName = bankObj.optString("bankName", "")
+            if (accountNumber.isBlank()) accountNumber = bankObj.optString("accountNumber", "")
+            if (ifscCode.isBlank()) ifscCode = bankObj.optString("ifscCode", "")
+        }
+
         _uiState.update { current ->
             current.copy(
-                tdsDeposited26As = if (totalTds > 0L) totalTds else current.tdsDeposited26As,
-                savingsInterestRupees = if (totalInterest > 0L) totalInterest else current.savingsInterestRupees,
-                grossSalaryRupees = if (grossSalary > 0L && current.grossSalaryRupees == 0L) grossSalary else if (grossSalary > 0L) grossSalary else current.grossSalaryRupees,
+                grossSalaryRupees = if (extractedGrossSalary > 0L) extractedGrossSalary else current.grossSalaryRupees,
+                tdsDeposited26As = if (extractedTds > 0L) extractedTds else current.tdsDeposited26As,
+                savingsInterestRupees = if (extractedSavingsInterest > 0L) extractedSavingsInterest else current.savingsInterestRupees,
+                employerName = if (employerName.isNotBlank()) employerName else current.employerName,
+                employerTan = if (employerTan.isNotBlank()) employerTan else current.employerTan,
+                section80CInvestments = if (sec80C > 0L) sec80C else current.section80CInvestments,
+                section80DSelf = if (sec80D > 0L) sec80D else current.section80DSelf,
+                section80CCD1BNps = if (sec80CCD1B > 0L) sec80CCD1B else current.section80CCD1BNps,
+                bankAccount = if (accountNumber.isNotBlank()) {
+                    current.bankAccount.copy(
+                        bankName = bankName.ifBlank { current.bankAccount.bankName },
+                        accountNumber = accountNumber,
+                        ifscCode = ifscCode.ifBlank { current.bankAccount.ifscCode },
+                        isPreValidated = true
+                    )
+                } else current.bankAccount,
                 isVaultSyncedToCloud = false
             )
         }
+
         recompute()
         scheduleCloudSync()
+        FilingSpeedTelemetryEngine.markSyncCompleted()
+    }
+
+    /**
+     * Applies live ITD portal sync data (TDS credits + Bank interest) directly into the return
+     */
+    fun applyPortalSyncData(totalTds: Long, totalInterest: Long, grossSalary: Long = 0L) {
+        val bundle = JSONObject().apply {
+            put("aggregateTdsCredit", totalTds)
+            put("savingsInterest", totalInterest)
+            put("aggregateGrossAmount", grossSalary)
+        }
+        applyFullPortalAndAaSyncPayload(bundle)
     }
 
     fun onSection80CChanged(amount: Long) {
@@ -680,6 +764,11 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun onHomeLoanInterestChanged(amount: Long) {
         _uiState.update { it.copy(homeLoanInterestSec24b = maxOf(0L, amount)) }
+        recompute()
+    }
+
+    fun onExemptAllowancesSec10Changed(amount: Long) {
+        _uiState.update { it.copy(exemptAllowancesSec10 = maxOf(0L, amount)) }
         recompute()
     }
 

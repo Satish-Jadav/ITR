@@ -146,66 +146,126 @@ object OfflineWhatIfTaxSimulator {
         when {
             // Case 1: Health Insurance (80D)
             q.contains("health") || q.contains("mediclaim") || q.contains("80d") || q.contains("medical") -> {
-                val add80D = if (extractedAmount > 0L) extractedAmount else 25_000L
+                val add80D = if (extractedAmount > 0L) extractedAmount else 0L
                 val current80D = baseInput.section80DSelfAndFamily
                 val updated80D = minOf(current80D + add80D, 1_00_000L)
-                modifiedInput = baseInput.copy(section80DSelfAndFamily = updated80D)
-                scenarioDescription = "Purchased ₹$add80D additional health insurance for family/parents u/s 80D."
-                guidance.add("Section 80D deduction applies in the Old Tax Regime up to ₹25,000 (below 60) or ₹50,000 (senior citizens).")
+                modifiedInput = if (add80D > 0L) baseInput.copy(section80DSelfAndFamily = updated80D) else baseInput
+                scenarioDescription = if (add80D > 0L) {
+                    "Purchased ₹$add80D additional health insurance for family/parents u/s 80D."
+                } else {
+                    "Section 80D Health Insurance Headroom Analysis."
+                }
+                guidance.add(
+                    if (add80D > 0L) {
+                        "Section 80D deduction applies in the Old Tax Regime up to ₹25,000 (below 60) or ₹50,000 (senior citizens)."
+                    } else {
+                        "Section 80D allows up to ₹25,000 (self/family) + ₹50,000 (senior parents) deduction under Old Regime. Enter a specific amount (e.g., 'What if 25000 in health insurance?') to simulate tax delta."
+                    }
+                )
                 citations.add("Sec 80D")
                 deltas = deltas.copy(sec80DSelfRupees = add80D)
             }
 
             // Case 2: NPS Tier-I (80CCD(1B))
             q.contains("nps") || q.contains("80ccd") || q.contains("pension") -> {
-                val addNps = if (extractedAmount > 0L) extractedAmount else 50_000L
+                val addNps = if (extractedAmount > 0L) extractedAmount else 0L
                 val updatedNps = minOf(baseInput.section80CCD1BSelfNps + addNps, 50_000L)
-                modifiedInput = baseInput.copy(section80CCD1BSelfNps = updatedNps)
-                scenarioDescription = "Contributed ₹$addNps to NPS Tier-I under Section 80CCD(1B)."
-                guidance.add("NPS Tier-I offers an exclusive ₹50,000 deduction over and above Section 80C's ₹1.5L limit in the Old Regime.")
+                modifiedInput = if (addNps > 0L) baseInput.copy(section80CCD1BSelfNps = updatedNps) else baseInput
+                scenarioDescription = if (addNps > 0L) {
+                    "Contributed ₹$addNps to NPS Tier-I under Section 80CCD(1B)."
+                } else {
+                    "Section 80CCD(1B) NPS Tier-I Headroom Analysis."
+                }
+                guidance.add(
+                    if (addNps > 0L) {
+                        "NPS Tier-I offers an exclusive ₹50,000 deduction over and above Section 80C's ₹1.5L limit in the Old Regime."
+                    } else {
+                        "NPS Tier-I offers an exclusive ₹50,000 deduction over and above Section 80C's ₹1.5L limit in the Old Regime. Specify an amount to simulate savings."
+                    }
+                )
                 citations.add("Sec 80CCD(1B)")
                 deltas = deltas.copy(nps80CCD1BRupees = addNps)
             }
 
             // Case 3: Section 80C Investments (PPF, ELSS, EPF, Life Insurance)
             q.contains("elss") || q.contains("ppf") || q.contains("80c") || q.contains("lic") -> {
-                val add80C = if (extractedAmount > 0L) extractedAmount else 50_000L
+                val add80C = if (extractedAmount > 0L) extractedAmount else 0L
                 val updated80C = minOf(baseInput.section80CInvestments + add80C, 1_50_000L)
-                modifiedInput = baseInput.copy(section80CInvestments = updated80C)
-                scenarioDescription = "Invested ₹$add80C in Section 80C instruments (PPF/ELSS/Life Insurance)."
-                guidance.add("Section 80C has an aggregate statutory cap of ₹1,50,000 in the Old Tax Regime.")
+                modifiedInput = if (add80C > 0L) baseInput.copy(section80CInvestments = updated80C) else baseInput
+                scenarioDescription = if (add80C > 0L) {
+                    "Invested ₹$add80C in Section 80C instruments (PPF/ELSS/Life Insurance)."
+                } else {
+                    "Section 80C Investment Ceiling Analysis."
+                }
+                guidance.add(
+                    if (add80C > 0L) {
+                        "Section 80C has an aggregate statutory cap of ₹1,50,000 in the Old Tax Regime."
+                    } else {
+                        "Section 80C has an aggregate statutory cap of ₹1,50,000 in the Old Tax Regime across PPF, ELSS, EPF, and Life Insurance. Enter an investment amount to simulate."
+                    }
+                )
                 citations.add("Sec 80C")
                 deltas = deltas.copy(sec80CRupees = add80C)
             }
 
             // Case 4: Home Loan Interest (Section 24(b))
             q.contains("home loan") || q.contains("housing loan") || q.contains("interest on loan") || q.contains("24b") -> {
-                val addInterest = if (extractedAmount > 0L) extractedAmount else 2_00_000L
+                val addInterest = if (extractedAmount > 0L) extractedAmount else 0L
                 val updatedInterest = minOf(baseInput.selfOccupiedHomeLoanInterestSec24b + addInterest, 2_00_000L)
-                modifiedInput = baseInput.copy(selfOccupiedHomeLoanInterestSec24b = updatedInterest)
-                scenarioDescription = "Claimed ₹$addInterest home loan interest on self-occupied house u/s 24(b)."
-                guidance.add("Section 24(b) allows deduction of home loan interest on a self-occupied property up to ₹2,00,000 in the Old Tax Regime.")
+                modifiedInput = if (addInterest > 0L) baseInput.copy(selfOccupiedHomeLoanInterestSec24b = updatedInterest) else baseInput
+                scenarioDescription = if (addInterest > 0L) {
+                    "Claimed ₹$addInterest home loan interest on self-occupied house u/s 24(b)."
+                } else {
+                    "Section 24(b) Home Loan Interest Headroom Analysis."
+                }
+                guidance.add(
+                    if (addInterest > 0L) {
+                        "Section 24(b) allows deduction of home loan interest on a self-occupied property up to ₹2,00,000 in the Old Tax Regime."
+                    } else {
+                        "Section 24(b) allows deduction of home loan interest on a self-occupied property up to ₹2,00,000 in the Old Tax Regime. Enter your annual interest to calculate tax relief."
+                    }
+                )
                 citations.add("Sec 24(b)")
                 deltas = deltas.copy(homeLoanInterest24bRupees = addInterest)
             }
 
             // Case 5: Freelance / Presumptive Consulting (44ADA)
             q.contains("freelance") || q.contains("consult") || q.contains("44ada") || q.contains("contract") -> {
-                val addGross = if (extractedAmount > 0L) extractedAmount else 5_00_000L
+                val addGross = if (extractedAmount > 0L) extractedAmount else 0L
                 val updatedGross = baseInput.presumptiveGrossReceipts44ADA + addGross
-                modifiedInput = baseInput.copy(presumptiveGrossReceipts44ADA = updatedGross)
-                scenarioDescription = "Added ₹$addGross in freelance consulting receipts under Section 44ADA."
-                guidance.add("Under Section 44ADA, exactly 50% (₹${addGross / 2}) is taxable profit, and 50% is treated as statutory expense with zero receipt bookkeeping.")
+                modifiedInput = if (addGross > 0L) baseInput.copy(presumptiveGrossReceipts44ADA = updatedGross) else baseInput
+                scenarioDescription = if (addGross > 0L) {
+                    "Added ₹$addGross in freelance consulting receipts under Section 44ADA."
+                } else {
+                    "Section 44ADA Presumptive Taxation Analysis."
+                }
+                guidance.add(
+                    if (addGross > 0L) {
+                        "Under Section 44ADA, exactly 50% (₹${addGross / 2}) is taxable profit, and 50% is treated as statutory expense with zero receipt bookkeeping."
+                    } else {
+                        "Under Section 44ADA, professionals with gross receipts up to ₹75 Lakhs can declare 50% as taxable profit and 50% as expense. Enter your gross receipts to calculate profit and tax."
+                    }
+                )
                 citations.add("Sec 44ADA")
             }
 
             // Default: Salary change / General income
             else -> {
-                val addIncome = if (extractedAmount > 0L) extractedAmount else 1_00_000L
+                val addIncome = if (extractedAmount > 0L) extractedAmount else 0L
                 val updatedSalary = baseInput.grossSalary + addIncome
-                modifiedInput = baseInput.copy(grossSalary = updatedSalary)
-                scenarioDescription = "Increased gross income by ₹$addIncome."
-                guidance.add("Income is taxed according to your progressive marginal tax bracket.")
+                modifiedInput = if (addIncome > 0L) baseInput.copy(grossSalary = updatedSalary) else baseInput
+                scenarioDescription = if (addIncome > 0L) {
+                    "Increased gross income by ₹$addIncome."
+                } else {
+                    "Income Tax Marginal Slab Analysis."
+                }
+                guidance.add(
+                    if (addIncome > 0L) {
+                        "Income is taxed according to your progressive marginal tax bracket."
+                    } else {
+                        "Specify an incremental income or deduction amount to compute real-time tax impact across regimes."
+                    }
+                )
                 deltas = deltas.copy(salaryDeltaRupees = addIncome)
             }
         }

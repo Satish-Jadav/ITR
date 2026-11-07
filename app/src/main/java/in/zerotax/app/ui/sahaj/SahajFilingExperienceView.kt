@@ -49,6 +49,7 @@ fun SahajFilingExperienceView(
     onOpenAisTransactions: () -> Unit,
     onOpenPortalSync: () -> Unit = {},
     onOpenThinkLikeCa: () -> Unit = {},
+    uiState: ZeroTaxUiState? = null,
     modifier: Modifier = Modifier
 ) {
     var showTour by remember { mutableStateOf(true) }
@@ -70,6 +71,14 @@ fun SahajFilingExperienceView(
     ) {
         // Statutory Timeline Banner with July 31 Countdown
         StatutoryTimelineBanner()
+
+        // ⚡ 90-Second Express Filing Spine Card
+        if (uiState != null) {
+            Express3MinuteFilingCard(
+                uiState = uiState,
+                onFileAndEVerifyNow = onLaunchPortalAssistant
+            )
+        }
 
         // 1-TAP IN-APP ITD PORTAL SYNC CARD
         Surface(
