@@ -7,9 +7,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 enum class OnboardingWizardStep(val stepNumber: Int, val title: String) {
-    SELECT_PLAN(1, "Select Filing Plan"),
-    TRUST_AND_AUTH(2, "Government Auth & Trust Shield"),
-    STREAM_HYDRATION_RADAR(3, "Automated Data Hydration"),
+    TRUST_AND_AUTH(1, "Government Auth & Trust Shield"),
+    STREAM_HYDRATION_RADAR(2, "Automated Data Hydration"),
+    SELECT_PLAN(3, "Select Filing Plan"),
     PLAN_SPECIFIC_INPUTS(4, "Plan-Specific Requirements"),
     UNIFIED_DOSSIER_REVIEW(5, "Pre-Filing Master Tax Dossier")
 }
