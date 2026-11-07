@@ -5,6 +5,12 @@ import `in`.zerotax.app.ui.security.ZeroKnowledgeTrustShieldModal
 import `in`.zerotax.app.ui.components.WhatsAppEndToEndEncryptionBanner
 
 import androidx.compose.animation.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,6 +67,22 @@ fun ConversationalFilingChatScreen(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val fallbackBot = remember { ConversationalTaxFilingBot() }
+    val context = LocalContext.current
+    val docPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let {
+            try {
+                val fileName = uri.lastPathSegment ?: "document.pdf"
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val bytes = inputStream?.use { it.readBytes() } ?: ByteArray(0)
+                if (bytes.isNotEmpty()) {
+                    viewModel?.processAndAttachDocumentToChat(bytes, fileName)
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
 
     // Connect to ViewModel state if available; fallback to local bot for isolated previews
     val viewModelMessages by (viewModel?.chatMessages ?: remember { mutableStateOf(fallbackBot.getInitialGreeting()) }).let {
@@ -231,6 +253,23 @@ fun ConversationalFilingChatScreen(
                                         .clickable {
                                             if (reply.contains("Review All Points")) {
                                                 onProceedToFullReview(gross, maxOf(0L, gross - deductions), taxLiability, deductions, refundDue)
+                                            } else if (reply == "Apply to My Return") {
+                                                val latestCard = messages.findLast { it.actionCard is CopilotActionCardData.WhatIfResult }?.actionCard as? CopilotActionCardData.WhatIfResult
+                                                if (latestCard != null) {
+                                                    val sim = latestCard.result
+                                                    val deltas = sim.appliedDeltas
+                                                    if (deltas.sec80CRupees > 0L) {
+                                                        viewModel?.onSection80CChanged(deltas.sec80CRupees)
+                                                    }
+                                                    if (deltas.sec80DSelfRupees > 0L) {
+                                                        viewModel?.onSection80DChanged(deltas.sec80DSelfRupees)
+                                                    }
+                                                    if (deltas.nps80CCD1BRupees > 0L) {
+                                                        viewModel?.onSection80CCD1BChanged(deltas.nps80CCD1BRupees)
+                                                    }
+                                                    viewModel?.selectTaxRegime(sim.recommendedRegime)
+                                                }
+                                                handleSend("Applied recommended optimizations to my live return.")
                                             } else {
                                                 handleSend(reply)
                                             }
@@ -251,6 +290,23 @@ fun ConversationalFilingChatScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        IconButton(
+                            onClick = { docPickerLauncher.launch(arrayOf("application/pdf", "image/*")) },
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AttachFile,
+                                contentDescription = "Attach Document",
+                                tint = EnterpriseTeal600,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Spacer(Modifier.width(8.dp))
+
                         OutlinedTextField(
                             value = inputText,
                             onValueChange = { inputText = it },

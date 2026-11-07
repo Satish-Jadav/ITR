@@ -80,8 +80,13 @@ object SqlCipherHardwareVaultBuilder {
                 return decrypted
             }
             // Decryption failed: Keystore key was evicted or invalidated.
-            // Purge corrupted ciphertext/IV and re-initialize a fresh vault passphrase.
+            // Purge corrupted ciphertext/IV and unreadable orphaned database files to prevent unrecoverable SQLiteDatabaseCorruptException crash loops
             prefs.edit().remove(KEY_CIPHERTEXT).remove(KEY_IV).apply()
+            try {
+                context.getDatabasePath("zero_tax_vault.db")?.delete()
+                context.getDatabasePath("zero_tax_vault.db-shm")?.delete()
+                context.getDatabasePath("zero_tax_vault.db-wal")?.delete()
+            } catch (_: Exception) {}
         }
 
         val rawPassphrase = ByteArray(PASSPHRASE_BYTE_COUNT).also {

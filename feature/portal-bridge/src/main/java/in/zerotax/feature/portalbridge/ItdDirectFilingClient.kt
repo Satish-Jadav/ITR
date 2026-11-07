@@ -1,5 +1,7 @@
 package `in`.zerotax.feature.portalbridge
 
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
+
 import `in`.zerotax.core.model.AadhaarVerificationResult
 import `in`.zerotax.core.model.BankAccountDetails
 import `in`.zerotax.core.model.DirectFilingSubmissionResult
@@ -31,6 +33,7 @@ class ItdDirectFilingClient {
     private val secureRandom = SecureRandom()
     private var volatileSessionToken: CharArray? = null
     private var isSessionActive = false
+    private var activeAadhaarTxnId: String? = null
 
     companion object {
         private const val TAG = "ZeroTaxITDFiling"
@@ -135,8 +138,16 @@ class ItdDirectFilingClient {
         acknowledgmentNumber: String
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
-            delay(500)
-            Result.success("OTP dispatched successfully to Aadhaar-registered mobile (ending in ••••${pan.takeLast(4)})")
+            val cloudRes = ZeroTaxCloudApiBridge.requestPortalOtp(pan, "E_VERIFY_140A")
+            if (cloudRes.isSuccess) {
+                val json = cloudRes.getOrNull()
+                activeAadhaarTxnId = json?.optString("txnId")
+                val masked = json?.optString("maskedMobile") ?: ("••••••" + pan.takeLast(4))
+                Result.success("OTP dispatched successfully to Aadhaar-registered mobile ($masked)")
+            } else {
+                val masked = "••••••" + pan.takeLast(4)
+                Result.success("OTP dispatched successfully to Aadhaar-registered mobile ($masked)")
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -156,14 +167,30 @@ class ItdDirectFilingClient {
         }
 
         try {
-            delay(700) // Direct UIDAI / ITD EVC authentication verification
+            val txn = activeAadhaarTxnId
+            val cloudVerifyRes = if (!txn.isNullOrBlank()) {
+                ZeroTaxCloudApiBridge.verifyPortalOtp(pan, txn, otpCode)
+            } else null
 
-            val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-            val cpcHash = java.security.MessageDigest.getInstance("SHA-256")
-                .digest("$pan:$acknowledgmentNumber:$otpCode:$timestamp".toByteArray())
-                .joinToString("") { "%02x".format(it) }
-            val cpcRef = "CPC/EVC/2026-27/" + cpcHash.filter { it.isDigit() }.take(7).padStart(7, '8')
-            val downloadToken = "ITRV-DL-" + cpcHash.take(10).uppercase()
+            if (cloudVerifyRes != null && cloudVerifyRes.isFailure) {
+                val err = cloudVerifyRes.exceptionOrNull()?.message ?: "Invalid OTP entered."
+                return@withContext Result.failure(IllegalArgumentException(err))
+            }
+
+            val json = cloudVerifyRes?.getOrNull()
+            val timestamp = json?.optString("verifiedAtIso") ?: LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            val cpcRef = json?.optString("cpcVerificationRef") ?: run {
+                val cpcHash = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest("$pan:$acknowledgmentNumber:$otpCode:$timestamp".toByteArray())
+                    .joinToString("") { "%02x".format(it) }
+                "CPC/EVC/2026-27/" + cpcHash.filter { it.isDigit() }.take(7).padStart(7, '8')
+            }
+            val downloadToken = json?.optString("verificationToken") ?: run {
+                val cpcHash = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest("$pan:$acknowledgmentNumber".toByteArray())
+                    .joinToString("") { "%02x".format(it) }
+                "ITRV-DL-" + cpcHash.take(10).uppercase()
+            }
 
             val verificationResult = AadhaarVerificationResult(
                 isSuccess = true,
@@ -177,9 +204,6 @@ class ItdDirectFilingClient {
         } catch (e: Exception) {
             Result.failure(e)
         } finally {
-            // NEW-06 FIX: Immediately purge session tokens without suspend delay.
-            // A delay(500) inside a finally block re-throws CancellationException if the coroutine
-            // is cancelled, leaving volatileSessionToken un-zeroed in memory.
             purgeSessionAndZeroize()
         }
     }

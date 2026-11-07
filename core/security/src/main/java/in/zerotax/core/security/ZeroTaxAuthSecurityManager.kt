@@ -23,8 +23,53 @@ object ZeroTaxAuthSecurityManager {
     @Volatile
     private var activeUserSession: UserAuthProfile? = null
 
-    // Local secure user repository (local encrypted state)
+    // Local secure user repository (local persistent state)
     private val localUserRegistry = mutableMapOf<String, StoredUserRecord>()
+
+    @Volatile
+    private var appContext: android.content.Context? = null
+
+    fun init(context: android.content.Context) {
+        appContext = context.applicationContext
+        loadPersistedUsers()
+    }
+
+    private fun loadPersistedUsers() {
+        val ctx = appContext ?: return
+        val prefs = ctx.getSharedPreferences("zt_auth_users_vault", android.content.Context.MODE_PRIVATE)
+        for ((email, recordJson) in prefs.all) {
+            if (recordJson is String) {
+                try {
+                    val obj = org.json.JSONObject(recordJson)
+                    localUserRegistry[email] = StoredUserRecord(
+                        uid = obj.getString("uid"),
+                        email = obj.getString("email"),
+                        displayName = obj.getString("displayName"),
+                        passwordHash = obj.getString("passwordHash"),
+                        salt = obj.getString("salt"),
+                        authProvider = AuthProvider.valueOf(obj.getString("authProvider")),
+                        isVerified = obj.getBoolean("isVerified")
+                    )
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
+    private fun persistUser(record: StoredUserRecord) {
+        localUserRegistry[record.email] = record
+        val ctx = appContext ?: return
+        val prefs = ctx.getSharedPreferences("zt_auth_users_vault", android.content.Context.MODE_PRIVATE)
+        val obj = org.json.JSONObject().apply {
+            put("uid", record.uid)
+            put("email", record.email)
+            put("displayName", record.displayName)
+            put("passwordHash", record.passwordHash)
+            put("salt", record.salt)
+            put("authProvider", record.authProvider.name)
+            put("isVerified", record.isVerified)
+        }
+        prefs.edit().putString(record.email, obj.toString()).apply()
+    }
 
     private data class StoredUserRecord(
         val uid: String,
@@ -100,7 +145,7 @@ object ZeroTaxAuthSecurityManager {
             authProvider = AuthProvider.EMAIL_PASSWORD,
             isVerified = true
         )
-        localUserRegistry[email] = userRecord
+        persistUser(userRecord)
 
         val profile = UserAuthProfile(
             uid = uid,
@@ -188,10 +233,17 @@ object ZeroTaxAuthSecurityManager {
     }
 
     private fun hashPassword(password: String, salt: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        val input = (salt + password).toByteArray(StandardCharsets.UTF_8)
-        val hash = digest.digest(input)
-        return hash.joinToString("") { "%02x".format(it) }
+        return try {
+            val spec = javax.crypto.spec.PBEKeySpec(password.toCharArray(), salt.toByteArray(StandardCharsets.UTF_8), 100_000, 256)
+            val skf = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+            val hash = skf.generateSecret(spec).encoded
+            hash.joinToString("") { "%02x".format(it) }
+        } catch (_: Exception) {
+            val digest = MessageDigest.getInstance("SHA-256")
+            val input = (salt + password).toByteArray(StandardCharsets.UTF_8)
+            val hash = digest.digest(input)
+            hash.joinToString("") { "%02x".format(it) }
+        }
     }
 }
 

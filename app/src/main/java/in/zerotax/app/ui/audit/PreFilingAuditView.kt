@@ -56,6 +56,8 @@ fun PreFilingAuditView(
     onBack: () -> Unit,
     onProceedToFiling: () -> Unit,
     pan: String = "TAXPAYER",
+    onAutoFixDiscrepancy: (() -> Unit)? = null,
+    onAutoOptimizeRegime: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -267,6 +269,15 @@ fun PreFilingAuditView(
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
                         )
+
+                        if (onAutoOptimizeRegime != null) {
+                            Spacer(Modifier.height(10.dp))
+                            ZeroTaxPrimaryButton(
+                                text = "1-Tap Auto-Optimize Return & Enforce Zero-Notice",
+                                onClick = onAutoOptimizeRegime,
+                                modifier = Modifier.fillMaxWidth().height(38.dp)
+                            )
+                        }
                     }
                 }
 
@@ -345,6 +356,15 @@ fun PreFilingAuditView(
                             Text(
                                 text = gate.recommendation,
                                 style = TextStyle(fontSize = 10.sp, color = Slate500, fontWeight = FontWeight.Medium)
+                            )
+                        }
+
+                        if (gate.gateNumber == 1 && !gate.isPassed && onAutoFixDiscrepancy != null) {
+                            Spacer(Modifier.height(8.dp))
+                            ZeroTaxPrimaryButton(
+                                text = "1-Tap Auto-Reconcile TDS with Form 26AS",
+                                onClick = onAutoFixDiscrepancy,
+                                modifier = Modifier.fillMaxWidth().height(36.dp)
                             )
                         }
                     }
@@ -506,21 +526,15 @@ fun PreFilingAuditView(
     // COPILOT MODAL SHEET
     // ========================================================================
     if (isCopilotSheetVisible) {
-        ModalBottomSheet(
+        ZeroTaxBottomSheet(
             onDismissRequest = { isCopilotSheetVisible = false },
-            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-            containerColor = MaterialTheme.colorScheme.surface
+            scrollable = true
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
                     Column {
                         Text(
                             text = "On-Device Gemini Audit Copilot",
@@ -633,7 +647,6 @@ fun PreFilingAuditView(
                 }
 
                 Spacer(Modifier.height(20.dp))
-            }
         }
     }
 

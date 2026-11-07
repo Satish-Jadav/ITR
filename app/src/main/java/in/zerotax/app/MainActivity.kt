@@ -18,11 +18,13 @@ import `in`.zerotax.app.ui.navigation.ZeroTaxFourTapSpineScaffold
 import `in`.zerotax.app.ui.splash.SplashScreen
 import `in`.zerotax.app.ui.theme.ZeroTaxTheme
 import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
+import `in`.zerotax.core.security.ZeroTaxAuthSecurityManager
 import `in`.zerotax.core.model.AuthSessionState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ZeroTaxAuthSecurityManager.init(applicationContext)
 
         // Strict Enterprise Security Invariant: Hardware-level screen capture and switcher preview prevention in production
         if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) == 0) {
