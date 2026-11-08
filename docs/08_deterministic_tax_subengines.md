@@ -837,3 +837,24 @@ Statutory reconciliation architecture:
 - ITR-6: Section 115BAA (22%) and 115BAB (15%) concessional corporate tax, Section 115JB MAT (15%) with 14 book profit adjustments and Section 115JAA credit tracking.
 - ITR-7: Section 11 & 12 charitable application (85% minimum rule) with Form 9A/10 declarations, and Section 115BBI Maximum Marginal Rate (34.944%) on statutory violations.
 
+
+---
+
+## 20. AY 2026-27 Deterministic Tax Calculation Harmonization (Finance Act 2025/2026)
+- **Section 115BAC Progressive Slab Structure**:
+  - ₹0 to ₹4,00,000: **Nil**
+  - ₹4,00,001 to ₹8,00,000: **5%**
+  - ₹8,00,001 to ₹12,00,000: **10%**
+  - ₹12,00,001 to ₹16,00,000: **15%**
+  - ₹16,00,001 to ₹20,00,000: **20%**
+  - ₹20,00,001 to ₹24,00,000: **25%**
+  - Above ₹24,00,000: **30%**
+- **Standard Deduction u/s 16(ia)**: ₹75,000 under New Regime (₹50,000 under Old Regime).
+- **Section 87A Enhanced Full Tax Rebate**:
+  - Taxpayers with Total Taxable Income $\le$ ₹12,00,000 receive a full tax rebate up to ₹60,000 (resulting in ₹0 tax payable).
+  - Marginal relief applies for incomes slightly exceeding ₹12,00,000:
+    $$\text{Tax Payable} = \min(\text{Computed Tax}, \text{Taxable Income} - ₹12,00,000) \times 1.04$$
+- **Capital Gains Rates**:
+  - Section 112A LTCG: Exemption threshold ₹1,25,000; taxed at 12.5%.
+  - Section 111A STCG: Taxed at 20%.
+- **Statutory Indices**: Cost Inflation Index (CII) for AY 2026-27: **376**.

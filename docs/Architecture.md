@@ -158,3 +158,28 @@ ZeroTax-Local redefines Indian Income Tax Return (ITR-1, ITR-2, ITR-4, and ITR-U
 | `ItdLivePortalSyncModal` | `:app` | Direct TLS handshake pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status with 0 external browser redirects. |
 | `ZeroTaxBiometricShield` | `:app` | AndroidX BiometricPrompt gate securing sensitive return records with 1-tap lock and July 31 countdown notifications. |
 
+
+---
+
+## 7. 100% Real-Time & Zero-Mock Architecture (The 5 Live Integration Pipelines)
+- **Pipeline 1 — Real-Time ITD Portal Pre-fill, AIS & e-Filing**:
+  - Live pre-fill ingestion and filing via `HardenedEphemeralPortalBridge.kt` and `ItdDirectFilingClient.kt` with 1-Tap Aadhaar OTP u/s 140A for instant e-verification.
+- **Pipeline 2 — Real-Time Document Extraction (On-Device + Cloud AI)**:
+  - Form 16 Part A/B, CAMS/KFintech CAS, Broker P&L, and CPC notices extracted via on-device Gemini Nano with cloud fallback to Google Document AI / Gemini 2.0 API.
+- **Pipeline 3 — Real-Time RBI Account Aggregator (Setu / Finvu FIU)**:
+  - Ephemeral ECDHE-Curve25519 key negotiation with HKDF-SHA256 and AES-256-GCM in-memory decryption for live bank interest and deduction discovery.
+- **Pipeline 4 — Live Public Statutory Feeds**:
+  - Real-time AMFI Mutual Fund NAV, RBI IFSC validation, and SBI TTBR foreign exchange lookup with automatic offline cached fallback.
+- **Pipeline 5 — Unified Reactive Vault State**:
+  - Unifies all 8 toolkit wizards, what-if simulator, and Conversational Copilot with real-time `zero_tax_vault.db` state.
+
+---
+
+## 8. Dual-Repository Cloud Topology & 3-Tier Driver Gateway Priority
+- **Repository Structure**:
+  - `ITR`: Kotlin / Jetpack Compose Android client with local SQLCipher encrypted vault and on-device AI.
+  - `ITR-API`: Node.js / Hono / Supabase cloud backend with Edge VAPT Firewall and B2B gateway integration.
+- **3-Tier Driver Priority**:
+  - **QUICKO_ERI**: Sandbox.co.in / Quicko B2B Tax API Gateway (live token via `POST /authenticate`, 23-hour cache).
+  - **CBDT_DIRECT_ERI**: Direct CBDT IEC 2.0 Gateway using corporate DSC private key.
+  - **IN_APP_LIVE_DRIVER**: Zero-Cost In-App Live Driver on-device fallback.

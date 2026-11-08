@@ -239,3 +239,26 @@ To eliminate taxpayer friction, confusion, and accidental non-compliance, ZeroTa
 - Synthesizes Salaried + Moonlighting + Freelancing (44ADA 50%) + Creator (44AD 6%/8%) + Casual gigs (Sec 56), dynamically showing only relevant cards and auto-routing behind the scenes.
 17.11 6-Menu Chip-Driven Copilot Chatbot Engine (Section 35):
 - Guided quick-pick action pills eliminating empty text inputs, backed by Tier-0 deterministic regex routing (< 2ms, 0 tokens), Tier-1 memoization, and Tier-2 KV-cached micro-prompts.
+
+---
+
+## 17.11 Dual-Repository CI/CD Pipeline Specification
+- **Android APK Build Pipeline (`ITR`)**:
+  - Build System: Gradle 8.10.2 + Kotlin 1.9.24.
+  - **JVM Runtime Requirement**: JDK 17 or higher (enforced by Android Gradle Plugin & Room 2.6.1 compiler).
+  - Test Task: `./gradlew testDebugUnitTest`.
+- **Cloud API Backend Pipeline (`ITR-API`)**:
+  - Runtime: Node.js 20+ / TypeScript / Hono.
+  - Test Command: `npm test` (executes `tsx scripts/test-api.ts`).
+  - Test Suite: 48 automated test vectors verifying VAPT edge firewall, gateway priority, driver fallback, and e-verification.
+
+---
+
+## 17.12 Production Secrets & Key Management Checklist
+- [x] `QUICKO_API_KEY`: Verified active live key against Sandbox.co.in.
+- [x] `QUICKO_API_SECRET`: Verified active live secret against Sandbox.co.in.
+- [x] `QUICKO_BASE_URL`: Configured to `https://api.sandbox.co.in`.
+- [x] `QUICKO_API_VERSION`: Set to `2.0`.
+- [x] Official CBDT ERI Credentials (`ITD_ERI_USER_ID`, `ITD_ERI_DSC_PRIVATE_KEY_PEM`): Pluggable with zero code changes.
+- [x] `DATABASE_URL` / Supabase credentials: Set for local development and cloud production.
+- [x] `JWT_SECRET`: High-entropy key for bearer session tokens.

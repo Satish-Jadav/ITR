@@ -278,3 +278,13 @@ Zero-Custody Verification Certificate: Because all Personal Data and financial P
 - Corporate & Trust Entity Legal Compliances (ITR-5/6/7): Section 40(b) partnership remuneration limits, Section 115JC AMT, Section 115BAA/BAB corporate concessions, Section 115JB MAT book profit additions, and Section 11/12 trust application (85% rule) with Form 9A/10 filings.
 - Zero-Knowledge .ztvault Protocol: Encrypted device-to-device migration using PBKDF2 (256,000 iterations) + AES-256-GCM upholding DPDP Act 2023 purpose limitation and data autonomy principles without third-party cloud exposure.
 
+
+---
+
+## 8.6 Legal & Statutory Framework for B2B ERI Gateways vs Client-Side In-App Driver
+- **Electronic Furnishing of Return of Income Scheme, 2007 (Section 139(1B))**:
+  - Clarifies statutory positioning: ZeroTax utilizes an authorized B2B Tax Intermediary Gateway (Quicko / Sandbox.co.in) operating under valid CBDT ERI agreements.
+  - When operating via the **Zero-Cost In-App Live Driver**, ZeroTax functions strictly as a client-side browser assistant executing on the user's handset with zero server-side credential interception.
+- **DPDP Act 2023 Zero-Knowledge Security**:
+  - Cloud vault snapshots are encrypted with client-side master keys derived on-device (PBKDF2 / AES-256-GCM). The cloud backend stores ciphertext only and cannot inspect user financials.
+  - The "1-Tap Shred Local Tax Vault" permanently revokes consents and wipes cryptographic key material.

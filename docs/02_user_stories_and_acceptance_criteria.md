@@ -773,3 +773,66 @@ Rule 115, Rule 128(5) & Black Money Act Sections 42 & 43 (Foreign Assets & FTC �
 12.1 Gherkin-to-JUnit 5 Execution Binding
 Deterministic Tax & Sub-Engine Scenarios (Stories 1.1, 4.1, 4.2, 5.1, 5.2, 6.1–6.4, 7.1, 7.4, 9.1, 9.4, 9.5, 9.8, 9.9): Executed via pure-JVM JUnit 5 parameterized tests in :core:tax-engine (MasterGoldenTaxVectorTestSuite.kt and AdvancedTaxEngineEdgeCaseTest.kt) with a strict ₹0.00 variance gate against the official CBDT ITR schema utility.
 On-Device Security, Cryptography & Privacy Scenarios (Stories 1.2, 1.3, 2.1, 2.2, 3.1, 3.2, 7.2, 7.3, 8.1, 9.2, 9.3, 9.6, 9.7): Executed via Android instrumentation and security unit tests in :core:security, :feature:ai-extractor, :feature:portal-bridge, and :feature:aa-aggregator, asserting 500ms cookie sanitization, <300ms StrongBox key destruction, 0x00 RAM zeroization, Verhoeff Aadhaar redaction ("[Aadhaar Redacted]"), and 100% byte-for-byte vernacular token preservation ({{SEC_1}}, {{AMT_1}}, {{AMT_2}}).
+
+---
+
+## Epic 13: Real-Time B2B Gateway Dispatch & Resilient In-App Live Driver Fallback
+### Story 13.1: Live Return Dispatch via Quicko / Sandbox B2B Gateway (QUICKO_ERI)
+**Feature**: Live Direct Filing via B2B Tax Gateway with Automated Fallback
+
+  Scenario: Return dispatched successfully through Quicko B2B ERI Gateway
+    Given the taxpayer has reviewed and approved their AY 2026-27 ITR-1 return
+    And the backend ITR-API is configured with live Sandbox credentials (`QUICKO_API_KEY`, `QUICKO_API_SECRET`)
+    When the taxpayer taps "Submit Return to Income Tax Department"
+    Then the client dispatches the return payload to `POST /api/v1/portal/submit`
+    And the backend generates/reuses the 23-hour cached JWT access token via `POST /authenticate`
+    And submits the CBDT JSON payload to `https://api.sandbox.co.in/itd/returns`
+    And returns HTTP 200 with acknowledgment number and `driver: "QUICKO_ERI"`
+    And the Android UI displays the confirmation badge "⚡ Filed via Quicko B2B ERI Gateway"
+
+  Scenario: Gateway automatically falls back to Zero-Cost In-App Live Driver upon Sandbox failure
+    Given the Quicko sandbox gateway returns HTTP 400, HTTP 500, or a network timeout
+    When the backend `PortalDriverService` catches the gateway exception
+    Then it logs a non-fatal warning without returning a 500 error to the mobile client
+    And seamlessly invokes `executeInAppLiveDriverSubmission()`
+    And returns HTTP 200 with acknowledgment number and `driver: "IN_APP_LIVE_DRIVER"`
+    And the taxpayer's filing flow completes smoothly with zero interruption
+
+### Story 13.2: Real-Time Aadhaar OTP e-Verification u/s 140A
+**Feature**: In-App Instant Return Verification without External Portal Visit
+
+  Scenario: Instant e-verification via unified cloud bridge
+    Given the return has been submitted with status `PENDING_EVC`
+    And the taxpayer receives a 6-digit Aadhaar OTP on their registered mobile
+    When the user enters the 6-digit OTP or the SMS Retriever auto-populates it
+    Then the app dispatches the verification to `POST /api/v1/portal/everify`
+    And the unified bridge verifies the OTP against the active driver
+    And returns status `SUCCESS` with CPC Verification Reference and download token
+    And the Android UI immediately transitions to `SuccessfullyFiledAndVerified`
+
+---
+
+## Epic 14: Intelligent Agentic Tax Copilot & Live Tool Calling
+### Story 14.1: Side-by-Side Old vs New Regime Simulation via Tool Calling
+**Feature**: Conversational What-If Tax Analysis with Deterministic Accuracy
+
+  Scenario: Taxpayer queries copilot about regime choice
+    Given the taxpayer is on the `ConversationalFilingChatScreen`
+    When the user types "Should I choose Old or New Regime for my 15 Lakh salary?"
+    Then the backend copilot model evaluates the intent and triggers tool call `simulate_regime`
+    And the deterministic tax engine computes both regimes under AY 2026-27 rules:
+      - New Regime: Standard deduction ₹75,000, revised progressive slabs up to ₹24L
+      - Old Regime: Standard deduction ₹50,000, 80C/80D deductions
+    And streams the response via Server-Sent Events (SSE) with an interactive regime showdown card
+    And explains clearly why New Regime saves tax without locking funds into 80C products
+
+### Story 14.2: In-Chat Form 16 Document Ingestion
+**Feature**: Conversational File Attachment and Direct Vault Ingestion
+
+  Scenario: Taxpayer attaches Form 16 PDF or image in chat
+    Given the taxpayer taps the attachment icon in the chat screen
+    When the taxpayer selects a Form 16 PDF or photo
+    Then the on-device AI extractor OCRs the document and extracts salary components
+    And the copilot triggers tool call `ingest_form16`
+    And writes verified salary, TDS, and employer TAN into `zero_tax_vault.db`
+    And renders an in-chat confirmation card showing discovered gross salary and TDS withheld
