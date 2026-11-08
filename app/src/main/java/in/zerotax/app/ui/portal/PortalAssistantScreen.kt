@@ -81,6 +81,22 @@ fun PortalAssistantScreen(
     val copilot = remember { OnDeviceTaxCopilot(context) }
     val itdClient = remember { ItdDirectFilingClient() }
     var assesseePan by remember(pan) { mutableStateOf(pan.trim().uppercase()) }
+    var activeDriverName by remember { mutableStateOf("Zero-Cost In-App Live Driver") }
+    var activeDriverType by remember { mutableStateOf("IN_APP_LIVE_DRIVER") }
+
+    LaunchedEffect(Unit) {
+        val driverStatus = itdClient.fetchActiveDriverStatus()
+        if (driverStatus.isSuccess) {
+            val json = driverStatus.getOrNull()
+            val driver = json?.optString("activeDriver") ?: "IN_APP_LIVE_DRIVER"
+            activeDriverType = driver
+            activeDriverName = when (driver) {
+                "QUICKO_ERI" -> "Quicko B2B ERI Gateway (Sandbox.co.in)"
+                "CBDT_DIRECT_ERI" -> "Official CBDT IEC 2.0 Gateway"
+                else -> "Zero-Cost In-App Live Driver"
+            }
+        }
+    }
 
     var currentStage by remember { mutableStateOf(InAppFilingStage.REVIEW_AND_CONSENT) }
 
@@ -267,6 +283,8 @@ fun PortalAssistantScreen(
                         taxLiability = taxLiability,
                         tdsClaimed = tdsClaimed,
                         selectedBank = selectedBank,
+                        activeDriverName = activeDriverName,
+                        activeDriverType = activeDriverType,
                         isDeclarationAccepted = isStatutoryDeclarationAccepted,
                         onDeclarationChanged = { isStatutoryDeclarationAccepted = it },
                         onProceed = { currentStage = InAppFilingStage.IN_APP_AUTH },
@@ -306,6 +324,8 @@ fun PortalAssistantScreen(
                         taxLiability = taxLiability,
                         tdsClaimed = tdsClaimed,
                         selectedBank = selectedBank,
+                        activeDriverName = activeDriverName,
+                        activeDriverType = activeDriverType,
                         isSubmitting = isSubmitting,
                         stepText = submissionStepText,
                         onStartSubmission = {
@@ -559,6 +579,8 @@ private fun ReviewAndConsentStage(
     taxLiability: Long,
     tdsClaimed: Long,
     selectedBank: BankAccountDetails,
+    activeDriverName: String = "Zero-Cost In-App Live Driver",
+    activeDriverType: String = "IN_APP_LIVE_DRIVER",
     isDeclarationAccepted: Boolean,
     onDeclarationChanged: (Boolean) -> Unit,
     onProceed: () -> Unit,
@@ -952,6 +974,8 @@ private fun DirectSubmissionStage(
     taxLiability: Long,
     tdsClaimed: Long,
     selectedBank: BankAccountDetails,
+    activeDriverName: String = "Zero-Cost In-App Live Driver",
+    activeDriverType: String = "IN_APP_LIVE_DRIVER",
     isSubmitting: Boolean,
     stepText: String,
     onStartSubmission: () -> Unit
@@ -972,7 +996,40 @@ private fun DirectSubmissionStage(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(10.dp))
+
+        // Active ERI Gateway Badge
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = if (activeDriverType == "QUICKO_ERI") EnterpriseTeal50 else if (activeDriverType == "CBDT_DIRECT_ERI") Color(0xFFD1FAE5) else Slate100,
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                if (activeDriverType == "QUICKO_ERI") EnterpriseTeal600.copy(alpha = 0.5f)
+                else if (activeDriverType == "CBDT_DIRECT_ERI") Color(0xFF10B981).copy(alpha = 0.5f)
+                else Slate300
+            ),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = when (activeDriverType) {
+                        "QUICKO_ERI" -> "⚡ $activeDriverName (Active ERI Gateway)"
+                        "CBDT_DIRECT_ERI" -> "🏛️ $activeDriverName"
+                        else -> "🛡️ $activeDriverName (WebView Session Bridge)"
+                    },
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        color = if (activeDriverType == "QUICKO_ERI") EnterpriseTeal700
+                        else if (activeDriverType == "CBDT_DIRECT_ERI") Color(0xFF047857)
+                        else Slate700
+                    )
+                )
+            }
+        }
 
         Card(
             modifier = Modifier.fillMaxWidth(),

@@ -22,6 +22,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -85,6 +86,22 @@ fun ItdLivePortalSyncModal(
     var maskedMobileDisplay by remember { mutableStateOf("") }
     var otpErrorMessage by remember { mutableStateOf<String?>(null) }
     var activeTxnId by remember { mutableStateOf("") }
+    var activeDriverName by remember { mutableStateOf("Zero-Cost In-App Live Driver") }
+    var activeDriverType by remember { mutableStateOf("IN_APP_LIVE_DRIVER") }
+
+    LaunchedEffect(Unit) {
+        val statusRes = ZeroTaxCloudApiBridge.fetchPortalDriverStatus()
+        if (statusRes.isSuccess) {
+            val json = statusRes.getOrNull()
+            val driver = json?.optString("activeDriver") ?: "IN_APP_LIVE_DRIVER"
+            activeDriverType = driver
+            activeDriverName = when (driver) {
+                "QUICKO_ERI" -> "Quicko B2B ERI Gateway (Sandbox.co.in)"
+                "CBDT_DIRECT_ERI" -> "Official CBDT IEC 2.0 Gateway"
+                else -> "Zero-Cost In-App Live Driver"
+            }
+        }
+    }
 
     val context = LocalContext.current
     val otpReader = remember {
@@ -243,17 +260,52 @@ fun ItdLivePortalSyncModal(
             }
         }
 
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(10.dp))
 
-        // Body Content
-        when (currentStep) {
-            PortalSyncStep.SELECT_AUTH_METHOD -> {
+        // Active Driver Indicator Badge
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = if (activeDriverType == "QUICKO_ERI") {
+                if (isDark) EnterpriseTeal900.copy(alpha = 0.4f) else EnterpriseTeal50
+            } else if (activeDriverType == "CBDT_DIRECT_ERI") {
+                if (isDark) Color(0xFF064E3B).copy(alpha = 0.4f) else Color(0xFFD1FAE5)
+            } else {
+                if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100
+            },
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                if (activeDriverType == "QUICKO_ERI") EnterpriseTeal600.copy(alpha = 0.5f)
+                else if (activeDriverType == "CBDT_DIRECT_ERI") Color(0xFF10B981).copy(alpha = 0.5f)
+                else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+            ) {
                 Text(
-                    text = "Authenticate directly with the Income Tax Department to auto-pull Form 26AS, AIS/TIS transactions, and pre-fill details. Zero passwords captured.",
-                    style = MaterialTheme.typography.bodySmall.copy(color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600, lineHeight = 18.sp)
+                    text = when (activeDriverType) {
+                        "QUICKO_ERI" -> "⚡ Quicko B2B ERI Gateway (Sandbox.co.in)"
+                        "CBDT_DIRECT_ERI" -> "🏛️ Official CBDT IEC 2.0 Gateway"
+                        else -> "🛡️ Zero-Cost In-App Live Driver (WebView + Local Extraction)"
+                    },
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        color = if (activeDriverType == "QUICKO_ERI") {
+                            if (isDark) EnterpriseTeal300 else EnterpriseTeal700
+                        } else if (activeDriverType == "CBDT_DIRECT_ERI") {
+                            if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857)
+                        } else {
+                            if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate700
+                        }
+                    )
                 )
+            }
+        }
 
-                Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(14.dp))
 
                 // Method Selector
                 Row(

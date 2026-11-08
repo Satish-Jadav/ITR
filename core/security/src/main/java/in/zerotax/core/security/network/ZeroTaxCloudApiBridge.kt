@@ -826,4 +826,193 @@ object ZeroTaxCloudApiBridge {
             ZeroTaxLogger.e(TAG, "streamChat failed: ${error.message}", error)
         }
     }
+
+    /**
+     * Submits compiled CBDT ITR JSON payload directly to backend e-filing router (/api/v1/portal/submit)
+     */
+    suspend fun submitPortalReturn(
+        pan: String,
+        cbdtJsonPayload: String,
+        bankAccount: in.zerotax.core.model.BankAccountDetails? = null,
+        assessmentYear: String = "2026-27"
+    ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanPan = pan.trim().uppercase()
+        ZeroTaxLogger.d(TAG, "submitPortalReturn: submitting ITR for PAN " + cleanPan.take(2) + "***" + cleanPan.takeLast(2))
+        runCatching {
+            val payload = JSONObject().apply {
+                put("pan", cleanPan)
+                put("assessmentYear", assessmentYear)
+                put("cbdtJsonPayload", JSONObject(cbdtJsonPayload))
+                if (bankAccount != null) {
+                    put("bankAccount", JSONObject().apply {
+                        put("bankName", bankAccount.bankName)
+                        put("accountNumber", bankAccount.accountNumber)
+                        put("ifscCode", bankAccount.ifscCode)
+                        put("accountType", bankAccount.accountType)
+                    })
+                }
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/portal/submit")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "ITR Submission failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "submitPortalReturn failed: " + error.message, error)
+        }
+    }
+
+    /**
+     * Ingests live prefill and AIS snapshot to backend vault (/api/v1/portal/ingest-live-prefill)
+     */
+    suspend fun ingestLivePrefill(
+        pan: String,
+        assessmentYear: String = "2026-27",
+        sourceOrigin: String = "WEBVIEW_LIVE_INTERCEPTOR",
+        transactions: JSONArray = JSONArray(),
+        recordCount: Int = 0,
+        aggregateGross: Long = 0L,
+        aggregateTds: Long = 0L
+    ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanPan = pan.trim().uppercase()
+        ZeroTaxLogger.d(TAG, "ingestLivePrefill: persisting snapshot for PAN " + cleanPan.take(2) + "***" + cleanPan.takeLast(2))
+        runCatching {
+            val payload = JSONObject().apply {
+                put("pan", cleanPan)
+                put("assessmentYear", assessmentYear)
+                put("sourceOrigin", sourceOrigin)
+                put("transactions", transactions)
+                put("recordCount", recordCount)
+                put("aggregateGrossAmount", aggregateGross)
+                put("aggregateTdsCredit", aggregateTds)
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/portal/ingest-live-prefill")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "Prefill ingest failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "ingestLivePrefill failed: " + error.message, error)
+        }
+    }
+
+    /**
+     * Extracts Form 16 / tax document fields via backend Gemini OCR engine (/api/v1/ai/form16-extract)
+     */
+    suspend fun extractForm16Ai(rawDocumentText: String): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "extractForm16Ai: dispatching document text to /api/v1/ai/form16-extract")
+        runCatching {
+            val payload = JSONObject().apply {
+                put("documentText", rawDocumentText)
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/ai/form16-extract")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "AI Form 16 extraction failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "extractForm16Ai failed: " + error.message, error)
+        }
+    }
+
+    /**
+     * Queries active CBDT ERI & Live Driver status (/api/v1/portal/driver-status).
+     * Priority: Quicko B2B ERI -> CBDT Direct IEC 2.0 -> Zero-Cost In-App Live Driver.
+     */
+    suspend fun fetchPortalDriverStatus(): Result<JSONObject> = withContext(Dispatchers.IO) {
+        getCached("PORTAL_DRIVER_STATUS", 30_000L)?.let {
+            return@withContext Result.success(it)
+        }
+        ZeroTaxLogger.d(TAG, "fetchPortalDriverStatus: requesting /api/v1/portal/driver-status")
+        runCatching {
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/portal/driver-status")
+                .get()
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    val json = JSONObject(bodyStr)
+                    putCache("PORTAL_DRIVER_STATUS", json)
+                    ZeroTaxLogger.i(TAG, "fetchPortalDriverStatus active driver: " + json.optString("activeDriver"))
+                    json
+                } else {
+                    val err = "Driver status check failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "fetchPortalDriverStatus failed: " + error.message, error)
+        }
+    }
+
+    /**
+     * e-Verifies an ITR return across active drivers (/api/v1/portal/everify)
+     */
+    suspend fun everifyPortalReturn(
+        pan: String,
+        acknowledgmentNumber: String,
+        otp: String,
+        evcType: String = "AADHAAR_OTP"
+    ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanPan = pan.trim().uppercase()
+        ZeroTaxLogger.d(TAG, "everifyPortalReturn: verifying Ack $acknowledgmentNumber for PAN ${cleanPan.take(2)}***${cleanPan.takeLast(2)}")
+        runCatching {
+            val payload = JSONObject().apply {
+                put("pan", cleanPan)
+                put("acknowledgmentNumber", acknowledgmentNumber)
+                put("otp", otp.trim())
+                put("evcType", evcType)
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/portal/everify")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "ITR e-Verification failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "everifyPortalReturn failed: " + error.message, error)
+        }
+    }
 }

@@ -46,7 +46,8 @@ import java.time.LocalDate
 @Composable
 fun WhatIfScenarioSimulatorView(
     pan: String,
-    grossSalary: Long
+    grossSalary: Long,
+    onApplyScenario: ((WhatIfSimulationResult) -> Unit)? = null
 ) {
     var queryText by remember { mutableStateOf("What if I contribute 50000 in NPS Tier-I?") }
     var simulationResult by remember {
@@ -248,6 +249,32 @@ fun WhatIfScenarioSimulatorView(
                                 Text("• $tip", style = TextStyle(fontSize = 11.sp, color = Slate700))
                             }
                         }
+
+                        if (onApplyScenario != null) {
+                            Spacer(Modifier.height(14.dp))
+                            var appliedScenario by remember { mutableStateOf(false) }
+                            Button(
+                                onClick = {
+                                    onApplyScenario(result)
+                                    appliedScenario = true
+                                },
+                                shape = RoundedCornerShape(4.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
+                                modifier = Modifier.fillMaxWidth().height(42.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (appliedScenario) Icons.Default.CheckCircle else Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = PureWhite,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = if (appliedScenario) "Applied to Active Return Dossier!" else "Apply This Scenario to Return",
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -261,17 +288,21 @@ fun WhatIfScenarioSimulatorView(
 @Composable
 fun Form12BbDeclarationView(
     pan: String,
-    grossSalary: Long
+    grossSalary: Long,
+    initialSec80C: Long = 0L,
+    initialSec80D: Long = 0L,
+    initialSec80CCD: Long = 0L,
+    initialHomeLoan: Long = 0L
 ) {
     val coroutineScope = rememberCoroutineScope()
     var employerName by remember { mutableStateOf("") }
     var rentPaidText by remember { mutableStateOf("") }
     var landlordName by remember { mutableStateOf("") }
     var landlordPan by remember { mutableStateOf("") }
-    var sec80CText by remember { mutableStateOf("") }
-    var sec80CCD1BText by remember { mutableStateOf("") }
-    var sec80DText by remember { mutableStateOf("") }
-    var homeLoanInterestText by remember { mutableStateOf("") }
+    var sec80CText by remember { mutableStateOf(if (initialSec80C > 0L) initialSec80C.toString() else "") }
+    var sec80CCD1BText by remember { mutableStateOf(if (initialSec80CCD > 0L) initialSec80CCD.toString() else "") }
+    var sec80DText by remember { mutableStateOf(if (initialSec80D > 0L) initialSec80D.toString() else "") }
+    var homeLoanInterestText by remember { mutableStateOf(if (initialHomeLoan > 0L) initialHomeLoan.toString() else "") }
     var pdfGeneratedBytes by remember { mutableStateOf<ByteArray?>(null) }
     var isGenerating by remember { mutableStateOf(false) }
 

@@ -95,29 +95,44 @@ class ItdDirectFilingClient {
 
         try {
             // Verify schema validity of compiled JSON
-            val json = JSONObject(cbdtJsonPayload)
-            if (!json.has("ITR1") && !json.has("ITR2") && !json.has("ITR4")) {
+            val payloadJson = JSONObject(cbdtJsonPayload)
+            if (!payloadJson.has("ITR1") && !payloadJson.has("ITR2") && !payloadJson.has("ITR4")) {
                 val err = "Malformed CBDT JSON: Missing root ITR element (ITR1/ITR2/ITR4)"
                 ZeroTaxLogger.w(TAG, "submitItrDirectly error: $err")
                 return@withContext Result.failure(IllegalArgumentException(err))
             }
 
-            val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-            val sha256 = java.security.MessageDigest.getInstance("SHA-256")
-                .digest("$pan:$CBDT_SCHEME_AY:$timestamp:$cbdtJsonPayload".toByteArray())
-                .joinToString("") { "%02x".format(it) }
+            val cloudRes = ZeroTaxCloudApiBridge.submitPortalReturn(
+                pan = pan,
+                cbdtJsonPayload = cbdtJsonPayload,
+                bankAccount = bankAccount,
+                assessmentYear = CBDT_SCHEME_AY
+            )
 
-            // Official CPC 15-digit Acknowledgment Number format: [Year 4 digits][CBDT Sequence 11 digits]
-            val ackNumber = "2627" + sha256.filter { it.isDigit() }.take(11).padStart(11, '0')
-            val token = "CBDT-TXN-" + sha256.take(8).uppercase()
+            if (cloudRes.isFailure) {
+                val err = cloudRes.exceptionOrNull()?.message ?: "Direct filing dispatch failed with ITD gateway"
+                ZeroTaxLogger.w(TAG, "submitItrDirectly failed: $err")
+                return@withContext Result.failure(IllegalStateException(err))
+            }
+
+            val json = cloudRes.getOrNull() ?: JSONObject()
+            val ackNumber = json.optString("acknowledgmentNumber").ifBlank {
+                json.optString("ackNo").ifBlank { "CBDT-PENDING-EVC" }
+            }
+            val token = json.optString("token").ifBlank { "CBDT-TXN-INAPP" }
+            val timestamp = json.optString("timestamp").ifBlank {
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            }
+            val driverOrigin = json.optString("driver", "IN_APP_LIVE_DRIVER")
 
             val submissionResult = DirectFilingSubmissionResult(
                 isSuccess = true,
                 acknowledgmentNumber = ackNumber,
                 token = token,
                 timestamp = timestamp,
-                verificationStatus = "PENDING_EVC",
-                message = "ITR Return for AY $CBDT_SCHEME_AY successfully received by CBDT Central Processing Centre."
+                verificationStatus = json.optString("verificationStatus", "PENDING_EVC"),
+                message = json.optString("message", "ITR Return successfully received by CBDT Central Processing Centre."),
+                driverOrigin = driverOrigin
             )
 
             ZeroTaxLogger.i(TAG, "submitItrDirectly succeeded: Ack=$ackNumber Token=$token")
@@ -143,8 +158,8 @@ class ItdDirectFilingClient {
                 val masked = json?.optString("maskedMobile") ?: ("••••••" + pan.takeLast(4))
                 Result.success("OTP dispatched successfully to Aadhaar-registered mobile ($masked)")
             } else {
-                val masked = "••••••" + pan.takeLast(4)
-                Result.success("OTP dispatched successfully to Aadhaar-registered mobile ($masked)")
+                val err = cloudRes.exceptionOrNull()?.message ?: "Failed to request Aadhaar OTP"
+                Result.failure(IllegalStateException(err))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -165,37 +180,63 @@ class ItdDirectFilingClient {
         }
 
         try {
-            val txn = activeAadhaarTxnId
-            val cloudVerifyRes = if (!txn.isNullOrBlank()) {
-                ZeroTaxCloudApiBridge.verifyPortalOtp(pan, txn, otpCode)
-            } else null
+            // 1. Try unified cloud e-verification across active drivers (Quicko / CBDT Direct / In-App)
+            val cloudEverify = ZeroTaxCloudApiBridge.everifyPortalReturn(pan, acknowledgmentNumber, otpCode)
+            if (cloudEverify.isSuccess) {
+                val json = cloudEverify.getOrNull() ?: JSONObject()
+                val timestamp = json.optString("verifiedAtIso").ifBlank {
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                }
+                val cpcRef = json.optString("cpcVerificationRef").ifBlank {
+                    "CPC/EVC/2026-27/" + (activeAadhaarTxnId ?: "CBDT").take(7)
+                }
+                val downloadToken = json.optString("token").ifBlank {
+                    "ITRV-DL-" + (activeAadhaarTxnId ?: "CBDT").take(10).uppercase()
+                }
+                val driverOrigin = json.optString("driver", "IN_APP_LIVE_DRIVER")
 
-            if (cloudVerifyRes != null && cloudVerifyRes.isFailure) {
+                val verificationResult = AadhaarVerificationResult(
+                    isSuccess = true,
+                    itrVAcknowledgmentNumber = acknowledgmentNumber,
+                    timestamp = timestamp,
+                    cpcVerificationRef = cpcRef,
+                    receiptDownloadToken = downloadToken,
+                    driverOrigin = driverOrigin
+                )
+                return@withContext Result.success(verificationResult)
+            }
+
+            // 2. Fallback to verifying active in-app OTP transaction session
+            val txn = activeAadhaarTxnId
+            if (txn.isNullOrBlank()) {
+                return@withContext Result.failure(IllegalStateException("No active OTP transaction found. Please request an OTP first."))
+            }
+
+            val cloudVerifyRes = ZeroTaxCloudApiBridge.verifyPortalOtp(pan, txn, otpCode)
+            if (cloudVerifyRes.isFailure) {
                 val err = cloudVerifyRes.exceptionOrNull()?.message ?: "Invalid OTP entered."
                 return@withContext Result.failure(IllegalArgumentException(err))
             }
 
-            val json = cloudVerifyRes?.getOrNull()
-            val timestamp = json?.optString("verifiedAtIso") ?: LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-            val cpcRef = json?.optString("cpcVerificationRef") ?: run {
-                val cpcHash = java.security.MessageDigest.getInstance("SHA-256")
-                    .digest("$pan:$acknowledgmentNumber:$otpCode:$timestamp".toByteArray())
-                    .joinToString("") { "%02x".format(it) }
-                "CPC/EVC/2026-27/" + cpcHash.filter { it.isDigit() }.take(7).padStart(7, '8')
+            val json = cloudVerifyRes.getOrNull() ?: JSONObject()
+            val timestamp = json.optString("verifiedAtIso").ifBlank {
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             }
-            val downloadToken = json?.optString("verificationToken") ?: run {
-                val cpcHash = java.security.MessageDigest.getInstance("SHA-256")
-                    .digest("$pan:$acknowledgmentNumber".toByteArray())
-                    .joinToString("") { "%02x".format(it) }
-                "ITRV-DL-" + cpcHash.take(10).uppercase()
+            val cpcRef = json.optString("cpcVerificationRef").ifBlank {
+                "CPC/EVC/2026-27/" + txn.take(7)
             }
+            val downloadToken = json.optString("verificationToken").ifBlank {
+                "ITRV-DL-" + txn.take(10).uppercase()
+            }
+            val driverOrigin = json.optString("driver", "IN_APP_LIVE_DRIVER")
 
             val verificationResult = AadhaarVerificationResult(
                 isSuccess = true,
                 itrVAcknowledgmentNumber = acknowledgmentNumber,
                 timestamp = timestamp,
                 cpcVerificationRef = cpcRef,
-                receiptDownloadToken = downloadToken
+                receiptDownloadToken = downloadToken,
+                driverOrigin = driverOrigin
             )
 
             Result.success(verificationResult)
@@ -204,6 +245,13 @@ class ItdDirectFilingClient {
         } finally {
             purgeSessionAndZeroize()
         }
+    }
+
+    /**
+     * Retrieves active portal driver status (Quicko ERI, CBDT Direct ERI, or In-App Live Driver).
+     */
+    suspend fun fetchActiveDriverStatus(): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxCloudApiBridge.fetchPortalDriverStatus()
     }
 
     /**

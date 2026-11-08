@@ -107,6 +107,26 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
             override fun onPageFinished(view: WebView?, url: String?) {
                 view?.evaluateJavascript(getReadOnlyInterceptorScript(), null)
                 _state.value = PortalBridgeState.AwaitingUserOtp
+                if (url?.contains("dashboard", ignoreCase = true) == true || url?.contains("efile", ignoreCase = true) == true) {
+                    view?.let { injectFetchLivePrefillAndAisScript(it, "2026-27") }
+                }
+            }
+        }
+        webView.setDownloadListener { url, _, _, mimeType, _ ->
+            if (url.endsWith(".json", ignoreCase = true) || mimeType.contains("json", ignoreCase = true)) {
+                scope.launch(Dispatchers.IO) {
+                    try {
+                        val connection = java.net.URL(url).openConnection()
+                        val cookies = CookieManager.getInstance().getCookie(url)
+                        if (!cookies.isNullOrBlank()) {
+                            connection.setRequestProperty("Cookie", cookies)
+                        }
+                        val content = connection.getInputStream().bufferedReader().use { it.readText() }
+                        withContext(Dispatchers.Default) {
+                            PortalJsBridge().onJsonIntercepted(url, content)
+                        }
+                    } catch (e: Exception) {}
+                }
             }
         }
         webView.addJavascriptInterface(PortalJsBridge(), "ZeroTaxClientBridge")
@@ -327,6 +347,79 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
     private fun triggerOfflineFallback(reason: String) {
         watchdogJob?.cancel()
         sanitizePortalSessionImmediately { _state.value = PortalBridgeState.OfflineFallbackTriggered(reason) }
+    }
+
+    
+    fun injectPanLoginScript(webView: WebView, pan: String) {
+        val safePan = pan.trim().uppercase().filter { it.isLetterOrDigit() }.take(10)
+        if (safePan.length != 10) return
+        val escapedPan = JSONObject.quote(safePan)
+        val script = """
+            (function() {
+                try {
+                    const selectors = [
+                        'input[name*="pan" i]',
+                        'input[id*="pan" i]',
+                        'input[formcontrolname="pan" i]',
+                        'input[placeholder*="pan" i]',
+                        'input[id="pansearch"]',
+                        'input.mat-input-element'
+                    ];
+                    for (let sel of selectors) {
+                        let el = document.querySelector(sel);
+                        if (el) {
+                            el.value = $escapedPan;
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                            break;
+                        }
+                    }
+                    const continueBtns = [
+                        'button[type="submit"]',
+                        'button.continue-btn',
+                        'button.mat-flat-button'
+                    ];
+                    for (let sel of continueBtns) {
+                        let btn = document.querySelector(sel);
+                        if (btn && !btn.disabled) {
+                            btn.click();
+                            break;
+                        }
+                    }
+                } catch(e) {}
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(script, null)
+    }
+
+    fun injectFetchLivePrefillAndAisScript(webView: WebView, assessmentYear: String = "2026-27") {
+        val escapedAy = JSONObject.quote(assessmentYear)
+        val script = """
+            (function() {
+                try {
+                    const ay = $escapedAy;
+                    const endpoints = [
+                        '/iec/foservices/api/prefill?ay=' + ay,
+                        '/iec/foservices/api/ais/details?ay=' + ay,
+                        '/iec/foservices/api/26as/download?ay=' + ay
+                    ];
+                    endpoints.forEach(ep => {
+                        window.fetch(ep, {
+                            method: 'GET',
+                            headers: { 'Accept': 'application/json' }
+                        }).then(r => {
+                            if (r.ok) return r.text();
+                            return null;
+                        }).then(body => {
+                            if (body && window.ZeroTaxClientBridge) {
+                                window.ZeroTaxClientBridge.onJsonIntercepted(ep, body);
+                            }
+                        }).catch(() => {});
+                    });
+                } catch(e) {}
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(script, null)
     }
 
     fun sanitizePortalSessionImmediately(onComplete: () -> Unit = {}) {

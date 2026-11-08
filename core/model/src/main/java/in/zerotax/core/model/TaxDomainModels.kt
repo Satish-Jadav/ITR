@@ -141,7 +141,8 @@ data class DirectFilingSubmissionResult(
     val token: String,
     val timestamp: String,
     val verificationStatus: String,
-    val message: String
+    val message: String,
+    val driverOrigin: String = "IN_APP_LIVE_DRIVER"
 )
 
 @Serializable
@@ -150,7 +151,8 @@ data class AadhaarVerificationResult(
     val itrVAcknowledgmentNumber: String,
     val timestamp: String,
     val cpcVerificationRef: String,
-    val receiptDownloadToken: String
+    val receiptDownloadToken: String,
+    val driverOrigin: String = "IN_APP_LIVE_DRIVER"
 )
 
 @Serializable

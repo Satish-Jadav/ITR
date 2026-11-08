@@ -146,7 +146,8 @@ object OfflineWhatIfTaxSimulator {
         when {
             // Case 1: Health Insurance (80D)
             q.contains("health") || q.contains("mediclaim") || q.contains("80d") || q.contains("medical") -> {
-                val add80D = if (extractedAmount > 0L) extractedAmount else 0L
+                val remainingHeadroom80D = (50_000L - baseInput.section80DSelfAndFamily).coerceAtLeast(0L)
+                val add80D = if (extractedAmount > 0L) extractedAmount else remainingHeadroom80D
                 val current80D = baseInput.section80DSelfAndFamily
                 val updated80D = minOf(current80D + add80D, 1_00_000L)
                 modifiedInput = if (add80D > 0L) baseInput.copy(section80DSelfAndFamily = updated80D) else baseInput
@@ -168,7 +169,8 @@ object OfflineWhatIfTaxSimulator {
 
             // Case 2: NPS Tier-I (80CCD(1B))
             q.contains("nps") || q.contains("80ccd") || q.contains("pension") -> {
-                val addNps = if (extractedAmount > 0L) extractedAmount else 0L
+                val remainingHeadroomNps = (50_000L - baseInput.section80CCD1BSelfNps).coerceAtLeast(0L)
+                val addNps = if (extractedAmount > 0L) extractedAmount else remainingHeadroomNps
                 val updatedNps = minOf(baseInput.section80CCD1BSelfNps + addNps, 50_000L)
                 modifiedInput = if (addNps > 0L) baseInput.copy(section80CCD1BSelfNps = updatedNps) else baseInput
                 scenarioDescription = if (addNps > 0L) {
@@ -189,7 +191,8 @@ object OfflineWhatIfTaxSimulator {
 
             // Case 3: Section 80C Investments (PPF, ELSS, EPF, Life Insurance)
             q.contains("elss") || q.contains("ppf") || q.contains("80c") || q.contains("lic") -> {
-                val add80C = if (extractedAmount > 0L) extractedAmount else 0L
+                val remainingHeadroom80C = (150_000L - baseInput.section80CInvestments).coerceAtLeast(0L)
+                val add80C = if (extractedAmount > 0L) extractedAmount else remainingHeadroom80C
                 val updated80C = minOf(baseInput.section80CInvestments + add80C, 1_50_000L)
                 modifiedInput = if (add80C > 0L) baseInput.copy(section80CInvestments = updated80C) else baseInput
                 scenarioDescription = if (add80C > 0L) {
@@ -210,7 +213,8 @@ object OfflineWhatIfTaxSimulator {
 
             // Case 4: Home Loan Interest (Section 24(b))
             q.contains("home loan") || q.contains("housing loan") || q.contains("interest on loan") || q.contains("24b") -> {
-                val addInterest = if (extractedAmount > 0L) extractedAmount else 0L
+                val remainingHeadroom24b = (200_000L - baseInput.selfOccupiedHomeLoanInterestSec24b).coerceAtLeast(0L)
+                val addInterest = if (extractedAmount > 0L) extractedAmount else remainingHeadroom24b
                 val updatedInterest = minOf(baseInput.selfOccupiedHomeLoanInterestSec24b + addInterest, 2_00_000L)
                 modifiedInput = if (addInterest > 0L) baseInput.copy(selfOccupiedHomeLoanInterestSec24b = updatedInterest) else baseInput
                 scenarioDescription = if (addInterest > 0L) {

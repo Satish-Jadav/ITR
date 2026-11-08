@@ -383,6 +383,20 @@ private fun TrustAndAuthStepView(
     val scrollState = rememberScrollState()
     val panEntity = remember(pan) { PanEntityDecoder.decode(pan) }
     val isPanValid = remember(pan) { pan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$")) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var uploadStatusMessage by remember { mutableStateOf<String?>(null) }
+
+    val docLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            uris.forEach { uri ->
+                val fName = uri.lastPathSegment ?: "Form16.pdf"
+                // On ingestion, automatically proceed to radar
+                onStartHydration()
+            }
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -483,6 +497,27 @@ private fun TrustAndAuthStepView(
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Official In-App Web Portal Login", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
                     Text("Log in securely on eportal.incometax.gov.in in an isolated ephemeral session.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                }
+                Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
+            }
+        }
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = if (isDark) Slate850 else PureWhite,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { docLauncher.launch(arrayOf("application/pdf")) }
+        ) {
+            Row(
+                modifier = Modifier.padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(Icons.Default.UploadFile, null, tint = EnterpriseTeal500, modifier = Modifier.size(24.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Import Form 16 / Tax Statement PDF", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Text("Silently unlocks with PAN and auto-fills your entire return in seconds.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
             }
