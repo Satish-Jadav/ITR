@@ -167,6 +167,7 @@ fun ZeroTaxFourTapSpineScaffold(
             grossSalary = uiState.grossSalaryRupees,
             taxLiability = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
             tdsClaimed = uiState.salarySummary.aggregateTdsAllowed,
+            viewModel = viewModel,
             onBack = { showTaxToolkit = false }
         )
         return

@@ -1,3 +1,5 @@
+import in.zerotax.app.ui.portal.ItdAndAaOtpAutoReader
+import in.zerotax.core.security.network.ZeroTaxCloudApiBridge
 package `in`.zerotax.app.ui.portal
 
 import `in`.zerotax.app.ui.components.ZeroTaxOutlinedButton
@@ -66,6 +68,20 @@ fun ItdOfficialWebLoginSheet(
     var isFetchingRecords by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf("Awaiting user login on official portal...") }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val otpReader = remember {
+        ItdAndAaOtpAutoReader(context) { code ->
+            webViewRef?.let { bridge.injectAadhaarOtpVerificationScript(it, code) }
+            statusMessage = "Aadhaar OTP captured from SMS ($code). Auto-filling into portal..."
+        }
+    }
+
+    DisposableEffect(Unit) {
+        otpReader.startListening()
+        onDispose {
+            otpReader.stopListening()
+        }
+    }
 
     // React to bridge state changes
     LaunchedEffect(bridgeState) {
@@ -76,6 +92,14 @@ fun ItdOfficialWebLoginSheet(
             is PortalBridgeState.CompletedAndSanitized -> {
                 statusMessage = "All tax records captured. Sanitizing session memory..."
                 delay(400)
+                scope.launch {
+                    try {
+                        ZeroTaxCloudApiBridge.ingestLivePrefill(
+                            pan = pan,
+                            sourceOrigin = "OFFICIAL_WEBVIEW_EPHEMERAL_SESSION"
+                        )
+                    } catch (e: Exception) {}
+                }
                 val allTxns = fetcher.fetchAisTransactions(pan).getOrDefault(emptyList())
                 val totalTds = allTxns.sumOf { it.tdsWithheld }
                 val totalInterest = allTxns
@@ -355,6 +379,9 @@ fun ItdOfficialWebLoginSheet(
                             bridge.configureIsolatedWebView(this)
                             loadUrl("https://eportal.incometax.gov.in/iec/foservices/#/login")
                             webViewRef = this
+                            postDelayed({
+                                bridge.injectPanLoginScript(this, pan)
+                            }, 1500)
                         }
                     },
                     modifier = Modifier.fillMaxSize()

@@ -84,8 +84,10 @@ fun SmartTaxToolkitScreen(
     taxLiability: Long,
     tdsClaimed: Long,
     onBack: () -> Unit,
+    viewModel: in.zerotax.app.viewmodel.ZeroTaxViewModel? = null,
     modifier: Modifier = Modifier
 ) {
+    val liveUiState = viewModel?.uiState?.collectAsState()?.value
     var selectedTab by remember { mutableStateOf(ToolkitTab.HRA_OPTIMIZER) }
 
     Scaffold(
@@ -151,7 +153,7 @@ fun SmartTaxToolkitScreen(
                     .padding(16.dp)
             ) { tab ->
                 when (tab) {
-                    ToolkitTab.HRA_OPTIMIZER -> HraOptimizerView(pan = pan, grossSalary = grossSalary)
+                    ToolkitTab.HRA_OPTIMIZER -> HraOptimizerView(pan = pan, grossSalary = liveUiState?.grossSalaryRupees ?: grossSalary, onApplyHraToReturn = { viewModel?.onExemptAllowancesSec10Changed(it) })
                     ToolkitTab.CTC_OPTIMIZER -> CtcRestructuringView(grossSalary = grossSalary)
                     ToolkitTab.CAPITAL_GAINS_LEDGER -> CapitalGainsLedgerView()
                     ToolkitTab.PROPERTY_LTCG -> PropertyLtcgView()
@@ -160,8 +162,8 @@ fun SmartTaxToolkitScreen(
                     ToolkitTab.ADVANCE_TAX_RADAR -> AdvanceTaxRadarView(pan = pan, totalTaxLiability = taxLiability, tdsPaid = tdsClaimed)
                     ToolkitTab.LTCG_HARVESTING -> LtcgHarvestingRadarView()
                     ToolkitTab.STATEMENT_EXPORTER -> BankReadyStatementView(pan = pan, grossSalary = grossSalary, taxLiability = taxLiability, tdsClaimed = tdsClaimed)
-                    ToolkitTab.WHAT_IF_SIMULATOR -> WhatIfScenarioSimulatorView(pan = pan, grossSalary = grossSalary)
-                    ToolkitTab.FORM_12BB_PROOF -> Form12BbDeclarationView(pan = pan, grossSalary = grossSalary)
+                    ToolkitTab.WHAT_IF_SIMULATOR -> WhatIfScenarioSimulatorView(pan = pan, grossSalary = liveUiState?.grossSalaryRupees ?: grossSalary, onApplyScenario = { viewModel?.applyWhatIfScenarioToReturn(it) })
+                    ToolkitTab.FORM_12BB_PROOF -> Form12BbDeclarationView(pan = pan, grossSalary = liveUiState?.grossSalaryRupees ?: grossSalary, initialSec80C = liveUiState?.section80CInvestments ?: 0L, initialSec80D = liveUiState?.section80DSelf ?: 0L, initialSec80CCD = liveUiState?.section80CCD1BNps ?: 0L, initialHomeLoan = liveUiState?.homeLoanInterestSec24b ?: 0L)
                     ToolkitTab.FORM_15G_15H -> Form15GOr15HZeroTdsView(pan = pan)
                     ToolkitTab.RESIDENTIAL_STATUS -> ResidentialStatusAndFamilyArbitrageView()
                     ToolkitTab.REFUND_AUDIT_244A -> RefundAuditAndGstView()
@@ -179,7 +181,8 @@ fun SmartTaxToolkitScreen(
 @Composable
 private fun HraOptimizerView(
     pan: String,
-    grossSalary: Long
+    grossSalary: Long,
+    onApplyHraToReturn: ((Long) -> Unit)? = null
 ) {
     var monthlyRentText by remember { mutableStateOf("") }
     var monthlyBasicText by remember { mutableStateOf(if (grossSalary > 0L) (grossSalary / 24).toString() else "") }
@@ -347,6 +350,31 @@ private fun HraOptimizerView(
             }
 
             Spacer(Modifier.height(14.dp))
+
+            if (hraExemption > 0L && onApplyHraToReturn != null) {
+                var appliedHra by remember { mutableStateOf(false) }
+                OutlinedButton(
+                    onClick = {
+                        onApplyHraToReturn(hraExemption)
+                        appliedHra = true
+                    },
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.fillMaxWidth().height(42.dp)
+                ) {
+                    Icon(
+                        imageVector = if (appliedHra) Icons.Default.CheckCircle else Icons.Default.AddTask,
+                        contentDescription = null,
+                        tint = if (appliedHra) EmeraldSuccess else EnterpriseTeal600,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = if (appliedHra) "Exemption ₹${Rupee.formatInr(hraExemption)} Applied to Return" else "Apply Exemption (₹${Rupee.formatInr(hraExemption)}) to Return",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+            }
 
             // Rent Receipt Generator Button
             Button(
