@@ -102,6 +102,7 @@ val EnterpriseTypography = Typography(
 val MonospaceFigureStyle = TextStyle(
     fontFamily = FontFamily.Monospace,
     fontWeight = FontWeight.SemiBold,
+    fontFeatureSettings = "tnum",
     fontSize = 14.sp,
     lineHeight = 18.sp,
     letterSpacing = 0.sp
@@ -110,7 +111,24 @@ val MonospaceFigureStyle = TextStyle(
 val MonospaceFigureLargeStyle = TextStyle(
     fontFamily = FontFamily.Monospace,
     fontWeight = FontWeight.Bold,
+    fontFeatureSettings = "tnum",
     fontSize = 20.sp,
     lineHeight = 24.sp,
     letterSpacing = (-0.5).sp
+)
+
+val TabularCurrencyStyle = TextStyle(
+    fontFamily = FontFamily.SansSerif,
+    fontWeight = FontWeight.Bold,
+    fontFeatureSettings = "tnum",
+    fontSize = 18.sp,
+    lineHeight = 22.sp
+)
+
+val TabularCurrencyLargeStyle = TextStyle(
+    fontFamily = FontFamily.SansSerif,
+    fontWeight = FontWeight.Bold,
+    fontFeatureSettings = "tnum",
+    fontSize = 24.sp,
+    lineHeight = 28.sp
 )

@@ -155,7 +155,8 @@ fun ConversationalFilingChatScreen(
             Surface(
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 4.dp,
-                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
+                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
+                modifier = Modifier.imePadding().navigationBarsPadding()
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     // Quick Action Review Button when ready
