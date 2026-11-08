@@ -372,7 +372,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         width = 0.5.dp,
                         brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
                     ),
-                    modifier = Modifier.navigationBarsPadding()
+                    modifier = Modifier.imePadding().navigationBarsPadding()
                 ) {
                     DiscreteStatutoryStepper(
                         currentTap = uiState.currentTap!!,

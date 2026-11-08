@@ -80,8 +80,14 @@ object ZeroTaxE2EECipher {
      * to prevent ciphertext transplanting across fields, accounts, or assessment years.
      * @return EncryptedEnvelope ready for JSON serialization
      */
+    fun buildAssociatedData(userId: String, panHmac: String, assessmentYear: String, fieldKey: String): ByteArray =
+        "$userId|$panHmac|$assessmentYear|$fieldKey".toByteArray(Charsets.UTF_8)
+
     fun encryptField(plaintext: String, associatedData: ByteArray? = null): EncryptedEnvelope =
         encryptBytes(plaintext.toByteArray(Charsets.UTF_8), associatedData)
+
+    fun encryptField(plaintext: String, userId: String, panHmac: String, assessmentYear: String, fieldKey: String): EncryptedEnvelope =
+        encryptField(plaintext, buildAssociatedData(userId, panHmac, assessmentYear, fieldKey))
 
     /**
      * Encrypt raw bytes (PDF, Form 16 etc.) with optional AAD binding.

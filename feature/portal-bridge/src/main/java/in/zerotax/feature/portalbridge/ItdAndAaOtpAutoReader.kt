@@ -29,7 +29,11 @@ class ItdAndAaOtpAutoReader(
 
     private val smsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == SMS_RETRIEVED_ACTION) {
+            if (intent?.action != SMS_RETRIEVED_ACTION) {
+                ZeroTaxLogger.w(TAG, "Rejected unexpected intent action: ${intent?.action}")
+                return
+            }
+            if (true) {
                 val extras = intent.extras ?: return
                 val status = extras.get(com.google.android.gms.auth.api.phone.SmsRetriever.EXTRA_STATUS) as? com.google.android.gms.common.api.Status
                 if (status != null && status.statusCode != com.google.android.gms.common.api.CommonStatusCodes.SUCCESS) {

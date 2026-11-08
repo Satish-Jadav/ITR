@@ -102,6 +102,41 @@ fun SmartTransactionSuggestionsView(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        bottomBar = {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 4.dp,
+                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
+                modifier = Modifier.navigationBarsPadding()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "${transactions.size} Verified Matches Detected",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "100% Reconciliation against 26AS & Form 16",
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = Slate500)
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    ZeroTaxPrimaryButton(
+                        text = "Approve All Verified (1 Tap)",
+                        onClick = onBack,
+                        leadingIcon = {
+                            Icon(Icons.Default.Check, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                        }
+                    )
+                }
+            }
+        },
         topBar = {
             TopAppBar(
                 title = {

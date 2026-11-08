@@ -199,20 +199,48 @@ private fun OnboardingTopBar(
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
-            // Step Indicator Badge
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (isDark) Slate800 else Slate100
+            // Step Indicator Badge & Auto-Selected Plan
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(
-                    text = "Step ${currentStep.stepNumber} of 5",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = EnterpriseTeal500,
-                        fontSize = 11.sp
-                    ),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                if (currentStep == OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW || currentStep == OnboardingWizardStep.PLAN_SPECIFIC_INPUTS) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isDark) EnterpriseTeal900.copy(alpha = 0.5f) else EnterpriseTeal50,
+                        border = androidx.compose.foundation.BorderStroke(0.5.dp, EnterpriseTeal500)
+                    ) {
+                        Text(
+                            text = "Auto-Selected: Sahaj ITR-1",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = if (isDark) EnterpriseTeal300 else EnterpriseTeal700,
+                                fontSize = 10.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isDark) Slate800 else Slate100
+                ) {
+                    val displayStep = when (currentStep) {
+                        OnboardingWizardStep.TRUST_AND_AUTH -> 1
+                        OnboardingWizardStep.STREAM_HYDRATION_RADAR -> 2
+                        else -> 3
+                    }
+                    Text(
+                        text = "Step $displayStep of 3",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = EnterpriseTeal500,
+                            fontSize = 11.sp
+                        ),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
         }
     }
