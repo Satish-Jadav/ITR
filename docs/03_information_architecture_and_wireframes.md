@@ -581,3 +581,46 @@ fun allowTemporaryExportSnapshot(lifecycleScope: CoroutineScope) {
 • 6-Menu Chip-Driven Copilot Chatbot:
    - Guided quick-pick action pills eliminating empty text inputs, backed by Tier-0 deterministic regex routing (< 2ms, 0 tokens).
 
+
+---
+
+### 2.8 ASCII Wireframe: Active Gateway Status Chip & Dynamic Driver Selection
+Rendered dynamically in `ItdLivePortalSyncModal.kt` and `PortalAssistantScreen.kt`:
+
+```
++-----------------------------------------------------------------------+
+|  ⚡ LIVE CBDT E-FILING GATEWAY                                         |
+|  +-----------------------------------------------------------------+  |
+|  | [⚡ Quicko B2B ERI Gateway (Sandbox.co.in)]                       |  |
+|  | Priority: B2B ERI -> CBDT IEC 2.0 Direct -> In-App Live Driver  |  |
+|  +-----------------------------------------------------------------+  |
+|                                                                       |
+|  Status: ACTIVE & AUTHENTICATED                                       |
+|  Token Validity: 23 Hours (In-Memory JWT Cached)                     |
+|  Encryption: TLS 1.3 + Hardware AES-256-GCM                           |
++-----------------------------------------------------------------------+
+```
+
+---
+
+### 2.9 ASCII Wireframe: Conversational Filing Chatbot Screen (`ConversationalFilingChatScreen.kt`)
+```
++-----------------------------------------------------------------------+
+| [<-] ZeroTax Intelligent Copilot                   [Vault: Synced] [:] |
+|-----------------------------------------------------------------------|
+|  [AI Copilot]                                                         |
+|  Hello Satish! I've analyzed your live Form 26AS & AIS records.       |
+|  Your total income is ₹14,50,000 with ₹1,20,000 TDS withheld.         |
+|                                                                       |
+|  +-----------------------------------------------------------------+  |
+|  | 📊 REGIME COMPARISON (AY 2026-27)                               |  |
+|  | New Regime Tax: ₹97,500   | Old Regime Tax: ₹1,42,500           |  |
+|  | 💡 Net Benefit: New Regime saves you ₹45,000!                   |  |
+|  +-----------------------------------------------------------------+  |
+|                                                                       |
+|  Quick Actions:                                                       |
+|  [⚡ File ITR-1 Now]  [📑 View 26AS TDS]  [🔍 Check HRA Exemption]    |
+|-----------------------------------------------------------------------|
+| [ + Attachment ] [ Ask anything about your tax...            ] [Send] |
++-----------------------------------------------------------------------+
+```

@@ -217,3 +217,48 @@ Statutory Audit Review & UDIN Sign-Off: CAs can review client income schedules, 
 Think Like a CA Deduction Maximizer Engine: Systematic heuristic deduction optimization under Chapter VI-A and Head IV-B to aggressively convert tax payable into an Income Tax Refund. Covers Section 80CCD(2) employer NPS (up to 14% of basic + DA in both regimes), Section 80D health insurance (up to ₹1,00,000 for senior citizen parents + self/family), Section 24(b) housing loan interest (₹2,00,000 cap), Section 80CCD(1B) Tier 1 NPS (₹50,000), Section 80C statutory investments (₹1,50,000), Section 80E higher education loan interest, Section 80GG rent paid where no HRA is received, Section 80TTA/TTB savings/deposit interest exemptions, Section 56(2)(x) & 10(13A) family tax arbitrage, and Section 87A rebate compression ensuring zero net tax payable where feasible.
 DPDP Act 2023 Section 6 Zero-Knowledge Trust Shield: Comprehensive user transparency and brand assurance modal detailing on-device cryptographic boundaries. Establishes a strict Transparency Matrix distinguishing what ZeroTax servers see (Absolute Zero - 0 bytes, no storage, no telemetry) versus what remains protected on-device (AES-256-GCM hardware-backed vault, biometric protection, ephemeral session tokens). Includes an interactive user acknowledgement flow compliant with DPDP Act 2023 Section 6 consent guidelines.
 
+
+---
+
+## 8.6 100% Real-Time & Zero-Mock Architecture Sign-Off (The 5 Live Integration Pipelines)
+- **Zero-Mock Policy Mandate**: Eliminates all synthetic `delay()` timers and mock stubs across both the Android application and the backend API.
+- **Pipeline 1 — Real-Time ITD Portal Pre-fill, AIS & e-Filing**: Live pre-fill ingestion and filing via `HardenedEphemeralPortalBridge.kt` and `ItdDirectFilingClient.kt` with 1-Tap Aadhaar OTP u/s 140A for instant e-verification.
+- **Pipeline 2 — Real-Time Document Extraction (On-Device + Cloud AI)**: Form 16 Part A/B, CAMS/KFintech CAS, Broker P&L, and CPC notices extracted via on-device Gemini Nano with cloud fallback to Google Document AI / Gemini 2.0 API.
+- **Pipeline 3 — Real-Time RBI Account Aggregator (Setu / Finvu FIU)**: Ephemeral ECDHE-Curve25519 key negotiation with HKDF-SHA256 and AES-256-GCM in-memory decryption for live bank interest and deduction discovery.
+- **Pipeline 4 — Live Public Statutory Feeds**: Real-time AMFI Mutual Fund NAV, RBI IFSC validation, and SBI TTBR foreign exchange lookup with automatic offline cached fallback.
+- **Pipeline 5 — Unified Reactive Vault State**: Unifies all 8 toolkit wizards, what-if simulator, and Conversational Copilot with real-time `zero_tax_vault.db` state.
+
+---
+
+## 8.7 B2B Tax Intermediary Gateway & ERI Architecture Sign-Off (Quicko / Sandbox.co.in Integration)
+- **3-Tier Driver Hierarchy & Graceful Fallback**:
+  - **Tier 1 (QUICKO_ERI)**: Primary B2B Tax Gateway via Sandbox.co.in / Quicko (`https://api.sandbox.co.in`). Authenticates via `POST /authenticate` with 23-hour in-memory JWT token caching, lowercase `authorization: <token>` and `x-api-key: <key>` headers.
+  - **Tier 2 (CBDT_DIRECT_ERI)**: Official CBDT IEC 2.0 Direct Gateway with hardware DSC (Digital Signature Certificate) PKCS#11/PKCS#12 signing for corporate ERI license holders.
+  - **Tier 3 (IN_APP_LIVE_DRIVER)**: Zero-Cost In-App Live Driver utilizing ephemeral isolated session bridge on the taxpayer's handset. Activates seamlessly with zero user disruption if Sandbox/CBDT gateways return non-200 responses or timeout.
+- **Gateway Transparency Badges**: Rendered in `ItdLivePortalSyncModal.kt` and `PortalAssistantScreen.kt`:
+  - `⚡ Quicko B2B ERI Gateway (Sandbox.co.in)`
+  - `🏛️ Official CBDT IEC 2.0 Gateway`
+  - `🛡️ Zero-Cost In-App Live Driver`
+
+---
+
+## 8.8 Agentic Tax Copilot & Conversational Filing Chatbot Functional Requirements
+- **Hybrid Neuro-Symbolic Agentic Architecture**: Combines on-device Gemini Nano (offline low-latency inference) with cloud Gemini 2.0 agentic tool calling and statutory RAG.
+- **Statutory Tool-Calling Catalog**:
+  - `calculate_tax`: Invokes deterministic tax engine with taxpayer parameters.
+  - `simulate_regime`: Runs side-by-side Old vs New Regime comparison under AY 2026-27 rules.
+  - `ingest_form16`: Parses and ingests salary and Chapter VI-A deductions directly into the vault.
+  - `check_itr_eligibility`: Evaluates the 14-gate router to select between ITR-1, ITR-2, and ITR-4.
+- **Rich Interactive Chat UI (`ConversationalFilingChatScreen.kt`)**: Server-Sent Events (SSE) streaming with interactive tool result cards, quick-pick action chips, and in-chat document scanning.
+
+---
+
+## 8.9 AY 2026-27 (Finance Act 2025/2026) Statutory Rule & Rate Harmonization
+- **Section 115BAC Default New Tax Regime**:
+  - Slabs: Up to ₹4L (Nil), ₹4L-₹8L (5%), ₹8L-₹12L (10%), ₹12L-₹16L (15%), ₹16L-₹20L (20%), ₹20L-₹24L (25%), Above ₹24L (30%).
+  - Enhanced Standard Deduction u/s 16(ia): ₹75,000 under New Regime (₹50,000 under Old Regime).
+  - Enhanced Section 87A Full Tax Rebate: Up to ₹12,00,000 taxable income (maximum rebate ₹60,000) with statutory marginal relief.
+- **Capital Gains Tax Rates**:
+  - Section 112A LTCG: Exemption threshold ₹1,25,000; taxed at 12.5%.
+  - Section 111A STCG: Taxed at 20%.
+- **Statutory Indices**: Cost Inflation Index (CII) for FY 2025-26 (AY 2026-27): **376**.

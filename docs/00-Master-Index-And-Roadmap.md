@@ -8,24 +8,24 @@ This master index provides the consolidated architecture, product specifications
 
 | Doc # | Filename | Scope & Primary Focus |
 |:---:|---|---|
-| **00** | [`00-Master-Index-And-Roadmap.md`](file:///D:/projects/ITR/docs/00-Master-Index-And-Roadmap.md) | Master Phase-by-Phase Roadmap, Form Support (ITR-1/2/4/U), and Document Directory Map |
-| **01** | [`01_product_requirements_document.md`](file:///D:/projects/ITR/docs/01_product_requirements_document.md) | Consolidated Product Requirements Document (PRD): Core personas, functional specifications & KPIs |
-| **02** | [`02_user_stories_and_acceptance_criteria.md`](file:///D:/projects/ITR/docs/02_user_stories_and_acceptance_criteria.md) | Exhaustive Gherkin BDD Acceptance Criteria for all 4 filing spine stages and pro hub workflows |
-| **03** | [`03_information_architecture_and_wireframes.md`](file:///D:/projects/ITR/docs/03_information_architecture_and_wireframes.md) | Screen-by-screen information architecture, ASCII wireframes & multilingual CBDT taxonomy |
-| **04** | [`04_technical_architecture_and_system_design.md`](file:///D:/projects/ITR/docs/04_technical_architecture_and_system_design.md) | Multi-module Gradle topology, pure-JVM firewall gate, and production Kotlin sub-engine blueprints |
-| **05** | [`05_database_schema_and_on_device_ai_prompts.md`](file:///D:/projects/ITR/docs/05_database_schema_and_on_device_ai_prompts.md) | 13-table SQLCipher 4.5.4 schema, Room DAOs, and on-device AICore Gemini Nano system prompts |
-| **06** | [`06_qa_golden_test_vectors_and_security.md`](file:///D:/projects/ITR/docs/06_qa_golden_test_vectors_and_security.md) | Parameterized Golden Tax Calculation Test Vectors (GTV-01..18) and OWASP MASVS security benchmarks |
-| **07** | [`07_legal_regulatory_and_compliance.md`](file:///D:/projects/ITR/docs/07_legal_regulatory_and_compliance.md) | Statutory compliance framework: DPDP Act 2023, Income-tax Act 1961, and Aadhaar Act Section 29 |
-| **08** | [`08_deterministic_tax_subengines.md`](file:///D:/projects/ITR/docs/08_deterministic_tax_subengines.md) | 14-Gate ITR Form Auto-Router, Rule 2A HRA exemptions, and Section 234A/B/C statutory interest |
-| **09** | [`09_on_device_aicore_and_aa_crypto.md`](file:///D:/projects/ITR/docs/09_on_device_aicore_and_aa_crypto.md) | On-Device Gemini Nano wrapper, ReBIT AA X25519 RAM decryptor, and Challan 280 parser |
-| **10** | [`10_phase_3_schedule_fa_and_cbdt_json_compiler.md`](file:///D:/projects/ITR/docs/10_phase_3_schedule_fa_and_cbdt_json_compiler.md) | Schedule FA Calendar-Year Engine, Form 67 Rule 128(5) FTC, ITR-U Sec 140B, and CBDT JSON compiler |
-| **11** | [`11_jetpack_compose_ui_4_tap_spine_and_modals.md`](file:///D:/projects/ITR/docs/11_jetpack_compose_ui_4_tap_spine_and_modals.md) | Jetpack Compose UI ("4-Tap Spine", Smart Individual PAN keypad, Sec 270A warning dialog & DPDP modal) |
-| **12** | [`12_comprehensive_qa_edge_cases_and_unit_tests.md`](file:///D:/projects/ITR/docs/12_comprehensive_qa_edge_cases_and_unit_tests.md) | Comprehensive QA edge-case matrix (ECV-01..06), airplane-mode verification & extended JUnit 5 suite |
-| **13** | [`13_production_readiness_checklist_and_ci_pipeline.md`](file:///D:/projects/ITR/docs/13_production_readiness_checklist_and_ci_pipeline.md) | Production release readiness checklist, R8 Full Mode hardening & GitHub Actions CI pipeline |
-| **14** | [`Architecture.md`](file:///D:/projects/ITR/docs/Architecture.md) | Master System Architecture: 3-Pillar ingestion layer, pure-JVM firewall, and enterprise animation suite |
-| **15** | [`MVP Tech Doc.md`](file:///D:/projects/ITR/docs/MVP%20Tech%20Doc.md) | MVP Technical Specification: CA & Principal Architect edition for salaried & freelance filing |
-| **16** | [`PRD.md`](file:///D:/projects/ITR/docs/PRD.md) | Foundational Product Requirements Document: Zero-friction filing UX and on-device privacy moat |
-| **17** | [`system Design.md`](file:///D:/projects/ITR/docs/system%20Design.md) | Detailed System Design: Module-by-module data contracts, IPC boundaries, and memory lifecycle |
+| **00** | [`00-Master-Index-And-Roadmap.md`](00-Master-Index-And-Roadmap.md) | Master Phase-by-Phase Roadmap, Form Support (ITR-1/2/4/U), and Document Directory Map |
+| **01** | [`01_product_requirements_document.md`](01_product_requirements_document.md) | Consolidated Product Requirements Document (PRD): Core personas, functional specifications & KPIs |
+| **02** | [`02_user_stories_and_acceptance_criteria.md`](02_user_stories_and_acceptance_criteria.md) | Exhaustive Gherkin BDD Acceptance Criteria for all 4 filing spine stages and pro hub workflows |
+| **03** | [`03_information_architecture_and_wireframes.md`](03_information_architecture_and_wireframes.md) | Screen-by-screen information architecture, ASCII wireframes & multilingual CBDT taxonomy |
+| **04** | [`04_technical_architecture_and_system_design.md`](04_technical_architecture_and_system_design.md) | Multi-module Gradle topology, pure-JVM firewall gate, and production Kotlin sub-engine blueprints |
+| **05** | [`05_database_schema_and_on_device_ai_prompts.md`](05_database_schema_and_on_device_ai_prompts.md) | 13-table SQLCipher 4.5.4 schema, Room DAOs, and on-device AICore Gemini Nano system prompts |
+| **06** | [`06_qa_golden_test_vectors_and_security.md`](06_qa_golden_test_vectors_and_security.md) | Parameterized Golden Tax Calculation Test Vectors (GTV-01..18) and OWASP MASVS security benchmarks |
+| **07** | [`07_legal_regulatory_and_compliance.md`](07_legal_regulatory_and_compliance.md) | Statutory compliance framework: DPDP Act 2023, Income-tax Act 1961, and Aadhaar Act Section 29 |
+| **08** | [`08_deterministic_tax_subengines.md`](08_deterministic_tax_subengines.md) | 14-Gate ITR Form Auto-Router, Rule 2A HRA exemptions, and Section 234A/B/C statutory interest |
+| **09** | [`09_on_device_aicore_and_aa_crypto.md`](09_on_device_aicore_and_aa_crypto.md) | On-Device Gemini Nano wrapper, ReBIT AA X25519 RAM decryptor, and Challan 280 parser |
+| **10** | [`10_phase_3_schedule_fa_and_cbdt_json_compiler.md`](10_phase_3_schedule_fa_and_cbdt_json_compiler.md) | Schedule FA Calendar-Year Engine, Form 67 Rule 128(5) FTC, ITR-U Sec 140B, and CBDT JSON compiler |
+| **11** | [`11_jetpack_compose_ui_4_tap_spine_and_modals.md`](11_jetpack_compose_ui_4_tap_spine_and_modals.md) | Jetpack Compose UI ("4-Tap Spine", Smart Individual PAN keypad, Sec 270A warning dialog & DPDP modal) |
+| **12** | [`12_comprehensive_qa_edge_cases_and_unit_tests.md`](12_comprehensive_qa_edge_cases_and_unit_tests.md) | Comprehensive QA edge-case matrix (ECV-01..06), airplane-mode verification & extended JUnit 5 suite |
+| **13** | [`13_production_readiness_checklist_and_ci_pipeline.md`](13_production_readiness_checklist_and_ci_pipeline.md) | Production release readiness checklist, R8 Full Mode hardening & GitHub Actions CI pipeline |
+| **14** | [`Architecture.md`](Architecture.md) | Master System Architecture: 3-Pillar ingestion layer, pure-JVM firewall, and enterprise animation suite |
+| **15** | [`MVP Tech Doc.md`](MVP%20Tech%20Doc.md) | MVP Technical Specification: CA & Principal Architect edition for salaried & freelance filing |
+| **16** | [`PRD.md`](PRD.md) | Foundational Product Requirements Document: Zero-friction filing UX and on-device privacy moat |
+| **17** | [`system Design.md`](system%20Design.md) | Detailed System Design: Module-by-module data contracts, IPC boundaries, and memory lifecycle |
 
 ---
 
@@ -179,3 +179,70 @@ This master index provides the consolidated architecture, product specifications
 
 
 
+
+---
+
+### 4.8 100% Real-Time & Zero-Mock Architecture (The 5 Live Integration Pipelines)
+- **Elimination of Artificial Stubs & Simulated Delays**:
+  - Replaced all legacy synthetic mock delay timers (`delay(1500)`) and hardcoded stubs with 100% real-time data pipelines across both the Android APK and the cloud backend.
+- **Pipeline 1 — Real-Time ITD Portal Pre-fill, AIS & e-Filing**:
+  - Live pre-fill ingestion and filing via `HardenedEphemeralPortalBridge.kt` and `ItdDirectFilingClient.kt`.
+  - Supports 1-Tap Aadhaar OTP u/s 140A for instant e-verification without external web portals.
+- **Pipeline 2 — Real-Time Document Extraction (On-Device + Cloud AI)**:
+  - Form 16 Part A/B, CAMS/KFintech CAS, Broker P&L, and CPC notices extracted via on-device Gemini Nano with cloud fallback to Google Document AI / Gemini 2.0 API.
+- **Pipeline 3 — Real-Time RBI Account Aggregator (Setu / Finvu FIU)**:
+  - Ephemeral ECDHE-Curve25519 key negotiation with HKDF-SHA256 and AES-256-GCM in-memory decryption for live bank interest and deduction discovery.
+- **Pipeline 4 — Live Public Statutory Feeds**:
+  - Real-time AMFI Mutual Fund NAV, RBI IFSC validation, and SBI TTBR foreign exchange lookup with automatic offline cached fallback.
+- **Pipeline 5 — Unified Reactive Vault State**:
+  - Unifies all 8 toolkit wizards, what-if simulator, and Conversational Copilot with real-time `zero_tax_vault.db` state.
+
+---
+
+### 4.9 CBDT ERI License & B2B Tax API Architecture (Quicko / Sandbox.co.in Integration)
+- **3-Tier Driver Hierarchy & Graceful Fallback**:
+  - **Tier 1 (QUICKO_ERI)**: Primary B2B Tax Gateway via Sandbox.co.in / Quicko (`https://api.sandbox.co.in`). Authenticates via `POST /authenticate` with 23-hour in-memory JWT token caching, lowercase `authorization: <token>` and `x-api-key: <key>` headers.
+  - **Tier 2 (CBDT_DIRECT_ERI)**: Official CBDT IEC 2.0 Direct Gateway with hardware DSC (Digital Signature Certificate) PKCS#11/PKCS#12 signing for corporate ERI license holders.
+  - **Tier 3 (IN_APP_LIVE_DRIVER)**: Zero-Cost In-App Live Driver utilizing ephemeral isolated session bridge on the taxpayer's handset. Activates seamlessly with zero user disruption if Sandbox/CBDT gateways return non-200 responses or timeout.
+- **Gateway Transparency Badges**:
+  - Rendered in `ItdLivePortalSyncModal.kt` and `PortalAssistantScreen.kt`:
+    - `⚡ Quicko B2B ERI Gateway (Sandbox.co.in)`
+    - `🏛️ Official CBDT IEC 2.0 Gateway`
+    - `🛡️ Zero-Cost In-App Live Driver`
+
+---
+
+### 4.10 Intelligent Agentic Tax Copilot & Conversational Filing Chatbot
+- **Hybrid Neuro-Symbolic Agentic Architecture**:
+  - Combines on-device Gemini Nano (offline low-latency inference) with cloud Gemini 2.0 agentic tool calling and statutory RAG.
+- **Statutory Tool-Calling Catalog**:
+  - `calculate_tax`: Invokes deterministic tax engine with taxpayer parameters.
+  - `simulate_regime`: Runs side-by-side Old vs New Regime comparison under AY 2026-27 rules.
+  - `ingest_form16`: Parses and ingests salary and Chapter VI-A deductions directly into the vault.
+  - `check_itr_eligibility`: Evaluates the 14-gate router to select between ITR-1, ITR-2, and ITR-4.
+- **Rich Interactive Chat UI (`ConversationalFilingChatScreen.kt`)**:
+  - Server-Sent Events (SSE) streaming with interactive tool result cards, quick-pick action chips, and in-chat document scanning.
+
+---
+
+### 4.11 VAPT Defense-in-Depth Security & Edge Firewall (ITR-API)
+- **Edge VAPT Firewall (`edgeFirewall.ts`)**:
+  - **VAPT-01 / VAPT-02**: Strict API Key and HMAC signature verification.
+  - **VAPT-04**: Replay attack defense rejecting timestamp skew > 30 seconds.
+  - **VAPT-08**: Payload size limiting preventing Denial-of-Service.
+  - **VAPT-12**: Origin sanitization rejecting non-whitelisted browser origins with 403 Forbidden.
+- **Automated Security Verification**:
+  - 48-pass security and route test suite (`npm test` in `ITR-API`) verifying end-to-end resilience against penetration testing vectors.
+
+---
+
+### 4.12 AY 2026-27 (Finance Act 2025/2026) Statutory Rule & Rate Harmonization
+- **Section 115BAC Default New Tax Regime**:
+  - Slabs: Up to ₹4L (Nil), ₹4L-₹8L (5%), ₹8L-₹12L (10%), ₹12L-₹16L (15%), ₹16L-₹20L (20%), ₹20L-₹24L (25%), Above ₹24L (30%).
+  - Enhanced Standard Deduction u/s 16(ia): ₹75,000 under New Regime (₹50,000 under Old Regime).
+  - Enhanced Section 87A Full Tax Rebate: Up to ₹12,00,000 taxable income (maximum rebate ₹60,000) with statutory marginal relief.
+- **Capital Gains Tax Rates**:
+  - Section 112A LTCG: Exemption threshold ₹1,25,000; taxed at 12.5%.
+  - Section 111A STCG: Taxed at 20%.
+- **Statutory Indices**:
+  - Cost Inflation Index (CII) for FY 2025-26 (AY 2026-27): **376**.

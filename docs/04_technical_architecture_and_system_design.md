@@ -1410,3 +1410,67 @@ Operates as a pure-JVM deterministic allocation engine to legally minimize emplo
   - User Device Vault: Android Keystore StrongBox AES-256-GCM encryption, biometric hardware gate, ephemeral RAM-only session tokens.
 - Interactive user consent acknowledgement meeting Section 6 itemized notice mandates.
 
+
+---
+
+### 6.21 100% Real-Time & Zero-Mock 5 Pipelines Technical Architecture
+- **Pipeline 1 — Real-Time ITD Portal Pre-fill, AIS & e-Filing**:
+  - Implemented in `HardenedEphemeralPortalBridge.kt` and `ItdDirectFilingClient.kt`.
+  - Connects to `ITR-API` endpoints (`/api/v1/portal/driver-status`, `/api/v1/portal/otp/request`, `/api/v1/portal/otp/verify`, `/api/v1/portal/submit`, `/api/v1/portal/everify`).
+  - Supports 1-Tap Aadhaar OTP u/s 140A for instant e-verification.
+- **Pipeline 2 — Real-Time Document Extraction (On-Device + Cloud AI)**:
+  - Form 16 Part A/B, CAMS/KFintech CAS, Broker P&L, and CPC notices extracted via on-device Gemini Nano with cloud fallback to Google Document AI / Gemini 2.0 API.
+- **Pipeline 3 — Real-Time RBI Account Aggregator (Setu / Finvu FIU)**:
+  - Ephemeral ECDHE-Curve25519 key negotiation with HKDF-SHA256 and AES-256-GCM in-memory decryption for live bank interest and deduction discovery.
+- **Pipeline 4 — Live Public Statutory Feeds**:
+  - Real-time AMFI Mutual Fund NAV, RBI IFSC validation, and SBI TTBR foreign exchange lookup with automatic offline cached fallback.
+- **Pipeline 5 — Unified Reactive Vault State**:
+  - Unifies all 8 toolkit wizards, what-if simulator, and Conversational Copilot with real-time `zero_tax_vault.db` state.
+
+---
+
+### 6.22 Dual-Repository Cloud Topology (`ITR` Kotlin + `ITR-API` Node.js / Hono)
+```
++---------------------------------------------------------------------------------+
+|                       CLIENT APPLICATION (:app / Android)                       |
+|  - Jetpack Compose UI (4-Tap Spine, Toolkit Wizards, Copilot Chat)             |
+|  - On-Device Gemini Nano / DocumentAI Extractor (:feature:ai-extractor)         |
+|  - Local SQLCipher 4.5.4 Vault (AES-256-GCM, zero_tax_vault.db)                |
+|  - ZeroTaxCloudApiBridge: HTTP/2 client communicating with ITR-API backend      |
++----------------------------------------+----------------------------------------+
+                                         | HTTPS (TLS 1.3) + VAPT Security Headers
+                                         v
++---------------------------------------------------------------------------------+
+|                         CLOUD BACKEND (ITR-API / Hono)                          |
+|  - Edge VAPT Firewall (edgeFirewall.ts: VAPT-01..12 rate limit & skew defenses) |
+|  - Portal Driver Service (PortalDriverService.ts: Quicko B2B + In-App fallback) |
+|  - PostgreSQL / Supabase Database (statutory OTA bundles, encrypted vaults)     |
+|  - AI Copilot Agent & Statutory RAG (SSE streaming + tool calling)              |
++----------------------------------------+----------------------------------------+
+                                         |
+                 +-----------------------+-----------------------+
+                 |                                               |
+                 v                                               v
++-----------------------------------+   +---------------------------------------+
+|  Quicko / Sandbox B2B Gateway    |   |  Income Tax Department (ITD) e-Filing |
+|  (api.sandbox.co.in)              |   |  Direct IEC 2.0 Gateway (eportal)     |
++-----------------------------------+   +---------------------------------------+
+```
+
+---
+
+### 6.23 PortalDriverService 3-Tier Hierarchy & Sandbox.co.in Integration
+- **Priority 1 (QUICKO_ERI)**: Sandbox.co.in / Quicko B2B Tax API Gateway.
+  - Generates 23-hour cached JWT via `POST /authenticate` passing `x-api-key`, `x-api-secret`, and `x-api-version: 1.0.0`.
+  - Dispatches requests using raw lowercase `authorization: <token>` and `x-api-key: <key>`.
+- **Priority 2 (CBDT_DIRECT_ERI)**: Direct CBDT IEC 2.0 gateway utilizing corporate DSC private keys.
+- **Priority 3 (IN_APP_LIVE_DRIVER)**: Zero-Cost In-App Live Driver on device. Automatically engaged upon any non-200 / timeout error from upstream gateways.
+
+---
+
+### 6.24 VAPT Edge Firewall & Penetration Defense Architecture (`edgeFirewall.ts`)
+- **VAPT-01 / VAPT-02**: Strict API Key and HMAC signature verification.
+- **VAPT-04**: Replay attack defense rejecting timestamp skew > 30 seconds.
+- **VAPT-08**: Payload size limiting preventing Denial-of-Service.
+- **VAPT-12**: Origin sanitization rejecting non-whitelisted browser origins with 403 Forbidden.
+- **Automated Verification**: 48 automated test vectors in `test-api.ts` passing with 0 failures.

@@ -111,3 +111,19 @@ Phases 4.4 to 4.7 (Enterprise & Automation)
 Non-individual corporate entities (ITR-5/6/7); F&O Trading ICAI turnover & Sec 44AB tax audit; Sec 143(1) Intimation Diff Analyzer & Sec 154 Rectification JSON builder; Zero-Knowledge .ztvault encrypted device migration (PBKDF2 + AES-256-GCM); Senior Citizen Sec 194P exemption & Form 12BBA; Hybrid multi-source income engine & progressive disclosure UI; 6-menu chip-driven chatbot with 3-tier zero-waste AI; In-app live portal sync with 0 external browser hops; Hardware biometric security gate.
 Sub-2ms Tier-0 regex classification; <180ms NPU micro-prompt execution; 100% offline .ztvault migration; zero-leakage direct TLS portal handshake.
 
+
+---
+
+## 6. 100% Real-Time Zero-Mock Mandate & Conversational Filing Copilot
+- **100% Real-Time Data**: Replaced all simulated delay timers with live HTTP/2 streams across the 5 integration pipelines.
+- **Conversational Filing Copilot**: Conversational AI assistant supporting agentic tool calling (`calculate_tax`, `simulate_regime`, `ingest_form16`, `check_itr_eligibility`) and statutory RAG for notice defense.
+- **Gateway Transparency**: Clear UI badge displaying whether filing occurs via Quicko B2B ERI Gateway or the Zero-Cost In-App Live Driver.
+
+---
+
+## 7. AY 2026-27 Statutory Harmonization (Finance Act 2025/2026)
+- Default New Regime u/s 115BAC with slabs up to ₹24L+.
+- Standard deduction enhanced to ₹75,000 under New Regime.
+- Section 87A rebate enhanced to ₹60,000 (tax-free income up to ₹12,00,000) with marginal relief.
+- LTCG u/s 112A taxed at 12.5% above ₹1,25,000 exemption limit.
+- Cost Inflation Index (CII) for AY 2026-27: 376.

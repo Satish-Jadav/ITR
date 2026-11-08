@@ -325,3 +325,19 @@ Full Verhoeff Aadhaar scrub audit to ensure zero plain-text PII leaks into inter
 - ZeroTax Biometric Shield Gate: Full-screen biometric gate protecting vault contents with Fingerprint, Face ID, or PIN with 1-tap lock and countdown notifications.
 
 
+
+---
+
+## 9. 100% Zero-Mock & Live Driver Architecture
+- **Elimination of Mock Delays**: Removed all synthetic delay timers across the filing pipeline.
+- **Live Communication**: `ZeroTaxCloudApiBridge.kt` communicates directly with `ITR-API` over TLS 1.3 with VAPT security headers.
+- **Gateway Status Transparency**: UI surfaces live gateway status chip (`⚡ Quicko B2B ERI Gateway (Sandbox.co.in)` / `🛡️ Zero-Cost In-App Live Driver`).
+- **Live Aadhaar e-Verification**: Completes entire return lifecycle in-app via `POST /api/v1/portal/everify` without external portal navigation.
+
+---
+
+## 10. AY 2026-27 Production Filing Harmonization (Finance Act 2025/2026)
+- **Section 115BAC Slabs**: Slabs up to ₹24L+ with standard deduction of ₹75,000 u/s 16(ia).
+- **Section 87A Rebate**: Full tax rebate up to ₹12,00,000 taxable income (max rebate ₹60,000) with marginal relief.
+- **Capital Gains Rates**: Section 112A LTCG @ 12.5% (exemption threshold ₹1.25L); Section 111A STCG @ 20%.
+- **Cost Inflation Index (CII)**: **376** for AY 2026-27.

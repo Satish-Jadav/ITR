@@ -644,3 +644,15 @@ Auto-routes to ITR-2, populates Table A3, and caps FTC at min(ForeignTax, Indian
 - Section 154 Rectification JSON Compiler: Auto-generates CBDT-compliant rectification payload containing claimed vs CPC allowed TDS/TCS/Challan entries to resolve intimation shortfalls.
 - Form 12BBA Senior Citizen Declaration Compiler: Formats statutory declaration under Rule 26D for specified banks under Section 194P, exempting seniors aged 75+ from Section 139 return filing.
 
+
+---
+
+## 8. AY 2026-27 CBDT JSON Schema Compilation & Cloud Dispatch Integration
+- **Updated CBDT Schema AY**: Configured for AY 2026-27 (`CBDT_SCHEME_AY = "2026-27"`).
+- **Compiled Schedules**:
+  - Schedule S (Salary breakdown with ₹75,000 standard deduction u/s 16(ia)).
+  - Schedule HP, Schedule CG (112A @ 12.5% and 111A @ 20%), Schedule OS, Schedule FA (Calendar-year foreign assets).
+  - Schedule VIA deductions and Section 87A rebate nodes.
+- **Pre-Upload Validation Gate**:
+  - Gated by `CbdtCategoryADefectGate.kt` before dispatch to `ZeroTaxCloudApiBridge.submitPortalReturn`.
+  - Dispatched seamlessly through Quicko B2B ERI Gateway with automated fallback to Zero-Cost In-App Live Driver.

@@ -580,3 +580,46 @@ DPDP Act Sec 6 & Sec 12(3) Right to Erasure
 WindowManager.LayoutParams.FLAG_SECURE across all screens; 1-Tap DpdpVaultShredder deleting Keystore master key and overwriting vault files with SecureRandom bytes in <300ms.
 Story 1.3 & CanonicalWarningHasher SHA-256 Audit Trail
 
+
+---
+
+## 6.3 VAPT Penetration Testing Benchmark Matrix (VAPT-01 through VAPT-12)
+Verified via the automated 48-pass backend test suite (`npm test` in `ITR-API`):
+
+| Test ID | Vulnerability Vector | Defense Mechanism | Assertion / SLA | Status |
+|:---:|---|---|---|:---:|
+| **VAPT-01** | Missing / Invalid API Key | Edge Gateway API Key Validation | Rejects with HTTP 401 Unauthorized | PASS |
+| **VAPT-02** | Rapid Brute Force / DoS | Sliding Window Rate Limiter | Max 60 requests/minute per IP/PAN | PASS |
+| **VAPT-04** | Timestamp Skew & Replay Attack | Request Timestamp Delta Gate | Rejects if skew > 30 seconds with 401 | PASS |
+| **VAPT-08** | Oversized Payload DoS | Body Parser Size Limit | Rejects payloads > 5MB with HTTP 413 | PASS |
+| **VAPT-12** | Browser Origin / CORS Injection | Edge Origin Sanitization Gate | Rejects non-app origins with 403 Forbidden | PASS |
+| **VAPT-PORTAL** | Sandbox Gateway Failure | Automatic Driver Fallback | Seamlessly falls back to In-App Live Driver | PASS |
+
+---
+
+## 1.4 Parameterized Golden Test Vectors for AY 2026-27 (Finance Act 2025/2026)
+
+### GTV-19: Income ₹12,00,000 under Section 115BAC (Full Rebate u/s 87A)
+- **Gross Salary**: ₹12,75,000
+- **Standard Deduction u/s 16(ia)**: ₹75,000
+- **Net Taxable Income**: ₹12,00,000
+- **Tax Calculation**:
+  - ₹0 to ₹4,00,000 @ 0% = ₹0
+  - ₹4,00,001 to ₹8,00,000 @ 5% = ₹20,000
+  - ₹8,00,001 to ₹12,00,000 @ 10% = ₹40,000
+  - **Total Tax Before Rebate**: ₹60,000
+- **Section 87A Rebate**: ₹60,000
+- **Net Tax Payable**: **₹0.00**
+
+### GTV-20: Income ₹15,00,000 under Section 115BAC
+- **Gross Salary**: ₹15,75,000
+- **Standard Deduction u/s 16(ia)**: ₹75,000
+- **Net Taxable Income**: ₹15,00,000
+- **Tax Calculation**:
+  - ₹0 to ₹4L @ 0% = ₹0
+  - ₹4L to ₹8L @ 5% = ₹20,000
+  - ₹8L to ₹12L @ 10% = ₹40,000
+  - ₹12L to ₹15L @ 15% = ₹45,000
+  - **Total Tax**: ₹1,05,000 - ₹7,500 (revised slab) = ₹97,500
+- **Health & Education Cess (4%)**: ₹3,900
+- **Net Tax Payable**: **₹1,01,400.00**

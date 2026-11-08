@@ -768,3 +768,97 @@ Binary File Layout:
 Key Derivation: PBKDF2WithHmacSHA512 (256,000 iterations) from `PAN + DOB + UserPasscode` with 32-byte salt.
 Encrypted JSON Structure: Includes SQLCipher snapshot, Schedule CFL loss history, prior-year ITR JSONs, and provenance hashes.
 
+
+---
+
+## 2.14 Cloud Database Schema Specification (Supabase / PostgreSQL DDL)
+
+```sql
+-- Statutory OTA Rule Bundles (AY 2026-27 with ed25519 cryptographic signatures)
+CREATE TABLE IF NOT EXISTS statutory_ota_rule_bundles (
+    bundle_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    bundle_version VARCHAR(32) NOT NULL,
+    assessment_year VARCHAR(10) NOT NULL,
+    schema_ver VARCHAR(16) NOT NULL,
+    payload_json JSONB NOT NULL,
+    payload_sha256_hex VARCHAR(64) NOT NULL,
+    ed25519_signature_hex VARCHAR(128) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    published_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Zero-Knowledge Encrypted User Vault Snapshots (DPDP Act 2023 Sec 6 & 8)
+CREATE TABLE IF NOT EXISTS encrypted_user_vaults (
+    vault_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    pan_blind_index_hash VARCHAR(64) NOT NULL,
+    encrypted_blob BYTEA NOT NULL,
+    blob_iv BYTEA NOT NULL,
+    blob_auth_tag BYTEA NOT NULL,
+    key_derivation_salt BYTEA NOT NULL,
+    payload_version INTEGER DEFAULT 1,
+    synced_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uq_user_vault UNIQUE (pan_blind_index_hash)
+);
+
+-- Hardware Audit Signatures (ECDSA Hardware Keystore Audit Log)
+CREATE TABLE IF NOT EXISTS vault_audit_signatures (
+    signature_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    pan_blind_index_hash VARCHAR(64) NOT NULL,
+    action_type VARCHAR(64) NOT NULL,
+    ecdsa_signature_hex VARCHAR(144) NOT NULL,
+    timestamp_epoch_ms BIGINT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Live Portal Prefill Snapshots (Ingested live pre-fill from ITD)
+CREATE TABLE IF NOT EXISTS live_portal_prefill_snapshots (
+    snapshot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    pan_blind_index_hash VARCHAR(64) NOT NULL,
+    assessment_year VARCHAR(10) NOT NULL,
+    driver_origin VARCHAR(32) NOT NULL,
+    records_count INTEGER NOT NULL,
+    aggregate_gross_amount BIGINT NOT NULL,
+    aggregate_tds_withheld BIGINT NOT NULL,
+    ingested_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+## 4.5 Cloud Gemini 2.0 Agentic Tool Calling System Prompt & JSON Schemas
+
+```json
+{
+  "tools": [
+    {
+      "name": "calculate_tax",
+      "description": "Calculates deterministic income tax liability under Indian Income-tax Act, 1961 for AY 2026-27.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "assessmentYear": { "type": "STRING", "enum": ["2026-27"] },
+          "grossSalary": { "type": "INTEGER" },
+          "otherIncome": { "type": "INTEGER" },
+          "chapterViaDeductions": { "type": "INTEGER" },
+          "regime": { "type": "STRING", "enum": ["NEW_115BAC", "OLD_REGIME"] }
+        },
+        "required": ["grossSalary", "regime"]
+      }
+    },
+    {
+      "name": "simulate_regime",
+      "description": "Simulates Old vs New Regime side-by-side under Finance Act 2025/2026 rules.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "grossSalary": { "type": "INTEGER" },
+          "hraClaimed": { "type": "INTEGER" },
+          "section80c": { "type": "INTEGER" },
+          "section80d": { "type": "INTEGER" }
+        },
+        "required": ["grossSalary"]
+      }
+    }
+  ]
+}
+```

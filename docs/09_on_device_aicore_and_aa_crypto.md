@@ -707,3 +707,16 @@ Enforces 100% byte-for-byte preservation of {{SEC_1}}, {{AMT_1}}, and {{AMT_2}} 
 - Cryptographic Specification: PBKDF2 (HMAC-SHA512 / HMAC-SHA256) with 256,000 iterations deriving a 256-bit AES key from user PAN, Date of Birth, and transfer passcode, seasoned with a 32-byte SecureRandom salt.
 - Authenticated Encryption: AES-256-GCM with a 12-byte IV and 128-bit authentication tag, encrypting GZIP-compressed SQLCipher database snapshots and Schedule CFL provenance metadata for zero-server Android Quick Share / Nearby Share transfers.
 
+
+---
+
+## 8. Neuro-Symbolic Agentic Architecture & Real-Time Account Aggregator
+- **Neuro-Symbolic Agentic Copilot**:
+  - On-Device Gemini Nano handles OCR structuring, document classification, and low-latency extraction without sending bytes off-device.
+  - Cloud Gemini 2.0 via `ITR-API` provides conversational intelligence, tool calling (`calculate_tax`, `simulate_regime`, `ingest_form16`), and statutory RAG for notice defense.
+- **Real-Time RBI Account Aggregator (Setu / Finvu FIU)**:
+  - Ephemeral ECDHE-Curve25519 key generation in volatile memory.
+  - HKDF-SHA256 key derivation and AES-256-GCM in-memory decryption.
+  - Zero-storage scrubbing per DPDP Act §12(3) ensures raw financial buffers are zeroed immediately after schedule totals are computed.
+- **Real-Time Public Statutory Feeds**:
+  - AMFI Mutual Fund NAV, RBI IFSC validation, and SBI TTBR foreign exchange lookup with automatic offline cache fallback.

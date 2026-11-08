@@ -956,3 +956,22 @@ flowchart TD
 - High-trust branding dialog clarifying zero-cloud access under the Digital Personal Data Protection Act, 2023.
 - Side-by-side Transparency Matrix: "What ZeroTax Servers See: Nothing" (0 bytes, no storage, no telemetry) vs "What Stays Protected On-Device" (AES-256-GCM hardware vault, biometric lock, ephemeral RAM tokens).
 - Interactive user consent checkbox and acknowledgement flow confirming local data ownership.
+
+---
+
+## 9.11 Dynamic Gateway Status Badge in Direct Filing UI
+Integrated into `ItdLivePortalSyncModal.kt` and `PortalAssistantScreen.kt`:
+- **Real-Time Driver Detection**: Fetches active gateway status from `ZeroTaxCloudApiBridge.fetchPortalDriverStatus()`.
+- **Badges Rendered**:
+  - `⚡ Quicko B2B ERI Gateway (Sandbox.co.in)` (Enterprise Teal chip)
+  - `🏛️ Official CBDT IEC 2.0 Gateway` (Emerald Green chip)
+  - `🛡️ Zero-Cost In-App Live Driver` (Slate / Shield chip)
+
+---
+
+## 9.12 Conversational Filing Chat Screen (`ConversationalFilingChatScreen.kt`)
+- **Interactive Chat Interface**:
+  - Top bar with real-time vault sync indicator.
+  - Server-Sent Events (SSE) streaming with live markdown rendering.
+  - Interactive tool result cards for side-by-side Old vs New Regime comparison, HRA optimization, and 26AS reconciliation.
+  - Attachment button for instant camera or gallery Form 16 / notice upload.

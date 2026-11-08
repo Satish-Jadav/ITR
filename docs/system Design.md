@@ -291,3 +291,41 @@ Intercepts the edit with Section270AStatutoryOverrideDialog (warning of 50% unde
 - In-App Live ITD Portal Sync Subsystem (`ItdLivePortalSyncModal.kt`): Direct TLS handshake pulling Form 26AS, AIS/TIS, Pre-fill JSON, and refund status in-app with 0 external browser hops.
 - Hardware Biometric Shield Subsystem (`ZeroTaxBiometricShield.kt`): System-level AndroidX BiometricPrompt gate securing sensitive return records with 1-tap lock and countdown notifications.
 
+
+---
+
+## 7. B2B ERI Gateway (Quicko / Sandbox) Sequence & Fallback State Machine
+
+```
+Taxpayer                Android App (ITR)          ITR-API Backend           Sandbox / Quicko
+   |                           |                          |                          |
+   |--- [1] Tap "Submit" ----->|                          |                          |
+   |                           |--- [2] POST /submit ---->|                          |
+   |                           |    (CBDT JSON Payload)   |--- [3] Check Token ----->|
+   |                           |                          |    (Cached JWT valid?)   |
+   |                           |                          |                          |
+   |                           |                          |--- [4] Submit Return --->|
+   |                           |                          |    (x-api-key, auth)     |
+   |                           |                          |                          |
+   |                           |                          |<-- [5a] 200 OK (Ack) ----|
+   |                           |<-- [6a] HTTP 200 (Ack) --|                          |
+   |                           |    (driver: QUICKO_ERI)  |                          |
+   |                           |                          |                          |
+   |                           |                          |-- [5b] 4xx/5xx/Timeout ->|
+   |                           |                          |    [FALLBACK TRIGGERED]  |
+   |                           |                          |--- [6b] In-App Driver -->|
+   |                           |<-- [7b] HTTP 200 (Ack) --|                          |
+   |                           |    (IN_APP_LIVE_DRIVER)  |                          |
+   |<-- [8] Render Ack Badge --|                          |                          |
+```
+
+---
+
+## 8. Dual-Repository Network Topology & Data Contracts
+- **Unified Cloud Endpoints (`ITR-API`)**:
+  - `GET  /api/v1/portal/driver-status`: Returns active gateway priority and fallback status.
+  - `POST /api/v1/portal/otp/request`: Requests Aadhaar OTP for live pre-fill or verification.
+  - `POST /api/v1/portal/otp/verify`: Verifies 6-digit Aadhaar OTP u/s 140A.
+  - `POST /api/v1/portal/submit`: Submits return via Quicko B2B ERI with automated In-App fallback.
+  - `POST /api/v1/portal/everify`: Direct Aadhaar e-verification u/s 140A.
+  - `POST /api/v1/portal/ingest-live-prefill`: Ingests Form 26AS & AIS records into zero-knowledge vault.
