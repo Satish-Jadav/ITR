@@ -38,4 +38,6 @@ object IndianCurrencyFormatter {
     }
 
     fun formatToInr(amount: Long): String = formatRupees(amount)
+
+    fun formatLakhs(amount: Long): String = `in`.zerotax.core.model.Rupee.formatInr(amount)
 }

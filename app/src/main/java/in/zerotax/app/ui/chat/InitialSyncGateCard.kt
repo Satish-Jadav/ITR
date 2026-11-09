@@ -171,7 +171,7 @@ fun PostSyncDiagnosticCard(
                     color = EmeraldSuccess.copy(alpha = 0.15f)
                 ) {
                     Text(
-                        text = uiState.formRoutingDecision.recommendedForm.name.replace("_", "-"),
+                        text = uiState.formRoutingDecision.selectedForm.name.replace("_", "-"),
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,

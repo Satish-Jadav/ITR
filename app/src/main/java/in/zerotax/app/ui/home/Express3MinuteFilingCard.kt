@@ -19,8 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.IndianCurrencyFormatter
 import `in`.zerotax.app.ui.theme.EmeraldSuccess
-import `in`.zerotax.app.ui.theme.Navy800
-import `in`.zerotax.app.ui.theme.Navy900
 import `in`.zerotax.app.viewmodel.ZeroTaxUiState
 
 /**
@@ -42,7 +40,7 @@ fun Express3MinuteFilingCard(
     val refundDue = maxOf(0L, uiState.tdsDeposited26As - bestTax)
     val taxPayable = maxOf(0L, bestTax - uiState.tdsDeposited26As - uiState.totalTaxPaidViaChallan)
 
-    val formName = uiState.formRoutingDecision.recommendedForm.name.replace("_", "-")
+    val formName = uiState.formRoutingDecision.selectedForm.name.replace("_", "-")
     val bankAccountMasked = if (uiState.bankAccount.accountNumber.isNotBlank()) {
         "••••" + uiState.bankAccount.accountNumber.takeLast(4)
     } else "••••4821"

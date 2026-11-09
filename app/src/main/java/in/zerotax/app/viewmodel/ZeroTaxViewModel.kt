@@ -7,6 +7,8 @@ import `in`.zerotax.app.ui.navigation.WorkspaceTab
 import `in`.zerotax.core.model.*
 import `in`.zerotax.feature.pdfunlocker.SilentPdfUnlocker
 import `in`.zerotax.feature.pdfunlocker.DeterministicTracesRegexParser
+import `in`.zerotax.feature.portalbridge.FilingSpeedTelemetryEngine
+import `in`.zerotax.feature.portalbridge.ParallelOnboardingPrefetcher
 import `in`.zerotax.app.ui.components.IndianCurrencyFormatter
 import `in`.zerotax.feature.aiextractor.OfflineWhatIfTaxSimulator
 import `in`.zerotax.feature.aiextractor.ChatMessage
@@ -301,7 +303,7 @@ class ZeroTaxViewModel : ViewModel() {
 
             // Stream 2: TRACES 26AS Ledger
             val discoveredTds = if (bundle.form26AsTdsRecords.isNotEmpty()) {
-                bundle.form26AsTdsRecords.sumOf { it.taxDeductedRupees }
+                bundle.form26AsTdsRecords.fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.tdsWithheld }
             } else _uiState.value.tdsDeposited26As
 
             _uiState.update { state ->
@@ -321,7 +323,7 @@ class ZeroTaxViewModel : ViewModel() {
 
             // Stream 3: Compliance AIS / TIS Data Hub
             val interestVal = if (bundle.aisTisRecords.isNotEmpty()) {
-                bundle.aisTisRecords.filter { it.category == AisCategory.SAVINGS_INTEREST }.sumOf { it.grossAmountRupees }
+                bundle.aisTisRecords.filter { it.category == AisCategory.SAVINGS_INTEREST }.fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.grossAmount }
             } else _uiState.value.savingsInterestRupees
 
             _uiState.update { state ->
@@ -341,7 +343,7 @@ class ZeroTaxViewModel : ViewModel() {
 
             // Stream 4: Dynamic Stream
             val discoveredSalary = if (bundle.form26AsTdsRecords.isNotEmpty()) {
-                bundle.form26AsTdsRecords.filter { it.category == AisCategory.SALARY }.sumOf { it.grossAmountRupees }
+                bundle.form26AsTdsRecords.filter { it.category == AisCategory.SALARY }.fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.grossAmount }
             } else 0L
 
             _uiState.update { state ->
@@ -388,9 +390,9 @@ class ZeroTaxViewModel : ViewModel() {
             recompute()
 
             // Automatically route to required ITR form / plan based on synced financial profile
-            val autoForm = _uiState.value.formRoutingDecision.recommendedForm
+            val autoForm = _uiState.value.formRoutingDecision.selectedForm
             val autoTier = when (autoForm) {
-                ItrFormType.ITR_1 -> FilingTierMode.SAHAJ_SIMPLE
+                ItrFormType.ITR_1_SAHAJ -> FilingTierMode.SAHAJ_SIMPLE
                 ItrFormType.ITR_2 -> FilingTierMode.INVESTOR_PRO
                 else -> FilingTierMode.ENTERPRISE_AUDIT
             }
@@ -660,7 +662,7 @@ class ZeroTaxViewModel : ViewModel() {
 
         for (aa in aaAccounts) {
             if (aa.category == AisCategory.SAVINGS_INTEREST) {
-                extractedSavingsInterest += aa.grossAmountRupees
+                extractedSavingsInterest += aa.grossAmount
             }
         }
 
@@ -1552,7 +1554,7 @@ class ZeroTaxViewModel : ViewModel() {
                             current.copy(
                                 grossSalaryRupees = if (parsed.grossSalary > 0L) parsed.grossSalary else current.grossSalaryRupees,
                                 exemptAllowancesSec10 = if (parsed.exemptHra10_13A > 0L) parsed.exemptHra10_13A else current.exemptAllowancesSec10,
-                                tdsDeposited26As = if (parsed.tdsDeducted192 > 0L) parsed.tdsDeducted192 else current.tdsDeposited26As,
+                                tdsDeposited26As = if (parsed.tdsReported > 0L) parsed.tdsReported else current.tdsDeposited26As,
                                 employerName = parsed.employerName.ifBlank { current.employerName },
                                 employerTan = parsed.employerTan.ifBlank { current.employerTan },
                                 section80CInvestments = if (parsed.sec80C > 0L) parsed.sec80C else current.section80CInvestments,
@@ -1563,7 +1565,7 @@ class ZeroTaxViewModel : ViewModel() {
                         recompute()
                         scheduleCloudSync()
                         kotlinx.coroutines.withContext(Dispatchers.Main) {
-                            onSuccess("Extracted Form 16: ₹${parsed.grossSalary} Gross, ₹${parsed.tdsDeducted192} TDS from ${parsed.employerName}")
+                            onSuccess("Extracted Form 16: ₹${parsed.grossSalary} Gross, ₹${parsed.tdsReported} TDS from ${parsed.employerName}")
                         }
                         return@launch
                     }
