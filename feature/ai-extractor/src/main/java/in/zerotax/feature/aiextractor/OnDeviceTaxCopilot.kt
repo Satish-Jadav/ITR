@@ -1,8 +1,10 @@
-﻿package `in`.zerotax.feature.aiextractor
+package `in`.zerotax.feature.aiextractor
 
 import android.content.Context
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 data class CopilotExplanation(
     val title: String,
@@ -24,11 +26,9 @@ class OnDeviceTaxCopilot(
         query: String,
         locale: SupportedVernacularLocale = SupportedVernacularLocale.ENGLISH_IN
     ): CopilotExplanation = withContext(Dispatchers.Default) {
-        val q = query.trim().lowercase()
-
-                // Live AI-driven contextual statutory reasoning with on-device NPU/Cloud fallback
+        // Live AI-driven contextual statutory reasoning with on-device NPU/Cloud fallback
         val baseExplanation = runCatching {
-            val cloudQuery = in.zerotax.core.security.network.ZeroTaxCloudApiBridge.queryAiCopilot(
+            val cloudQuery = ZeroTaxCloudApiBridge.queryAiCopilot(
                 cleanQuery = query,
                 locale = locale.name.lowercase().replace('_', '-')
             ).getOrNull()
