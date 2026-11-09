@@ -168,26 +168,26 @@ The application enforces a strict directed acyclic graph (DAG) across modules wi
 
 ## 📚 Complete 18-Document Master Inventory (`docs/`)
 
-The repository maintains an authoritative 18-document architectural and regulatory specification in [`docs/`](file:///D:/projects/ITR/docs):
+The repository maintains an authoritative 18-document architectural and regulatory specification in [`docs/`](docs):
 
-1. [`00-Master-Index-And-Roadmap.md`](file:///D:/projects/ITR/docs/00-Master-Index-And-Roadmap.md) — Master Phase-by-Phase Roadmap & Documentation Directory
-2. [`01_product_requirements_document.md`](file:///D:/projects/ITR/docs/01_product_requirements_document.md) — Product Requirements Document (PRD), Personas & KPIs
-3. [`02_user_stories_and_acceptance_criteria.md`](file:///D:/projects/ITR/docs/02_user_stories_and_acceptance_criteria.md) — Gherkin BDD User Stories & Acceptance Criteria
-4. [`03_information_architecture_and_wireframes.md`](file:///D:/projects/ITR/docs/03_information_architecture_and_wireframes.md) — Wireframes, 4-Tap Spine, Toolkit & Analytics UX
-5. [`04_technical_architecture_and_system_design.md`](file:///D:/projects/ITR/docs/04_technical_architecture_and_system_design.md) — Multi-Module Topology, Sub-Engines & Chatbot Design
-6. [`05_database_schema_and_on_device_ai_prompts.md`](file:///D:/projects/ITR/docs/05_database_schema_and_on_device_ai_prompts.md) — 13-Table SQLCipher Schema & On-Device AI Prompts
-7. [`06_qa_golden_test_vectors_and_security.md`](file:///D:/projects/ITR/docs/06_qa_golden_test_vectors_and_security.md) — Golden Calculation Test Vectors (GTV-01..18)
-8. [`07_legal_regulatory_and_compliance.md`](file:///D:/projects/ITR/docs/07_legal_regulatory_and_compliance.md) — Legal Framework, Disclaimers, DPDP 2023 & Cloud Retention
-9. [`08_deterministic_tax_subengines.md`](file:///D:/projects/ITR/docs/08_deterministic_tax_subengines.md) — 14-Gate Form Router, Rule 2A HRA & Sec 234A/B/C
-10. [`09_on_device_aicore_and_aa_crypto.md`](file:///D:/projects/ITR/docs/09_on_device_aicore_and_aa_crypto.md) — AICore Gemini Nano, ReBIT AA RAM Decryptor
-11. [`10_phase_3_schedule_fa_and_cbdt_json_compiler.md`](file:///D:/projects/ITR/docs/10_phase_3_schedule_fa_and_cbdt_json_compiler.md) — Schedule FA, Form 67 Rule 128(5) & CBDT JSON Compiler
-12. [`11_jetpack_compose_ui_4_tap_spine_and_modals.md`](file:///D:/projects/ITR/docs/11_jetpack_compose_ui_4_tap_spine_and_modals.md) — Jetpack Compose 4-Tap Spine & Dialogs
-13. [`12_comprehensive_qa_edge_cases_and_unit_tests.md`](file:///D:/projects/ITR/docs/12_comprehensive_qa_edge_cases_and_unit_tests.md) — QA Edge-Case Matrix (ECV-01..06) & Unit Tests
-14. [`13_production_readiness_checklist_and_ci_pipeline.md`](file:///D:/projects/ITR/docs/13_production_readiness_checklist_and_ci_pipeline.md) — Production Readiness, R8 Full Mode & CI/CD
-15. [`Architecture.md`](file:///D:/projects/ITR/docs/Architecture.md) — Master System Architecture & Pure-JVM Firewall
-16. [`MVP Tech Doc.md`](file:///D:/projects/ITR/docs/MVP%20Tech%20Doc.md) — MVP Technical Specification (CA & Principal Architect Edition)
-17. [`PRD.md`](file:///D:/projects/ITR/docs/PRD.md) — Foundational Product Requirements Document
-18. [`system Design.md`](file:///D:/projects/ITR/docs/system%20Design.md) — Module-by-Module Data Contracts & Memory Lifecycle
+1. `00-Master-Index-And-Roadmap.md` — Master Phase-by-Phase Roadmap & Documentation Directory
+2. `01_product_requirements_document.md` — Product Requirements Document (PRD), Personas & KPIs
+3. `02_user_stories_and_acceptance_criteria.md` — Gherkin BDD User Stories & Acceptance Criteria
+4. `03_information_architecture_and_wireframes.md` — Wireframes, 4-Tap Spine, Toolkit & Analytics UX
+5. `04_technical_architecture_and_system_design.md` — Multi-Module Topology, Sub-Engines & Chatbot Design
+6. `05_database_schema_and_on_device_ai_prompts.md` — 13-Table SQLCipher Schema & On-Device AI Prompts
+7. `06_qa_golden_test_vectors_and_security.md` — Golden Calculation Test Vectors (GTV-01..18)
+8. `07_legal_regulatory_and_compliance.md` — Legal Framework, Disclaimers, DPDP 2023 & Cloud Retention
+9. `08_deterministic_tax_subengines.md` — 14-Gate Form Router, Rule 2A HRA & Sec 234A/B/C
+10. `09_on_device_aicore_and_aa_crypto.md` — AICore Gemini Nano, ReBIT AA RAM Decryptor
+11. `10_phase_3_schedule_fa_and_cbdt_json_compiler.md` — Schedule FA, Form 67 Rule 128(5) & CBDT JSON Compiler
+12. `11_jetpack_compose_ui_4_tap_spine_and_modals.md` — Jetpack Compose 4-Tap Spine & Dialogs
+13. `12_comprehensive_qa_edge_cases_and_unit_tests.md` — QA Edge-Case Matrix (ECV-01..06) & Unit Tests
+14. `13_production_readiness_checklist_and_ci_pipeline.md` — Production Readiness, R8 Full Mode & CI/CD
+15. `Architecture.md` — Master System Architecture & Pure-JVM Firewall
+16. `MVP Tech Doc.md` — MVP Technical Specification (CA & Principal Architect Edition)
+17. `PRD.md` — Foundational Product Requirements Document
+18. `system Design.md` — Module-by-Module Data Contracts & Memory Lifecycle
 
 ---
 
@@ -214,9 +214,49 @@ All tax calculation and statutory deduction sub-engines reside in `:core:tax-eng
 ./gradlew :feature:portal-bridge:test
 ```
 
+### Assembling the Compact Release APK
+The project is optimized for minimal binary size and maximum battery/execution efficiency:
+
+```bash
+./gradlew :app:assembleRelease
+```
+
+**Binary Size Optimization Features:**
+- **R8 Full-Mode Tree Shaking:** Eliminates dead code paths and performs deep inlining across all 9 internal modules and external dependencies.
+- **Resource Shrinking:** Automatically strips unreferenced Compose vectors, drawables, and strings.
+- **Physical ARM ABI Filters:** Confines native binary architectures to `arm64-v8a` and `armeabi-v7a`, shedding bulky x86 emulator `.so` files from SQLCipher and ML Kit.
+- **Output Artifact:** `app/build/outputs/apk/release/app-release.apk` (pre-signed and ready for direct sideloading or distribution).
+
+---
+
+## 🚀 Continuous Delivery & Automated Client Distribution
+
+The repository includes a production-grade CI/CD pipeline ([`.github/workflows/zerotax-ci.yml`](.github/workflows/zerotax-ci.yml)) with automated, zero-cost beta distribution via **Firebase App Distribution**.
+
+### How Automated Client Delivery Works:
+1. **Push to `main` / `master`:** Every `git push` triggers the pipeline on GitHub Actions.
+2. **Automated Verification:** The workflow executes the full pure-JVM JUnit 5 test suite, security tests, lint analyzers, and Room schema checks.
+3. **Release Compilation:** Builds the compact release APK with full R8 optimizations.
+4. **Instant Firebase Distribution:** The APK is uploaded to the **`clients`** tester group in Firebase App Distribution.
+5. **Instant Client Alert:** Firebase automatically sends an email to all testers in the `clients` group with a 1-tap download and install link.
+
+### Required GitHub Repository Secrets
+To activate automated delivery, configure the following secrets in your repository (**Settings ➔ Secrets and variables ➔ Actions**):
+
+| Secret Name | Description | Source |
+|---|---|---|
+| `FIREBASE_APP_ID` | Unique identifier for `in.zerotax.app` | Firebase Console ➔ Project Settings ➔ Your Apps |
+| `FIREBASE_SERVICE_ACCOUNT` | Google Cloud Service Account JSON Key | Firebase Console ➔ Project Settings ➔ Service Accounts ➔ Generate new private key |
+
+### Managing Client Testers
+To add or remove clients who receive automatic APK updates:
+1. Open the [Firebase Console](https://console.firebase.google.com).
+2. Navigate to **App Distribution ➔ Testers & Groups**.
+3. Under the **Groups** tab, select the **`clients`** group.
+4. Add the client's email address. No code changes or redeployments required!
+
 ---
 
 ## ⚖️ License & Statutory Disclaimer
 
 ZeroTax-Local is a self-directed client software utility. It is not a registered Chartered Accountant firm under the Chartered Accountants Act, 1949, nor an advocate practice under the Advocates Act, 1961. The user acts as a self-filer under Section 140 of the Income-tax Act, 1961 and assumes sole responsibility for all declarations and returns filed.
-
