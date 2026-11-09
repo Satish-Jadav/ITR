@@ -36,6 +36,11 @@ object FilingSpeedTelemetryEngine {
         ZeroTaxLogger.i(TAG, "Stopwatch STARTED: Sync initiated at $syncStartEpochMs for $itrType")
     }
 
+    fun markSyncCompleted() {
+        val elapsedSec = if (syncStartEpochMs > 0L) (System.currentTimeMillis() - syncStartEpochMs) / 1000.0 else 0.0
+        ZeroTaxLogger.i(TAG, "Sync completed in " + elapsedSec + "s")
+    }
+
     fun markSubmissionCompleted() {
         submissionEpochMs = System.currentTimeMillis()
         val elapsedSec = (submissionEpochMs - syncStartEpochMs) / 1000.0

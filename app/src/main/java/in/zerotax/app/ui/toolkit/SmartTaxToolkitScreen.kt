@@ -84,7 +84,7 @@ fun SmartTaxToolkitScreen(
     taxLiability: Long,
     tdsClaimed: Long,
     onBack: () -> Unit,
-    viewModel: in.zerotax.app.viewmodel.ZeroTaxViewModel? = null,
+    viewModel: `in`.zerotax.app.viewmodel.ZeroTaxViewModel? = null,
     modifier: Modifier = Modifier
 ) {
     val liveUiState = viewModel?.uiState?.collectAsState()?.value

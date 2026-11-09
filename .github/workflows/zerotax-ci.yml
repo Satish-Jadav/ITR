@@ -46,9 +46,16 @@ jobs:
       - name: Build Encrypted SQLCipher 4.5.x Room Database & Verify Schema Export
         run: ./gradlew :core:database:assembleDebug :core:security:assembleDebug
 
-      - name: Compile Release Signed App Bundle (AAB) with R8 Full Mode
-        env:
-          SIGNING_KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
-          SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew :app:bundleRelease
+      - name: Build Compact Release APK with R8 Full Mode
+        run: ./gradlew :app:assembleRelease
+
+      - name: Distribute Release APK to Client via Firebase
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          groups: clients
+          file: app/build/outputs/apk/release/app-release.apk
+          releaseNotes: "Automated ZeroTax release build from commit ${{ github.sha }}"

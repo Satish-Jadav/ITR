@@ -1,6 +1,7 @@
-import in.zerotax.app.ui.portal.ItdAndAaOtpAutoReader
-import in.zerotax.core.security.network.ZeroTaxCloudApiBridge
 package `in`.zerotax.app.ui.portal
+
+import `in`.zerotax.feature.portalbridge.ItdAndAaOtpAutoReader
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
 
 import `in`.zerotax.app.ui.components.ZeroTaxOutlinedButton
 import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton

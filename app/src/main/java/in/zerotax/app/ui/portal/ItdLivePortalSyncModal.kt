@@ -1,6 +1,7 @@
 package `in`.zerotax.app.ui.portal
 
 import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
+import `in`.zerotax.feature.portalbridge.ItdAndAaOtpAutoReader
 import org.json.JSONObject
 import org.json.JSONArray
 
@@ -307,6 +308,8 @@ fun ItdLivePortalSyncModal(
 
         Spacer(Modifier.height(14.dp))
 
+        when (currentStep) {
+            PortalSyncStep.SELECT_AUTH_METHOD -> {
                 // Method Selector
                 Row(
                     modifier = Modifier.fillMaxWidth(),

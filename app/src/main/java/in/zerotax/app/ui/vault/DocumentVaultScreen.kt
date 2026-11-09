@@ -1,4 +1,4 @@
-package in.zerotax.app.ui.vault
+package `in`.zerotax.app.ui.vault
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,9 +24,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import in.zerotax.app.ui.components.*
-import in.zerotax.app.ui.theme.*
-import in.zerotax.app.viewmodel.ZeroTaxViewModel
+import `in`.zerotax.app.ui.components.*
+import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
 
 data class VaultDocumentItem(
     val id: String,
