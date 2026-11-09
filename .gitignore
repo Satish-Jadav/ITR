@@ -81,3 +81,5 @@ temp_interactive_push.bat
 .gitignore
 
 .kotlin/
+config.bat
+node_modules

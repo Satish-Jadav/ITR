@@ -9,7 +9,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "in.zerotax.app"
+        applicationId = "in.zerotax"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
