@@ -8,6 +8,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import `in`.zerotax.core.model.BankAccountDetails
 
 /**
  * High-level Android SDK Bridge to the ZeroTax Cloud API.
@@ -833,7 +834,7 @@ object ZeroTaxCloudApiBridge {
     suspend fun submitPortalReturn(
         pan: String,
         cbdtJsonPayload: String,
-        bankAccount: in.zerotax.core.model.BankAccountDetails? = null,
+        bankAccount: BankAccountDetails? = null,
         assessmentYear: String = "2026-27"
     ): Result<JSONObject> = withContext(Dispatchers.IO) {
         val cleanPan = pan.trim().uppercase()
