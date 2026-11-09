@@ -27,6 +27,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Adapt Gradle properties for Linux Runner
+        run: sed -i '/org.gradle.java.home/d' gradle.properties
+
       - name: Verify Pure-JVM Architectural Firewall in :core:tax-engine
         run: |
           if grep -rnE "import (android\.|androidx\.|com\.google\.ai\.edge\.aicore)" core/tax-engine/src/main/; then
