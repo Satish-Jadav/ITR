@@ -212,8 +212,8 @@ fun ItdOfficialWebLoginSheet(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Single button visible at bottom right: Fetch Live Data
-                ExtendedFloatingActionButton(
+                // Single button visible at bottom right: Icon-only Sync FAB
+                FloatingActionButton(
                     onClick = {
                         if (!isFetchingRecords) {
                             isFetchingRecords = true
@@ -238,32 +238,22 @@ fun ItdOfficialWebLoginSheet(
                         .padding(end = 16.dp, bottom = 20.dp),
                     containerColor = EnterpriseTeal600,
                     contentColor = Color.White,
-                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp),
-                    icon = {
-                        if (isFetchingRecords) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color = Color.White
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Sync,
-                                contentDescription = "Fetch Live Data",
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    },
-                    text = {
-                        Text(
-                            text = if (isFetchingRecords) "Fetching Live Data..." else "Fetch Live Data",
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
+                ) {
+                    if (isFetchingRecords) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.5.dp,
+                            color = Color.White
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Sync,
+                            contentDescription = "Fetch Live Data & Sync",
+                            modifier = Modifier.size(24.dp)
                         )
                     }
-                )
+                }
             }
         }
     }

@@ -606,12 +606,11 @@ private fun TrustAndAuthStepView(
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
         )
         Surface(
+            onClick = { executeIfVerified { onStartHydration() } },
             shape = RoundedCornerShape(10.dp),
             color = if (isDark) Slate850 else PaletteSurface,
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { executeIfVerified { onStartHydration() } }
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier.padding(14.dp),
@@ -634,12 +633,11 @@ private fun TrustAndAuthStepView(
             }
         }
         Surface(
+            onClick = { executeIfVerified { onLaunchWebLogin() } },
             shape = RoundedCornerShape(10.dp),
             color = if (isDark) Slate850 else PaletteSurface,
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { executeIfVerified { onLaunchWebLogin() } }
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier.padding(14.dp),
@@ -662,12 +660,11 @@ private fun TrustAndAuthStepView(
             }
         }
         Surface(
+            onClick = { executeIfVerified { docLauncher.launch(arrayOf("application/pdf")) } },
             shape = RoundedCornerShape(10.dp),
             color = if (isDark) Slate850 else PaletteSurface,
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { executeIfVerified { docLauncher.launch(arrayOf("application/pdf")) } }
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier.padding(14.dp),
@@ -690,12 +687,11 @@ private fun TrustAndAuthStepView(
             }
         }
         Surface(
+            onClick = { executeIfVerified { onAaSync() } },
             shape = RoundedCornerShape(10.dp),
             color = if (isDark) Slate850 else PaletteSurface,
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { executeIfVerified { onAaSync() } }
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier.padding(14.dp),
