@@ -144,10 +144,14 @@ class MainActivity : FragmentActivity() {
         }
 
         val prompt = BiometricPrompt(this, executor, callback)
-        if (biometricCipher != null) {
-            prompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(biometricCipher))
-        } else {
-            prompt.authenticate(promptInfo)
+        try {
+            if (biometricCipher != null) {
+                prompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(biometricCipher))
+            } else {
+                prompt.authenticate(promptInfo)
+            }
+        } catch (e: Exception) {
+            viewModel.signInWithBiometrics(null)
         }
     }
 }

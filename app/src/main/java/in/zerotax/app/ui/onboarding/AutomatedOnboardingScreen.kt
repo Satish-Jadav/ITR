@@ -420,6 +420,7 @@ private fun TrustAndAuthStepView(
             label = { Text("PAN Number (10 characters)") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            isError = pan.isNotEmpty() && !isPanValid,
             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
             trailingIcon = {
@@ -434,7 +435,7 @@ private fun TrustAndAuthStepView(
                 }
             },
             supportingText = {
-                if (pan.length == 10) {
+                if (pan.isNotEmpty()) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -446,7 +447,11 @@ private fun TrustAndAuthStepView(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "Detected: ${panEntity.entityType.title} (${panEntity.statusSummary})",
+                            text = if (isPanValid) {
+                                "${panEntity.entityType.title} (Eligible for ITR-1, ITR-2, ITR-4)"
+                            } else {
+                                "Invalid PAN format (${pan.length}/10). Must be 5 letters, 4 numbers, 1 letter."
+                            },
                             color = if (isPanValid) EmeraldSuccess else CrimsonDanger,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -527,6 +532,7 @@ private fun TrustAndAuthStepView(
         ZeroTaxPrimaryButton(
             text = "Start Automated Data Hydration",
             onClick = onStartHydration,
+            enabled = isPanValid,
             modifier = Modifier.fillMaxWidth()
         )
     }
