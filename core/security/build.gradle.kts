@@ -28,6 +28,7 @@ android {
 
 dependencies {
     implementation(project(":core:model"))
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
