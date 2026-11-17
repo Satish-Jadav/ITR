@@ -29,15 +29,20 @@
 }
 
 # R8 Full Mode Aggressive Size Optimizations
--optimizationpasses 5
+-optimizationpasses 2
 -allowaccessmodification
 -repackageclasses ''
+-dontnote **
 
 # Kotlin Metadata & Coroutine Debugger Stripping (Saves ~1.5MB)
 -dontwarn kotlin.**
 -dontwarn kotlinx.coroutines.**
 -assumenosideeffects class kotlinx.coroutines.DebugKt {
     public static boolean getDEBUG();
+}
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    public static void checkNotNullParameter(...);
+    public static void checkExpressionValueIsNotNull(...);
 }
 
 # Jetpack Compose Size Hardening

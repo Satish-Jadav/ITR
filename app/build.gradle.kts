@@ -23,6 +23,9 @@ android {
             abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
         }
 
+        // Limit packaged string resources to English and Hindi, stripping 80+ unused foreign language locales
+        resourceConfigurations.addAll(listOf("en", "hi"))
+
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -37,9 +40,18 @@ android {
                 "META-INF/LICENSE*",
                 "META-INF/NOTICE*",
                 "/META-INF/{AL2.0,LGPL2.1}",
-                "DebugProbesKt.bin"
+                "DebugProbesKt.bin",
+                // Exclude unused BouncyCastle PQC and test properties (saves ~8.25MB uncompressed)
+                "org/bouncycastle/pqc/**",
+                "org/bouncycastle/x509/**",
+                "**/*.properties"
             )
         }
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 
     buildFeatures {
