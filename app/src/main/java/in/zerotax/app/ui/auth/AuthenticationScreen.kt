@@ -24,8 +24,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -48,7 +50,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AuthenticationScreen(
     onAuthenticationSuccess: (UserAuthProfile) -> Unit,
-    onSignInWithEmail: (email: String, password: String, isSignUp: Boolean, name: String) -> Unit,
+    onSignInWithEmail: (loginId: String, password: String, isSignUp: Boolean, name: String, pan: String?) -> Unit,
     onSignInWithGoogle: (idToken: String, email: String, name: String) -> Unit,
     onBiometricUnlock: () -> Unit,
     onLaunchCaPortal: () -> Unit = {},
@@ -101,6 +103,7 @@ fun AuthenticationScreen(
     var showGoogleAccountPicker by remember { mutableStateOf(false) }
 
     var emailInput by remember { mutableStateOf("") }
+    var panInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
     var fullNameInput by remember { mutableStateOf("") }
     var isSignUpMode by remember { mutableStateOf(false) }
@@ -307,14 +310,51 @@ fun AuthenticationScreen(
                         label = "Full Name"
                     )
                     Spacer(Modifier.height(8.dp))
-                }
 
-                ZeroTaxTextField(
-                    value = emailInput,
-                    onValueChange = { emailInput = it },
-                    label = "Email Address",
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                )
+                    val cleanPan = panInput.uppercase().trim().take(10)
+                    val isPanFormatValid = cleanPan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$"))
+                    ZeroTaxTextField(
+                        value = panInput,
+                        onValueChange = { panInput = it.take(10).uppercase().trim() },
+                        label = "PAN (Your Unique Login ID)",
+                        placeholder = "e.g. ABCDE1234F",
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
+                    )
+                    if (panInput.isNotEmpty()) {
+                        Spacer(Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isPanFormatValid) Icons.Default.CheckCircle else Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = if (isPanFormatValid) EmeraldSuccess else CrimsonDanger,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = if (isPanFormatValid) "Valid PAN structure • Verified with ITR on submit" else "Must be 10 characters (5 letters, 4 digits, 1 letter)",
+                                style = TextStyle(fontSize = 11.sp, color = if (isPanFormatValid) EmeraldSuccess else CrimsonDanger, fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+
+                    ZeroTaxTextField(
+                        value = emailInput,
+                        onValueChange = { emailInput = it },
+                        label = "Email Address",
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                    )
+                } else {
+                    ZeroTaxTextField(
+                        value = emailInput,
+                        onValueChange = { emailInput = it },
+                        label = "Login ID (PAN or Email)",
+                        placeholder = "e.g. ABCDE1234F or you@domain.com",
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                    )
+                }
 
                 Spacer(Modifier.height(8.dp))
 
@@ -332,12 +372,19 @@ fun AuthenticationScreen(
 
                 Spacer(Modifier.height(14.dp))
 
+                val cleanPanForCheck = panInput.trim().uppercase()
+                val isFormValid = if (isSignUpMode) {
+                    fullNameInput.isNotBlank() && emailInput.isNotBlank() && cleanPanForCheck.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$")) && passwordInput.length >= 6
+                } else {
+                    emailInput.isNotBlank() && passwordInput.isNotBlank()
+                }
+
                 ZeroTaxPrimaryButton(
-                    text = if (isSignUpMode) "Register & Sync Vault" else "Sign In & Sync Vault",
+                    text = if (isSignUpMode) "Verify with ITR & Register" else "Sign In with PAN / Email",
                     onClick = {
-                        onSignInWithEmail(emailInput, passwordInput, isSignUpMode, fullNameInput)
+                        onSignInWithEmail(emailInput, passwordInput, isSignUpMode, fullNameInput, if (isSignUpMode) panInput.uppercase().trim() else null)
                     },
-                    enabled = emailInput.isNotBlank() && passwordInput.isNotBlank() && !isLoading
+                    enabled = isFormValid && !isLoading
                 )
 
                 Spacer(Modifier.height(8.dp))

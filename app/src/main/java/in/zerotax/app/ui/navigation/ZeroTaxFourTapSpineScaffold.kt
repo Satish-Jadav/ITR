@@ -431,6 +431,11 @@ fun ZeroTaxFourTapSpineScaffold(
                         filingTier = uiState.filingTierMode,
                         hasPlanExplicitlySelected = uiState.hasPlanExplicitlySelected,
                         onTierSelected = { viewModel.onFilingTierChanged(it) },
+                        isPanVerifying = uiState.isPanVerifying,
+                        isPanVerifiedWithItr = uiState.isPanVerifiedWithItr,
+                        panVerificationError = uiState.panVerificationError,
+                        taxpayerFullName = uiState.taxpayerFullName,
+                        onVerifyPanWithItr = { viewModel.verifyPanWithItr() },
                         livePortalStatus = uiState.livePortalStatus,
                         livePortalLatencyMs = uiState.livePortalLatencyMs,
                         isLiveApiConnected = uiState.isLiveApiConnected,
@@ -617,6 +622,11 @@ private fun Stage1IdentityConsent(
     filingTier: FilingTierMode,
     hasPlanExplicitlySelected: Boolean,
     onTierSelected: (FilingTierMode) -> Unit,
+    isPanVerifying: Boolean = false,
+    isPanVerifiedWithItr: Boolean = false,
+    panVerificationError: String? = null,
+    taxpayerFullName: String = "",
+    onVerifyPanWithItr: () -> Unit = {},
     livePortalStatus: String = "HEALTHY",
     livePortalLatencyMs: Long = 1420L,
     isLiveApiConnected: Boolean = true,
@@ -627,7 +637,7 @@ private fun Stage1IdentityConsent(
     onOpenChatbot: () -> Unit = {}
 ) {
     val isPanValid = pan.length == 10 && (pan[3] == 'P' || pan[3] == 'H')
-    val canProceed = isPanValid
+    val canProceed = isPanValid && isPanVerifiedWithItr
 
     Column(
         modifier = Modifier
@@ -693,6 +703,69 @@ private fun Stage1IdentityConsent(
             onPanChanged = onPanChanged
         )
 
+        // ITR PAN Verification status block
+        if (isPanVerifying) {
+            Spacer(Modifier.height(6.dp))
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = EnterpriseTeal50,
+                border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = EnterpriseTeal600)
+                    Text("Verifying PAN with Income Tax Department records...", style = TextStyle(fontSize = 11.sp, color = EnterpriseTeal700, fontWeight = FontWeight.SemiBold))
+                }
+            }
+        } else if (isPanVerifiedWithItr) {
+            Spacer(Modifier.height(6.dp))
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = EmeraldSuccessBg,
+                border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(Icons.Default.CheckCircle, null, tint = EmeraldSuccess, modifier = Modifier.size(18.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "✓ Verified with ITD: ${taxpayerFullName.ifBlank { "Active Taxpayer" }}",
+                            style = TextStyle(fontSize = 12.sp, color = EmeraldSuccess, fontWeight = FontWeight.Bold)
+                        )
+                        Text("CBDT Status: VALID • Linked to ZeroTax Vault", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                    }
+                }
+            }
+        } else if (!panVerificationError.isNullOrBlank()) {
+            Spacer(Modifier.height(6.dp))
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = CrimsonDanger.copy(alpha = 0.08f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, CrimsonDanger),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(Icons.Default.ErrorOutline, null, tint = CrimsonDanger, modifier = Modifier.size(18.dp))
+                    Text(panVerificationError, style = TextStyle(fontSize = 11.sp, color = CrimsonDanger), modifier = Modifier.weight(1f))
+                    TextButton(onClick = onVerifyPanWithItr) {
+                        Text("Retry", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CrimsonDanger))
+                    }
+                }
+            }
+        }
+
         Spacer(Modifier.height(12.dp))
 
         CitizenCategoryAgeSelector(
@@ -715,9 +788,20 @@ private fun Stage1IdentityConsent(
 
         // Primary Action CTA (Prominently placed right below core inputs)
         ZeroTaxPrimaryButton(
-            text = if (!isPanValid) "Enter Valid PAN to Continue" else "Continue to Step 2: Income (" + filingTier.title + ") →",
-            onClick = onProceed,
-            enabled = canProceed
+            text = when {
+                !isPanValid -> "Enter Valid 10-Digit PAN"
+                isPanVerifying -> "Verifying PAN with Income Tax Dept..."
+                !isPanVerifiedWithItr -> "Verify PAN with ITR to Proceed →"
+                else -> "Continue to Step 2: Income (" + filingTier.title + ") →"
+            },
+            onClick = {
+                if (isPanVerifiedWithItr) {
+                    onProceed()
+                } else {
+                    onVerifyPanWithItr()
+                }
+            },
+            enabled = isPanValid && !isPanVerifying
         )
 
         Spacer(Modifier.height(14.dp))

@@ -48,7 +48,8 @@ object ZeroTaxAuthSecurityManager {
                         passwordHash = obj.getString("passwordHash"),
                         salt = obj.getString("salt"),
                         authProvider = AuthProvider.valueOf(obj.getString("authProvider")),
-                        isVerified = obj.getBoolean("isVerified")
+                        isVerified = obj.getBoolean("isVerified"),
+                        pan = obj.optString("pan").takeIf { it.isNotBlank() }
                     )
                 } catch (_: Exception) {}
             }
@@ -67,6 +68,9 @@ object ZeroTaxAuthSecurityManager {
             put("salt", record.salt)
             put("authProvider", record.authProvider.name)
             put("isVerified", record.isVerified)
+            if (!record.pan.isNullOrBlank()) {
+                put("pan", record.pan)
+            }
         }
         prefs.edit().putString(record.email, obj.toString()).apply()
     }
@@ -78,27 +82,45 @@ object ZeroTaxAuthSecurityManager {
         val passwordHash: String,
         val salt: String,
         val authProvider: AuthProvider,
-        val isVerified: Boolean
+        val isVerified: Boolean,
+        val pan: String? = null
     )
 
     fun getActiveSession(): UserAuthProfile? = activeUserSession
 
     fun isAuthenticated(): Boolean = activeUserSession != null
 
-    suspend fun signInWithEmail(emailRaw: String, passwordRaw: String): Result<UserAuthProfile> = withContext(Dispatchers.Default) {
-        val email = emailRaw.trim().lowercase()
-        if (!EMAIL_REGEX.matches(email)) {
-            return@withContext Result.failure(IllegalArgumentException("Please enter a valid email address."))
+    fun linkPanToActiveUser(pan: String) {
+        val cleanPan = pan.trim().uppercase()
+        val current = activeUserSession ?: return
+        val existing = localUserRegistry[current.email]
+        if (existing != null) {
+            val updated = existing.copy(pan = cleanPan)
+            persistUser(updated)
+        }
+        activeUserSession = current.copy(primaryPanLinked = cleanPan)
+    }
+
+    suspend fun signInWithEmail(emailRaw: String, passwordRaw: String): Result<UserAuthProfile> =
+        signInWithLoginId(emailRaw, passwordRaw)
+
+    suspend fun signInWithLoginId(loginIdRaw: String, passwordRaw: String): Result<UserAuthProfile> = withContext(Dispatchers.Default) {
+        val loginId = loginIdRaw.trim()
+        val isPan = loginId.matches(Regex("^[A-Za-z]{5}[0-9]{4}[A-Za-z]$"))
+        val isEmail = EMAIL_REGEX.matches(loginId.lowercase())
+
+        if (!isPan && !isEmail) {
+            return@withContext Result.failure(IllegalArgumentException("Please enter a valid Login ID (10-character PAN or Email)."))
         }
         if (passwordRaw.length < 6) {
             return@withContext Result.failure(IllegalArgumentException("Password must be at least 6 characters."))
         }
 
-        // VUL-03 FIX: sign-in must NEVER auto-provision new accounts.
-        // Unknown emails receive a failure, not silent registration.
-        val existing = localUserRegistry[email]
+        // Look up by Email key or by PAN field across records
+        val existing = localUserRegistry[loginId.lowercase()]
+            ?: localUserRegistry.values.find { it.pan.equals(loginId, ignoreCase = true) }
             ?: return@withContext Result.failure(
-                IllegalArgumentException("No account found for this email. Please sign up first.")
+                IllegalArgumentException("No account found for '$loginId'. Please sign up first.")
             )
 
         val computedHash = hashPassword(passwordRaw, existing.salt)
@@ -112,21 +134,31 @@ object ZeroTaxAuthSecurityManager {
             displayName = existing.displayName,
             authProvider = AuthProvider.EMAIL_PASSWORD,
             isEmailVerified = existing.isVerified,
-            lastLoginEpochMs = System.currentTimeMillis()
+            lastLoginEpochMs = System.currentTimeMillis(),
+            primaryPanLinked = existing.pan
         )
         activeUserSession = profile
         Result.success(profile)
     }
 
-    suspend fun signUpWithEmail(emailRaw: String, passwordRaw: String, fullNameRaw: String): Result<UserAuthProfile> = withContext(Dispatchers.Default) {
+    suspend fun signUpWithEmail(
+        emailRaw: String,
+        passwordRaw: String,
+        fullNameRaw: String,
+        panRaw: String? = null
+    ): Result<UserAuthProfile> = withContext(Dispatchers.Default) {
         val email = emailRaw.trim().lowercase()
         val fullName = fullNameRaw.trim()
+        val cleanPan = panRaw?.trim()?.uppercase()
 
         if (!EMAIL_REGEX.matches(email)) {
             return@withContext Result.failure(IllegalArgumentException("Please enter a valid email address."))
         }
         if (fullName.length < 2) {
             return@withContext Result.failure(IllegalArgumentException("Please enter your full name."))
+        }
+        if (!cleanPan.isNullOrBlank() && !cleanPan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$"))) {
+            return@withContext Result.failure(IllegalArgumentException("Invalid PAN format. Must be 10 characters (5 letters, 4 numbers, 1 letter)."))
         }
         if (passwordRaw.length < 6) {
             return@withContext Result.failure(IllegalArgumentException("Password must be at least 6 characters."))
@@ -143,7 +175,8 @@ object ZeroTaxAuthSecurityManager {
             passwordHash = hash,
             salt = salt,
             authProvider = AuthProvider.EMAIL_PASSWORD,
-            isVerified = true
+            isVerified = true,
+            pan = cleanPan
         )
         persistUser(userRecord)
 
@@ -153,7 +186,8 @@ object ZeroTaxAuthSecurityManager {
             displayName = fullName,
             authProvider = AuthProvider.EMAIL_PASSWORD,
             isEmailVerified = true,
-            lastLoginEpochMs = System.currentTimeMillis()
+            lastLoginEpochMs = System.currentTimeMillis(),
+            primaryPanLinked = cleanPan
         )
         activeUserSession = profile
         Result.success(profile)

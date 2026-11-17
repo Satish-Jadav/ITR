@@ -76,8 +76,8 @@ class MainActivity : FragmentActivity() {
                             } else if (!isAuthenticated) {
                                 AuthenticationScreen(
                                     onAuthenticationSuccess = { /* state handled in viewModel */ },
-                                    onSignInWithEmail = { email, password, isSignUp, name ->
-                                        viewModel.signInWithEmail(email, password, isSignUp, name)
+                                    onSignInWithEmail = { loginId, password, isSignUp, name, pan ->
+                                        viewModel.signInWithLoginId(loginId, password, isSignUp, name, pan)
                                     },
                                     onSignInWithGoogle = { idToken, email, name ->
                                         viewModel.signInWithGoogle(idToken, email, name)

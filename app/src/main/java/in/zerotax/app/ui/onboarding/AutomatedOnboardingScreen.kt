@@ -96,7 +96,12 @@ fun AutomatedOnboardingScreen(
                     OnboardingWizardStep.TRUST_AND_AUTH -> {
                         TrustAndAuthStepView(
                             pan = uiState.pan,
+                            taxpayerFullName = uiState.taxpayerFullName,
+                            isPanVerifying = uiState.isPanVerifying,
+                            isPanVerifiedWithItr = uiState.isPanVerifiedWithItr,
+                            panVerificationError = uiState.panVerificationError,
                             onPanChanged = { viewModel.onPanChanged(it) },
+                            onVerifyPanWithItr = { viewModel.verifyPanWithItr() },
                             onStartHydration = { viewModel.startDynamicHydrationRadar() },
                             onLaunchWebLogin = { showWebLoginSheet = true },
                             onDocumentIngested = { bytes, fName ->
@@ -387,7 +392,12 @@ private fun PlanSelectionStepView(
 @Composable
 private fun TrustAndAuthStepView(
     pan: String,
+    taxpayerFullName: String,
+    isPanVerifying: Boolean,
+    isPanVerifiedWithItr: Boolean,
+    panVerificationError: String?,
     onPanChanged: (String) -> Unit,
+    onVerifyPanWithItr: () -> Unit,
     onStartHydration: () -> Unit,
     onLaunchWebLogin: () -> Unit,
     onDocumentIngested: (ByteArray, String) -> Unit = { _, _ -> },
@@ -400,6 +410,14 @@ private fun TrustAndAuthStepView(
     val context = androidx.compose.ui.platform.LocalContext.current
     var uploadStatusMessage by remember { mutableStateOf<String?>(null) }
 
+    val executeIfVerified: (() -> Unit) -> Unit = { action ->
+        if (isPanVerifiedWithItr) {
+            action()
+        } else {
+            onVerifyPanWithItr()
+        }
+    }
+
     val docLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.OpenMultipleDocuments()
     ) { uris ->
@@ -409,12 +427,12 @@ private fun TrustAndAuthStepView(
                 try {
                     val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
                     if (bytes != null && bytes.isNotEmpty()) {
-                        onDocumentIngested(bytes, fName)
+                        executeIfVerified { onDocumentIngested(bytes, fName) }
                     } else {
-                        onStartHydration()
+                        executeIfVerified { onStartHydration() }
                     }
                 } catch (_: Exception) {
-                    onStartHydration()
+                    executeIfVerified { onStartHydration() }
                 }
             }
         }
@@ -445,14 +463,24 @@ private fun TrustAndAuthStepView(
             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
             trailingIcon = {
-                IconButton(onClick = {
-                    // QR Scanner trigger
-                }) {
+                if (isPanVerifying) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = EnterpriseTeal500)
+                } else if (isPanVerifiedWithItr) {
                     Icon(
-                        imageVector = Icons.Default.QrCodeScanner,
-                        contentDescription = "Scan e-PAN or Aadhaar QR Code",
-                        tint = EnterpriseTeal500
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Verified with ITR",
+                        tint = EmeraldSuccess
                     )
+                } else {
+                    IconButton(onClick = {
+                        // QR Scanner trigger
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.QrCodeScanner,
+                            contentDescription = "Scan e-PAN or Aadhaar QR Code",
+                            tint = EnterpriseTeal500
+                        )
+                    }
                 }
             },
             supportingText = {
@@ -481,6 +509,97 @@ private fun TrustAndAuthStepView(
             }
         )
 
+        // Real-Time ITR Verification State Display
+        if (isPanVerifying) {
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = if (isDark) Slate850 else EnterpriseTeal50,
+                border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = EnterpriseTeal500)
+                    Column {
+                        Text(
+                            text = "Verifying PAN with Income Tax Department...",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
+                        )
+                        Text(
+                            text = "Querying live CBDT/NSDL taxpayer registry",
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                    }
+                }
+            }
+        } else if (isPanVerifiedWithItr) {
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = if (isDark) EmeraldSuccessBgDark else EmeraldSuccessBg,
+                border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(Icons.Default.Verified, null, tint = EmeraldSuccess, modifier = Modifier.size(24.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "ITR Verified: ${taxpayerFullName.ifBlank { "Active Taxpayer" }}",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = if (isDark) EmeraldSuccess else EmeraldDark)
+                        )
+                        Text(
+                            text = "Status: VALID • Active on CBDT / Income Tax portal records",
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                    }
+                    StatutoryBadge(text = "ITD VERIFIED", tone = BadgeTone.SUCCESS)
+                }
+            }
+        } else if (!panVerificationError.isNullOrBlank()) {
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = if (isDark) CrimsonDangerDark.copy(alpha = 0.15f) else CrimsonDanger.copy(alpha = 0.08f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, CrimsonDanger),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(Icons.Default.ErrorOutline, null, tint = CrimsonDanger, modifier = Modifier.size(24.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "ITR Verification Failed",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = CrimsonDanger)
+                        )
+                        Text(
+                            text = panVerificationError,
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                    }
+                    TextButton(onClick = onVerifyPanWithItr) {
+                        Text("Retry", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = CrimsonDanger))
+                    }
+                }
+            }
+        } else if (isPanValid) {
+            ZeroTaxOutlinedButton(
+                text = "Verify PAN with Income Tax Department →",
+                onClick = onVerifyPanWithItr,
+                leadingIcon = {
+                    Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = EnterpriseTeal600, modifier = Modifier.size(18.dp))
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         // Auth Method Selector
         Text(
             text = "Automated Data Ingestion Method",
@@ -492,7 +611,7 @@ private fun TrustAndAuthStepView(
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onStartHydration() }
+                .clickable { executeIfVerified { onStartHydration() } }
         ) {
             Row(
                 modifier = Modifier.padding(14.dp),
@@ -501,7 +620,14 @@ private fun TrustAndAuthStepView(
             ) {
                 Icon(Icons.Default.PhonelinkRing, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Instant Government Aadhaar OTP", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Instant Government Aadhaar OTP", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        if (isPanVerifiedWithItr) {
+                            StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
+                        } else {
+                            StatutoryBadge(text = "REQUIRES ITR VERIFIED PAN", tone = BadgeTone.WARNING)
+                        }
+                    }
                     Text("Pulls prefilled salary, 26AS, and AIS in 30 seconds directly from CBDT.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
@@ -513,7 +639,7 @@ private fun TrustAndAuthStepView(
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onLaunchWebLogin() }
+                .clickable { executeIfVerified { onLaunchWebLogin() } }
         ) {
             Row(
                 modifier = Modifier.padding(14.dp),
@@ -522,7 +648,14 @@ private fun TrustAndAuthStepView(
             ) {
                 Icon(Icons.Default.Language, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Official In-App Web Portal Login", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Official In-App Web Portal Login", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        if (isPanVerifiedWithItr) {
+                            StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
+                        } else {
+                            StatutoryBadge(text = "REQUIRES ITR VERIFIED PAN", tone = BadgeTone.WARNING)
+                        }
+                    }
                     Text("Log in securely on eportal.incometax.gov.in in an isolated ephemeral session.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
@@ -534,7 +667,7 @@ private fun TrustAndAuthStepView(
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { docLauncher.launch(arrayOf("application/pdf")) }
+                .clickable { executeIfVerified { docLauncher.launch(arrayOf("application/pdf")) } }
         ) {
             Row(
                 modifier = Modifier.padding(14.dp),
@@ -543,7 +676,14 @@ private fun TrustAndAuthStepView(
             ) {
                 Icon(Icons.Default.UploadFile, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Import Form 16 / Tax Statement PDF", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Import Form 16 / Tax Statement PDF", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        if (isPanVerifiedWithItr) {
+                            StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
+                        } else {
+                            StatutoryBadge(text = "REQUIRES ITR VERIFIED PAN", tone = BadgeTone.WARNING)
+                        }
+                    }
                     Text("Silently unlocks with PAN and auto-fills your entire return in seconds.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
@@ -555,7 +695,7 @@ private fun TrustAndAuthStepView(
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onAaSync() }
+                .clickable { executeIfVerified { onAaSync() } }
         ) {
             Row(
                 modifier = Modifier.padding(14.dp),
@@ -564,7 +704,14 @@ private fun TrustAndAuthStepView(
             ) {
                 Icon(Icons.Default.AccountBalance, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("1-Click Account Aggregator (AA) Sync", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("1-Click Account Aggregator (AA) Sync", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        if (isPanVerifiedWithItr) {
+                            StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
+                        } else {
+                            StatutoryBadge(text = "REQUIRES ITR VERIFIED PAN", tone = BadgeTone.WARNING)
+                        }
+                    }
                     Text("Pulls interest & capital gains from 23 Banks & CAMS/KFintech via RBI-licensed AA.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
@@ -572,9 +719,19 @@ private fun TrustAndAuthStepView(
         }
         Spacer(Modifier.height(8.dp))
         ZeroTaxPrimaryButton(
-            text = "Start Automated Data Hydration",
-            onClick = onStartHydration,
-            enabled = isPanValid,
+            text = when {
+                isPanVerifying -> "Verifying PAN with Income Tax Department..."
+                !isPanVerifiedWithItr -> "Verify PAN with ITR to Proceed"
+                else -> "Continue to Automated Radar (Step 2) →"
+            },
+            onClick = {
+                if (isPanVerifiedWithItr) {
+                    onStartHydration()
+                } else {
+                    onVerifyPanWithItr()
+                }
+            },
+            enabled = isPanValid && !isPanVerifying,
             modifier = Modifier.fillMaxWidth()
         )
     }

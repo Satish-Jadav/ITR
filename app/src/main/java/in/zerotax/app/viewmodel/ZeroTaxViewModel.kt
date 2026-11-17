@@ -33,6 +33,7 @@ import `in`.zerotax.core.taxengine.routing.DeterministicItrFormRouter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -134,7 +135,10 @@ data class ZeroTaxUiState(
     val planSpecificGstin: String = "",
     val planSpecificCaMembership: String = "",
     val planSpecificCaName: String = "",
-    val planSpecificUdinDraft: String = ""
+    val planSpecificUdinDraft: String = "",
+    val isPanVerifying: Boolean = false,
+    val isPanVerifiedWithItr: Boolean = false,
+    val panVerificationError: String? = null
 )
 
 class ZeroTaxViewModel : ViewModel() {
@@ -549,19 +553,105 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun onPanChanged(pan: String) {
         val cleanPan = pan.uppercase().trim().take(10)
-        _uiState.update { it.copy(pan = cleanPan) }
+        _uiState.update { 
+            it.copy(
+                pan = cleanPan,
+                isPanVerifiedWithItr = false,
+                panVerificationError = null
+            ) 
+        }
         recompute()
 
         if (cleanPan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$"))) {
-            viewModelScope.launch(Dispatchers.IO) {
-                ZeroTaxCloudApiBridge.verifyPanLive(cleanPan).onSuccess { res ->
-                    val fullName = res.optString("fullName")
-                    if (fullName.isNotBlank()) {
-                        _uiState.update { it.copy(taxpayerFullName = fullName) }
-                        generateUnifiedDossier()
-                    }
-                }
+            verifyPanWithItr(cleanPan)
+        }
+    }
+
+    /**
+     * Verifies PAN directly with Income Tax Department (ITD) / NSDL live gateway.
+     * Validates 10-char format, 4th character entity type, and executes remote verification.
+     */
+    fun verifyPanWithItr(panToVerify: String? = null, onResult: ((Boolean, String?) -> Unit)? = null) {
+        val targetPan = (panToVerify ?: _uiState.value.pan).trim().uppercase()
+        if (!targetPan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$"))) {
+            _uiState.update {
+                it.copy(
+                    isPanVerifying = false,
+                    isPanVerifiedWithItr = false,
+                    panVerificationError = "Invalid PAN format. Must be 10 characters (5 letters, 4 numbers, 1 letter)."
+                )
             }
+            onResult?.invoke(false, "Invalid PAN format")
+            return
+        }
+
+        val entityChar = targetPan[3]
+        val validEntities = listOf('P', 'C', 'H', 'F', 'A', 'T', 'B', 'L', 'J', 'G')
+        if (entityChar !in validEntities) {
+            _uiState.update {
+                it.copy(
+                    isPanVerifying = false,
+                    isPanVerifiedWithItr = false,
+                    panVerificationError = "Invalid entity type '$entityChar' in PAN. Must be Individual (P), HUF (H), Company (C), or Firm (F)."
+                )
+            }
+            onResult?.invoke(false, "Invalid entity type code in PAN")
+            return
+        }
+
+        _uiState.update {
+            it.copy(
+                pan = targetPan,
+                isPanVerifying = true,
+                panVerificationError = null
+            )
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = ZeroTaxCloudApiBridge.verifyPanLive(targetPan)
+            result.fold(
+                onSuccess = { res ->
+                    val isSuccess = res.optBoolean("success", true)
+                    val fullName = res.optString("fullName", res.optString("full_name"))
+                    val status = res.optString("status", "VALID")
+                    if (isSuccess && status.equals("VALID", ignoreCase = true) || fullName.isNotBlank()) {
+                        ZeroTaxAuthSecurityManager.linkPanToActiveUser(targetPan)
+                        _uiState.update {
+                            it.copy(
+                                pan = targetPan,
+                                isPanVerifying = false,
+                                isPanVerifiedWithItr = true,
+                                panVerificationError = null,
+                                taxpayerFullName = if (fullName.isNotBlank()) fullName else it.taxpayerFullName
+                            )
+                        }
+                        recompute()
+                        generateUnifiedDossier()
+                        onResult?.invoke(true, null)
+                    } else {
+                        val errMsg = res.optString("message", "PAN is not active or verified on Income Tax Department records.")
+                        _uiState.update {
+                            it.copy(
+                                isPanVerifying = false,
+                                isPanVerifiedWithItr = false,
+                                panVerificationError = errMsg
+                            )
+                        }
+                        onResult?.invoke(false, errMsg)
+                    }
+                },
+                onFailure = { err ->
+                    val errMsg = err.message ?: "Failed to verify PAN with Income Tax Department records."
+                    _uiState.update {
+                        it.copy(
+                            isPanVerifying = false,
+                            isPanVerifiedWithItr = false,
+                            panVerificationError = errMsg
+                        )
+                    }
+                    onResult?.invoke(false, errMsg)
+                }
+            )
         }
     }
 
@@ -1003,23 +1093,70 @@ class ZeroTaxViewModel : ViewModel() {
         }
     }
 
-    fun signInWithEmail(email: String, password: String, isSignUp: Boolean, name: String) {
+    fun signInWithLoginId(loginId: String, password: String, isSignUp: Boolean, name: String, pan: String? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
+
+            // If signing up and PAN is provided, verify with ITR first!
+            if (isSignUp && !pan.isNullOrBlank()) {
+                val cleanPan = pan.trim().uppercase()
+                if (!cleanPan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$"))) {
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authErrorMessage = "Invalid PAN format. Must be 10 characters (5 letters, 4 numbers, 1 letter)."
+                        )
+                    }
+                    return@launch
+                }
+                val entityChar = cleanPan[3]
+                if (entityChar !in listOf('P', 'C', 'H', 'F', 'A', 'T', 'B', 'L', 'J', 'G')) {
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authErrorMessage = "Invalid 4th character in PAN. Must specify legal taxpayer status."
+                        )
+                    }
+                    return@launch
+                }
+                val itdVerify = withContext(Dispatchers.IO) { ZeroTaxCloudApiBridge.verifyPanLive(cleanPan) }
+                val verifyRes = itdVerify.getOrNull()
+                val isSuccess = verifyRes?.optBoolean("success", true) == true
+                val fullName = verifyRes?.optString("fullName").orEmpty()
+                if (itdVerify.isFailure || (!isSuccess && fullName.isBlank())) {
+                    val errMsg = verifyRes?.optString("message") 
+                        ?: itdVerify.exceptionOrNull()?.message 
+                        ?: "PAN verification with Income Tax Department failed."
+                    _uiState.update {
+                        it.copy(
+                            isAuthLoading = false,
+                            authErrorMessage = "ITR Verification Failed: $errMsg"
+                        )
+                    }
+                    return@launch
+                }
+            }
+
             val result = if (isSignUp) {
-                ZeroTaxAuthSecurityManager.signUpWithEmail(email, password, name)
+                ZeroTaxAuthSecurityManager.signUpWithEmail(loginId, password, name, pan)
             } else {
-                ZeroTaxAuthSecurityManager.signInWithEmail(email, password)
+                ZeroTaxAuthSecurityManager.signInWithLoginId(loginId, password)
             }
             result.fold(
                 onSuccess = { profile ->
                     ZeroTaxCloudApiBridge.activeAccessToken = "zt_access_${profile.uid}"
+                    val userPan = profile.primaryPanLinked ?: pan?.trim()?.uppercase()
                     _uiState.update {
                         it.copy(
                             isAuthLoading = false,
                             authSessionState = AuthSessionState.Authenticated(profile),
-                            authErrorMessage = null
+                            authErrorMessage = null,
+                            pan = if (!userPan.isNullOrBlank()) userPan else it.pan,
+                            isPanVerifiedWithItr = !userPan.isNullOrBlank()
                         )
+                    }
+                    if (!userPan.isNullOrBlank()) {
+                        verifyPanWithItr(userPan)
                     }
                     syncRealtimeBackendData()
                     restoreVaultFromApi()
@@ -1034,6 +1171,10 @@ class ZeroTaxViewModel : ViewModel() {
                 }
             )
         }
+    }
+
+    fun signInWithEmail(email: String, password: String, isSignUp: Boolean, name: String) {
+        signInWithLoginId(email, password, isSignUp, name, null)
     }
 
     fun signInWithGoogle(idToken: String, email: String, name: String) {
