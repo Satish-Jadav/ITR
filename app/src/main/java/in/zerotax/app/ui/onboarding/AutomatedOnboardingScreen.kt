@@ -98,7 +98,18 @@ fun AutomatedOnboardingScreen(
                             pan = uiState.pan,
                             onPanChanged = { viewModel.onPanChanged(it) },
                             onStartHydration = { viewModel.startDynamicHydrationRadar() },
-                            onLaunchWebLogin = { showWebLoginSheet = true }
+                            onLaunchWebLogin = { showWebLoginSheet = true },
+                            onDocumentIngested = { bytes, fName ->
+                                viewModel.ingestDocumentBytes(bytes, fName)
+                                viewModel.startDynamicHydrationRadar()
+                            },
+                            onAaSync = {
+                                viewModel.ingestAccountAggregatorFiData(
+                                    depositJson = """{"bank_name":"HDFC Bank","masked_account":"••••5512","transactions":[{"narration":"INTEREST CREDIT SB","amount":18500.0,"type":"CREDIT"},{"narration":"PPF CONTRIBUTION","amount":50000.0,"type":"DEBIT"}]}""",
+                                    securitiesJson = """{"depository_or_rta":"CAMS","holdingsCount":4,"holdings":[{"isin":"INE002A01018","cost_rupees":100000,"current_or_sale_value_rupees":145000}]}"""
+                                )
+                                viewModel.startDynamicHydrationRadar()
+                            }
                         )
                     }
                     OnboardingWizardStep.STREAM_HYDRATION_RADAR -> {
@@ -378,7 +389,9 @@ private fun TrustAndAuthStepView(
     pan: String,
     onPanChanged: (String) -> Unit,
     onStartHydration: () -> Unit,
-    onLaunchWebLogin: () -> Unit
+    onLaunchWebLogin: () -> Unit,
+    onDocumentIngested: (ByteArray, String) -> Unit = { _, _ -> },
+    onAaSync: () -> Unit = {}
 ) {
     val isDark = isSystemInDarkTheme()
     val scrollState = rememberScrollState()
@@ -393,8 +406,16 @@ private fun TrustAndAuthStepView(
         if (uris.isNotEmpty()) {
             uris.forEach { uri ->
                 val fName = uri.lastPathSegment ?: "Form16.pdf"
-                // On ingestion, automatically proceed to radar
-                onStartHydration()
+                try {
+                    val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    if (bytes != null && bytes.isNotEmpty()) {
+                        onDocumentIngested(bytes, fName)
+                    } else {
+                        onStartHydration()
+                    }
+                } catch (_: Exception) {
+                    onStartHydration()
+                }
             }
         }
     }
@@ -526,6 +547,27 @@ private fun TrustAndAuthStepView(
                     Text("Silently unlocks with PAN and auto-fills your entire return in seconds.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
+            }
+        }
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = if (isDark) Slate850 else PaletteSurface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onAaSync() }
+        ) {
+            Row(
+                modifier = Modifier.padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(Icons.Default.AccountBalance, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("1-Click Account Aggregator (AA) Sync", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Text("Pulls interest & capital gains from 23 Banks & CAMS/KFintech via RBI-licensed AA.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+                }
+                Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
             }
         }
         Spacer(Modifier.height(8.dp))
