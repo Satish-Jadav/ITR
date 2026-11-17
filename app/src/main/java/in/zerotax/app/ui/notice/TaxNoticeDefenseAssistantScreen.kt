@@ -1,5 +1,8 @@
 package `in`.zerotax.app.ui.notice
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -15,12 +18,14 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -29,6 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
+import `in`.zerotax.feature.pdfunlocker.SilentPdfUnlocker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -82,6 +92,76 @@ fun TaxNoticeDefenseAssistantScreen(
     var selectedDisallowanceReason by remember { mutableStateOf("TDS Mismatch (Form 26AS credit not matched by employer deductor)") }
     var copyStatusMessage by remember { mutableStateOf<String?>(null) }
     val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val unlocker = remember { SilentPdfUnlocker() }
+    var isScanningPdf by remember { mutableStateOf(false) }
+    var scanError by remember { mutableStateOf<String?>(null) }
+
+    val pdfNoticeLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            isScanningPdf = true
+            scanError = null
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    SilentPdfUnlocker.initPdfBox(context)
+                    val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    if (bytes != null) {
+                        val cleanPan = pan.ifBlank { "AAAPA1234A" }
+                        val unlockRes = unlocker.attemptUnlock(pdfBytes = bytes, pan = cleanPan)
+                        val text = unlockRes.fold(
+                            onSuccess = { (unlockedPdf, _) ->
+                                unlocker.extractTextFromDecrypted(unlockedPdf).getOrDefault("")
+                            },
+                            onFailure = {
+                                unlocker.extractTextFromDecrypted(bytes).getOrDefault("")
+                            }
+                        )
+
+                        if (text.isNotBlank()) {
+                            val scanRes = ZeroTaxCloudApiBridge.scanLifecycleAndNotice(
+                                rawDocumentText = text.take(15000),
+                                documentType = "CPC_NOTICE_143_1_139_9_148"
+                            )
+                            scanRes.onSuccess { json ->
+                                val din = json.optString("dinNumber", "")
+                                val demand = json.optLong("netDemandOrRefundRupees", 0L)
+                                val section = json.optString("noticeSection", "")
+
+                                withContext(Dispatchers.Main) {
+                                    if (din.isNotBlank()) dinNumber = din
+                                    if (demand > 0) demandAmountStr = demand.toString()
+                                    if (section.contains("139(9)") || section.contains("139_9")) {
+                                        selectedNotice = NoticeCategory.SEC_139_9_DEFECTIVE
+                                    } else if (section.contains("245")) {
+                                        selectedNotice = NoticeCategory.SEC_245_REFUND_ADJUSTMENT
+                                    } else if (section.contains("148")) {
+                                        selectedNotice = NoticeCategory.SEC_148A_REOPENING_INQUIRY
+                                    } else {
+                                        selectedNotice = NoticeCategory.SEC_143_1_DEMAND
+                                    }
+                                }
+                            }.onFailure { err ->
+                                withContext(Dispatchers.Main) {
+                                    scanError = "AI extraction error: ${err.message}"
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        scanError = e.message ?: "Failed to read notice PDF."
+                    }
+                } finally {
+                    withContext(Dispatchers.Main) {
+                        isScanningPdf = false
+                    }
+                }
+            }
+        }
+    }
 
     val responseMarkdown = remember(selectedNotice, dinNumber, demandAmountStr, selectedDisallowanceReason) {
         generateNoticeDefenseDraft(
@@ -229,14 +309,29 @@ fun TaxNoticeDefenseAssistantScreen(
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                                 )
                                 OutlinedButton(
-                                    onClick = { /* Launches on-device notice scanner */ },
+                                    onClick = { pdfNoticeLauncher.launch(arrayOf("application/pdf")) },
+                                    enabled = !isScanningPdf,
                                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                                     shape = RoundedCornerShape(6.dp)
                                 ) {
-                                    Icon(Icons.Default.DocumentScanner, contentDescription = null, modifier = Modifier.size(14.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("Scan Notice PDF", fontSize = 11.sp)
+                                    if (isScanningPdf) {
+                                        CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("Scanning...", fontSize = 11.sp)
+                                    } else {
+                                        Icon(Icons.Default.DocumentScanner, contentDescription = null, modifier = Modifier.size(14.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("Scan Notice PDF", fontSize = 11.sp)
+                                    }
                                 }
+                            }
+                            if (scanError != null) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = scanError!!,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (isSystemInDarkTheme()) CrimsonDangerDark else CrimsonDanger
+                                )
                             }
                             Spacer(Modifier.height(10.dp))
 

@@ -79,8 +79,8 @@ class MainActivity : FragmentActivity() {
                                     onSignInWithEmail = { email, password, isSignUp, name ->
                                         viewModel.signInWithEmail(email, password, isSignUp, name)
                                     },
-                                    onSignInWithGoogle = { email, name ->
-                                        viewModel.signInWithGoogle(email, name)
+                                    onSignInWithGoogle = { idToken, email, name ->
+                                        viewModel.signInWithGoogle(idToken, email, name)
                                     },
                                     onBiometricUnlock = {
                                         launchBiometricHardwareAuth(viewModel)

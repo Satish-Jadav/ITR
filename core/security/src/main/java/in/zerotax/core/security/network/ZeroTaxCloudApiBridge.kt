@@ -947,6 +947,41 @@ object ZeroTaxCloudApiBridge {
     }
 
     /**
+     * Extracts Income Tax notice, CPC intimation, or Challan 280 fields via backend AI (/api/v1/ai/lifecycle-and-nri-scan)
+     */
+    suspend fun scanLifecycleAndNotice(
+        rawDocumentText: String,
+        documentType: String = "CPC_NOTICE_143_1_139_9_148",
+        assessmentYear: String = "2026-27"
+    ): Result<JSONObject> = withContext(Dispatchers.IO) {
+        ZeroTaxLogger.d(TAG, "scanLifecycleAndNotice: dispatching notice text to /api/v1/ai/lifecycle-and-nri-scan")
+        runCatching {
+            val payload = JSONObject().apply {
+                put("sanitizedRawText", rawDocumentText)
+                put("documentType", documentType)
+                put("assessmentYear", assessmentYear)
+            }
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/ai/lifecycle-and-nri-scan")
+                .post(payload.toString().toRequestBody(JSON_MEDIA_TYPE))
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "AI Lifecycle/Notice extraction failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "scanLifecycleAndNotice failed: " + error.message, error)
+        }
+    }
+
+    /**
      * Queries active CBDT ERI & Live Driver status (/api/v1/portal/driver-status).
      * Priority: Quicko B2B ERI -> CBDT Direct IEC 2.0 -> Zero-Cost In-App Live Driver.
      */

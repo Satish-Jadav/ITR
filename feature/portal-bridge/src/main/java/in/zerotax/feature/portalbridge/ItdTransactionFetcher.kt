@@ -1,5 +1,7 @@
 package `in`.zerotax.feature.portalbridge
 
+import `in`.zerotax.core.database.IncomeLineItemEntity
+import `in`.zerotax.core.database.ZeroTaxVaultDatabase
 import `in`.zerotax.core.model.AisCategory
 import `in`.zerotax.core.model.AisTransactionRecord
 import `in`.zerotax.core.model.CitizenCategory
@@ -10,12 +12,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-class ItdTransactionFetcher {
+class ItdTransactionFetcher(
+    private val database: ZeroTaxVaultDatabase? = null
+) {
 
     companion object {
         private const val TAG = "ZeroTaxITDFetcher"
         // Thread-safe storage for transactions synced live from ITD session
         private val liveTransactions = java.util.Collections.synchronizedList(mutableListOf<AisTransactionRecord>())
+        var databaseInstance: ZeroTaxVaultDatabase? = null
 
         fun updateLiveTransactions(records: List<AisTransactionRecord>) {
             liveTransactions.clear()
@@ -25,11 +30,72 @@ class ItdTransactionFetcher {
         fun clearLiveTransactions() {
             liveTransactions.clear()
         }
+
+        suspend fun updateAndPersistLiveTransactions(
+            pan: String,
+            records: List<AisTransactionRecord>,
+            db: ZeroTaxVaultDatabase? = null
+        ) = withContext(Dispatchers.IO) {
+            updateLiveTransactions(records)
+            val targetDb = db ?: databaseInstance
+            if (targetDb != null && records.isNotEmpty()) {
+                val entities = records.map { rec ->
+                    IncomeLineItemEntity(
+                        line_item_id = rec.transactionId,
+                        pan = pan.uppercase(),
+                        income_head = rec.suggestedSchedule.ifBlank { "OS" },
+                        sub_category = rec.category.name,
+                        employer_or_deductor_tan = rec.accountOrFolioNumber,
+                        deductor_name = rec.reportingEntity,
+                        amount_rupees = rec.grossAmount,
+                        tds_deducted_form16 = rec.tdsWithheld,
+                        tds_verified_26as = rec.tdsWithheld,
+                        receipt_quarter_bucket = rec.quarterOrDate,
+                        authoritative_source = "AIS_TIS",
+                        formula_explanation = "Imported from ITD AIS/26AS statement",
+                        math_sanity_verified = 1
+                    )
+                }
+                targetDb.taxVaultDao().upsertIncomeItems(entities)
+                ZeroTaxLogger.i(TAG, "updateAndPersistLiveTransactions: persisted ${entities.size} items to SQLCipher")
+            }
+        }
+    }
+
+    /**
+     * Persists a list of AIS records to the SQLCipher database.
+     */
+    suspend fun persistTransactionsToVault(
+        pan: String,
+        records: List<AisTransactionRecord>,
+        db: ZeroTaxVaultDatabase? = null
+    ) = withContext(Dispatchers.IO) {
+        val targetDb = db ?: database ?: databaseInstance ?: return@withContext
+        val entities = records.map { rec ->
+            IncomeLineItemEntity(
+                line_item_id = rec.transactionId,
+                pan = pan.uppercase(),
+                income_head = rec.suggestedSchedule.ifBlank { "OS" },
+                sub_category = rec.category.name,
+                employer_or_deductor_tan = rec.accountOrFolioNumber,
+                deductor_name = rec.reportingEntity,
+                amount_rupees = rec.grossAmount,
+                tds_deducted_form16 = rec.tdsWithheld,
+                tds_verified_26as = rec.tdsWithheld,
+                receipt_quarter_bucket = rec.quarterOrDate,
+                authoritative_source = "AIS_TIS",
+                formula_explanation = "Imported from ITD AIS/26AS statement",
+                math_sanity_verified = 1
+            )
+        }
+        targetDb.taxVaultDao().upsertIncomeItems(entities)
+        ZeroTaxLogger.i(TAG, "persistTransactionsToVault: persisted ${entities.size} items to SQLCipher")
     }
 
     /**
      * Fetches comprehensive AIS / TIS and Pre-fill transaction records directly
      * from the ITD gateway and structures them with statutory schedule suggestions.
+     * If in-memory cache is empty across app restarts, loads persisted records from SQLCipher.
      */
     suspend fun fetchAisTransactions(
         pan: String,
@@ -43,12 +109,36 @@ class ItdTransactionFetcher {
             return@withContext Result.failure(IllegalArgumentException(err))
         }
         try {
-            if (liveTransactions.isEmpty()) {
-                ZeroTaxLogger.i(TAG, "fetchAisTransactions: no live transactions cached yet for PAN " + maskedPan)
-                return@withContext Result.success(emptyList())
+            if (liveTransactions.isNotEmpty()) {
+                ZeroTaxLogger.i(TAG, "fetchAisTransactions succeeded: retrieved ${liveTransactions.size} live records")
+                return@withContext Result.success(liveTransactions.toList())
             }
-            ZeroTaxLogger.i(TAG, "fetchAisTransactions succeeded: retrieved ${liveTransactions.size} live records")
-            Result.success(liveTransactions.toList())
+
+            // Fallback: Query SQLCipher hardware vault database if in-memory cache was cleared across app restarts
+            val targetDb = database ?: databaseInstance
+            if (targetDb != null) {
+                val dbItems = targetDb.taxVaultDao().getIncomeItems(pan.uppercase())
+                if (dbItems.isNotEmpty()) {
+                    val restored = dbItems.map { item ->
+                        AisTransactionRecord(
+                            transactionId = item.line_item_id,
+                            category = runCatching { AisCategory.valueOf(item.sub_category) }.getOrDefault(AisCategory.SAVINGS_INTEREST),
+                            reportingEntity = item.deductor_name,
+                            accountOrFolioNumber = item.employer_or_deductor_tan ?: "AC-${item.line_item_id.takeLast(4)}",
+                            grossAmount = item.amount_rupees,
+                            tdsWithheld = item.tds_verified_26as,
+                            quarterOrDate = item.receipt_quarter_bucket,
+                            suggestedSchedule = item.income_head.ifBlank { "OS" }
+                        )
+                    }
+                    liveTransactions.addAll(restored)
+                    ZeroTaxLogger.i(TAG, "fetchAisTransactions: restored ${restored.size} records from SQLCipher vault")
+                    return@withContext Result.success(restored)
+                }
+            }
+
+            ZeroTaxLogger.i(TAG, "fetchAisTransactions: no transactions cached or in SQLCipher yet for PAN " + maskedPan)
+            Result.success(emptyList())
         } catch (e: Exception) {
             ZeroTaxLogger.e(TAG, "fetchAisTransactions failed for PAN $maskedPan: ${e.message}", e)
             Result.failure(e)

@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -31,22 +32,70 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.security.ZeroKnowledgeTrustShieldModal
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.model.UserAuthProfile
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthenticationScreen(
     onAuthenticationSuccess: (UserAuthProfile) -> Unit,
     onSignInWithEmail: (email: String, password: String, isSignUp: Boolean, name: String) -> Unit,
-    onSignInWithGoogle: (email: String, name: String) -> Unit,
+    onSignInWithGoogle: (idToken: String, email: String, name: String) -> Unit,
     onBiometricUnlock: () -> Unit,
     onLaunchCaPortal: () -> Unit = {},
     isLoading: Boolean = false,
     errorMessage: String? = null
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var googleAuthError by remember { mutableStateOf<String?>(null) }
+
+    val serverClientId = remember {
+        runCatching {
+            val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+            if (resId != 0) context.getString(resId) else "in.zerotax"
+        }.getOrDefault("in.zerotax")
+    }
+
+    val launchGoogleSignIn: () -> Unit = {
+        googleAuthError = null
+        coroutineScope.launch {
+            try {
+                val credentialManager = CredentialManager.create(context)
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(serverClientId)
+                    .setAutoSelectEnabled(false)
+                    .build()
+
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
+
+                val result = credentialManager.getCredential(context = context, request = request)
+                val credential = result.credential
+                val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data)
+                val idToken = googleIdToken.idToken
+                val email = googleIdToken.id
+                val name = googleIdToken.displayName ?: email.substringBefore("@")
+                onSignInWithGoogle(idToken, email, name)
+            } catch (e: GetCredentialCancellationException) {
+                // User intentionally cancelled account picker
+            } catch (e: Exception) {
+                googleAuthError = e.message ?: "Google Sign-In failed."
+            }
+        }
+    }
+
     var showCaSection by remember { mutableStateOf(false) }
     var showTrustShieldModal by remember { mutableStateOf(false) }
     var showGoogleAccountPicker by remember { mutableStateOf(false) }
@@ -179,8 +228,8 @@ fun AuthenticationScreen(
 
             // 4. Primary: Fast Access Sign In
             ZeroTaxPrimaryButton(
-                text = "Start Filing Return (Fast Access) →",
-                onClick = { onSignInWithGoogle("taxpayer@zerotax.in", "Taxpayer") },
+                text = "Start Filing Return with Google →",
+                onClick = launchGoogleSignIn,
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Bolt,
@@ -190,6 +239,15 @@ fun AuthenticationScreen(
                     )
                 }
             )
+
+            if (googleAuthError != null) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = googleAuthError!!,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (isSystemInDarkTheme()) CrimsonDangerDark else CrimsonDanger
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -441,7 +499,7 @@ fun AuthenticationScreen(
                         .fillMaxWidth()
                         .clickable {
                             showGoogleAccountPicker = false
-                            onSignInWithGoogle("taxpayer@gmail.com", "Taxpayer")
+                            launchGoogleSignIn()
                         }
                 ) {
                     Row(

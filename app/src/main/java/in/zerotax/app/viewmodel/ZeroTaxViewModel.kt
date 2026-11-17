@@ -1014,11 +1014,10 @@ class ZeroTaxViewModel : ViewModel() {
         }
     }
 
-    fun signInWithGoogle(email: String, name: String) {
+    fun signInWithGoogle(idToken: String, email: String, name: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
-            val googleIdToken = "g_token_${System.currentTimeMillis()}"
-            val result = ZeroTaxAuthSecurityManager.signInWithGoogle(googleIdToken, email, name)
+            val result = ZeroTaxAuthSecurityManager.signInWithGoogle(idToken, email, name)
             result.fold(
                 onSuccess = { profile ->
                     ZeroTaxCloudApiBridge.activeAccessToken = "zt_access_${profile.uid}"
@@ -1042,6 +1041,10 @@ class ZeroTaxViewModel : ViewModel() {
                 }
             )
         }
+    }
+
+    fun signInWithGoogle(email: String, name: String) {
+        signInWithGoogle("mock_token_${System.currentTimeMillis()}", email, name)
     }
 
     fun signInWithBiometrics(cipher: javax.crypto.Cipher? = null) {

@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.model.*
+import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
+import kotlinx.coroutines.launch
 
 /**
  * Dedicated Chartered Accountant (CA) & Auditor Verification Portal.
@@ -53,6 +55,8 @@ fun CaAuditorPortalScreen(
     var selectedClientForAudit by remember { mutableStateOf<ClientPairingSession?>(null) }
     var pairingCodeInput by remember { mutableStateOf("") }
     var pairingErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isVerifyingCode by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     // In-memory roster of client returns attached to this CA
     var clientRoster by remember {
@@ -242,29 +246,52 @@ fun CaAuditorPortalScreen(
             Spacer(Modifier.height(20.dp))
 
             ZeroTaxPrimaryButton(
-                text = "Verify & Attach Client",
+                text = if (isVerifyingCode) "Verifying & Linking Client..." else "Verify & Attach Client",
+                enabled = !isVerifyingCode,
                 onClick = {
                     val cleanedCode = pairingCodeInput.trim().uppercase()
                     val validCodeFormat = Regex("^ZT-[0-9]{4}$")
                     if (validCodeFormat.matches(cleanedCode)) {
-                        val newClient = ClientPairingSession(
-                            pairingCode = cleanedCode,
-                            clientPan = "PENDING_PAIRING",
-                            clientName = "Client ($cleanedCode)",
-                            grossTurnoverOrIncome = 0L,
-                            auditType = AuditType.TAX_AUDIT_44AB,
-                            itrForm = "ITR-3",
-                            taxPayableOrRefund = 0L,
-                            isRefund = false,
-                            createdAtEpochMs = System.currentTimeMillis(),
-                            expiresAtEpochMs = System.currentTimeMillis() + 86400000L,
-                            isLinked = true,
-                            auditStatus = ClientAuditStatus.PENDING_REVIEW
-                        )
-                        clientRoster = listOf(newClient) + clientRoster
-                        pairingCodeInput = ""
-                        showPairClientDialog = false
-                        selectedClientForAudit = newClient
+                        isVerifyingCode = true
+                        pairingErrorMessage = null
+                        coroutineScope.launch {
+                            val result = ZeroTaxCloudApiBridge.fetchCaSharedDossier(cleanedCode)
+                            result.fold(
+                                onSuccess = { dossierJson ->
+                                    val clientPan = dossierJson.optString("clientPan", "AAAPA${cleanedCode.takeLast(4)}A")
+                                    val clientName = dossierJson.optString("clientName", "Assessee ($cleanedCode)")
+                                    val turnover = dossierJson.optLong("grossTurnoverOrIncome", 0L)
+                                    val form = dossierJson.optString("itrForm", "ITR-3")
+                                    val tax = dossierJson.optLong("taxPayableOrRefund", 0L)
+                                    val refund = dossierJson.optBoolean("isRefund", false)
+                                    val expiresAt = dossierJson.optLong("expiresAtEpochMs", System.currentTimeMillis() + 86400000L)
+
+                                    val newClient = ClientPairingSession(
+                                        pairingCode = cleanedCode,
+                                        clientPan = clientPan,
+                                        clientName = clientName,
+                                        grossTurnoverOrIncome = turnover,
+                                        auditType = AuditType.TAX_AUDIT_44AB,
+                                        itrForm = form,
+                                        taxPayableOrRefund = tax,
+                                        isRefund = refund,
+                                        createdAtEpochMs = System.currentTimeMillis(),
+                                        expiresAtEpochMs = expiresAt,
+                                        isLinked = true,
+                                        auditStatus = ClientAuditStatus.PENDING_REVIEW
+                                    )
+                                    clientRoster = listOf(newClient) + clientRoster
+                                    pairingCodeInput = ""
+                                    showPairClientDialog = false
+                                    selectedClientForAudit = newClient
+                                    isVerifyingCode = false
+                                },
+                                onFailure = { err ->
+                                    pairingErrorMessage = "Verification failed: ${err.message ?: "Expired or invalid pairing code"}"
+                                    isVerifyingCode = false
+                                }
+                            )
+                        }
                     } else {
                         pairingErrorMessage = "Invalid code format. Enter a valid code like ZT-1234."
                     }
