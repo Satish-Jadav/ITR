@@ -2,17 +2,12 @@ package `in`.zerotax.app.ui.portal
 
 import `in`.zerotax.feature.portalbridge.ItdAndAaOtpAutoReader
 import `in`.zerotax.core.security.network.ZeroTaxCloudApiBridge
-
-import `in`.zerotax.app.ui.components.ZeroTaxOutlinedButton
-import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import android.annotation.SuppressLint
 import android.webkit.WebView
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -27,8 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge
 import `in`.zerotax.feature.portalbridge.ItdTransactionFetcher
@@ -67,13 +60,11 @@ fun ItdOfficialWebLoginSheet(
     val bridgeState by bridge.state.collectAsState()
 
     var isFetchingRecords by remember { mutableStateOf(false) }
-    var statusMessage by remember { mutableStateOf("Awaiting user login on official portal...") }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current
     val otpReader = remember {
         ItdAndAaOtpAutoReader(context) { code ->
             webViewRef?.let { bridge.injectAadhaarOtpVerificationScript(it, code) }
-            statusMessage = "Aadhaar OTP captured from SMS ($code). Auto-filling into portal..."
         }
     }
 
@@ -87,19 +78,14 @@ fun ItdOfficialWebLoginSheet(
     // React to bridge state changes
     LaunchedEffect(bridgeState) {
         when (val state = bridgeState) {
-            is PortalBridgeState.CapturingPayloads -> {
-                statusMessage = "Authenticated! Intercepting tax records (${state.captured.size}/3 payloads)..."
-            }
             is PortalBridgeState.CompletedAndSanitized -> {
-                statusMessage = "All tax records captured. Sanitizing session memory..."
-                delay(400)
                 scope.launch {
                     try {
                         ZeroTaxCloudApiBridge.ingestLivePrefill(
                             pan = pan,
                             sourceOrigin = "OFFICIAL_WEBVIEW_EPHEMERAL_SESSION"
                         )
-                    } catch (e: Exception) {}
+                    } catch (_: Exception) {}
                 }
                 val allTxns = fetcher.fetchAisTransactions(pan).getOrDefault(emptyList())
                 val totalTds = allTxns.sumOf { it.tdsWithheld }
@@ -107,9 +93,6 @@ fun ItdOfficialWebLoginSheet(
                     .filter { it.category == AisCategory.SAVINGS_INTEREST }
                     .sumOf { it.grossAmount }
                 onSyncSuccess(allTxns.size, totalTds, totalInterest)
-            }
-            is PortalBridgeState.OfflineFallbackTriggered -> {
-                statusMessage = "Notice: ${state.reason}"
             }
             else -> {}
         }
@@ -125,254 +108,95 @@ fun ItdOfficialWebLoginSheet(
             }
         },
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         containerColor = MaterialTheme.colorScheme.surface,
-        dragHandle = {
-            Surface(
-                modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                shape = RoundedCornerShape(2.dp)
-            ) {
-                Box(modifier = Modifier.size(width = 36.dp, height = 4.dp))
-            }
-        }
+        dragHandle = null
     ) {
-        Scaffold(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.95f),
-            topBar = {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 3.dp,
-                    border = androidx.compose.foundation.BorderStroke(
-                        0.5.dp,
-                        if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate200
-                    )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Ultra-slim Top Security Header (URL + GOV.IN + Close)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
+                tonalElevation = 2.dp,
+                border = androidx.compose.foundation.BorderStroke(
+                    0.5.dp,
+                    if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate200
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .statusBarsPadding()
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Secure Connection",
+                            tint = EmeraldSuccess,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Text(
+                            text = "eportal.incometax.gov.in",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            maxLines = 1
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(getEmeraldSuccessBg())
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(CircleShape)
-                                        .background(if (isDark) EnterpriseTeal900 else EnterpriseTeal100),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccountBalance,
-                                        contentDescription = null,
-                                        tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal700,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                                Spacer(Modifier.width(10.dp))
-                                Column {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = "Official ITD e-Portal Login",
-                                            style = MaterialTheme.typography.titleMedium.copy(
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                        )
-                                        Spacer(Modifier.width(6.dp))
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(4.dp))
-                                                .background(getEmeraldSuccessBg())
-                                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                                        ) {
-                                            Text(
-                                                text = "GOV.IN",
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    color = EmeraldSuccess,
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 9.sp
-                                                )
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        text = "https://eportal.incometax.gov.in/iec/foservices/#/login",
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            fontSize = 11.sp,
-                                            fontFamily = FontFamily.Monospace
-                                        ),
-                                        maxLines = 1
-                                    )
-                                }
-                            }
-
-                            IconButton(
-                                onClick = {
-                                    bridge.sanitizePortalSessionImmediately {
-                                        webViewRef?.destroy()
-                                        onDismiss()
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Close",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        Spacer(Modifier.height(8.dp))
-
-                        // Security & DPDP compliance banner
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    tint = EmeraldSuccess,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    text = "Zero Password Stored • You log in directly on Income Tax Department servers. Once authenticated, data is auto-fetched and the web session is purged.",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate600,
-                                        fontSize = 10.sp
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            },
-            bottomBar = {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 4.dp,
-                    border = androidx.compose.foundation.BorderStroke(
-                        0.5.dp,
-                        if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate200
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding()
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            if (isFetchingRecords) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp,
-                                    color = EnterpriseTeal600
-                                )
-                                Spacer(Modifier.width(8.dp))
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(EnterpriseTeal600)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                            }
                             Text(
-                                text = statusMessage,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.Medium
-                                ),
-                                maxLines = 1
+                                text = "GOV.IN",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = EmeraldSuccess,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp
+                                )
                             )
                         }
+                    }
 
-                        Spacer(Modifier.height(10.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    bridge.sanitizePortalSessionImmediately {
-                                        webViewRef?.destroy()
-                                        onDismiss()
-                                    }
-                                },
-                                shape = RoundedCornerShape(6.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Cancel", style = MaterialTheme.typography.labelMedium)
+                    IconButton(
+                        onClick = {
+                            bridge.sanitizePortalSessionImmediately {
+                                webViewRef?.destroy()
+                                onDismiss()
                             }
-
-                            Button(
-                                onClick = {
-                                    isFetchingRecords = true
-                                    statusMessage = "Authenticated on portal! Auto-fetching tax data..."
-                                    scope.launch {
-                                        delay(700)
-                                        statusMessage = "Downloading AIS, TIS and Form 26AS records..."
-                                        val res = fetcher.fetchAisTransactions(pan)
-                                        val records = res.getOrDefault(emptyList())
-                                        val totalTds = records.sumOf { it.tdsWithheld }
-                                        val totalInterest = records.sumOf { it.grossAmount }
-
-                                        delay(500)
-                                        statusMessage = "Purging session cookies and memory per DPDP Act..."
-                                        bridge.sanitizePortalSessionImmediately {
-                                            webViewRef?.destroy()
-                                            onSyncSuccess(records.size, totalTds, totalInterest)
-                                        }
-                                    }
-                                },
-                                enabled = !isFetchingRecords,
-                                shape = RoundedCornerShape(6.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-                                modifier = Modifier.weight(2f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Sync,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    text = "Auto-Fetch & Sync Tax Records",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
-                        }
+                        },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
             }
-        ) { innerPadding ->
+
+            // Full WebView with exactly one button at bottom right
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .background(MaterialTheme.colorScheme.background)
+                    .fillMaxWidth()
+                    .weight(1f)
             ) {
                 AndroidView(
                     factory = { ctx ->
@@ -387,8 +211,60 @@ fun ItdOfficialWebLoginSheet(
                     },
                     modifier = Modifier.fillMaxSize()
                 )
+
+                // Single button visible at bottom right: Fetch Live Data
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (!isFetchingRecords) {
+                            isFetchingRecords = true
+                            scope.launch {
+                                delay(600)
+                                val res = fetcher.fetchAisTransactions(pan)
+                                val records = res.getOrDefault(emptyList())
+                                val totalTds = records.sumOf { it.tdsWithheld }
+                                val totalInterest = records.sumOf { it.grossAmount }
+
+                                delay(400)
+                                bridge.sanitizePortalSessionImmediately {
+                                    webViewRef?.destroy()
+                                    onSyncSuccess(records.size, totalTds, totalInterest)
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .navigationBarsPadding()
+                        .padding(end = 16.dp, bottom = 20.dp),
+                    containerColor = EnterpriseTeal600,
+                    contentColor = Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp),
+                    icon = {
+                        if (isFetchingRecords) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = Color.White
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Sync,
+                                contentDescription = "Fetch Live Data",
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    },
+                    text = {
+                        Text(
+                            text = if (isFetchingRecords) "Fetching Live Data..." else "Fetch Live Data",
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        )
+                    }
+                )
             }
         }
     }
 }
-

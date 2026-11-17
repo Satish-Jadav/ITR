@@ -77,10 +77,17 @@ object FilingSpeedTelemetryEngine {
         }
 
         val totalDurationSeconds = maxOf(1.0, (everifyEpochMs - syncStartEpochMs) / 1000.0)
+        val canonicalItr = when {
+            activeItrType.contains("ITR-1") -> "ITR-1"
+            activeItrType.contains("ITR-2") -> "ITR-2"
+            activeItrType.contains("ITR-3") -> "ITR-3"
+            activeItrType.contains("ITR-4") -> "ITR-4"
+            else -> "ITR-1"
+        }
         try {
             val payload = JSONObject().apply {
                 put("anonymizedFilingId", activeFilingId.ifBlank { UUID.randomUUID().toString() })
-                put("itrType", activeItrType)
+                put("itrType", canonicalItr)
                 put("assessmentYear", assessmentYear)
                 put("startTimestamp", Instant.ofEpochMilli(syncStartEpochMs).toString())
                 put("submissionTimestamp", Instant.ofEpochMilli(if (submissionEpochMs > 0L) submissionEpochMs else everifyEpochMs).toString())
