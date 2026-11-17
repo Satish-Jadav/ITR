@@ -3,6 +3,7 @@ package `in`.zerotax.app
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.animation.*
@@ -28,6 +29,7 @@ import `in`.zerotax.core.security.ZeroTaxAuthSecurityManager
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         ZeroTaxAuthSecurityManager.init(applicationContext)
 

@@ -486,13 +486,13 @@ class ZeroTaxViewModel : ViewModel() {
         val dossier = UnifiedTaxDossier(
             assesseePan = pan,
             assesseeName = state.taxpayerFullName.ifBlank { pan },
-            maskedAadhaar = "XXXX-XXXX-9012",
+            maskedAadhaar = "Not Linked",
             assessmentYear = state.assessmentYear,
             residentialStatus = "Resident Ordinarily Resident (ROR)",
             filingTier = tier,
             recommendedItrForm = tier.recommendedItrForms.firstOrNull() ?: ItrFormType.ITR_1_SAHAJ,
-            refundBankName = state.bankAccount.bankName.ifBlank { "Primary Bank" },
-            refundBankAccountMasked = if (state.bankAccount.accountNumber.isNotBlank()) "••••" + state.bankAccount.accountNumber.takeLast(4) else "••••4821",
+            refundBankName = state.bankAccount.bankName.ifBlank { "Not Linked" },
+            refundBankAccountMasked = if (state.bankAccount.accountNumber.isNotBlank()) "••••" + state.bankAccount.accountNumber.takeLast(4) else "Not Linked",
             refundBankIfsc = state.bankAccount.ifscCode,
             grossIncomeRupees = grossIncome,
             totalDeductionsRupees = deductions,
@@ -1328,15 +1328,9 @@ class ZeroTaxViewModel : ViewModel() {
         )
         val routing = DeterministicItrFormRouter.routeTaxpayer(profile)
 
-        val employerName = current.employerName.ifBlank { "Primary Employer" }
-        val employerTan = current.employerTan.ifBlank {
-            if (current.pan.length >= 5) "${current.pan.take(4)}01234D" else "BLRM01234D"
-        }
-        val tdsReported = if (current.tdsDeposited26As > 0L) {
-            current.tdsDeposited26As
-        } else {
-            (current.grossSalaryRupees * 0.05).toLong()
-        }
+        val employerName = current.employerName
+        val employerTan = current.employerTan
+        val tdsReported = current.tdsDeposited26As
 
         val updatedSources = if (current.grossSalaryRupees > 0L) {
             listOf(

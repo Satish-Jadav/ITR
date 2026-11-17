@@ -153,7 +153,9 @@ fun PortalAssistantScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
+            val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
             TopAppBar(
+                windowInsets = WindowInsets(top = topInset),
                 title = {
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -376,7 +378,7 @@ fun PortalAssistantScreen(
 
                     InAppFilingStage.AADHAAR_E_VERIFICATION -> AadhaarEVerificationStage(
                         pan = assesseePan,
-                        acknowledgmentNumber = submissionResult?.acknowledgmentNumber ?: "102684910293",
+                        acknowledgmentNumber = submissionResult?.acknowledgmentNumber.orEmpty(),
                         otpCode = aadhaarOtpInput,
                         onOtpChanged = { if (it.length <= 6 && it.all { char -> char.isDigit() }) aadhaarOtpInput = it },
                         isVerifying = isVerifyingOtp,
@@ -385,7 +387,7 @@ fun PortalAssistantScreen(
                             scope.launch {
                                 isVerifyingOtp = true
                                 otpError = null
-                                val ack = submissionResult?.acknowledgmentNumber ?: "102684910293"
+                                val ack = submissionResult?.acknowledgmentNumber.orEmpty()
                                 val res = itdClient.verifyReturnWithAadhaarOtp(assesseePan, ack, aadhaarOtpInput)
                                 isVerifyingOtp = false
                                 if (res.isSuccess) {
@@ -398,7 +400,7 @@ fun PortalAssistantScreen(
                         },
                         onResendOtp = {
                             scope.launch {
-                                val ack = submissionResult?.acknowledgmentNumber ?: "102684910293"
+                                val ack = submissionResult?.acknowledgmentNumber.orEmpty()
                                 itdClient.requestInAppAadhaarOtp(assesseePan, ack)
                             }
                         }
@@ -406,9 +408,9 @@ fun PortalAssistantScreen(
 
                     InAppFilingStage.COMPLETED_CONFIRMATION -> CompletedConfirmationStage(
                         pan = assesseePan,
-                        acknowledgmentNumber = verificationResult?.itrVAcknowledgmentNumber ?: (submissionResult?.acknowledgmentNumber ?: "102684910293"),
-                        cpcRef = verificationResult?.cpcVerificationRef ?: "CPC/EVC/2026-27/4910294",
-                        timestamp = verificationResult?.timestamp ?: "2026-07-15 14:32:10",
+                        acknowledgmentNumber = verificationResult?.itrVAcknowledgmentNumber ?: (submissionResult?.acknowledgmentNumber.orEmpty()),
+                        cpcRef = verificationResult?.cpcVerificationRef.orEmpty(),
+                        timestamp = verificationResult?.timestamp ?: java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                         netRefund = if (tdsClaimed > taxLiability) tdsClaimed - taxLiability else 0L,
                         bankAccount = selectedBank,
                         onDone = {
@@ -688,22 +690,16 @@ private fun ReviewAndConsentStage(
 
             Spacer(Modifier.height(18.dp))
 
-            Button(
+            ZeroTaxPrimaryButton(
+                text = "Proceed to Direct In-App Authentication →",
                 onClick = onProceed,
                 enabled = isDeclarationAccepted,
-                shape = RoundedCornerShape(4.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-                modifier = Modifier.fillMaxWidth().height(44.dp)
-            ) {
-                Text(
-                    text = "Proceed to Direct In-App Authentication →",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                )
-            }
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            )
         }
 
         item {
-            Spacer(Modifier.height(88.dp))
+            Spacer(Modifier.height(120.dp))
         }
     }
 }
@@ -923,43 +919,33 @@ private fun InAppAuthenticationStage(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedButton(
+            ZeroTaxOutlinedButton(
+                text = "Back",
                 onClick = onBack,
-                shape = RoundedCornerShape(4.dp),
-                modifier = Modifier.weight(1f).height(44.dp)
-            ) {
-                Text("Back", style = MaterialTheme.typography.labelMedium)
-            }
+                modifier = Modifier.weight(1f).height(48.dp)
+            )
             if (loginMethod == "AADHAAR_OTP") {
-                Button(
+                ZeroTaxPrimaryButton(
+                    text = "Authenticate via OTP →",
                     onClick = onAuthenticateOtp,
                     enabled = !isAuthenticating && aadhaarOtp.length == 6 && pan.length == 10,
-                    shape = RoundedCornerShape(4.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-                    modifier = Modifier.weight(2f).height(44.dp)
-                ) {
-                    if (isAuthenticating) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = PureWhite, strokeWidth = 2.dp)
-                    } else {
-                        Text("Authenticate via OTP →", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                    }
-                }
+                    isLoading = isAuthenticating,
+                    modifier = Modifier.weight(2f).height(48.dp)
+                )
             } else {
-                Button(
+                ZeroTaxPrimaryButton(
+                    text = "Open Official Web Login →",
                     onClick = onOpenWebLogin,
                     enabled = pan.length == 10,
-                    shape = RoundedCornerShape(4.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-                    modifier = Modifier.weight(2f).height(44.dp)
-                ) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.Launch, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Open Official Web Login →", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                }
+                    leadingIcon = {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.Launch, contentDescription = null, modifier = Modifier.size(16.dp))
+                    },
+                    modifier = Modifier.weight(2f).height(48.dp)
+                )
             }
         }
 
-        Spacer(Modifier.height(88.dp))
+        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -1064,23 +1050,15 @@ private fun DirectSubmissionStage(
 
         Spacer(Modifier.height(24.dp))
 
-        Button(
+        ZeroTaxPrimaryButton(
+            text = if (isSubmitting) "Submitting to ITD..." else "Submit Return Directly to ITD u/s 139(1)",
             onClick = onStartSubmission,
             enabled = !isSubmitting,
-            shape = RoundedCornerShape(4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-            modifier = Modifier.fillMaxWidth().height(44.dp)
-        ) {
-            if (isSubmitting) {
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), color = PureWhite, strokeWidth = 2.dp)
-                Spacer(Modifier.width(8.dp))
-                Text("Submitting to ITD...", style = MaterialTheme.typography.labelMedium)
-            } else {
-                Text("Submit Return Directly to ITD u/s 139(1)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-            }
-        }
+            isLoading = isSubmitting,
+            modifier = Modifier.fillMaxWidth().height(48.dp)
+        )
 
-        Spacer(Modifier.height(88.dp))
+        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -1177,7 +1155,7 @@ private fun AadhaarEVerificationStage(
             modifier = Modifier.fillMaxWidth().height(48.dp)
         )
 
-        Spacer(Modifier.height(88.dp))
+        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -1286,15 +1264,12 @@ private fun CompletedConfirmationStage(
 
         Spacer(Modifier.height(24.dp))
 
-        Button(
+        ZeroTaxPrimaryButton(
+            text = "Done & Wipe Ephemeral Session (DPDP §12(3))",
             onClick = onDone,
-            shape = RoundedCornerShape(4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
-            modifier = Modifier.fillMaxWidth().height(44.dp)
-        ) {
-            Text("Done & Wipe Ephemeral Session (DPDP §12(3))", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-        }
+            modifier = Modifier.fillMaxWidth().height(48.dp)
+        )
 
-        Spacer(Modifier.height(88.dp))
+        Spacer(Modifier.height(120.dp))
     }
 }

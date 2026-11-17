@@ -171,15 +171,16 @@ private fun OnboardingTopBar(
     onBack: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
+    val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
     Surface(
-        color = if (isDark) Slate900 else PureWhite,
-        border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isDark) Slate800 else Slate200),
+        color = if (isDark) Slate900 else PaletteSurface,
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isDark) Slate800 else PaletteSecondary),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(top = topInset, bottom = 10.dp, start = 16.dp, end = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -277,13 +278,13 @@ private fun PlanSelectionStepView(
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = if (isSelected) {
-                    if (isDark) EnterpriseTeal900.copy(alpha = 0.5f) else EnterpriseTeal50
+                    if (isDark) Slate800 else PaletteMuted
                 } else {
-                    if (isDark) Slate850 else PureWhite
+                    if (isDark) Slate850 else PaletteSurface
                 },
                 border = androidx.compose.foundation.BorderStroke(
                     if (isSelected) 2.dp else 1.dp,
-                    if (isSelected) EnterpriseTeal500 else if (isDark) Slate700 else Slate300
+                    if (isSelected) (if (isDark) PaletteSecondary else PalettePrimary) else if (isDark) Slate700 else PaletteSecondary
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -300,7 +301,7 @@ private fun PlanSelectionStepView(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(if (isSelected) EnterpriseTeal500 else if (isDark) Slate800 else Slate100),
+                            .background(if (isSelected) (if (isDark) PaletteAccent else PalettePrimary) else if (isDark) Slate800 else PaletteMuted),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -310,7 +311,7 @@ private fun PlanSelectionStepView(
                                 FilingTierMode.ENTERPRISE_AUDIT -> Icons.Default.Shield
                             },
                             contentDescription = null,
-                            tint = if (isSelected) Slate950 else MaterialTheme.colorScheme.onSurface,
+                            tint = if (isSelected) PureWhite else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -324,12 +325,12 @@ private fun PlanSelectionStepView(
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
                             if (isSelected) {
-                                Icon(Icons.Default.CheckCircle, null, tint = EnterpriseTeal500, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.CheckCircle, null, tint = if (isDark) PaletteSecondary else PalettePrimary, modifier = Modifier.size(16.dp))
                             }
                         }
                         Text(
                             text = tier.subtitle,
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = EnterpriseTeal600)
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = if (isDark) PaletteBackground else PalettePrimary)
                         )
                         Text(
                             text = tier.targetPersona,
@@ -342,8 +343,8 @@ private fun PlanSelectionStepView(
         // Zero-Password Hook Callout
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else Slate100,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            color = if (isDark) Slate850 else PaletteMuted,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -351,7 +352,7 @@ private fun PlanSelectionStepView(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Icon(Icons.Default.VpnKeyOff, null, tint = EnterpriseTeal500, modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.VpnKeyOff, null, tint = if (isDark) PaletteSecondary else PalettePrimary, modifier = Modifier.size(20.dp))
                 Column {
                     Text(
                         text = "100% Zero-Password Guarantee",
@@ -461,8 +462,8 @@ private fun TrustAndAuthStepView(
         )
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PureWhite,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            color = if (isDark) Slate850 else PaletteSurface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onStartHydration() }
@@ -472,18 +473,18 @@ private fun TrustAndAuthStepView(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(Icons.Default.PhonelinkRing, null, tint = EnterpriseTeal500, modifier = Modifier.size(24.dp))
+                Icon(Icons.Default.PhonelinkRing, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Instant Government Aadhaar OTP", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
                     Text("Pulls prefilled salary, 26AS, and AIS in 30 seconds directly from CBDT.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
-                Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
             }
         }
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PureWhite,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            color = if (isDark) Slate850 else PaletteSurface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onLaunchWebLogin() }
@@ -493,18 +494,18 @@ private fun TrustAndAuthStepView(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(Icons.Default.Language, null, tint = EnterpriseTeal500, modifier = Modifier.size(24.dp))
+                Icon(Icons.Default.Language, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Official In-App Web Portal Login", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
                     Text("Log in securely on eportal.incometax.gov.in in an isolated ephemeral session.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
-                Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
             }
         }
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PureWhite,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            color = if (isDark) Slate850 else PaletteSurface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { docLauncher.launch(arrayOf("application/pdf")) }
@@ -514,7 +515,7 @@ private fun TrustAndAuthStepView(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(Icons.Default.UploadFile, null, tint = EnterpriseTeal500, modifier = Modifier.size(24.dp))
+                Icon(Icons.Default.UploadFile, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Import Form 16 / Tax Statement PDF", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
                     Text("Silently unlocks with PAN and auto-fills your entire return in seconds.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))

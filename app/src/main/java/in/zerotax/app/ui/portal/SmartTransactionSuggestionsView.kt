@@ -138,7 +138,9 @@ fun SmartTransactionSuggestionsView(
             }
         },
         topBar = {
+            val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
             TopAppBar(
+                windowInsets = WindowInsets(top = topInset),
                 title = {
                     Column {
                         Text(

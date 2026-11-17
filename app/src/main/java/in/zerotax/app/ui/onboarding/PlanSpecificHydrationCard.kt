@@ -101,8 +101,8 @@ fun PlanSpecificHydrationCard(
                 // Sahaj Quick Salaried Breakdown Card
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = if (isDark) Slate850 else PureWhite,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess.copy(alpha = 0.5f)),
+                    color = if (isDark) Slate850 else PaletteSurface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, PaletteSecondary),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -115,7 +115,7 @@ fun PlanSpecificHydrationCard(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(Icons.Default.CheckCircle, null, tint = EmeraldSuccess, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.CheckCircle, null, tint = PalettePrimary, modifier = Modifier.size(20.dp))
                             Text(
                                 "Form 16 & 26AS Zero-Input Hydration",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
@@ -127,21 +127,21 @@ fun PlanSpecificHydrationCard(
                             style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
 
-                        HorizontalDivider(color = if (isDark) Slate700 else Slate200)
+                        HorizontalDivider(color = if (isDark) Slate700 else PaletteSecondary.copy(alpha = 0.5f))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Employer", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
-                            Text(state.employerName.ifBlank { "Infosys Technologies Ltd" }, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold))
+                            Text(state.employerName.ifBlank { "Not Specified" }, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold))
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Standard Deduction u/s 16(ia)", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
-                            Text("₹75,000", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = EmeraldSuccess))
+                            Text("₹75,000", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = PalettePrimary))
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -158,8 +158,8 @@ fun PlanSpecificHydrationCard(
                 // Investor & Global Pro Card
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = if (isDark) Slate850 else PureWhite,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+                    color = if (isDark) Slate850 else PaletteSurface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, PaletteSecondary),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -222,8 +222,8 @@ fun PlanSpecificHydrationCard(
                 // Enterprise & Tax Audit Requirements
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = if (isDark) Slate850 else PureWhite,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+                    color = if (isDark) Slate850 else PaletteSurface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, PaletteSecondary),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -318,5 +318,7 @@ fun PlanSpecificHydrationCard(
             },
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(Modifier.height(140.dp))
     }
 }

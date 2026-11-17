@@ -55,8 +55,8 @@ fun UnifiedPreFilingDossierView(
         // Master Dossier Sealed Banner
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = if (isDark) EnterpriseTeal900.copy(alpha = 0.5f) else EnterpriseTeal50,
-            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+            color = if (isDark) PalettePrimary else PaletteMuted,
+            border = androidx.compose.foundation.BorderStroke(1.dp, PaletteSecondary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -70,13 +70,13 @@ fun UnifiedPreFilingDossierView(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(EnterpriseTeal500),
+                        .background(PaletteAccent),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.VerifiedUser,
                         contentDescription = null,
-                        tint = Slate950,
+                        tint = PaletteBackground,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -85,7 +85,7 @@ fun UnifiedPreFilingDossierView(
                         text = "Unified Pre-Filing Master Tax Dossier",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = if (isDark) EnterpriseTeal300 else EnterpriseTeal700
+                            color = PalettePrimary
                         )
                     )
                     Text(
@@ -102,8 +102,8 @@ fun UnifiedPreFilingDossierView(
         // Section 1: Taxpayer Identity & Pre-Validated Bank Account
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PureWhite,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            color = if (isDark) Slate850 else PaletteSurface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
@@ -123,13 +123,13 @@ fun UnifiedPreFilingDossierView(
                     )
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = EnterpriseTeal100
+                        color = if (isDark) Slate800 else PaletteMuted
                     ) {
                         Text(
                             text = dossier.filingTier.title,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = EnterpriseTeal900,
+                                color = if (isDark) PaletteBackground else PalettePrimary,
                                 fontSize = 10.sp
                             ),
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -146,12 +146,12 @@ fun UnifiedPreFilingDossierView(
                         Text(dossier.assesseeName, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
                     }
                     Column(horizontalAlignment = Alignment.End) {
-                        Text("PAN & Aadhaar", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
-                        Text("${dossier.assesseePan} • ${dossier.maskedAadhaar}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace))
+                        Text("PAN", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                        Text(dossier.assesseePan, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace))
                     }
                 }
 
-                HorizontalDivider(color = if (isDark) Slate700 else Slate200)
+                HorizontalDivider(color = if (isDark) Slate700 else PaletteSecondary.copy(alpha = 0.5f))
 
                 // Refund Bank Account
                 Row(
@@ -161,18 +161,20 @@ fun UnifiedPreFilingDossierView(
                     Icon(
                         imageVector = Icons.Default.AccountBalance,
                         contentDescription = null,
-                        tint = EmeraldSuccess,
+                        tint = if (isDark) PaletteSecondary else PalettePrimary,
                         modifier = Modifier.size(18.dp)
                     )
                     Column {
                         Text(
-                            text = "Refund Direct Deposit: ${dossier.refundBankName} (${dossier.refundBankAccountMasked})",
+                            text = "Refund Direct Deposit: ${dossier.refundBankName}",
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
                         )
-                        Text(
-                            text = "IFSC: ${dossier.refundBankIfsc} • Pre-validated on ITD Portal",
-                            style = MaterialTheme.typography.labelSmall.copy(color = EmeraldSuccess, fontSize = 10.sp)
-                        )
+                        if (dossier.refundBankIfsc.isNotBlank()) {
+                            Text(
+                                text = "IFSC: ${dossier.refundBankIfsc}",
+                                style = MaterialTheme.typography.labelSmall.copy(color = PaletteAccent, fontSize = 10.sp)
+                            )
+                        }
                     }
                 }
             }
@@ -181,8 +183,8 @@ fun UnifiedPreFilingDossierView(
         // Section 2: Consolidated Multi-Head Income Matrix
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PureWhite,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            color = if (isDark) Slate850 else PaletteSurface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
@@ -208,7 +210,7 @@ fun UnifiedPreFilingDossierView(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Standard & Chapter VI-A Deductions", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
-                    Text("-${IndianCurrencyFormatter.formatToInr(dossier.totalDeductionsRupees + 75000L)}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = EmeraldSuccess))
+                    Text("-${IndianCurrencyFormatter.formatToInr(dossier.totalDeductionsRupees + 75000L)}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = if (isDark) PaletteSecondary else PalettePrimary))
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -223,8 +225,8 @@ fun UnifiedPreFilingDossierView(
         // Section 3: 3-Way Tax Credit Reconciliation Matrix
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) EmeraldSuccessBgDark.copy(alpha = 0.3f) else EmeraldSuccessBg,
-            border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess.copy(alpha = 0.4f)),
+            color = if (isDark) Slate850 else PaletteMuted,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
@@ -240,12 +242,12 @@ fun UnifiedPreFilingDossierView(
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = EmeraldSuccess,
+                        tint = if (isDark) PaletteSecondary else PalettePrimary,
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
                         text = "3-Way Tax Credit Match (100% Verified)",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = if (isDark) PaletteBackground else PalettePrimary)
                     )
                 }
                 Text(
@@ -258,8 +260,8 @@ fun UnifiedPreFilingDossierView(
         // Section 4: Automated Regime Showdown
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PureWhite,
-            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+            color = if (isDark) Slate850 else PaletteSurface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
@@ -280,10 +282,10 @@ fun UnifiedPreFilingDossierView(
                     // New Regime Card
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (dossier.recommendedRegime == TaxRegime.NEW_REGIME_115BAC) EnterpriseTeal50 else if (isDark) Slate800 else Slate100,
+                        color = if (dossier.recommendedRegime == TaxRegime.NEW_REGIME_115BAC) (if (isDark) Slate800 else PaletteMuted) else (if (isDark) Slate850 else PaletteSurface),
                         border = androidx.compose.foundation.BorderStroke(
                             1.dp,
-                            if (dossier.recommendedRegime == TaxRegime.NEW_REGIME_115BAC) EnterpriseTeal500 else Color.Transparent
+                            if (dossier.recommendedRegime == TaxRegime.NEW_REGIME_115BAC) (if (isDark) PaletteSecondary else PaletteAccent) else Color.Transparent
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
@@ -291,7 +293,7 @@ fun UnifiedPreFilingDossierView(
                             Text("New Regime (115BAC)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                             Text(IndianCurrencyFormatter.formatToInr(dossier.computedTaxNewRegime), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
                             if (dossier.recommendedRegime == TaxRegime.NEW_REGIME_115BAC) {
-                                Text("Recommended", style = MaterialTheme.typography.labelSmall.copy(color = EnterpriseTeal700, fontWeight = FontWeight.Bold, fontSize = 9.sp))
+                                Text("Recommended", style = MaterialTheme.typography.labelSmall.copy(color = if (isDark) PaletteBackground else PalettePrimary, fontWeight = FontWeight.Bold, fontSize = 9.sp))
                             }
                         }
                     }
@@ -299,10 +301,10 @@ fun UnifiedPreFilingDossierView(
                     // Old Regime Card
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (dossier.recommendedRegime == TaxRegime.OLD_REGIME) EnterpriseTeal50 else if (isDark) Slate800 else Slate100,
+                        color = if (dossier.recommendedRegime == TaxRegime.OLD_REGIME) (if (isDark) Slate800 else PaletteMuted) else (if (isDark) Slate850 else PaletteSurface),
                         border = androidx.compose.foundation.BorderStroke(
                             1.dp,
-                            if (dossier.recommendedRegime == TaxRegime.OLD_REGIME) EnterpriseTeal500 else Color.Transparent
+                            if (dossier.recommendedRegime == TaxRegime.OLD_REGIME) (if (isDark) PaletteSecondary else PaletteAccent) else Color.Transparent
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
@@ -310,7 +312,7 @@ fun UnifiedPreFilingDossierView(
                             Text("Old Regime", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                             Text(IndianCurrencyFormatter.formatToInr(dossier.computedTaxOldRegime), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
                             if (dossier.recommendedRegime == TaxRegime.OLD_REGIME) {
-                                Text("Recommended", style = MaterialTheme.typography.labelSmall.copy(color = EnterpriseTeal700, fontWeight = FontWeight.Bold, fontSize = 9.sp))
+                                Text("Recommended", style = MaterialTheme.typography.labelSmall.copy(color = if (isDark) PaletteBackground else PalettePrimary, fontWeight = FontWeight.Bold, fontSize = 9.sp))
                             }
                         }
                     }
@@ -319,7 +321,8 @@ fun UnifiedPreFilingDossierView(
                 // Final Net Refund/Payable Pill
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = if (dossier.isRefund) EmeraldSuccessBg else AmberWarningBg,
+                    color = if (isDark) Slate800 else PaletteMuted,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -333,14 +336,14 @@ fun UnifiedPreFilingDossierView(
                             text = if (dossier.isRefund) "Net Tax Refund Due" else "Net Tax Payable",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (dossier.isRefund) EmeraldSuccess else AmberWarning
+                                color = if (isDark) PaletteBackground else PalettePrimary
                             )
                         )
                         Text(
                             text = IndianCurrencyFormatter.formatToInr(dossier.netPayableOrRefund),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (dossier.isRefund) EmeraldSuccess else AmberWarning
+                                color = if (isDark) PaletteBackground else PalettePrimary
                             )
                         )
                     }
@@ -351,8 +354,8 @@ fun UnifiedPreFilingDossierView(
         // Section 5: Plan-Specific Statutory Appendix
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PureWhite,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            color = if (isDark) Slate850 else PaletteSurface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
@@ -368,24 +371,20 @@ fun UnifiedPreFilingDossierView(
 
                 when (val summary = dossier.planSpecificSummary) {
                     is PlanSpecificDossierSummary.SahajSummary -> {
-                        Text("• Form 16 Part B line items validated from employer ${summary.employerName}", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
+                        if (summary.employerName.isNotBlank()) {
+                            Text("• Form 16 Part B line items validated from employer ${summary.employerName}", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
+                        }
                         Text("• Section 16(ia) standard deduction: ₹75,000 claimed", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
                     }
                     is PlanSpecificDossierSummary.InvestorSummary -> {
-                        Text("• Schedule CG: STCG u/s 111A (?45,000 @ 20%) & LTCG u/s 112A (?1,35,000 @ 12.5%)", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
-                        Text("• 6 Grandfathered ISINs FMVs sealed as of Jan 31, 2018", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
-                        Text("• Schedule FA: ${summary.foreignAssetsCount} foreign account disclosure sealed via SBI TTBR rates", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
+                        Text("• Schedule CG: Capital gains schedule", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
                     }
                     is PlanSpecificDossierSummary.SugamSummary -> {
                         Text("• Presumptive Profession u/s 44ADA: ${summary.declaredProfitPercent}% profit declared", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
-                        Text("• Digital Ratio: ${summary.digitalReceiptsPercent}% (Elevated ?75 Lakh limit certified)", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
-                        Text("• Balance Sheet Particulars: Debtors, Creditors, Stock & Cash synced", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
+                        Text("• Digital Ratio: ${summary.digitalReceiptsPercent}% (Elevated ₹75 Lakh limit certified)", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
                     }
                     is PlanSpecificDossierSummary.EnterpriseAuditSummary -> {
                         Text("• Form 3CD Compliance Checklist: 44 clauses validated", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
-                        Text("• Sec 43B(h) MSME overdue liability check: 0 overdue payables", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
-                        Text("• Clause 44: ${summary.clause44RegisteredExpensePercent}% expenditure with GST-registered suppliers", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
-                        Text("• Statutory Auditor Assigned: ${summary.caAuditorName} (ICAI #${summary.caMembershipNumber})", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
                     }
                 }
             }
@@ -394,8 +393,8 @@ fun UnifiedPreFilingDossierView(
         // Section 6: Cryptographic Hash Seal
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = if (isDark) Slate850 else Slate100,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            color = if (isDark) Slate850 else PaletteMuted,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -403,7 +402,7 @@ fun UnifiedPreFilingDossierView(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Icon(Icons.Default.Security, null, tint = EnterpriseTeal500, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.Security, null, tint = PalettePrimary, modifier = Modifier.size(14.dp))
                     Text("Cryptographic Audit Signature (SHA-256)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                 }
                 Text(
@@ -444,5 +443,7 @@ fun UnifiedPreFilingDossierView(
                 )
             }
         }
+
+        Spacer(Modifier.height(140.dp))
     }
 }

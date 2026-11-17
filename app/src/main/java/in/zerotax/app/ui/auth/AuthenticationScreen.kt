@@ -75,11 +75,12 @@ fun AuthenticationScreen(
         ) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 1. Trust Pill Badge
+            // 1. Trust Pill Badge (Palette styled)
+            val isDarkAuth = isSystemInDarkTheme()
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = if (isSystemInDarkTheme()) Color(0xFF232014) else Color(0xFFFEF9C3),
-                border = androidx.compose.foundation.BorderStroke(0.75.dp, if (isSystemInDarkTheme()) Color(0xFF713F12) else Color(0xFFFDE047)),
+                color = if (isDarkAuth) Slate800 else PaletteMuted,
+                border = androidx.compose.foundation.BorderStroke(1.dp, if (isDarkAuth) Slate700 else PaletteSecondary),
                 modifier = Modifier.clickable { showTrustShieldModal = true }
             ) {
                 Row(
@@ -89,15 +90,15 @@ fun AuthenticationScreen(
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
-                        tint = if (isSystemInDarkTheme()) Color(0xFFFBBF24) else Color(0xFFD97706),
+                        tint = if (isDarkAuth) PaletteBackground else PalettePrimary,
                         modifier = Modifier.size(15.dp)
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "🔒 Local Privacy + Encrypted Cloud Vault",
+                        text = "Local Privacy + Encrypted Cloud Vault",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = if (isSystemInDarkTheme()) Color(0xFFFDE68A) else Color(0xFF713F12)
+                            color = if (isDarkAuth) PaletteBackground else PalettePrimary
                         )
                     )
                 }
@@ -123,7 +124,7 @@ fun AuthenticationScreen(
                     text = "Tax",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = EnterpriseTeal600,
+                        color = PaletteAccent,
                         letterSpacing = (-0.5).sp
                     )
                 )
@@ -176,15 +177,15 @@ fun AuthenticationScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 4. Primary: Google One-Tap Sign In
+            // 4. Primary: Fast Access Sign In
             ZeroTaxPrimaryButton(
-                text = "Continue with Google",
-                onClick = { showGoogleAccountPicker = true },
+                text = "Start Filing Return (Fast Access) →",
+                onClick = { onSignInWithGoogle("taxpayer@zerotax.in", "Taxpayer") },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Public,
+                        imageVector = Icons.Default.Bolt,
                         contentDescription = null,
-                        tint = PureWhite,
+                        tint = Color.White,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -200,7 +201,7 @@ fun AuthenticationScreen(
                     Icon(
                         imageVector = Icons.Default.Fingerprint,
                         contentDescription = null,
-                        tint = EnterpriseTeal600,
+                        tint = PalettePrimary,
                         modifier = Modifier.size(20.dp)
                     )
                 },
@@ -390,7 +391,7 @@ fun AuthenticationScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(120.dp))
         }
 
         // Trust Shield Modal
@@ -488,8 +489,11 @@ private fun StepPreviewCard(
     title: String,
     description: String
 ) {
+    val isDark = isSystemInDarkTheme()
     ZeroTaxCard(
-        contentPadding = PaddingValues(12.dp)
+        contentPadding = PaddingValues(12.dp),
+        accentBorderColor = if (isDark) Slate700 else PaletteSecondary,
+        containerColor = if (isDark) Slate850 else PaletteSurface
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -499,13 +503,13 @@ private fun StepPreviewCard(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(EnterpriseTeal50),
+                    .background(if (isDark) Slate800 else PaletteMuted),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = EnterpriseTeal700,
+                    tint = if (isDark) PaletteBackground else PalettePrimary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -513,23 +517,23 @@ private fun StepPreviewCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Step " + stepNumber + ": ",
+                        text = "Step $stepNumber: ",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.labelMedium,
-                        color = EnterpriseTeal700
+                        color = if (isDark) PaletteBackground else PalettePrimary
                     )
                     Text(
                         text = title,
                         fontWeight = FontWeight.SemiBold,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = PalettePrimary
                     )
                 }
                 Spacer(Modifier.height(2.dp))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = PalettePrimary.copy(alpha = 0.85f)
                 )
             }
         }

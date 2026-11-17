@@ -88,6 +88,11 @@ dependencies {
     // SMS Retriever 1-Tap OTP
     implementation("com.google.android.gms:play-services-auth-api-phone:18.1.0")
 
+    // Android Credential Manager & Google Identity One-Tap
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
     // ML Kit & Document Scanner Vision Engine
     implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
     implementation("com.google.mlkit:text-recognition:16.0.1")

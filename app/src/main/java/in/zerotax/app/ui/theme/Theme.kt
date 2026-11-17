@@ -28,7 +28,7 @@ private val EnterpriseLightColorScheme = lightColorScheme(
     surface = PureWhite,
     onSurface = Slate900,
     surfaceVariant = Slate100,
-    onSurfaceVariant = Slate600,
+    onSurfaceVariant = Slate700,
     outline = Slate300,
     outlineVariant = Slate200,
     error = CrimsonDanger,
@@ -39,14 +39,14 @@ private val EnterpriseLightColorScheme = lightColorScheme(
 
 private val EnterpriseDarkColorScheme = darkColorScheme(
     primary = EnterpriseTeal500,
-    onPrimary = Slate950,
+    onPrimary = PureWhite,
     primaryContainer = EnterpriseTeal800,
     onPrimaryContainer = EnterpriseTeal100,
     secondary = Slate300,
     onSecondary = Slate900,
     secondaryContainer = Slate850,
     onSecondaryContainer = Slate100,
-    tertiary = IndigoStatutory,
+    tertiary = IndigoStatutoryDark,
     onTertiary = PureWhite,
     tertiaryContainer = IndigoStatutoryBgDark,
     onTertiaryContainer = IndigoStatutoryBg,
@@ -58,10 +58,10 @@ private val EnterpriseDarkColorScheme = darkColorScheme(
     onSurfaceVariant = Slate400,
     outline = Slate700,
     outlineVariant = Slate800,
-    error = CrimsonDanger,
+    error = CrimsonDangerDark,
     onError = PureWhite,
     errorContainer = CrimsonDangerBgDark,
-    onErrorContainer = CrimsonDangerBg
+    onErrorContainer = CrimsonDangerDark
 )
 
 @Composable

@@ -264,11 +264,11 @@ fun ZeroTaxFourTapSpineScaffold(
                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
                 ) {
+                    val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .statusBarsPadding()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(top = topInset, bottom = 8.dp, start = 16.dp, end = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -335,6 +335,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         WorkspaceTab.SmartTaxVaultAndCopilot to Icons.Default.Security,
                         WorkspaceTab.PrivacyAndSettings to Icons.Default.Lock
                     )
+                    val isDarkNav = isSystemInDarkTheme()
                     WorkspaceTab.entries.forEach { tab ->
                         val isSelected = uiState.selectedWorkspaceTab == tab
                         NavigationBarItem(
@@ -356,11 +357,11 @@ fun ZeroTaxFourTapSpineScaffold(
                                 )
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = EnterpriseTeal100,
-                                selectedIconColor = EnterpriseTeal900,
-                                selectedTextColor = EnterpriseTeal700,
-                                unselectedIconColor = Slate500,
-                                unselectedTextColor = Slate600
+                                indicatorColor = if (isDarkNav) Slate800 else PaletteMuted,
+                                selectedIconColor = if (isDarkNav) PaletteBackground else PalettePrimary,
+                                selectedTextColor = if (isDarkNav) PaletteBackground else PalettePrimary,
+                                unselectedIconColor = if (isDarkNav) Slate400 else PaletteSecondary,
+                                unselectedTextColor = if (isDarkNav) Slate400 else PaletteSecondary
                             )
                         )
                     }
@@ -671,32 +672,6 @@ private fun Stage1IdentityConsent(
 
         Spacer(Modifier.height(6.dp))
 
-        // 1-TAP ITD PORTAL LIVE SYNC FAST ACTION
-        ZeroTaxActionCard(
-            title = "Sync Directly from Income Tax Portal",
-            description = "Pull Form 26AS, AIS/TIS & prefill in-app. Never type manually!",
-            icon = Icons.Default.Sync,
-            onClick = onOpenPortalSync,
-            badgeText = "1-Tap Sync →",
-            badgeTone = BadgeTone.SUCCESS
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        // 1-TAP IN-APP FORM 16 PDF UPLOAD & AUTO-DECRYPTION
-        ZeroTaxActionCard(
-            title = "Upload Form 16 PDF (Auto-Fill Return)",
-            description = "Auto-unlocks password & pre-fills salary, TAN, TDS & 80C/80D.",
-            icon = Icons.Default.Description,
-            onClick = onOpenPasswordCheatsheet,
-            badgeText = "Auto-Fill →",
-            badgeTone = BadgeTone.STATUTORY,
-            iconTint = Color(0xFF2563EB),
-            iconBgColor = Color(0xFFEFF6FF)
-        )
-
-        Spacer(Modifier.height(10.dp))
-
         Column {
             Text(
                 text = "Step 1 of 4: Plan & Identity",
@@ -704,28 +679,15 @@ private fun Stage1IdentityConsent(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "Active Plan: " + filingTier.title + " (" + filingTier.recommendedItrForms.joinToString { it.name.replace("_", "-") } + "). Verify your details or tap below to switch plan.",
+                text = "Active Plan: " + filingTier.title + " (" + filingTier.recommendedItrForms.joinToString { it.name.replace("_", "-") } + "). Enter your PAN below to proceed.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(8.dp))
-            WhatsAppEndToEndEncryptionBanner(
-                onClick = {},
-                customText = "Your tax return is end-to-end encrypted and synced with the secure cloud API. No one outside of this device, not even ZeroTax, can read your salary or PAN."
             )
         }
 
         Spacer(Modifier.height(14.dp))
 
-        // Prominent Filing Plan / Tier Selection (Blinkit-style 2-top, 1-bottom card layout)
-        FilingTierSelectorCard(
-            currentTier = filingTier,
-            recommendedTier = filingTier,
-            onTierSelected = onTierSelected
-        )
-
-        Spacer(Modifier.height(14.dp))
-
+        // 1. Primary Inputs: PAN & Age Category (Instantly visible & accessible)
         SmartIndividualPanField(
             panValue = pan,
             onPanChanged = onPanChanged
@@ -733,10 +695,57 @@ private fun Stage1IdentityConsent(
 
         Spacer(Modifier.height(12.dp))
 
-        // Age Category & Statutory Basic Exemption Selector
         CitizenCategoryAgeSelector(
             selectedCategory = citizenCategory,
             onCategoryChanged = onCitizenCategoryChanged
+        )
+
+        Spacer(Modifier.height(14.dp))
+
+        // Validation hint row
+        if (!isPanValid && pan.isNotBlank()) {
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                Text(
+                    text = "PAN must be 10 characters: 5 letters, 4 digits, 1 letter (personal: 4th char P or H).",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+
+        // Primary Action CTA (Prominently placed right below core inputs)
+        ZeroTaxPrimaryButton(
+            text = if (!isPanValid) "Enter Valid PAN to Continue" else "Continue to Step 2: Income (" + filingTier.title + ") →",
+            onClick = onProceed,
+            enabled = canProceed
+        )
+
+        Spacer(Modifier.height(14.dp))
+
+        // Quick Actions Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            ZeroTaxOutlinedButton(
+                text = "Sync ITD Portal",
+                onClick = onOpenPortalSync,
+                modifier = Modifier.weight(1f)
+            )
+            ZeroTaxOutlinedButton(
+                text = "Upload Form 16",
+                onClick = onOpenPasswordCheatsheet,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(Modifier.height(14.dp))
+
+        // Filing Plan Selector (Tap to switch anytime)
+        FilingTierSelectorCard(
+            currentTier = filingTier,
+            recommendedTier = filingTier,
+            onTierSelected = onTierSelected
         )
 
         Spacer(Modifier.height(12.dp))
@@ -781,58 +790,7 @@ private fun Stage1IdentityConsent(
             }
         }
 
-        Spacer(Modifier.height(14.dp))
-
-        // Privacy Guarantee Card (Clean & reassuring)
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-            border = androidx.compose.foundation.BorderStroke(0.75.dp, MaterialTheme.colorScheme.outlineVariant),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Shield,
-                    contentDescription = null,
-                    tint = EnterpriseTeal600,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "Local Privacy + Encrypted Cloud Vault: Your financials are processed locally and backed up with end-to-end encryption (AES-256-GCM).",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 15.sp
-                    )
-                )
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Validation hint row
-        if (!isPanValid && pan.isNotBlank()) {
-            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-                Text(
-                    text = "PAN must be 10 characters: 5 letters, 4 digits, 1 letter (personal: 4th char P or H).",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-
-        // Primary Action CTA
-        ZeroTaxPrimaryButton(
-            text = if (!isPanValid) "Enter Valid PAN to Continue" else "Continue to Step 2: Income (" + filingTier.title + ") →",
-            onClick = onProceed,
-            enabled = canProceed
-        )
-
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
 
         // Secondary Chatbot entry
         ZeroTaxOutlinedButton(
@@ -847,7 +805,7 @@ private fun Stage1IdentityConsent(
             }
         )
 
-        Spacer(Modifier.height(88.dp))
+        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -911,8 +869,8 @@ private fun Stage2DocumentDiscovery(
             onClick = onOpenForm16Upload,
             badgeText = "1-Tap Import →",
             badgeTone = BadgeTone.STATUTORY,
-            iconTint = Color(0xFF2563EB),
-            iconBgColor = Color(0xFFEFF6FF)
+            iconTint = PalettePrimary,
+            iconBgColor = PaletteMuted
         )
 
         Spacer(Modifier.height(12.dp))
@@ -1143,7 +1101,7 @@ private fun Stage2DocumentDiscovery(
             )
         }
 
-        Spacer(Modifier.height(88.dp))
+        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -1169,7 +1127,7 @@ private fun Stage3Reconciliation(
     onBack: () -> Unit,
     onProceed: () -> Unit
 ) {
-    val estimatedTds = if (tdsDeposited > 0L) tdsDeposited else (grossSalary * 0.05).toLong()
+    val estimatedTds = tdsDeposited
     var tdsInputText by remember(tdsDeposited) {
         mutableStateOf(if (tdsDeposited > 0L) tdsDeposited.toString() else estimatedTds.toString())
     }
@@ -1225,7 +1183,7 @@ private fun Stage3Reconciliation(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Employer TDS (TAN: ${employerTan.ifBlank { "BLRM01234D" }})",
+                        text = if (employerTan.isNotBlank()) "Employer TDS (TAN: $employerTan)" else "Employer TDS",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         modifier = Modifier.weight(1f, fill = false),
                         maxLines = 1,
@@ -1406,7 +1364,7 @@ private fun Stage3Reconciliation(
             )
         }
 
-        Spacer(Modifier.height(88.dp))
+        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -1500,42 +1458,34 @@ private fun Stage4RegimeShowdown(
         Spacer(Modifier.height(12.dp))
 
         // Pre-filing notice risk check
-        OutlinedButton(
+        ZeroTaxOutlinedButton(
+            text = "Pre-Filing Audit & Notice Risk Shield",
             onClick = onRunAudit,
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldSuccess),
-            modifier = Modifier.fillMaxWidth().height(46.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Security,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )
-                Spacer(Modifier.width(8.dp))
-                Text("Pre-Filing Audit & Notice Risk Shield", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-            }
-        }
+            },
+            modifier = Modifier.fillMaxWidth().height(46.dp)
+        )
 
         if (newRegimeTax > 0L) {
             Spacer(Modifier.height(10.dp))
-            Button(
+            ZeroTaxPrimaryButton(
+                text = "Pay Advance / Self-Assessment Tax Online",
                 onClick = onOpenTaxPaymentHub,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
-                modifier = Modifier.fillMaxWidth().height(46.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.CreditCard,
                         contentDescription = null,
-                        tint = PureWhite,
+                        tint = Color.White,
                         modifier = Modifier.size(16.dp)
                     )
-                    Spacer(Modifier.width(8.dp))
-                    Text("Pay Tax via Instant UPI / Challan 280 (Zero Fee)", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = PureWhite))
-                }
-            }
+                },
+                modifier = Modifier.fillMaxWidth().height(46.dp)
+            )
         }
 
         Spacer(Modifier.height(24.dp))
@@ -1556,7 +1506,7 @@ private fun Stage4RegimeShowdown(
             )
         }
 
-        Spacer(Modifier.height(88.dp))
+        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -1632,7 +1582,7 @@ private fun ProWorkspaceView(
                 WorkspaceTab.FilingAndRefundHub -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 88.dp)
+                        contentPadding = PaddingValues(bottom = 120.dp)
                     ) {
                         item {
                             FilingTierSelectorCard(
@@ -1709,7 +1659,7 @@ private fun ProWorkspaceView(
                     }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 88.dp)
+                        contentPadding = PaddingValues(bottom = 120.dp)
                     ) {
                         item {
                             Card(
@@ -1794,7 +1744,7 @@ private fun ProWorkspaceView(
                 WorkspaceTab.PrivacyAndSettings -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 88.dp)
+                        contentPadding = PaddingValues(bottom = 120.dp)
                     ) {
                         // Statutory Legal Protection & Cloud Shield Summary Card
                         item {
@@ -1826,22 +1776,18 @@ private fun ProWorkspaceView(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Spacer(Modifier.height(10.dp))
-                                    OutlinedButton(
+                                    ZeroTaxOutlinedButton(
+                                        text = "Review Master Legal Terms & Declarations",
                                         onClick = onOpenLegalDialog,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EnterpriseTeal600),
-                                        modifier = Modifier.fillMaxWidth().height(40.dp)
-                                    ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                        leadingIcon = {
                                             Icon(
                                                 imageVector = Icons.Default.Gavel,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(14.dp)
                                             )
-                                            Spacer(Modifier.width(6.dp))
-                                            Text("Review Master Legal Terms & Declarations", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                                        }
-                                    }
+                                        },
+                                        modifier = Modifier.fillMaxWidth().height(40.dp)
+                                    )
                                 }
                             }
                             Spacer(Modifier.height(12.dp))

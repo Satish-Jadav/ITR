@@ -172,27 +172,27 @@ fun StatutoryBadge(
         BadgeTone.SUCCESS -> Triple(
             if (isDark) EmeraldSuccessBgDark else EmeraldSuccessBg,
             if (isDark) EnterpriseTeal300 else EmeraldSuccess,
-            EmeraldSuccess.copy(alpha = 0.3f)
+            EmeraldSuccess.copy(alpha = 0.35f)
         )
         BadgeTone.WARNING -> Triple(
             if (isDark) AmberWarningBgDark else AmberWarningBg,
             if (isDark) AmberWarningDark else AmberWarning,
-            AmberWarning.copy(alpha = 0.3f)
+            AmberWarning.copy(alpha = 0.35f)
         )
         BadgeTone.DANGER  -> Triple(
             if (isDark) CrimsonDangerBgDark else CrimsonDangerBg,
             if (isDark) CrimsonDangerDark else CrimsonDanger,
-            CrimsonDanger.copy(alpha = 0.3f)
+            CrimsonDanger.copy(alpha = 0.35f)
         )
         BadgeTone.STATUTORY -> Triple(
             if (isDark) IndigoStatutoryBgDark else IndigoStatutoryBg,
             if (isDark) IndigoStatutoryDark else IndigoStatutory,
-            IndigoStatutory.copy(alpha = 0.3f)
+            IndigoStatutory.copy(alpha = 0.35f)
         )
         BadgeTone.NEUTRAL -> Triple(
-            MaterialTheme.colorScheme.surfaceVariant,
-            MaterialTheme.colorScheme.onSurfaceVariant,
-            MaterialTheme.colorScheme.outlineVariant
+            if (isDark) Slate850 else Slate100,
+            if (isDark) Slate300 else Slate700,
+            if (isDark) Slate700 else Slate300
         )
     }
 
@@ -234,6 +234,7 @@ fun EnterpriseTopHeader(
     onLockVault: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -242,8 +243,7 @@ fun EnterpriseTopHeader(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(vertical = 8.dp)
+                .padding(top = topInset, bottom = 8.dp)
         ) {
             // Blinkit-style Minimal Top Bar (Brand + Identity + Profile/Lock)
             Row(
@@ -332,6 +332,10 @@ fun EnterpriseTopHeader(
 
             // Horizontally Scrollable Fast Actions Strip (Responsive on all screen sizes, never wraps or overflows)
             val isTopDark = isSystemInDarkTheme()
+            val chipBg = if (isTopDark) Slate850 else Slate100
+            val chipBorder = if (isTopDark) Slate700 else Slate300
+            val chipContent = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700
+
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -341,8 +345,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = if (isTopDark) EnterpriseTeal800 else EnterpriseTeal50,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, EnterpriseTeal600),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenChatbot() }
                         ) {
                             Row(
@@ -352,11 +356,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.SmartToy,
                                     contentDescription = null,
-                                    tint = if (isTopDark) EnterpriseTeal200 else EnterpriseTeal800,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("AI Copilot", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) EnterpriseTeal100 else EnterpriseTeal900))
+                                Text("AI Copilot", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -366,8 +370,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = if (isTopDark) IndigoStatutoryBgDark else IndigoStatutoryBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, IndigoStatutory),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenToolkit() }
                         ) {
                             Row(
@@ -377,11 +381,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Build,
                                     contentDescription = null,
-                                    tint = if (isTopDark) IndigoStatutoryDark else IndigoStatutory,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) IndigoStatutoryDark else IndigoStatutory))
+                                Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -391,8 +395,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = if (isTopDark) EmeraldSuccessBgDark else EmeraldSuccessBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, EmeraldSuccess),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenAnalytics() }
                         ) {
                             Row(
@@ -402,11 +406,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.BarChart,
                                     contentDescription = null,
-                                    tint = if (isTopDark) EnterpriseTeal300 else EmeraldSuccess,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Insights", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) EnterpriseTeal300 else EmeraldSuccess))
+                                Text("Insights", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -416,8 +420,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = if (isTopDark) AmberWarningBgDark else AmberWarningBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, AmberWarning),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenNotices() }
                         ) {
                             Row(
@@ -427,11 +431,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Security,
                                     contentDescription = null,
-                                    tint = if (isTopDark) AmberWarningDark else AmberWarning,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isTopDark) AmberWarningDark else AmberWarning))
+                                Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -441,8 +445,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenThinkLikeCa() }
                         ) {
                             Row(
@@ -452,11 +456,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.TrendingUp,
                                     contentDescription = null,
-                                    tint = EmeraldSuccess,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Think Like CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                                Text("Think Like CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -466,8 +470,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenCaPortal() }
                         ) {
                             Row(
@@ -477,11 +481,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.AssignmentInd,
                                     contentDescription = null,
-                                    tint = IndigoStatutory,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("CA Desk", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                                Text("CA Desk", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -491,8 +495,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenBusinessAudit() }
                         ) {
                             Row(
@@ -502,11 +506,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Domain,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Business Audit", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                                Text("Business Audit", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -516,8 +520,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenNriSuite() }
                         ) {
                             Row(
@@ -527,11 +531,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Public,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("NRI Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                                Text("NRI Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -541,8 +545,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenCorporateSuite() }
                         ) {
                             Row(
@@ -552,11 +556,11 @@ fun EnterpriseTopHeader(
                                 Icon(
                                     imageVector = Icons.Default.Apartment,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("Corporate Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                                Text("Corporate Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -566,8 +570,8 @@ fun EnterpriseTopHeader(
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            color = chipBg,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                             modifier = Modifier.clickable { onOpenTrustShield() }
                         ) {
                             Row(
@@ -575,13 +579,13 @@ fun EnterpriseTopHeader(
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Lock,
+                                    imageVector = Icons.Default.VerifiedUser,
                                     contentDescription = null,
-                                    tint = if (isSystemInDarkTheme()) Color(0xFFFBBF24) else Color(0xFFD97706),
+                                    tint = chipContent,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(5.dp))
-                                Text("End-to-End Encrypted", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface))
+                                Text("Trust Shield", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
                             }
                         }
                     }
@@ -1328,8 +1332,10 @@ fun ZeroTaxTopAppBar(
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
     TopAppBar(
         modifier = modifier,
+        windowInsets = WindowInsets(top = topInset),
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1409,11 +1415,17 @@ fun ZeroTaxPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    containerColor: Color = EnterpriseTeal600,
-    contentColor: Color = PureWhite,
+    containerColor: Color? = null,
+    contentColor: Color? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
+    val isDark = isSystemInDarkTheme()
+    val effectiveContainerColor = containerColor ?: if (isDark) EnterpriseTeal500 else EnterpriseTeal600
+    val effectiveContentColor = contentColor ?: if (isDark) Slate950 else PureWhite
+    val disabledContainer = if (isDark) Slate800 else Slate200
+    val disabledContent = if (isDark) Slate500 else Slate400
+
     Button(
         onClick = { if (!isLoading) onClick() },
         modifier = modifier
@@ -1422,17 +1434,17 @@ fun ZeroTaxPrimaryButton(
         enabled = enabled && !isLoading,
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor,
-            disabledContainerColor = Slate300,
-            disabledContentColor = Slate500
+            containerColor = effectiveContainerColor,
+            contentColor = effectiveContentColor,
+            disabledContainerColor = disabledContainer,
+            disabledContentColor = disabledContent
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp, pressedElevation = 2.dp)
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(18.dp),
-                color = contentColor,
+                color = effectiveContentColor,
                 strokeWidth = 2.dp
             )
             Spacer(Modifier.width(8.dp))
@@ -1466,8 +1478,15 @@ fun ZeroTaxOutlinedButton(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
-    val effectiveBorderColor = borderColor ?: if (enabled) EnterpriseTeal600 else Slate300
-    val effectiveContentColor = contentColor ?: EnterpriseTeal600
+    val isDark = isSystemInDarkTheme()
+    val effectiveBorderColor = borderColor ?: if (enabled) {
+        if (isDark) EnterpriseTeal500 else EnterpriseTeal600
+    } else {
+        if (isDark) Slate700 else Slate300
+    }
+    val effectiveContentColor = contentColor ?: if (isDark) EnterpriseTeal300 else EnterpriseTeal600
+    val disabledContentColor = if (isDark) Slate500 else Slate400
+
     OutlinedButton(
         onClick = { if (!isLoading) onClick() },
         modifier = modifier
@@ -1478,7 +1497,7 @@ fun ZeroTaxOutlinedButton(
         border = androidx.compose.foundation.BorderStroke(1.dp, effectiveBorderColor),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = effectiveContentColor,
-            disabledContentColor = Slate400
+            disabledContentColor = disabledContentColor
         )
     ) {
         if (isLoading) {
@@ -1595,14 +1614,16 @@ fun ZeroTaxActionCard(
     modifier: Modifier = Modifier,
     badgeText: String? = null,
     badgeTone: BadgeTone = BadgeTone.STATUTORY,
-    iconTint: Color = EnterpriseTeal600,
-    iconBgColor: Color = EnterpriseTeal50,
+    iconTint: Color? = null,
+    iconBgColor: Color? = null,
     accentBorderColor: Color? = null,
     containerColor: Color? = null
 ) {
     val isDark = isSystemInDarkTheme()
-    val defaultBg = containerColor ?: if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f) else EnterpriseTeal50.copy(alpha = 0.4f)
-    val defaultBorder = accentBorderColor ?: EnterpriseTeal600.copy(alpha = 0.4f)
+    val defaultBg = containerColor ?: if (isDark) Slate850 else PureWhite
+    val defaultBorder = accentBorderColor ?: if (isDark) Slate700 else Slate200
+    val effectiveIconTint = iconTint ?: if (isDark) EnterpriseTeal300 else EnterpriseTeal600
+    val effectiveIconBgColor = iconBgColor ?: if (isDark) Slate800 else EnterpriseTeal50
 
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -1628,36 +1649,30 @@ fun ZeroTaxActionCard(
                     modifier = Modifier
                         .size(42.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(iconBgColor),
+                        .background(effectiveIconBgColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = iconTint,
+                        tint = effectiveIconTint,
                         modifier = Modifier.size(22.dp)
                     )
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        if (badgeText != null) {
-                            StatutoryBadge(text = badgeText, tone = badgeTone)
-                        }
+                    )
+                    if (badgeText != null) {
+                        Spacer(Modifier.height(4.dp))
+                        StatutoryBadge(text = badgeText, tone = badgeTone)
                     }
-                    Spacer(Modifier.height(3.dp))
+                    Spacer(Modifier.height(4.dp))
                     Text(
                         text = description,
                         style = MaterialTheme.typography.bodySmall.copy(
@@ -1672,7 +1687,7 @@ fun ZeroTaxActionCard(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
-                tint = iconTint,
+                tint = effectiveIconTint,
                 modifier = Modifier.size(18.dp)
             )
         }
