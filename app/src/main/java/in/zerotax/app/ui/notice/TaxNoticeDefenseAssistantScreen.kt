@@ -109,7 +109,7 @@ fun TaxNoticeDefenseAssistantScreen(
                     SilentPdfUnlocker.initPdfBox(context)
                     val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
                     if (bytes != null) {
-                        val cleanPan = pan.ifBlank { "AAAPA1234A" }
+                        val cleanPan = pan.trim().uppercase()
                         val unlockRes = unlocker.attemptUnlock(
                             pdfBytes = bytes,
                             pan = cleanPan,

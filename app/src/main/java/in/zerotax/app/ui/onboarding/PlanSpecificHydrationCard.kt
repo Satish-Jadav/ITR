@@ -47,14 +47,14 @@ fun PlanSpecificHydrationCard(
 
     // Form inputs state
     var declaredProfitPercent by remember { mutableDoubleStateOf(state.planSpecificDeclaredProfitPercent) }
-    var debtorsInput by remember { mutableStateOf(if (state.planSpecificDebtors > 0) state.planSpecificDebtors.toString() else "320000") }
-    var creditorsInput by remember { mutableStateOf(if (state.planSpecificCreditors > 0) state.planSpecificCreditors.toString() else "140000") }
-    var stockInput by remember { mutableStateOf(if (state.planSpecificStock > 0) state.planSpecificStock.toString() else "0") }
-    var cashInput by remember { mutableStateOf(if (state.planSpecificCash > 0) state.planSpecificCash.toString() else "85000") }
+    var debtorsInput by remember { mutableStateOf(if (state.planSpecificDebtors > 0) state.planSpecificDebtors.toString() else "") }
+    var creditorsInput by remember { mutableStateOf(if (state.planSpecificCreditors > 0) state.planSpecificCreditors.toString() else "") }
+    var stockInput by remember { mutableStateOf(if (state.planSpecificStock > 0) state.planSpecificStock.toString() else "") }
+    var cashInput by remember { mutableStateOf(if (state.planSpecificCash > 0) state.planSpecificCash.toString() else "") }
 
-    var gstinInput by remember { mutableStateOf(state.planSpecificGstin.ifBlank { "29AABCA1234D1Z5" }) }
-    var caMembershipInput by remember { mutableStateOf(state.planSpecificCaMembership.ifBlank { "124856" }) }
-    var caNameInput by remember { mutableStateOf(state.planSpecificCaName.ifBlank { "CA Rajesh Sharma, FCA" }) }
+    var gstinInput by remember { mutableStateOf(state.planSpecificGstin) }
+    var caMembershipInput by remember { mutableStateOf(state.planSpecificCaMembership) }
+    var caNameInput by remember { mutableStateOf(state.planSpecificCaName) }
 
     Column(
         modifier = modifier

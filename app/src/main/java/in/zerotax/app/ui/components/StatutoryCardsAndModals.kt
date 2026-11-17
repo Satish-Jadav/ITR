@@ -982,7 +982,7 @@ fun InstitutionPdfPasswordCheatsheetModal(
                                                 value = assesseePan,
                                                 onValueChange = { assesseePan = it.uppercase().take(10) },
                                                 label = { Text("PAN", fontSize = 11.sp) },
-                                                placeholder = { Text("ABCDE1234F", fontSize = 11.sp) },
+                                                placeholder = { Text("PAN (10-char)", fontSize = 11.sp) },
                                                 singleLine = true,
                                                 modifier = Modifier.weight(1f),
                                                 textStyle = TextStyle(fontSize = 12.sp, fontFamily = FontFamily.Monospace)

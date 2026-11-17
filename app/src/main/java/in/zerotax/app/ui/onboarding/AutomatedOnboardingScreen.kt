@@ -153,7 +153,7 @@ fun AutomatedOnboardingScreen(
             // Web Login In-App Sheet
             if (showWebLoginSheet) {
                 ItdOfficialWebLoginSheet(
-                    pan = uiState.pan.ifBlank { "ABCDE1234F" },
+                    pan = uiState.pan,
                     onDismiss = { showWebLoginSheet = false },
                     onSyncSuccess = { count, tds, interest ->
                         showWebLoginSheet = false
@@ -417,14 +417,14 @@ private fun TrustAndAuthStepView(
         OutlinedTextField(
             value = pan,
             onValueChange = { onPanChanged(it.take(10).uppercase()) },
-            label = { Text("PAN Number (e.g. ABCDE1234F)") },
+            label = { Text("PAN Number (10 characters)") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
             trailingIcon = {
                 IconButton(onClick = {
-                    onPanChanged(if (pan.isBlank()) "ABCDE1234F" else pan)
+                    // QR Scanner trigger
                 }) {
                     Icon(
                         imageVector = Icons.Default.QrCodeScanner,

@@ -653,7 +653,7 @@ fun PreFilingAuditView(
     }
 
     if (showLegalDialog) {
-        val verifiedPan = pan.ifBlank { salarySummary.employers.firstOrNull()?.employerTan ?: "TAXPAYER" }
+        val verifiedPan = pan.trim().uppercase()
         ComprehensiveLegalAcknowledgementDialog(
             pan = verifiedPan,
             onDismiss = { showLegalDialog = false },

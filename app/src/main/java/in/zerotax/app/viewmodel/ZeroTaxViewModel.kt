@@ -59,7 +59,7 @@ data class AuditEntryUiModel(
 data class ZeroTaxUiState(
     val currentTap: OnboardingTap? = OnboardingTap.Tap1IdentityConsent,
     val selectedWorkspaceTab: WorkspaceTab = WorkspaceTab.FilingAndRefundHub,
-    val pan: String = "ABCDE1234F",
+    val pan: String = "",
     val assessmentYear: String = "2026-27",
     val grossSalaryRupees: Long = 0L,
     val employerName: String = "",
@@ -80,9 +80,9 @@ data class ZeroTaxUiState(
         isRefundAccount = true,
         isPreValidated = false
     ),
-    val taxpayerFullName: String = "Satish Jadav",
+    val taxpayerFullName: String = "",
     val taxpayerMobile: String = "",
-    val taxpayerEmail: String = "jadavsatish552@gmail.com",
+    val taxpayerEmail: String = "",
     val taxpayerAddress: String = "",
     val isIfscLoading: Boolean = false,
     val ifscErrorMessage: String? = null,
@@ -222,7 +222,7 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun startDynamicHydrationRadar() {
         val currentTier = _uiState.value.filingTierMode
-        val pan = _uiState.value.pan.ifBlank { "ABCDE1234F" }
+        val pan = _uiState.value.pan
         FilingSpeedTelemetryEngine.markSyncInitiated(currentTier.name)
 
         val initialStreams = listOf(
@@ -408,7 +408,7 @@ class ZeroTaxViewModel : ViewModel() {
                 val oldTax = state.oldRegimeResult.totalTaxLiabilityRounded288B
                 val bestTax = minOf(newTax, oldTax)
                 ZeroTaxCloudApiBridge.fetchPostSyncBriefing(
-                    pan = state.pan.ifBlank { "ABCDE1234F" },
+                    pan = state.pan,
                     salaryGross = state.grossSalaryRupees
                 )
             }
@@ -425,7 +425,7 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun generateUnifiedDossier() {
         val state = _uiState.value
-        val pan = state.pan.ifBlank { "ABCDE1234F" }
+        val pan = state.pan
         val tier = state.filingTierMode
         val grossIncome = state.grossSalaryRupees
         val deductions = state.section80CInvestments + state.section80DSelf + state.section80CCD1BNps
@@ -920,12 +920,13 @@ class ZeroTaxViewModel : ViewModel() {
         if (_uiState.value.lazyAuditTrail is LazyLoadState.Success) return
         viewModelScope.launch {
             _uiState.update { it.copy(lazyAuditTrail = LazyLoadState.Loading) }
-            val currentPan = _uiState.value.pan.ifBlank { "TAXPAYER" }
+            val currentPan = _uiState.value.pan
+            val panSuffix = if (currentPan.isNotBlank()) " for PAN $currentPan" else ""
             val initialAudit = listOf(
                 AuditEntryUiModel(
                     auditId = "AUD-INIT-001",
                     eventCategory = "VAULT_INITIALIZATION",
-                    description = "Hardware StrongBox Master Key initialized for PAN $currentPan",
+                    description = "Hardware StrongBox Master Key initialized$panSuffix",
                     warningTextHashSha256 = CanonicalWarningHasher.computeSha256("INITIAL_HARDWARE_KEYSTORE_BINDING"),
                     timestampFormatted = "Audit Log Active"
                 )
@@ -1535,7 +1536,7 @@ class ZeroTaxViewModel : ViewModel() {
                 val unlocker = SilentPdfUnlocker()
                 val unlockRes = unlocker.attemptUnlock(
                     pdfBytes = bytes,
-                    pan = if (state.pan.isNotBlank()) state.pan else "ABCDE1234F",
+                    pan = state.pan,
                     dobDdMmYyyy = "01011990",
                     firstName = "Taxpayer"
                 )
@@ -1617,7 +1618,7 @@ fun processAndAttachDocumentToChat(bytes: ByteArray, fileName: String) {
                 val unlocker = SilentPdfUnlocker()
                 val unlockRes = unlocker.attemptUnlock(
                     pdfBytes = bytes,
-                    pan = if (state.pan.isNotBlank()) state.pan else "ABCDE1234F",
+                    pan = state.pan,
                     dobDdMmYyyy = "01011990",
                     firstName = "Taxpayer"
                 )
