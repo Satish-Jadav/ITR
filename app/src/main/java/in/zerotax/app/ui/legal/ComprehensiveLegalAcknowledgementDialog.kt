@@ -179,7 +179,7 @@ fun ComprehensiveLegalAcknowledgementDialog(
                         checked = isDpdpAccepted,
                         onCheckedChange = { isDpdpAccepted = it },
                         title = "3. DPDP Act, 2023 Section 6 Data Processing Consent",
-                        subtitle = "I consent to the on-device processing of my tax records solely for filing purposes, with right to shred local vault anytime."
+                        subtitle = "I consent to the processing of my tax records solely for filing purposes, with right to shred my encrypted vault anytime."
                     )
 
                     // Checkbox 4: Cloud Crash Resilience (User's specific requirement)

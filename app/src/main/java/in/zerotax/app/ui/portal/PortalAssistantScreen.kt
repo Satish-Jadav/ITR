@@ -456,11 +456,11 @@ fun PortalAssistantScreen(
                 ) {
                     Column {
                         Text(
-                            text = "On-Device Gemini Tax Copilot",
+                            text = "Gemini Cloud Tax Copilot",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "AICore Gemini Nano (temp = 0.0f) • 0B Cloud Egress",
+                            text = "Cloud Tax Copilot (temp = 0.0f) • Real-Time Statutory Sync",
                             style = MaterialTheme.typography.labelSmall,
                             color = Slate500
                         )

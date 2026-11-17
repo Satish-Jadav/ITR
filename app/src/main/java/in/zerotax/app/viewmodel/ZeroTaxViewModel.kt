@@ -349,7 +349,7 @@ class ZeroTaxViewModel : ViewModel() {
             _uiState.update { state ->
                 val pdfCount = bundle.discoveredLocalPdfs.size
                 val stream4Details = when (currentTier) {
-                    FilingTierMode.SAHAJ_SIMPLE -> if (pdfCount > 0) "$pdfCount tax document(s) discovered in Downloads/" else "Local document scan complete"
+                    FilingTierMode.SAHAJ_SIMPLE -> if (pdfCount > 0) "$pdfCount tax document(s) discovered in Downloads/" else "Document scan complete"
                     FilingTierMode.INVESTOR_PRO -> "Broker CAS stream reconciled"
                     FilingTierMode.ENTERPRISE_AUDIT -> "Commercial turnover reconciled"
                 }

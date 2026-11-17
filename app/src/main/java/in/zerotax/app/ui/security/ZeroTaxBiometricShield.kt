@@ -129,7 +129,7 @@ fun BiometricShieldGate(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         StatutoryBadge(text = "AES-256-GCM Vault", tone = BadgeTone.SUCCESS)
-                        StatutoryBadge(text = "Local + E2EE Cloud Vault", tone = BadgeTone.STATUTORY)
+                        StatutoryBadge(text = "E2EE Cloud Vault", tone = BadgeTone.STATUTORY)
                     }
 
                     Spacer(Modifier.height(36.dp))

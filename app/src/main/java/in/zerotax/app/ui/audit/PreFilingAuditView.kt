@@ -539,11 +539,11 @@ fun PreFilingAuditView(
             ) {
                     Column {
                         Text(
-                            text = "On-Device Gemini Audit Copilot",
+                            text = "Gemini Cloud Audit Copilot",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "AICore Gemini Nano (temp = 0.0f) • 0B Cloud Egress",
+                            text = "Cloud Tax AI (temp = 0.0f) • Real-Time Statutory Sync",
                             style = MaterialTheme.typography.labelSmall,
                             color = Slate500
                         )

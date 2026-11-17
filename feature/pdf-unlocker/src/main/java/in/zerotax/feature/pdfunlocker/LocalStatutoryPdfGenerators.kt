@@ -137,7 +137,7 @@ object LocalStatutoryPdfGenerators {
         lines.add(PdfLine("computed in accordance with the provisions of the Income-tax Act, 1961 for the assessment year", fontSize = 9f))
         lines.add(PdfLine("${data.assessmentYear} will be NIL, and therefore no tax should be deducted at source u/s 194A.", fontSize = 9f))
         lines.add(PdfLine("Date: ${LocalDate.now()}                                 Signature of the Declarant: _________________", fontSize = 9f))
-        lines.add(PdfLine("Generated via ZeroTax Engine (Local Privacy + Cloud Backup Certified)", fontSize = 8f))
+        lines.add(PdfLine("Generated via ZeroTax Engine (Cloud Backup Certified & E2EE Protected)", fontSize = 8f))
 
         buildPdf(lines)
     }

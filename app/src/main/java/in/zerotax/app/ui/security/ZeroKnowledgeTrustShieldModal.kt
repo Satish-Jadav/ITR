@@ -124,7 +124,7 @@ fun ZeroKnowledgeTrustShieldModal(
                             Icon(Icons.Default.Lock, contentDescription = null, tint = EnterpriseTeal700, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                "What Stays On-Device & Hardware Encrypted",
+                                "Protected by Hardware KeyStore & Cloud Vault",
                                 style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = if (isSystemInDarkTheme()) EnterpriseTeal200 else EnterpriseTeal900)
                             )
                         }

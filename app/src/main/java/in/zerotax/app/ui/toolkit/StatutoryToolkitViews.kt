@@ -95,15 +95,15 @@ fun WhatIfScenarioSimulatorView(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = "Offline What-If Tax Simulator",
+                                text = "What-If Tax Simulator",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal900)
                             )
                         }
-                        StatutoryBadge(text = "< 5ms Pure On-Device", tone = BadgeTone.SUCCESS)
+                        StatutoryBadge(text = "Real-Time Cloud Engine", tone = BadgeTone.SUCCESS)
                     }
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        text = "Hypothetical decision engine. Instant simulation with 0 network calls and 100% DPDP Act compliance.",
+                        text = "Hypothetical decision engine. Instant simulation with real-time tax computation and 100% DPDP Act compliance.",
                         style = MaterialTheme.typography.bodySmall,
                         color = Slate700
                     )
@@ -472,7 +472,7 @@ fun Form12BbDeclarationView(
                             StatutoryBadge(text = "${bytes.size / 1024} KB", tone = BadgeTone.SUCCESS)
                         }
                         Spacer(Modifier.height(4.dp))
-                        Text("Form 12BB successfully generated on-device with official Rule 26C declaration and signature block.", style = MaterialTheme.typography.bodySmall, color = Slate700)
+                        Text("Form 12BB successfully generated with official Rule 26C declaration and signature block.", style = MaterialTheme.typography.bodySmall, color = Slate700)
                     }
                 }
             }

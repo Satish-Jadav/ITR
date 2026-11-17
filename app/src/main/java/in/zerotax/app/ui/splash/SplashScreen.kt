@@ -239,7 +239,7 @@ fun SplashScreen(
             Spacer(Modifier.height(6.dp))
 
             Text(
-                text = "Local Compute + Encrypted Cloud Vault",
+                text = "Cloud Compute + Encrypted Cloud Vault",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Slate400,
                     fontWeight = FontWeight.Normal
@@ -319,7 +319,7 @@ fun SplashScreen(
 
         // Reassuring privacy footnote
         Text(
-            text = "Local Privacy • E2EE Cloud Vault • Private & Secure",
+            text = "E2EE Cloud Vault • Private & Secure • Cloud Sync",
             style = TextStyle(
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,

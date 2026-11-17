@@ -823,7 +823,7 @@ private fun BankReadyStatementView(
                                 Text("Tamper-Evident SHA-256 System Seal", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                             }
                             Text(
-                                text = "Verified on-device with zero-telemetry hardware vault. Accepted for SBI, HDFC, ICICI Home Loan & Visa Proof.",
+                                text = "Verified via ZeroTax Cloud Engine. Accepted for SBI, HDFC, ICICI Home Loan & Visa Proof.",
                                 style = TextStyle(fontSize = 10.sp, color = Slate600)
                             )
                         }

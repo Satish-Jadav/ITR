@@ -163,7 +163,7 @@ fun AutomatedIngestionRadarView(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "Encrypted in SQLCipher via Android KeyStore Master Key • Zero Server Exposure",
+                    text = "Encrypted E2EE Cloud Vault • Real-Time Server Synchronization",
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 10.sp,

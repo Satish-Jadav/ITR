@@ -144,7 +144,7 @@ fun AuthenticationScreen(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "Local Privacy + Encrypted Cloud Vault",
+                        text = "Secure Cloud Vault + Real-Time Sync",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.SemiBold,
                             color = if (isDarkAuth) PaletteBackground else PalettePrimary
@@ -442,9 +442,9 @@ fun AuthenticationScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Privacy and offline assurance badge at bottom
+            // Privacy and cloud sync assurance badge at bottom
             Text(
-                text = "Zero-Knowledge Encryption • Local Compute + E2EE Cloud Vault",
+                text = "Zero-Knowledge Encryption • E2EE Cloud Vault & Sync",
                 style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 textAlign = TextAlign.Center
             )

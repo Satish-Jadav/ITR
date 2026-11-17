@@ -144,10 +144,10 @@ fun ConversationalFilingChatScreen(
         topBar = {
             ZeroTaxTopAppBar(
                 title = "ZeroTax AI Copilot",
-                subtitle = "Interactive Filing • Private On-Device AI",
+                subtitle = "Interactive Filing • Cloud Tax AI",
                 pan = pan,
                 onBack = onBack,
-                badgeText = "Private AI",
+                badgeText = "Cloud AI",
                 badgeTone = BadgeTone.SUCCESS
             )
         },

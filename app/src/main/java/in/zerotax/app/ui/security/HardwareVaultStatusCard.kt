@@ -76,7 +76,7 @@ fun HardwareVaultStatusCard(
                         )
                     )
                     Text(
-                        text = "Zero plain-text on cloud servers • Private AES-256 keys never leave device",
+                        text = "Encrypted Cloud Vault • Real-Time Server Processing & E2EE Protection",
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontSize = 10.5.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
