@@ -49,6 +49,7 @@ fun AutomatedOnboardingScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isDark = isSystemInDarkTheme()
     var showWebLoginSheet by remember { mutableStateOf(false) }
+    var showAadhaarOtpModal by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             OnboardingTopBar(
@@ -103,6 +104,7 @@ fun AutomatedOnboardingScreen(
                             onPanChanged = { viewModel.onPanChanged(it) },
                             onVerifyPanWithItr = { viewModel.verifyPanWithItr() },
                             onStartHydration = { viewModel.startDynamicHydrationRadar() },
+                            onLaunchAadhaarOtp = { showAadhaarOtpModal = true },
                             onLaunchWebLogin = { showWebLoginSheet = true },
                             onDocumentIngested = { bytes, fName ->
                                 viewModel.ingestDocumentBytes(bytes, fName)
@@ -174,6 +176,19 @@ fun AutomatedOnboardingScreen(
                     onSyncSuccess = { count, tds, interest ->
                         showWebLoginSheet = false
                         viewModel.applyPortalSyncData(tds, interest)
+                        viewModel.startDynamicHydrationRadar()
+                    }
+                )
+            }
+
+            // Aadhaar OTP Live Modal
+            if (showAadhaarOtpModal) {
+                `in`.zerotax.app.ui.portal.ItdLivePortalSyncModal(
+                    pan = uiState.pan,
+                    onDismiss = { showAadhaarOtpModal = false },
+                    onSyncCompleted = { count, tds, interest, grossSalary ->
+                        showAadhaarOtpModal = false
+                        viewModel.applyPortalSyncData(tds, interest, grossSalary)
                         viewModel.startDynamicHydrationRadar()
                     }
                 )
@@ -399,6 +414,7 @@ private fun TrustAndAuthStepView(
     onPanChanged: (String) -> Unit,
     onVerifyPanWithItr: () -> Unit,
     onStartHydration: () -> Unit,
+    onLaunchAadhaarOtp: () -> Unit,
     onLaunchWebLogin: () -> Unit,
     onDocumentIngested: (ByteArray, String) -> Unit = { _, _ -> },
     onAaSync: () -> Unit = {}
@@ -606,7 +622,7 @@ private fun TrustAndAuthStepView(
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
         )
         Surface(
-            onClick = { executeIfVerified { onStartHydration() } },
+            onClick = { executeIfVerified { onLaunchAadhaarOtp() } },
             shape = RoundedCornerShape(10.dp),
             color = if (isDark) Slate850 else PaletteSurface,
             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),

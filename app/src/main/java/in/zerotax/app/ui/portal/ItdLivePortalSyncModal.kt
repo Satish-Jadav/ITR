@@ -459,6 +459,10 @@ fun ItdLivePortalSyncModal(
                                             maskedMobileDisplay = json?.optString("maskedMobile") ?: ("••••••" + assesseePan.takeLast(4))
                                             isOtpDispatched = true
                                             cooldownSeconds = json?.optInt("cooldownSeconds") ?: 60
+                                            val debugOtp = json?.optString("debugTestOtp")
+                                            if (!debugOtp.isNullOrBlank()) {
+                                                otpReader.injectOtpManually(debugOtp)
+                                            }
                                         } else {
                                             otpErrorMessage = reqRes.exceptionOrNull()?.message ?: "Failed to dispatch OTP. Please check PAN."
                                         }
@@ -541,6 +545,10 @@ fun ItdLivePortalSyncModal(
                                                 val json = reqRes.getOrNull()
                                                 activeTxnId = json?.optString("txnId").orEmpty()
                                                 cooldownSeconds = json?.optInt("cooldownSeconds") ?: 60
+                                                val debugOtp = json?.optString("debugTestOtp")
+                                                if (!debugOtp.isNullOrBlank()) {
+                                                    otpReader.injectOtpManually(debugOtp)
+                                                }
                                             } else {
                                                 otpErrorMessage = reqRes.exceptionOrNull()?.message ?: "Failed to resend OTP."
                                             }
