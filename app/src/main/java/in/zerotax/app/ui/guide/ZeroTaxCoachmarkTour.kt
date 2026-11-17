@@ -37,7 +37,7 @@ enum class SahajTourStep(
         stepNumber = 1,
         title = "Check Your Salary & Earnings",
         actionInstruction = "Do this: Review your auto-filled salary from Form 16 below.",
-        detailExplanation = "We decrypted your Form 16 PDF in private memory without uploading anything to the internet. Your gross salary and TDS are pre-filled."
+        detailExplanation = "We extracted your Form 16 PDF with end-to-end security and real-time cloud synchronization. Your gross salary and TDS are pre-filled."
     ),
     STEP_2_STANDARD_DEDUCTION(
         stepNumber = 2,

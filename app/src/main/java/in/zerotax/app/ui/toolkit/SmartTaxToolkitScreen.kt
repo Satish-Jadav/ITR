@@ -628,7 +628,7 @@ private fun AdvanceTaxMilestoneRow(quarter: String, deadline: String, percentage
 @Composable
 private fun LtcgHarvestingRadarView() {
     val annualLtcgLimit = 1_25_000L // AY 2026-27 statutory limit
-    var realizedLtcgSoFar by remember { mutableStateOf(45_000L) }
+    var realizedLtcgSoFar by remember { mutableStateOf(0L) }
     val remainingHeadroom = max(0L, annualLtcgLimit - realizedLtcgSoFar)
     val potentialSavings = (remainingHeadroom * 0.125).toLong() // 12.5% LTCG rate
 
@@ -700,31 +700,46 @@ private fun LtcgHarvestingRadarView() {
             Text("STCG Short-Term Loss Harvesting Radar:", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
             Spacer(Modifier.height(8.dp))
 
-            val sampleLosses = mapOf("TATASTEEL" to 15_000L, "WIPRO" to 22_000L)
+            val userLosses = emptyMap<String, Long>()
             val harvestRecs = RevisionAndHarvestingEngine.calculateHarvestingOpportunities(
-                realizedShortTermGains = 30_000L,
-                unrealizedScripLosses = sampleLosses
+                realizedShortTermGains = 0L,
+                unrealizedScripLosses = userLosses
             )
 
-            harvestRecs.forEach { rec ->
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
-                    shape = RoundedCornerShape(4.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
+            if (harvestRecs.isEmpty()) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Text(
+                        text = "No short-term capital losses detected. Upload or sync CAMS/KFintech CAS statement to identify live tax-harvesting offsets.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            } else {
+                harvestRecs.forEach { rec ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                        shape = RoundedCornerShape(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
                     ) {
-                        Column {
-                            Text(rec.scripSymbol, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                            Text("Unrealized Loss: ₹${Rupee.formatInr(rec.unrealizedLossRupees)}", style = TextStyle(fontSize = 10.sp, color = CrimsonDanger))
-                        }
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text("Save ₹${Rupee.formatInr(rec.projectedTaxSavings)} Tax", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
-                            Text("Offset: ₹${Rupee.formatInr(rec.harvestableAgainstGain)}", style = TextStyle(fontSize = 10.sp, color = Slate500))
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(rec.scripSymbol, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                Text("Unrealized Loss: ₹${Rupee.formatInr(rec.unrealizedLossRupees)}", style = TextStyle(fontSize = 10.sp, color = CrimsonDanger))
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text("Save ₹${Rupee.formatInr(rec.projectedTaxSavings)} Tax", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                                Text("Offset: ₹${Rupee.formatInr(rec.harvestableAgainstGain)}", style = TextStyle(fontSize = 10.sp, color = Slate500))
+                            }
                         }
                     }
                 }

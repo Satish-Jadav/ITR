@@ -287,6 +287,14 @@ class ZeroTaxViewModel : ViewModel() {
             val bundle = prefetcher.prefetchEverythingConcurrently(pan)
 
             // Stream 1: ITD Portal Pre-fill
+            if (pan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$")) && _uiState.value.taxpayerFullName.isBlank()) {
+                val panRes = ZeroTaxCloudApiBridge.verifyPanLive(pan).getOrNull()
+                val liveName = panRes?.optString("fullName")
+                if (!liveName.isNullOrBlank()) {
+                    _uiState.update { it.copy(taxpayerFullName = liveName) }
+                }
+            }
+
             _uiState.update { state ->
                 val updated = state.ingestionStreams.map {
                     if (it.id == "itd_prefill") it.copy(
@@ -542,6 +550,18 @@ class ZeroTaxViewModel : ViewModel() {
         val cleanPan = pan.uppercase().trim().take(10)
         _uiState.update { it.copy(pan = cleanPan) }
         recompute()
+
+        if (cleanPan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$"))) {
+            viewModelScope.launch(Dispatchers.IO) {
+                ZeroTaxCloudApiBridge.verifyPanLive(cleanPan).onSuccess { res ->
+                    val fullName = res.optString("fullName")
+                    if (fullName.isNotBlank()) {
+                        _uiState.update { it.copy(taxpayerFullName = fullName) }
+                        generateUnifiedDossier()
+                    }
+                }
+            }
+        }
     }
 
     fun onGrossSalaryChanged(gross: Long) {
@@ -1045,7 +1065,7 @@ class ZeroTaxViewModel : ViewModel() {
     }
 
     fun signInWithGoogle(email: String, name: String) {
-        signInWithGoogle("mock_token_${System.currentTimeMillis()}", email, name)
+        signInWithGoogle("google_credential_${System.currentTimeMillis()}", email, name)
     }
 
     fun signInWithBiometrics(cipher: javax.crypto.Cipher? = null) {

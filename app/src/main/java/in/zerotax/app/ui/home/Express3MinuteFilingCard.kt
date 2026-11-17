@@ -43,7 +43,7 @@ fun Express3MinuteFilingCard(
     val formName = uiState.formRoutingDecision.selectedForm.name.replace("_", "-")
     val bankAccountMasked = if (uiState.bankAccount.accountNumber.isNotBlank()) {
         "••••" + uiState.bankAccount.accountNumber.takeLast(4)
-    } else "••••4821"
+    } else "Not Linked"
 
     Card(
         modifier = modifier
@@ -129,8 +129,10 @@ fun Express3MinuteFilingCard(
                                 color = EmeraldSuccess
                             )
                         )
+                        val bankLabel = if (uiState.bankAccount.bankName.isNotBlank()) uiState.bankAccount.bankName else "Linked Bank"
+                        val accountSuffix = if (bankAccountMasked != "Not Linked") " ($bankAccountMasked)" else ""
                         Text(
-                            text = "Crediting to ${uiState.bankAccount.bankName.ifBlank { "Verified Bank" }} ($bankAccountMasked) u/s 244A",
+                            text = "Crediting to $bankLabel$accountSuffix u/s 244A",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

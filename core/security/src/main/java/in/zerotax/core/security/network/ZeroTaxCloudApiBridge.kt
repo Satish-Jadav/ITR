@@ -540,6 +540,32 @@ object ZeroTaxCloudApiBridge {
     }
 
     /**
+     * Verifies PAN live against CBDT / NSDL records via Quicko B2B gateway (/api/v1/portal/pan/:pan/verify)
+     */
+    suspend fun verifyPanLive(pan: String): Result<JSONObject> = withContext(Dispatchers.IO) {
+        val cleanPan = pan.trim().uppercase()
+        runCatching {
+            val request = Request.Builder()
+                .url(ZeroTaxHardenedApiClient.apiBaseUrl + "/api/v1/portal/pan/" + cleanPan + "/verify")
+                .get()
+                .build()
+
+            okHttpClient.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string().orEmpty()
+                if (response.isSuccessful) {
+                    JSONObject(bodyStr)
+                } else {
+                    val err = "Live PAN verification failed (HTTP " + response.code + "): " + bodyStr
+                    ZeroTaxLogger.w(TAG, err)
+                    throw IllegalStateException(err)
+                }
+            }
+        }.onFailure { error ->
+            ZeroTaxLogger.e(TAG, "verifyPanLive failed: " + error.message, error)
+        }
+    }
+
+    /**
      * Dispatches real Aadhaar / ITD OTP via backend gateway (/api/v1/portal/otp/request)
      */
     suspend fun requestPortalOtp(pan: String, purpose: String = "LOGIN_PORTAL"): Result<JSONObject> = withContext(Dispatchers.IO) {

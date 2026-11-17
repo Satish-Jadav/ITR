@@ -513,7 +513,8 @@ fun PreFilingAuditView(
                             Spacer(Modifier.width(8.dp))
                             Column {
                                 Text("Direct ECS Refund Credit into Pre-validated Bank", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
-                                Text("Refund scheduled for SBI ••••1234 without bank branch visits", style = TextStyle(fontSize = 11.sp, color = EmeraldSuccess))
+                                val refundTarget = if (bankAccount != null && bankAccount.bankName.isNotBlank()) "for ${bankAccount.bankName}" else "via direct ECS credit"
+                                Text("Refund scheduled $refundTarget without bank branch visits", style = TextStyle(fontSize = 11.sp, color = EmeraldSuccess))
                             }
                         }
                     }
