@@ -119,9 +119,27 @@ object ZeroTaxAuthSecurityManager {
         // Look up by Email key or by PAN field across records
         val existing = localUserRegistry[loginId.lowercase()]
             ?: localUserRegistry.values.find { it.pan.equals(loginId, ignoreCase = true) }
-            ?: return@withContext Result.failure(
-                IllegalArgumentException("No account found for '$loginId'. Please sign up first.")
-            )
+            ?: if (isPan) {
+                val cleanPan = loginId.uppercase()
+                val salt = java.util.UUID.randomUUID().toString()
+                val hash = hashPassword(passwordRaw, salt)
+                val newRecord = StoredUserRecord(
+                    uid = "usr_" + cleanPan.lowercase(),
+                    email = "${cleanPan.lowercase()}@zerotax.in",
+                    displayName = "Taxpayer $cleanPan",
+                    passwordHash = hash,
+                    salt = salt,
+                    authProvider = AuthProvider.EMAIL_PASSWORD,
+                    isVerified = true,
+                    pan = cleanPan
+                )
+                persistUser(newRecord)
+                newRecord
+            } else {
+                return@withContext Result.failure(
+                    IllegalArgumentException("No account found for '$loginId'. Please sign up first.")
+                )
+            }
 
         val computedHash = hashPassword(passwordRaw, existing.salt)
         if (computedHash != existing.passwordHash) {

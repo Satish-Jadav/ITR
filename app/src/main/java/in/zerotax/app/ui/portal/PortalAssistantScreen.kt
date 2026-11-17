@@ -427,7 +427,7 @@ fun PortalAssistantScreen(
         ItdOfficialWebLoginSheet(
             pan = assesseePan,
             onDismiss = { showWebLoginSheet = false },
-            onSyncSuccess = { count, tds, interest ->
+            onSyncSuccess = { count, tds, interest, grossSalary ->
                 showWebLoginSheet = false
                 scope.launch {
                     val authRes = itdClient.authenticateInApp(assesseePan, null, null)

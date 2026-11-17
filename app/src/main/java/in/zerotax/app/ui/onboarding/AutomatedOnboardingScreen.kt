@@ -173,9 +173,9 @@ fun AutomatedOnboardingScreen(
                 ItdOfficialWebLoginSheet(
                     pan = uiState.pan,
                     onDismiss = { showWebLoginSheet = false },
-                    onSyncSuccess = { count, tds, interest ->
+                    onSyncSuccess = { count, tds, interest, grossSalary ->
                         showWebLoginSheet = false
-                        viewModel.applyPortalSyncData(tds, interest)
+                        viewModel.applyPortalSyncData(tds, interest, grossSalary)
                         viewModel.startDynamicHydrationRadar()
                     }
                 )

@@ -204,7 +204,7 @@ fun ItdLivePortalSyncModal(
         ItdOfficialWebLoginSheet(
             pan = assesseePan,
             onDismiss = { showOfficialWebLogin = false },
-            onSyncSuccess = { count, tds, interest ->
+            onSyncSuccess = { count, tds, interest, grossSalary ->
                 showOfficialWebLogin = false
                 scope.launch {
                     val result = fetcher.fetchAisTransactions(assesseePan)
