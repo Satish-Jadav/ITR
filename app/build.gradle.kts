@@ -39,12 +39,21 @@ android {
                 "META-INF/DEPENDENCIES",
                 "META-INF/LICENSE*",
                 "META-INF/NOTICE*",
+                "META-INF/proguard/*",
                 "/META-INF/{AL2.0,LGPL2.1}",
                 "DebugProbesKt.bin",
                 // Exclude unused BouncyCastle PQC and test properties (saves ~8.25MB uncompressed)
                 "org/bouncycastle/pqc/**",
                 "org/bouncycastle/x509/**",
-                "**/*.properties"
+                "**/*.properties",
+                "**/*.proto",
+                // Exclude unused Asian CJK font mapping tables in PDFBox (saves ~2.5MB)
+                "assets/com/tom_roush/fontbox/resources/cmap/Adobe-Japan*",
+                "assets/com/tom_roush/fontbox/resources/cmap/Adobe-CNS*",
+                "assets/com/tom_roush/fontbox/resources/cmap/Adobe-GB*",
+                "assets/com/tom_roush/fontbox/resources/cmap/UniJIS*",
+                "assets/com/tom_roush/fontbox/resources/cmap/UniCNS*",
+                "assets/com/tom_roush/fontbox/resources/cmap/UniGB*"
             )
         }
     }
@@ -105,21 +114,10 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
-    // ML Kit & Document Scanner Vision Engine
+    // ML Kit Official Document Scanner (Unbundled, Play Services powered — zero local ML model bloat)
     implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
-    implementation("com.google.mlkit:text-recognition:16.0.1")
-    implementation("com.google.mlkit:text-recognition-devanagari:16.0.1")
-    implementation("com.google.mlkit:barcode-scanning:17.3.0")
 
-    // CameraX Foundation
-    implementation("androidx.camera:camera-core:1.3.4")
-    implementation("androidx.camera:camera-camera2:1.3.4")
-    implementation("androidx.camera:camera-lifecycle:1.3.4")
-    implementation("androidx.camera:camera-view:1.3.4")
-
-    // PDFBox & Background Workers & SSE
-    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    // SSE Network Client
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
 
