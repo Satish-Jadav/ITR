@@ -32,6 +32,8 @@ dependencies {
     implementation(project(":core:tax-engine"))
     implementation(project(":core:security"))
     implementation(project(":core:database"))
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("com.google.android.gms:play-services-auth-api-phone:18.1.0")

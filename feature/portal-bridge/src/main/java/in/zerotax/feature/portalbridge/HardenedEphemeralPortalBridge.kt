@@ -68,6 +68,14 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
         // VUL-09 FIX: Extend Aadhaar scrub regex to also cover hyphen and dot separators.
         // Original \s? only matched spaces; attackers could bypass with "1234-5678-9012" format.
         val AADHAAR_SCRUB_REGEX = Regex("""\b\d{4}[\s\-.]?\d{4}[\s\-.]?\d{4}\b""")
+
+        private var _isSessionActive = false
+
+        fun isPortalSessionActive(): Boolean = _isSessionActive
+
+        fun setPortalSessionActive(active: Boolean) {
+            _isSessionActive = active
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")

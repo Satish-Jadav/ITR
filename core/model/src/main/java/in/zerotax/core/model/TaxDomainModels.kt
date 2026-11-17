@@ -477,6 +477,24 @@ data class ImmovablePropertyLtcgLot(
 )
 
 @Serializable
+data class ParsedForeignRsuLot(
+    val companyName: String,
+    val vestDateIso: String,
+    val sharesVested: Double,
+    val vestPriceUsd: Double,
+    val totalVestValueUsd: Double
+)
+
+@Serializable
+data class Form1042SDividendStatement(
+    val recipientPanOrSsn: String,
+    val withholdingAgentName: String,
+    val grossDividendIncomeUsd: Double,
+    val federalTaxWithheldUsd: Double,
+    val calendarYear: Int = 2025
+)
+
+@Serializable
 data class ForeignEquityLotInput(
     val lotId: String,
     val companyName: String,

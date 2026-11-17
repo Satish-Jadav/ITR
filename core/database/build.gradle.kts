@@ -37,9 +37,12 @@ dependencies {
     implementation(project(":core:model"))
 
     // Room Persistence
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
+    api("androidx.room:room-runtime:2.6.1")
+    api("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
+
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
     // SQLCipher 4.6.1 Encrypted SQLite Driver with 16 KB Page-Size ELF Alignment
     implementation("net.zetetic:sqlcipher-android:4.6.1")
