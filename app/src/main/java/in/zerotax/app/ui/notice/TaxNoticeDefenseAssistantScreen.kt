@@ -110,7 +110,12 @@ fun TaxNoticeDefenseAssistantScreen(
                     val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
                     if (bytes != null) {
                         val cleanPan = pan.ifBlank { "AAAPA1234A" }
-                        val unlockRes = unlocker.attemptUnlock(pdfBytes = bytes, pan = cleanPan)
+                        val unlockRes = unlocker.attemptUnlock(
+                            pdfBytes = bytes,
+                            pan = cleanPan,
+                            dobDdMmYyyy = "",
+                            firstName = ""
+                        )
                         val text = unlockRes.fold(
                             onSuccess = { (unlockedPdf, _) ->
                                 unlocker.extractTextFromDecrypted(unlockedPdf).getOrDefault("")

@@ -26,8 +26,8 @@ class SilentPdfUnlocker {
      */
     fun generate15StandardCandidates(
         pan: String,
-        dobDdMmYyyy: String,
-        firstName: String,
+        dobDdMmYyyy: String = "",
+        firstName: String = "",
         bankCustomerId: String? = null,
         bankAccountLast4: String? = null
     ): List<String> {
@@ -71,8 +71,8 @@ class SilentPdfUnlocker {
     suspend fun attemptUnlock(
         pdfBytes: ByteArray,
         pan: String,
-        dobDdMmYyyy: String,
-        firstName: String,
+        dobDdMmYyyy: String = "",
+        firstName: String = "",
         bankCustomerId: String? = null,
         bankAccountLast4: String? = null
     ): Result<Pair<ByteArray, String>> = withContext(Dispatchers.Default) {
