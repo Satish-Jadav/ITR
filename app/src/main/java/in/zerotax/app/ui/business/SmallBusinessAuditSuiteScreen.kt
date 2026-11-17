@@ -103,7 +103,7 @@ fun SmallBusinessAuditSuiteScreen(
             chosenRegimeIsOld = chosenRegimeIsOld,
             input = Form10IeaInput(
                 pan = pan,
-                taxpayerName = "Taxpayer",
+                taxpayerName = pan.takeIf { it.isNotBlank() } ?: "Authorized Assessee",
                 filingReason = Form10IeaFilingReason.OPT_OUT_OF_NEW_REGIME,
                 hasOptedBackInLifetimeBefore = hasOptedBackInLifetimeBefore
             ),

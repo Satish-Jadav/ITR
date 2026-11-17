@@ -58,12 +58,18 @@ class ItdDirectFilingClient {
                 return@withContext Result.failure(IllegalArgumentException(err))
             }
 
-            // Real-time authentication handshake with live gateway
-            val tokenBytes = ByteArray(32)
-            secureRandom.nextBytes(tokenBytes)
-            val hexToken = tokenBytes.joinToString("") { "%02x".format(it) }
-            volatileSessionToken = hexToken.toCharArray()
-            isSessionActive = true
+            // Live gateway authentication check
+            if (!aadhaarOtp.isNullOrBlank()) {
+                val txn = activeAadhaarTxnId.orEmpty()
+                val verifyRes = ZeroTaxCloudApiBridge.verifyPortalOtp(pan, txn, aadhaarOtp)
+                if (verifyRes.isFailure) {
+                    val msg = verifyRes.exceptionOrNull()?.message ?: "OTP verification failed"
+                    return@withContext Result.failure(IllegalStateException(msg))
+                }
+                isSessionActive = true
+            } else {
+                isSessionActive = HardenedEphemeralPortalBridge.isPortalSessionActive()
+            }
 
             ZeroTaxLogger.i(TAG, "authenticateInApp: session successfully established for PAN $maskedPan")
             Result.success(true)
@@ -117,9 +123,9 @@ class ItdDirectFilingClient {
 
             val json = cloudRes.getOrNull() ?: JSONObject()
             val ackNumber = json.optString("acknowledgmentNumber").ifBlank {
-                json.optString("ackNo").ifBlank { "CBDT-PENDING-EVC" }
+                json.optString("ackNo").ifBlank { json.optString("token") }
             }
-            val token = json.optString("token").ifBlank { "CBDT-TXN-INAPP" }
+            val token = json.optString("token")
             val timestamp = json.optString("timestamp").ifBlank {
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             }
@@ -188,11 +194,9 @@ class ItdDirectFilingClient {
                     LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                 }
                 val cpcRef = json.optString("cpcVerificationRef").ifBlank {
-                    "CPC/EVC/2026-27/" + (activeAadhaarTxnId ?: "CBDT").take(7)
+                    acknowledgmentNumber
                 }
-                val downloadToken = json.optString("token").ifBlank {
-                    "ITRV-DL-" + (activeAadhaarTxnId ?: "CBDT").take(10).uppercase()
-                }
+                val downloadToken = json.optString("token")
                 val driverOrigin = json.optString("driver", "IN_APP_LIVE_DRIVER")
 
                 val verificationResult = AadhaarVerificationResult(

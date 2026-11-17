@@ -370,7 +370,7 @@ fun Itr6CorporateCalculatorView(pan: String) {
     val input = remember(has115Baa, isMfg115Bab, turnoverOver400Cr, taxableIncome, matProfits, bfMat) {
         Itr6CorporateInput(
             companyPan = pan,
-            companyName = "Corporate Assessee",
+            companyName = pan.takeIf { it.isNotBlank() } ?: "Corporate Assessee",
             turnoverInPriorYearExceeding400Cr = turnoverOver400Cr,
             isNewManufacturingCompany115BAB = isMfg115Bab,
             hasOptedForSection115BAA = has115Baa,
@@ -586,7 +586,7 @@ fun Itr7TrustCalculatorView(pan: String) {
     val input = remember(isPoliticalParty, contributions, corpus, application, deemed9A, form10, sec13Violation) {
         Itr7TrustInput(
             trustPan = pan,
-            trustName = "Charitable Organization",
+            trustName = pan.takeIf { it.isNotBlank() } ?: "Charitable Trust",
             entityType = if (isPoliticalParty) CorporateEntityType.POLITICAL_PARTY_13A else CorporateEntityType.CHARITABLE_RELIGIOUS_TRUST_12AB,
             totalVoluntaryContributionsRupees = contributions,
             corpusDonationsExemptSec11_1_d = corpus,

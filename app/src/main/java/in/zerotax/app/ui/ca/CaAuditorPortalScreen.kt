@@ -40,11 +40,11 @@ fun CaAuditorPortalScreen(
     caProfile: CaProfile = CaProfile(
         membershipNumber = "ICAI-MEMBER",
         caName = "Chartered Accountant (ICAI Verified)",
-        firmRegistrationNumber = "012345N",
-        email = "rajesh.sharma@icaimembers.org",
-        phone = "+91 98110 54321",
+        firmRegistrationNumber = "UNREGISTERED",
+        email = "",
+        phone = "",
         isIcaiVerified = true,
-        activeClientsCount = 4
+        activeClientsCount = 0
     ),
     onExitCaPortal: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -249,12 +249,12 @@ fun CaAuditorPortalScreen(
                     if (validCodeFormat.matches(cleanedCode)) {
                         val newClient = ClientPairingSession(
                             pairingCode = cleanedCode,
-                            clientPan = "AABCG${(1000..9999).random()}Q",
+                            clientPan = "PENDING_PAIRING",
                             clientName = "Client ($cleanedCode)",
-                            grossTurnoverOrIncome = 95_00_000L,
+                            grossTurnoverOrIncome = 0L,
                             auditType = AuditType.TAX_AUDIT_44AB,
                             itrForm = "ITR-3",
-                            taxPayableOrRefund = 1_85_000L,
+                            taxPayableOrRefund = 0L,
                             isRefund = false,
                             createdAtEpochMs = System.currentTimeMillis(),
                             expiresAtEpochMs = System.currentTimeMillis() + 86400000L,
@@ -354,12 +354,12 @@ private fun ClientAuditRosterCard(
                 ) {
                     Column {
                         Text("Gross Turnover / Total Receipts", style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                        Text("₹${"%,d".format(client.grossTurnoverOrIncome)}", style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp))
+                        Text(Rupee(client.grossTurnoverOrIncome).toIndianFormattedString(), style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp))
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text(if (client.isRefund) "Net Refund Due" else "Net Tax Payable", style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                         Text(
-                            "₹${"%,d".format(client.taxPayableOrRefund)}",
+                            Rupee(client.taxPayableOrRefund).toIndianFormattedString(),
                             style = TextStyle(fontWeight = FontWeight.Bold, color = if (client.isRefund) EmeraldSuccess else CrimsonDanger, fontSize = 13.sp)
                         )
                     }
@@ -410,7 +410,7 @@ private fun CaAuditReviewModal(
     onSignOff: (ClientPairingSession) -> Unit
 ) {
     var auditObservationsText by remember { mutableStateOf("All books of account and vouchers examined under Section 44AB. Form 3CD schedules verified with zero qualification.") }
-    var draftUdin by remember { mutableStateOf("26${caProfile.membershipNumber}AAAA${(1000..9999).random()}Q") }
+    var draftUdin by remember { mutableStateOf("") }
     var isSigningOff by remember { mutableStateOf(false) }
 
     ZeroTaxBottomSheet(
@@ -479,11 +479,17 @@ private fun CaAuditReviewModal(
         Spacer(Modifier.height(4.dp))
         OutlinedTextField(
             value = draftUdin,
-            onValueChange = { draftUdin = it },
+            onValueChange = { draftUdin = it.uppercase().trim() },
+            placeholder = { Text("e.g. 26012345AAAA9999Q1") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            isError = draftUdin.isNotBlank() && !Regex("""^\d{8}[A-Z0-9]{10}$""").matches(draftUdin),
             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = EnterpriseTeal700)
         )
+        if (draftUdin.isNotBlank() && !Regex("""^\d{8}[A-Z0-9]{10}$""").matches(draftUdin)) {
+            Spacer(Modifier.height(4.dp))
+            Text("UDIN must be an 18-character alphanumeric identifier registered with ICAI.", color = CrimsonDanger, style = MaterialTheme.typography.labelSmall)
+        }
 
         Spacer(Modifier.height(20.dp))
 
