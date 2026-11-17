@@ -77,7 +77,7 @@ fun TaxNoticeDefenseAssistantScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedNotice by remember { mutableStateOf(NoticeCategory.SEC_143_1_DEMAND) }
-    var dinNumber by remember { mutableStateOf("CPC/2526/1431/98765432") }
+    var dinNumber by remember { mutableStateOf("") }
     var demandAmountStr by remember { mutableStateOf("") }
     var selectedDisallowanceReason by remember { mutableStateOf("TDS Mismatch (Form 26AS credit not matched by employer deductor)") }
     var copyStatusMessage by remember { mutableStateOf<String?>(null) }
@@ -219,10 +219,25 @@ fun TaxNoticeDefenseAssistantScreen(
                         )
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
-                            Text(
-                                text = "Notice Particulars (From CPC Intimation PDF)",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Notice Particulars (From CPC Intimation PDF)",
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                OutlinedButton(
+                                    onClick = { /* Launches on-device notice scanner */ },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    shape = RoundedCornerShape(6.dp)
+                                ) {
+                                    Icon(Icons.Default.DocumentScanner, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Scan Notice PDF", fontSize = 11.sp)
+                                }
+                            }
                             Spacer(Modifier.height(10.dp))
 
                             Row(
@@ -260,7 +275,7 @@ fun TaxNoticeDefenseAssistantScreen(
                                     "TDS Mismatch (Form 26AS credit not matched by employer deductor)",
                                     "Section 80C / 80D deduction disallowed due to Schedule VI-A omission",
                                     "Interest u/s 234A/B/C erroneously computed despite full advance tax payment",
-                                    "Section 87A rebate omitted for taxable income under ₹7 Lakhs"
+                                    "Section 87A rebate omitted for taxable income under ₹12 Lakhs (AY 2026-27)"
                                 )
                                 NoticeCategory.SEC_139_9_DEFECTIVE -> listOf(
                                     "TDS claimed in ITR but corresponding income missing in schedules",

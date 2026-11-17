@@ -126,6 +126,10 @@ object SqlCipherHardwareVaultBuilder {
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
             .setKeySize(256)
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            specBuilder.setUnlockedDeviceRequired(true)
+        }
+
         // Prefer StrongBox Keymaster; fallback gracefully to standard hardware TEE
         return runCatching {
             keyGenerator.init(specBuilder.setIsStrongBoxBacked(true).build())

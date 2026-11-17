@@ -1,4 +1,4 @@
-﻿package `in`.zerotax.feature.aaaggregator
+package `in`.zerotax.feature.aaaggregator
 
 import java.util.Arrays
 import javax.crypto.Cipher
@@ -20,6 +20,7 @@ data class EphemeralBankInterestSummary(
 object RbiAaEphemeralDecryptor {
     private const val GCM_TAG_BITS = 128
     private const val AES_KEY_BYTES = 32
+    private const val MIN_CIPHERTEXT_BYTES = 28 // 12-byte IV + 16-byte GCM authentication tag
 
     fun decryptAndExtractInterestInMemory(
         sharedSecretBytes: ByteArray,
@@ -28,23 +29,38 @@ object RbiAaEphemeralDecryptor {
         base64DecodedCiphertextWithIv: ByteArray,
         ledgerParser: (String) -> EphemeralBankInterestSummary
     ): EphemeralBankInterestSummary {
+        // Guard 1: RFC 7748 Low-Order Point Rejection (Constant-time check for all-zero shared secret)
+        var zeroAcc = 0
+        for (b in sharedSecretBytes) {
+            zeroAcc = zeroAcc or b.toInt()
+        }
+        if (zeroAcc == 0) {
+            throw SecurityException("Invalid X25519 point: all-zero shared secret rejected per RFC 7748.")
+        }
+
+        // Guard 2: Minimum ciphertext length check (IV + Tag)
+        if (base64DecodedCiphertextWithIv.size < MIN_CIPHERTEXT_BYTES) {
+            throw IllegalArgumentException("Ciphertext payload too short for AES-GCM (minimum $MIN_CIPHERTEXT_BYTES bytes required).")
+        }
+
         val saltXorNonce = ByteArray(32)
         val derivedKey = ByteArray(AES_KEY_BYTES)
+        var prk = ByteArray(0)
+        var okm = ByteArray(0)
         var plaintextBytes = ByteArray(0)
+
         try {
             for (i in 0 until 32) {
                 saltXorNonce[i] = (fipNonce32Bytes[i].toInt() xor fiuNonce32Bytes[i].toInt()).toByte()
             }
             val mac = Mac.getInstance("HmacSHA256")
             mac.init(SecretKeySpec(saltXorNonce, "HmacSHA256"))
-            val prk = mac.doFinal(sharedSecretBytes)
+            prk = mac.doFinal(sharedSecretBytes)
 
             mac.init(SecretKeySpec(prk, "HmacSHA256"))
             mac.update(byteArrayOf(0x01))
-            val okm = mac.doFinal()
+            okm = mac.doFinal()
             System.arraycopy(okm, 0, derivedKey, 0, AES_KEY_BYTES)
-            Arrays.fill(prk, 0.toByte())
-            Arrays.fill(okm, 0.toByte())
 
             val ivBytes = saltXorNonce.copyOfRange(20, 32)
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -55,10 +71,9 @@ object RbiAaEphemeralDecryptor {
             Arrays.fill(sharedSecretBytes, 0.toByte())
             Arrays.fill(saltXorNonce, 0.toByte())
             Arrays.fill(derivedKey, 0.toByte())
+            if (prk.isNotEmpty()) Arrays.fill(prk, 0.toByte())
+            if (okm.isNotEmpty()) Arrays.fill(okm, 0.toByte())
             if (plaintextBytes.isNotEmpty()) Arrays.fill(plaintextBytes, 0.toByte())
         }
     }
-
-    // TODO(Phase-2): Add CAMS/KFintech & NSDL/CDSL Depository CAS FIP XML/JSON parser for ISIN-level Schedule 112A lots.
-    // TODO(Phase-3): Add Consent Artifact status polling & 1-tap FIP consent revocation manager in Privacy Tab 3.
 }

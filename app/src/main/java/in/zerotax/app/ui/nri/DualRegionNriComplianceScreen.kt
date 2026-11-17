@@ -43,9 +43,9 @@ fun DualRegionNriComplianceScreen(
     modifier: Modifier = Modifier
 ) {
     // Section 6 Residency Inputs
-    var daysCurrentFyText by remember { mutableStateOf("85") }
-    var daysPast4FysText by remember { mutableStateOf("150") }
-    var daysPast7FysText by remember { mutableStateOf("300") }
+    var daysCurrentFyText by remember { mutableStateOf("") }
+    var daysPast4FysText by remember { mutableStateOf("") }
+    var daysPast7FysText by remember { mutableStateOf("") }
     var isCitizenVisiting by remember { mutableStateOf(true) }
     var isLeavingForJob by remember { mutableStateOf(false) }
     var indianIncomeOver15L by remember { mutableStateOf(false) }
@@ -72,7 +72,7 @@ fun DualRegionNriComplianceScreen(
             isIndianCitizenOrPersonOfIndianOrigin = isCitizenVisiting,
             isVisitingIndia = isCitizenVisiting,
             isLeavingIndiaForEmploymentOrCrew = isLeavingForJob,
-            totalIndianIncomeExcludingForeignRupees = if (indianIncomeOver15L) 2000000L else 500000L
+            totalIndianIncomeExcludingForeignRupees = if (indianIncomeOver15L) 1500001L else 0L
         )
     }
 
