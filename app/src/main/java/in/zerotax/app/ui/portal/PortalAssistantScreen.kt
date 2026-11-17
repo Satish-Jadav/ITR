@@ -783,7 +783,9 @@ private fun InAppAuthenticationStage(
 
         // Auth Method Selector
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Surface(
@@ -795,9 +797,14 @@ private fun InAppAuthenticationStage(
                 ),
                 modifier = Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .clickable { onLoginMethodChanged("AADHAAR_OTP") }
             ) {
-                Column(modifier = Modifier.padding(10.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
+                ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Bolt,
@@ -826,9 +833,14 @@ private fun InAppAuthenticationStage(
                 ),
                 modifier = Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .clickable { onLoginMethodChanged("OFFICIAL_WEB") }
             ) {
-                Column(modifier = Modifier.padding(10.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
+                ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Language,

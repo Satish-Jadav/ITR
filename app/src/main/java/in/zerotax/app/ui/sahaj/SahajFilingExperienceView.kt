@@ -331,7 +331,9 @@ fun SahajFilingExperienceView(
             Spacer(Modifier.height(12.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // New Regime Card (Winning)
@@ -339,21 +341,30 @@ fun SahajFilingExperienceView(
                     shape = RoundedCornerShape(8.dp),
                     color = EnterpriseTeal50,
                     border = androidx.compose.foundation.BorderStroke(1.5.dp, EnterpriseTeal600),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("New Regime", fontWeight = FontWeight.Bold, color = EnterpriseTeal900, fontSize = 13.sp)
-                            StatutoryBadge(text = "Best", tone = BadgeTone.SUCCESS)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("New Regime", fontWeight = FontWeight.Bold, color = EnterpriseTeal900, fontSize = 13.sp)
+                                StatutoryBadge(text = "Best", tone = BadgeTone.SUCCESS)
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "₹${Rupee.formatInr(newRegimeTax)}",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
+                            )
                         }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = "₹${Rupee.formatInr(newRegimeTax)}",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
-                        )
                         Spacer(Modifier.height(2.dp))
                         Text("Zero paperwork needed", fontSize = 10.sp, color = Slate600)
                     }
@@ -364,23 +375,32 @@ fun SahajFilingExperienceView(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = "Old Regime",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 13.sp
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = "₹${Rupee.formatInr(oldRegimeTax)}",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = "Old Regime",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 13.sp
                             )
-                        )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "₹${Rupee.formatInr(oldRegimeTax)}",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
                         Spacer(Modifier.height(2.dp))
                         Text(
                             text = "Needs 80C/80D proofs",

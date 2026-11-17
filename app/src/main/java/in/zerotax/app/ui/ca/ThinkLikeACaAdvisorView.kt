@@ -151,16 +151,25 @@ fun ThinkLikeACaAdvisorView(
 
                         // Metric Comparison Grid
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = Slate50,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, Slate200),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
                             ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(12.dp),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Text("Current Tax Liability", style = TextStyle(fontSize = 11.sp, color = Slate500))
                                     Spacer(Modifier.height(4.dp))
                                     Text("₹${"%,d".format(report.baselineTaxLiability)}", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = CrimsonDanger))
@@ -171,9 +180,16 @@ fun ThinkLikeACaAdvisorView(
                                 shape = RoundedCornerShape(8.dp),
                                 color = EmeraldSuccessBg,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
                             ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(12.dp),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Text("Optimized Tax Liability", style = TextStyle(fontSize = 11.sp, color = EmeraldSuccess))
                                     Spacer(Modifier.height(4.dp))
                                     Text("₹${"%,d".format(report.optimizedTaxLiability)}", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = EmeraldSuccess))

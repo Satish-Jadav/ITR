@@ -312,7 +312,9 @@ fun ItdLivePortalSyncModal(
             PortalSyncStep.SELECT_AUTH_METHOD -> {
                 // Method Selector
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Surface(
@@ -324,9 +326,14 @@ fun ItdLivePortalSyncModal(
                         ),
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .clickable { authMode = "AADHAAR_OTP" }
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp)
+                        ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RadioButton(
                                     selected = authMode == "AADHAAR_OTP",
@@ -353,9 +360,14 @@ fun ItdLivePortalSyncModal(
                         ),
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .clickable { authMode = "OFFICIAL_WEB" }
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp)
+                        ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RadioButton(
                                     selected = authMode == "OFFICIAL_WEB",

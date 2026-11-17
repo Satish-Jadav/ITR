@@ -218,7 +218,9 @@ fun EnterpriseAuditFastStartView(
                 Spacer(Modifier.height(8.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // Desk 1: Corporate & Trust Suite (ITR-5, 6, 7)
@@ -228,21 +230,29 @@ fun EnterpriseAuditFastStartView(
                         border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal600),
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .clickable { onOpenCorporateSuite() }
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Apartment,
-                                    contentDescription = null,
-                                    tint = EnterpriseTeal300,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text("Corporate & Trust", fontWeight = FontWeight.Bold, color = EnterpriseTeal300, fontSize = 12.sp)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Apartment,
+                                        contentDescription = null,
+                                        tint = EnterpriseTeal300,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Corporate & Trust", fontWeight = FontWeight.Bold, color = EnterpriseTeal300, fontSize = 12.sp)
+                                }
+                                Spacer(Modifier.height(2.dp))
+                                Text("ITR-5 Firm, ITR-6 MAT, ITR-7 Trust", color = Slate300, fontSize = 10.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             }
-                            Spacer(Modifier.height(2.dp))
-                            Text("ITR-5 Firm, ITR-6 MAT, ITR-7 Trust", color = Slate300, fontSize = 10.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             Spacer(Modifier.height(6.dp))
                             StatutoryBadge(text = "Launch Desk →", tone = BadgeTone.STATUTORY)
                         }
@@ -255,21 +265,29 @@ fun EnterpriseAuditFastStartView(
                         border = androidx.compose.foundation.BorderStroke(1.dp, IndigoStatutory),
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .clickable { onOpenBusinessAudit() }
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.BarChart,
-                                    contentDescription = null,
-                                    tint = IndigoStatutoryBg,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text("Sec 44AB Tax Audit", fontWeight = FontWeight.Bold, color = IndigoStatutoryBg, fontSize = 12.sp)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.BarChart,
+                                        contentDescription = null,
+                                        tint = IndigoStatutoryBg,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Sec 44AB Tax Audit", fontWeight = FontWeight.Bold, color = IndigoStatutoryBg, fontSize = 12.sp)
+                                }
+                                Spacer(Modifier.height(2.dp))
+                                Text("Form 3CD 44 Clauses & Balance Sheet", color = Slate300, fontSize = 10.sp)
                             }
-                            Spacer(Modifier.height(2.dp))
-                            Text("Form 3CD 44 Clauses & Balance Sheet", color = Slate300, fontSize = 10.sp)
                             Spacer(Modifier.height(6.dp))
                             StatutoryBadge(text = "Open 3CD →", tone = BadgeTone.SUCCESS)
                         }
@@ -279,7 +297,9 @@ fun EnterpriseAuditFastStartView(
                 Spacer(Modifier.height(8.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // Desk 3: NRI & DTAA Desk
@@ -289,9 +309,14 @@ fun EnterpriseAuditFastStartView(
                         border = androidx.compose.foundation.BorderStroke(1.dp, Slate600),
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .clickable { onOpenNriSuite() }
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(10.dp)
+                        ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.Public,
@@ -314,9 +339,14 @@ fun EnterpriseAuditFastStartView(
                         border = androidx.compose.foundation.BorderStroke(1.dp, AmberWarning),
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .clickable { onOpenNotices() }
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(10.dp)
+                        ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.Security,

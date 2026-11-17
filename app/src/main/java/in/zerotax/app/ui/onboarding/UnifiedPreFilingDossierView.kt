@@ -276,7 +276,9 @@ fun UnifiedPreFilingDossierView(
                 )
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // New Regime Card
@@ -287,13 +289,24 @@ fun UnifiedPreFilingDossierView(
                             1.dp,
                             if (dossier.recommendedRegime == TaxRegime.NEW_REGIME_115BAC) (if (isDark) PaletteSecondary else PaletteAccent) else Color.Transparent
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Text("New Regime (115BAC)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                            Text(IndianCurrencyFormatter.formatToInr(dossier.computedTaxNewRegime), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("New Regime (115BAC)", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                Text(IndianCurrencyFormatter.formatToInr(dossier.computedTaxNewRegime), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                            }
                             if (dossier.recommendedRegime == TaxRegime.NEW_REGIME_115BAC) {
                                 Text("Recommended", style = MaterialTheme.typography.labelSmall.copy(color = if (isDark) PaletteBackground else PalettePrimary, fontWeight = FontWeight.Bold, fontSize = 9.sp))
+                            } else {
+                                Spacer(Modifier.height(14.dp))
                             }
                         }
                     }
@@ -306,13 +319,24 @@ fun UnifiedPreFilingDossierView(
                             1.dp,
                             if (dossier.recommendedRegime == TaxRegime.OLD_REGIME) (if (isDark) PaletteSecondary else PaletteAccent) else Color.Transparent
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Text("Old Regime", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                            Text(IndianCurrencyFormatter.formatToInr(dossier.computedTaxOldRegime), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Old Regime", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                Text(IndianCurrencyFormatter.formatToInr(dossier.computedTaxOldRegime), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                            }
                             if (dossier.recommendedRegime == TaxRegime.OLD_REGIME) {
                                 Text("Recommended", style = MaterialTheme.typography.labelSmall.copy(color = if (isDark) PaletteBackground else PalettePrimary, fontWeight = FontWeight.Bold, fontSize = 9.sp))
+                            } else {
+                                Spacer(Modifier.height(14.dp))
                             }
                         }
                     }

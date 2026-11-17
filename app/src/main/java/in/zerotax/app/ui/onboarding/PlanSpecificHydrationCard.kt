@@ -247,16 +247,25 @@ fun PlanSpecificHydrationCard(
 
                         // 43B(h) and Clause 44 Badges
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = EmeraldSuccessBg,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldSuccess.copy(alpha = 0.3f)),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
                             ) {
-                                Column(modifier = Modifier.padding(10.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(10.dp),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Text("Sec 43B(h) MSME", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                                     Text("0 Overdue Dues > 45d", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
                                 }
@@ -265,9 +274,16 @@ fun PlanSpecificHydrationCard(
                                 shape = RoundedCornerShape(8.dp),
                                 color = EnterpriseTeal50,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500.copy(alpha = 0.3f)),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
                             ) {
-                                Column(modifier = Modifier.padding(10.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(10.dp),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Text("Clause 44 GST", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal700))
                                     Text("88.2% Registered Exp", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp))
                                 }

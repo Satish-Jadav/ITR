@@ -890,9 +890,11 @@ fun CitizenCategoryAgeSelector(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Row 1: First two cards side by side (generous 50% width each)
+            // Row 1: First two cards side by side (generous 50% width each with equal height)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val topTwo = listOf(
@@ -904,6 +906,7 @@ fun CitizenCategoryAgeSelector(
                     Card(
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .clickable { onCategoryChanged(cat) },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(

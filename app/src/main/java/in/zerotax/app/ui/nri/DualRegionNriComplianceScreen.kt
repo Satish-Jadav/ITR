@@ -363,32 +363,55 @@ fun DualRegionNriComplianceScreen(
 
                         Spacer(Modifier.height(10.dp))
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Card(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
                                 colors = CardDefaults.cardColors(containerColor = getEmeraldSuccessBg())
                             ) {
-                                Column(modifier = Modifier.padding(8.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(8.dp),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Text("Sec 10(4) Exempted", style = TextStyle(fontSize = 10.sp, color = EmeraldSuccess))
                                     Text("₹${"%,d".format(taxResult.nreInterestExemptUnderSec10_4 + taxResult.fcnrInterestExemptUnderSec10_4)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                                 }
                             }
                             Card(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
                                 colors = CardDefaults.cardColors(containerColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else Slate100)
                             ) {
-                                Column(modifier = Modifier.padding(8.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(8.dp),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Text("NRO TDS Withheld", style = TextStyle(fontSize = 10.sp, color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate600))
                                     Text("₹${"%,d".format(taxResult.nroTdsDeductedAt30Percent)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
                                 }
                             }
                             Card(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
                                 colors = CardDefaults.cardColors(containerColor = if (taxResult.estimatedRefundOrBalancePayable >= 0) getEmeraldSuccessBg() else getAmberWarningBg())
                             ) {
-                                Column(modifier = Modifier.padding(8.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(8.dp),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Text(if (taxResult.estimatedRefundOrBalancePayable >= 0) "Estimated Refund" else "Balance Payable", style = TextStyle(fontSize = 10.sp, color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate600))
                                     Text("₹${"%,d".format(kotlin.math.abs(taxResult.estimatedRefundOrBalancePayable))}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
                                 }

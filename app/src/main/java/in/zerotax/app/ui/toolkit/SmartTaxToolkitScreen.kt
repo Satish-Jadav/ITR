@@ -1231,32 +1231,55 @@ private fun CapitalGainsLedgerView() {
 
                     Spacer(Modifier.height(10.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Card(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                             colors = CardDefaults.cardColors(containerColor = Slate100)
                         ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(8.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text("STCG (20%)", style = TextStyle(fontSize = 10.sp, color = Slate600))
                                 Text("₹${"%,d".format(result.taxOnStcg111A)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
                             }
                         }
                         Card(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                             colors = CardDefaults.cardColors(containerColor = Slate100)
                         ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(8.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text("LTCG (12.5% >1.25L)", style = TextStyle(fontSize = 10.sp, color = Slate600))
                                 Text("₹${"%,d".format(result.taxOnLtcg112A)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
                             }
                         }
                         Card(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                             colors = CardDefaults.cardColors(containerColor = Slate100)
                         ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(8.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text("Sec 112A Exemption", style = TextStyle(fontSize = 10.sp, color = EmeraldSuccess))
                                 Text("₹${"%,d".format(result.exemption112AClaimed)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                             }
@@ -1618,34 +1641,54 @@ private fun PropertyLtcgView() {
                     Spacer(Modifier.height(10.dp))
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Card(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                             colors = CardDefaults.cardColors(containerColor = Slate100)
                         ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                Text("Option 1: 12.5% Flat", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                                Text("Without Indexation", style = TextStyle(fontSize = 10.sp, color = Slate600))
-                                Spacer(Modifier.height(6.dp))
-                                Text("Cost: ₹${"%,d".format(input.actualCostOfAcquisitionRupees)}", style = TextStyle(fontSize = 11.sp))
-                                Text("Gain: ₹${"%,d".format(result.netGainOption1Unindexed)}", style = TextStyle(fontSize = 11.sp))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text("Option 1: 12.5% Flat", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                    Text("Without Indexation", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                    Spacer(Modifier.height(6.dp))
+                                    Text("Cost: ₹${"%,d".format(input.actualCostOfAcquisitionRupees)}", style = TextStyle(fontSize = 11.sp))
+                                    Text("Gain: ₹${"%,d".format(result.netGainOption1Unindexed)}", style = TextStyle(fontSize = 11.sp))
+                                }
                                 Spacer(Modifier.height(4.dp))
                                 Text("Tax: ₹${"%,d".format(result.taxOption1Unindexed12_5Pct)}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface))
                             }
                         }
 
                         Card(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                             colors = CardDefaults.cardColors(containerColor = EmeraldSuccessBg)
                         ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                Text("Option 2: 20.0% with CII", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
-                                Text("Cost Inflation Index", style = TextStyle(fontSize = 10.sp, color = Slate600))
-                                Spacer(Modifier.height(6.dp))
-                                Text("Indexed Cost: ₹${"%,d".format(result.indexedCostOfAcquisition)}", style = TextStyle(fontSize = 11.sp))
-                                Text("Gain: ₹${"%,d".format(result.netGainOption2Indexed)}", style = TextStyle(fontSize = 11.sp))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text("Option 2: 20.0% with CII", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                                    Text("Cost Inflation Index", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                                    Spacer(Modifier.height(6.dp))
+                                    Text("Indexed Cost: ₹${"%,d".format(result.indexedCostOfAcquisition)}", style = TextStyle(fontSize = 11.sp))
+                                    Text("Gain: ₹${"%,d".format(result.netGainOption2Indexed)}", style = TextStyle(fontSize = 11.sp))
+                                }
                                 Spacer(Modifier.height(4.dp))
                                 Text("Tax: ₹${"%,d".format(result.taxOption2Indexed20Pct)}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                             }
