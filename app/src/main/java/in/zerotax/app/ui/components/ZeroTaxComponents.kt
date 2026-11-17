@@ -215,6 +215,13 @@ fun StatutoryBadge(
 }
 
 @Composable
+fun getSafeStatusBarTopInset(): Dp {
+    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val cutoutPadding = WindowInsets.displayCutout.asPaddingValues().calculateTopPadding()
+    return maxOf(statusBarPadding, cutoutPadding, 48.dp) + 4.dp
+}
+
+@Composable
 fun EnterpriseTopHeader(
     pan: String,
     assessmentYear: String = "2026-27",
@@ -234,7 +241,7 @@ fun EnterpriseTopHeader(
     onLockVault: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
+    val topInset = getSafeStatusBarTopInset()
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -1332,7 +1339,7 @@ fun ZeroTaxTopAppBar(
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
+    val topInset = getSafeStatusBarTopInset()
     TopAppBar(
         modifier = modifier,
         windowInsets = WindowInsets(top = topInset),

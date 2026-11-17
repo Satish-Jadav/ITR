@@ -59,7 +59,7 @@ data class AuditEntryUiModel(
 data class ZeroTaxUiState(
     val currentTap: OnboardingTap? = OnboardingTap.Tap1IdentityConsent,
     val selectedWorkspaceTab: WorkspaceTab = WorkspaceTab.FilingAndRefundHub,
-    val pan: String = "",
+    val pan: String = "ABCDE1234F",
     val assessmentYear: String = "2026-27",
     val grossSalaryRupees: Long = 0L,
     val employerName: String = "",
@@ -80,9 +80,9 @@ data class ZeroTaxUiState(
         isRefundAccount = true,
         isPreValidated = false
     ),
-    val taxpayerFullName: String = "",
+    val taxpayerFullName: String = "Satish Jadav",
     val taxpayerMobile: String = "",
-    val taxpayerEmail: String = "",
+    val taxpayerEmail: String = "jadavsatish552@gmail.com",
     val taxpayerAddress: String = "",
     val isIfscLoading: Boolean = false,
     val ifscErrorMessage: String? = null,
@@ -222,7 +222,7 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun startDynamicHydrationRadar() {
         val currentTier = _uiState.value.filingTierMode
-        val pan = _uiState.value.pan.ifBlank { "AAAPA1234A" }
+        val pan = _uiState.value.pan.ifBlank { "ABCDE1234F" }
         FilingSpeedTelemetryEngine.markSyncInitiated(currentTier.name)
 
         val initialStreams = listOf(
@@ -408,7 +408,7 @@ class ZeroTaxViewModel : ViewModel() {
                 val oldTax = state.oldRegimeResult.totalTaxLiabilityRounded288B
                 val bestTax = minOf(newTax, oldTax)
                 ZeroTaxCloudApiBridge.fetchPostSyncBriefing(
-                    pan = state.pan.ifBlank { "AAAPA1234A" },
+                    pan = state.pan.ifBlank { "ABCDE1234F" },
                     salaryGross = state.grossSalaryRupees
                 )
             }
@@ -425,7 +425,7 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun generateUnifiedDossier() {
         val state = _uiState.value
-        val pan = state.pan.ifBlank { "AAAPA1234A" }
+        val pan = state.pan.ifBlank { "ABCDE1234F" }
         val tier = state.filingTierMode
         val grossIncome = state.grossSalaryRupees
         val deductions = state.section80CInvestments + state.section80DSelf + state.section80CCD1BNps

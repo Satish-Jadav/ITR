@@ -138,7 +138,7 @@ fun SmartTransactionSuggestionsView(
             }
         },
         topBar = {
-            val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
+            val topInset = `in`.zerotax.app.ui.components.getSafeStatusBarTopInset()
             TopAppBar(
                 windowInsets = WindowInsets(top = topInset),
                 title = {

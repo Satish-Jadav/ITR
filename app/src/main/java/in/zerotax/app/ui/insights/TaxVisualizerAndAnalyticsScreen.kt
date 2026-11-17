@@ -672,25 +672,30 @@ private fun HistoricalItrDossierView(
                 ay = "AY 2026-27 (Current)",
                 grossSalary = currentGross,
                 refund = currentRefund,
-                growthYoY = "+15.4% YoY",
-                status = "Ready for Filing"
+                growthYoY = if (currentGross > 0L) "Current Return" else "Pending Entry",
+                status = if (currentGross > 0L) "Ready for Filing" else "Draft"
             )
 
-            HistoricalYearCard(
-                ay = "AY 2025-26",
-                grossSalary = (currentGross * 0.866).toLong(),
-                refund = 45_000L,
-                growthYoY = "+18.2% YoY",
-                status = "Processed u/s 143(1) (Ack: 1829304192)"
-            )
-
-            HistoricalYearCard(
-                ay = "AY 2024-25",
-                grossSalary = (currentGross * 0.733).toLong(),
-                refund = 32_000L,
-                growthYoY = "Baseline",
-                status = "Processed u/s 143(1) (Ack: 1729401928)"
-            )
+            if (currentGross > 0L) {
+                Spacer(Modifier.height(8.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "Prior-Year Statutory Archives",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Sync via Income Tax Portal in Filing Hub to retrieve verified Section 143(1) CPC acknowledgements for AY 2025-26 and AY 2024-25 directly from the government servers.",
+                            style = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                    }
+                }
+            }
 
             Spacer(Modifier.height(16.dp))
 

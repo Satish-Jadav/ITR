@@ -264,7 +264,7 @@ fun ZeroTaxFourTapSpineScaffold(
                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
                 ) {
-                    val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
+                    val topInset = getSafeStatusBarTopInset()
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

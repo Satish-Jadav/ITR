@@ -153,7 +153,7 @@ fun AutomatedOnboardingScreen(
             // Web Login In-App Sheet
             if (showWebLoginSheet) {
                 ItdOfficialWebLoginSheet(
-                    pan = uiState.pan.ifBlank { "AAAPA1234A" },
+                    pan = uiState.pan.ifBlank { "ABCDE1234F" },
                     onDismiss = { showWebLoginSheet = false },
                     onSyncSuccess = { count, tds, interest ->
                         showWebLoginSheet = false
@@ -171,7 +171,7 @@ private fun OnboardingTopBar(
     onBack: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-    val topInset = maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 28.dp)
+    val topInset = `in`.zerotax.app.ui.components.getSafeStatusBarTopInset()
     Surface(
         color = if (isDark) Slate900 else PaletteSurface,
         border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isDark) Slate800 else PaletteSecondary),
@@ -424,7 +424,7 @@ private fun TrustAndAuthStepView(
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
             trailingIcon = {
                 IconButton(onClick = {
-                    onPanChanged(if (pan.isBlank()) "AAAPA1234A" else pan)
+                    onPanChanged(if (pan.isBlank()) "ABCDE1234F" else pan)
                 }) {
                     Icon(
                         imageVector = Icons.Default.QrCodeScanner,
