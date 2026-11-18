@@ -77,26 +77,8 @@ jobs:
       - name: Generate Proper Summary Release Notes
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         run: |
-          COMMIT_SHORT=$(git rev-parse --short HEAD)
-          COMMIT_DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
-          LATEST_SUBJECT=$(git log -1 --pretty=format:"%s")
-          LATEST_BODY=$(git log -1 --pretty=format:"%b" | sed '/^$/d')
-          RECENT_COMMITS=$(git log -n 5 --pretty=format:"• %s (%h)" | sed '/^$/d')
-
-          cat << EOF > release-notes.txt
-          🚀 ZeroTax Production Release (AY 2026-27)
-          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📦 Build: Release (R8 Full Mode Optimized)
-          🔖 Commit: ${COMMIT_SHORT} • ${COMMIT_DATE}
-
-          ✨ Latest Update:
-          ${LATEST_SUBJECT}
-          ${LATEST_BODY}
-
-          📋 Recent Highlights:
-          ${RECENT_COMMITS}
-
-          🛡️ Key Release Highlights:
+          cat << 'EOF' > release-notes.txt
+          Key Release Highlights:
           • Hardware-backed SQLCipher 4.5.x encrypted database
           • Direct Zero-Cost In-App ITD Portal Bridge (eportal.incometax.gov.in)
           • Instant statutory PAN entity validation u/s 139A
