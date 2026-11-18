@@ -51,17 +51,17 @@ jobs:
       - name: Build Encrypted SQLCipher 4.5.x Room Database & Verify Schema Export
         run: ./gradlew :core:database:assembleDebug :core:security:assembleDebug
 
-      - name: Build Compact Release APK with R8 Full Mode
-        run: ./gradlew :app:assembleRelease
+      - name: Build Debug APK with Chucker API Inspector for Testing
+        run: ./gradlew :app:assembleDebug
 
-      - name: Locate Generated Release APK
+      - name: Locate Generated Debug APK
         id: find_apk
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         run: |
           echo "Inspecting all generated build outputs:"
           find app/build/outputs -type f || true
 
-          APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | grep -i "release" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | grep -i "debug" | head -n 1)
           if [ -z "$APK_PATH" ]; then
             APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | head -n 1)
           fi
@@ -82,7 +82,8 @@ jobs:
           RECENT_LOG=$(git log -n 4 --pretty=format:"• %s" | sed '/^$/d')
 
           cat << EOF > release-notes.txt
-          🚀 ZeroTax Build (AY 2026-27) • Commit: ${COMMIT_SHORT}
+          🚀 ZeroTax Debug Build (AY 2026-27) • Commit: ${COMMIT_SHORT}
+          🔍 Chucker API Inspector Active for Testing
 
           What was Updated / Added:
           ${LATEST_LOG}
@@ -93,7 +94,7 @@ jobs:
           echo "Generated Firebase Release Notes:"
           cat release-notes.txt
 
-      - name: Distribute Release APK to Client via Firebase
+      - name: Distribute Debug APK to Client via Firebase
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:

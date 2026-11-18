@@ -26,12 +26,21 @@ import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
 import `in`.zerotax.core.database.SqlCipherHardwareVaultBuilder
 import `in`.zerotax.core.model.AuthSessionState
 import `in`.zerotax.core.security.ZeroTaxAuthSecurityManager
+import `in`.zerotax.core.security.network.ZeroTaxHardenedApiClient
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         ZeroTaxAuthSecurityManager.init(applicationContext)
+
+        // Attach Chucker HTTP inspector (Active in debug, 100% no-op in release)
+        val chuckerInterceptor = com.chuckerteam.chucker.api.ChuckerInterceptor.Builder(applicationContext)
+            .collector(com.chuckerteam.chucker.api.ChuckerCollector(applicationContext))
+            .maxContentLength(250_000L)
+            .alwaysReadResponseBody(true)
+            .build()
+        ZeroTaxHardenedApiClient.addInterceptor(chuckerInterceptor)
 
         // Strict Enterprise Security Invariant: Hardware-level screen capture and switcher preview prevention in production
         if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) == 0) {

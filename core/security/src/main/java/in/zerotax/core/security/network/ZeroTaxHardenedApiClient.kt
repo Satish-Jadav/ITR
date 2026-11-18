@@ -104,6 +104,17 @@ object ZeroTaxHardenedApiClient {
     val recentDiagnostics: List<ApiDiagnosticRecord>
         get() = synchronized(_recentDiagnostics) { _recentDiagnostics.toList() }
 
+    private val extraInterceptors = Collections.synchronizedList(mutableListOf<Interceptor>())
+
+    fun addInterceptor(interceptor: Interceptor) {
+        synchronized(extraInterceptors) {
+            if (!extraInterceptors.contains(interceptor)) {
+                extraInterceptors.add(interceptor)
+                ZeroTaxCloudApiBridge.invalidateClient()
+            }
+        }
+    }
+
     fun recordDiagnostic(record: ApiDiagnosticRecord) {
         synchronized(_recentDiagnostics) {
             if (_recentDiagnostics.size >= 50) {
@@ -132,6 +143,10 @@ object ZeroTaxHardenedApiClient {
             .addInterceptor(ApiLoggingInterceptor())
             .addInterceptor(ExponentialBackoffRetryInterceptor())
             .addInterceptor(DpopAndAntiReplayInterceptor(accessTokenProvider))
+
+        synchronized(extraInterceptors) {
+            extraInterceptors.forEach { builder.addInterceptor(it) }
+        }
 
         // Only enforce certificate pinner on non-localhost/production hostname
         if (!apiBaseUrl.contains("localhost") && !apiBaseUrl.contains("10.0.2.2")) {

@@ -50,8 +50,18 @@ object ZeroTaxCloudApiBridge {
 
     private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
 
-    private val okHttpClient by lazy {
-        ZeroTaxHardenedApiClient.createHardenedOkHttpClient { activeAccessToken }
+    @Volatile
+    private var _okHttpClient: okhttp3.OkHttpClient? = null
+
+    val okHttpClient: okhttp3.OkHttpClient
+        get() {
+            return _okHttpClient ?: synchronized(this) {
+                _okHttpClient ?: ZeroTaxHardenedApiClient.createHardenedOkHttpClient { activeAccessToken }.also { _okHttpClient = it }
+            }
+        }
+
+    fun invalidateClient() {
+        _okHttpClient = null
     }
 
     /**
