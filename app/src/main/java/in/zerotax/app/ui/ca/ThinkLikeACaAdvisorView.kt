@@ -44,6 +44,8 @@ fun ThinkLikeACaAdvisorView(
     onApplyDeduction: (DeductionOpportunity) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
+
     var selectedCategory by remember { mutableStateOf<DeductionCategory?>(null) }
     var claimedSections by remember { mutableStateOf(setOf<String>()) }
 
@@ -83,15 +85,16 @@ fun ThinkLikeACaAdvisorView(
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                "Think Like a CA: Maximizer",
+                                "Think Like a CA",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             )
                             Spacer(Modifier.width(8.dp))
                             StatutoryBadge(text = "Refund First", tone = BadgeTone.SUCCESS)
                         }
                         Text(
-                            text = "Aggressive Legal Statutory Tax Planning u/s 87A",
-                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                            text = "Statutory Planning u/s 87A",
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp),
+                            maxLines = 1
                         )
                     }
                 },

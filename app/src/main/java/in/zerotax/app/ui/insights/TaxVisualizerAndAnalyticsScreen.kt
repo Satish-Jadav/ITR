@@ -54,17 +54,19 @@ fun TaxVisualizerAndAnalyticsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
+
     var selectedTab by remember { mutableStateOf(AnalyticsViewTab.INCOME_FLOW) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ZeroTaxTopAppBar(
-                title = "Tax Intelligence & Analytics",
-                subtitle = "Sankey Flow, 3-Way AIS Reconciliation & Effective Tax Rate",
+                title = "Tax Intelligence",
+                subtitle = "AIS & Flow Visualizer",
                 pan = pan,
                 onBack = onBack,
-                badgeText = "Pro Insights",
+                badgeText = "Analytics",
                 badgeTone = BadgeTone.SUCCESS
             )
         }

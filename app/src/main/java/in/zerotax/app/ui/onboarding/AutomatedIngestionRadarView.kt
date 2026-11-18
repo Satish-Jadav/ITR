@@ -39,6 +39,7 @@ import `in`.zerotax.core.model.IngestionStreamStatus
 fun AutomatedIngestionRadarView(
     streams: List<IngestionStreamItem>,
     isIngesting: Boolean,
+    onProceed: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val isDark = isSystemInDarkTheme()
@@ -137,6 +138,14 @@ fun AutomatedIngestionRadarView(
             streams.forEach { stream ->
                 StreamStatusCard(stream = stream, isDark = isDark)
             }
+        }
+
+        if (!isIngesting && onProceed != null) {
+            `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton(
+                text = "Continue to Master Dossier (Step 3) →",
+                onClick = onProceed,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         // Hardware Vault Bottom Badge

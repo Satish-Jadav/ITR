@@ -87,6 +87,8 @@ fun SmartTaxToolkitScreen(
     viewModel: `in`.zerotax.app.viewmodel.ZeroTaxViewModel? = null,
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
+
     val liveUiState = viewModel?.uiState?.collectAsState()?.value
     var selectedTab by remember { mutableStateOf(ToolkitTab.HRA_OPTIMIZER) }
 
@@ -976,15 +978,15 @@ private fun CtcRestructuringView(grossSalary: Long) {
                     )
                     Spacer(Modifier.height(10.dp))
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedTextField(
                             value = ctcText,
                             onValueChange = { ctcText = it },
                             label = { Text("Annual Gross CTC (₹)") },
-                            modifier = Modifier.weight(1.2f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                         )
@@ -992,7 +994,7 @@ private fun CtcRestructuringView(grossSalary: Long) {
                             value = rentPaidAnnualText,
                             onValueChange = { rentPaidAnnualText = it },
                             label = { Text("Annual Rent (₹)") },
-                            modifier = Modifier.weight(0.8f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                         )
@@ -1306,15 +1308,15 @@ private fun CapitalGainsLedgerView() {
                     )
                     Spacer(Modifier.height(8.dp))
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedTextField(
                             value = stcg111AText,
                             onValueChange = { stcg111AText = it },
                             label = { Text("STCG 111A (Gain ₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1322,23 +1324,15 @@ private fun CapitalGainsLedgerView() {
                             value = cyStclLossText,
                             onValueChange = { cyStclLossText = it },
                             label = { Text("STCL (Loss ₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
                         OutlinedTextField(
                             value = ltcg112AText,
                             onValueChange = { ltcg112AText = it },
                             label = { Text("LTCG 112A (Gain ₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1346,7 +1340,7 @@ private fun CapitalGainsLedgerView() {
                             value = cyLtclLossText,
                             onValueChange = { cyLtclLossText = it },
                             label = { Text("LTCL (Loss ₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1359,15 +1353,15 @@ private fun CapitalGainsLedgerView() {
                     )
                     Spacer(Modifier.height(6.dp))
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedTextField(
                             value = bfStclLossText,
                             onValueChange = { bfStclLossText = it },
                             label = { Text("B/F STCL (AY 22-23 ₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1375,7 +1369,7 @@ private fun CapitalGainsLedgerView() {
                             value = bfLtclLossText,
                             onValueChange = { bfLtclLossText = it },
                             label = { Text("B/F LTCL (AY 23-24 ₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1715,15 +1709,15 @@ private fun PropertyLtcgView() {
                     )
                     Spacer(Modifier.height(10.dp))
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedTextField(
                             value = saleConsiderationText,
                             onValueChange = { saleConsiderationText = it },
                             label = { Text("Sale Consideration (₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1731,23 +1725,15 @@ private fun PropertyLtcgView() {
                             value = actualCostText,
                             onValueChange = { actualCostText = it },
                             label = { Text("Cost of Acquisition (₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
                         OutlinedTextField(
                             value = sec54ReinvestmentText,
                             onValueChange = { sec54ReinvestmentText = it },
                             label = { Text("Sec 54 Reinvestment (₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1755,7 +1741,7 @@ private fun PropertyLtcgView() {
                             value = acquisitionFy,
                             onValueChange = { acquisitionFy = it },
                             label = { Text("Acquisition FY (e.g. 2012-13)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1924,15 +1910,15 @@ private fun Form10EReliefView(pan: String) {
                     )
                     Spacer(Modifier.height(10.dp))
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedTextField(
                             value = normalSalaryText,
                             onValueChange = { normalSalaryText = it },
                             label = { Text("Current Salary excl. Arrears (₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1940,23 +1926,15 @@ private fun Form10EReliefView(pan: String) {
                             value = arrearsText,
                             onValueChange = { arrearsText = it },
                             label = { Text("Arrears Received in Current FY (₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
                         OutlinedTextField(
                             value = pastFyIncomeText,
                             onValueChange = { pastFyIncomeText = it },
                             label = { Text("Accrual Year Total Income (₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -1964,7 +1942,7 @@ private fun Form10EReliefView(pan: String) {
                             value = pastFyTaxText,
                             onValueChange = { pastFyTaxText = it },
                             label = { Text("Accrual Year Tax Paid (₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -2141,15 +2119,15 @@ private fun ItrUView() {
                     )
                     Spacer(Modifier.height(10.dp))
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedTextField(
                             value = additionalIncomeText,
                             onValueChange = { additionalIncomeText = it },
                             label = { Text("Additional Income (₹)") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )
@@ -2157,7 +2135,7 @@ private fun ItrUView() {
                             value = monthsElapsedText,
                             onValueChange = { monthsElapsedText = it },
                             label = { Text("Months from End of AY") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         )

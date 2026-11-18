@@ -46,6 +46,8 @@ fun SmallBusinessAuditSuiteScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
+
     var selectedBusinessType by remember { mutableStateOf(BusinessType.ELIGIBLE_BUSINESS_44AD) }
     var turnoverText by remember { mutableStateOf("") } // ₹1.5 Cr
     var digitalTurnoverText by remember { mutableStateOf("") } // ₹1.45 Cr
@@ -129,23 +131,24 @@ fun SmallBusinessAuditSuiteScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Business Type Selector Tabs
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            // Business Type Selector Tabs (Horizontally scrollable for small screens)
+            androidx.compose.foundation.lazy.LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf(
-                    Triple(BusinessType.ELIGIBLE_BUSINESS_44AD, "Sec 44AD Business", "Trader / Shop / Contractor"),
-                    Triple(BusinessType.SPECIFIED_PROFESSION_44ADA, "Sec 44ADA Profession", "Doctor / Freelancer / CA"),
-                    Triple(BusinessType.OTHER_REGULAR_BUSINESS, "Regular Business", "Turnover > ₹1 Cr / ₹10 Cr")
-                ).forEach { (type, title, subtitle) ->
+                items(
+                    listOf(
+                        Triple(BusinessType.ELIGIBLE_BUSINESS_44AD, "Sec 44AD Business", "Trader / Shop / Contractor"),
+                        Triple(BusinessType.SPECIFIED_PROFESSION_44ADA, "Sec 44ADA Profession", "Doctor / Freelancer / CA"),
+                        Triple(BusinessType.OTHER_REGULAR_BUSINESS, "Regular Business", "Turnover > ₹1 Cr / ₹10 Cr")
+                    )
+                ) { (type, title, subtitle) ->
                     val isSelected = selectedBusinessType == type
                     val isDark = isSystemInDarkTheme()
                     Box(
                         modifier = Modifier
-                            .weight(1f)
+                            .widthIn(min = 140.dp)
                             .clip(RoundedCornerShape(6.dp))
                             .background(
                                 if (isSelected) {
@@ -307,15 +310,15 @@ fun SmallBusinessAuditSuiteScreen(
 
                             Spacer(Modifier.height(8.dp))
 
-                            Row(
+                            Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 OutlinedTextField(
                                     value = digitalTurnoverText,
                                     onValueChange = { digitalTurnoverText = it },
                                     label = { Text("Digital (UPI/Bank ₹)") },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                                 )
@@ -323,23 +326,15 @@ fun SmallBusinessAuditSuiteScreen(
                                     value = cashTurnoverText,
                                     onValueChange = { cashTurnoverText = it },
                                     label = { Text("Cash Receipts (₹)") },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                                 )
-                            }
-
-                            Spacer(Modifier.height(8.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
                                 OutlinedTextField(
                                     value = declaredProfitText,
                                     onValueChange = { declaredProfitText = it },
                                     label = { Text("Declared Net Profit (₹)") },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                                 )
@@ -347,7 +342,7 @@ fun SmallBusinessAuditSuiteScreen(
                                     value = totalPaymentsText,
                                     onValueChange = { totalPaymentsText = it },
                                     label = { Text("Total Payments / Expenses (₹)") },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                                 )
@@ -418,15 +413,15 @@ fun SmallBusinessAuditSuiteScreen(
                             )
                             Spacer(Modifier.height(8.dp))
 
-                            Row(
+                            Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 OutlinedTextField(
                                     value = cashOver10kText,
                                     onValueChange = { cashOver10kText = it },
                                     label = { Text("Sec 40A(3): Cash >₹10k/day (₹)") },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                                 )
@@ -434,7 +429,7 @@ fun SmallBusinessAuditSuiteScreen(
                                     value = expensesWithoutTdsText,
                                     onValueChange = { expensesWithoutTdsText = it },
                                     label = { Text("Sec 40(a)(ia): Missing TDS (₹)") },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                                 )

@@ -51,6 +51,8 @@ fun CaAuditorPortalScreen(
     onExitCaPortal: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onExitCaPortal)
+
     var showPairClientDialog by remember { mutableStateOf(false) }
     var selectedClientForAudit by remember { mutableStateOf<ClientPairingSession?>(null) }
     var pairingCodeInput by remember { mutableStateOf("") }
@@ -73,15 +75,16 @@ fun CaAuditorPortalScreen(
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                "CA & Auditor Verification Portal",
+                                "CA Audit Portal",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             )
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(6.dp))
                             StatutoryBadge(text = "ICAI Verified", tone = BadgeTone.SUCCESS)
                         }
                         Text(
-                            text = "${caProfile.caName} • M.No: ${caProfile.membershipNumber}",
-                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                            text = "M.No: ${caProfile.membershipNumber}",
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp),
+                            maxLines = 1
                         )
                     }
                 },
@@ -95,12 +98,12 @@ fun CaAuditorPortalScreen(
                         onClick = { showPairClientDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                         shape = RoundedCornerShape(6.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.AddLink, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("Attach Client Code", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                            Icon(Icons.Default.AddLink, contentDescription = null, tint = PureWhite, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Pair Client", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp))
                         }
                     }
                 },

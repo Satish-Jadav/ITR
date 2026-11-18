@@ -653,14 +653,14 @@ fun InstitutionPdfPasswordCheatsheetModal(
                                             )
                                         }
                                         Spacer(modifier = Modifier.height(6.dp))
-                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                             OutlinedTextField(
                                                 value = assesseeFirstName,
                                                 onValueChange = { assesseeFirstName = it.take(20) },
                                                 label = { Text("First Name (Optional)", fontSize = 11.sp) },
                                                 placeholder = { Text("for Aadhaar/ICICI", fontSize = 11.sp) },
                                                 singleLine = true,
-                                                modifier = Modifier.weight(1f),
+                                                modifier = Modifier.fillMaxWidth(),
                                                 textStyle = TextStyle(fontSize = 12.sp)
                                             )
                                             OutlinedTextField(
@@ -669,7 +669,7 @@ fun InstitutionPdfPasswordCheatsheetModal(
                                                 label = { Text("Bank / Cust ID (Optional)", fontSize = 11.sp) },
                                                 placeholder = { Text("Last 4 digits", fontSize = 11.sp) },
                                                 singleLine = true,
-                                                modifier = Modifier.weight(1f),
+                                                modifier = Modifier.fillMaxWidth(),
                                                 textStyle = TextStyle(fontSize = 12.sp)
                                             )
                                         }
@@ -998,14 +998,14 @@ fun InstitutionPdfPasswordCheatsheetModal(
                                             )
                                         }
                                         Spacer(modifier = Modifier.height(6.dp))
-                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                             OutlinedTextField(
                                                 value = assesseeFirstName,
                                                 onValueChange = { assesseeFirstName = it.take(20) },
                                                 label = { Text("First Name", fontSize = 11.sp) },
                                                 placeholder = { Text("Taxpayer First Name", fontSize = 11.sp) },
                                                 singleLine = true,
-                                                modifier = Modifier.weight(1f),
+                                                modifier = Modifier.fillMaxWidth(),
                                                 textStyle = TextStyle(fontSize = 12.sp)
                                             )
                                             OutlinedTextField(
@@ -1014,7 +1014,7 @@ fun InstitutionPdfPasswordCheatsheetModal(
                                                 label = { Text("Bank Last 4 / Cust ID", fontSize = 11.sp) },
                                                 placeholder = { Text("1234", fontSize = 11.sp) },
                                                 singleLine = true,
-                                                modifier = Modifier.weight(1f),
+                                                modifier = Modifier.fillMaxWidth(),
                                                 textStyle = TextStyle(fontSize = 12.sp)
                                             )
                                         }
@@ -2085,13 +2085,13 @@ fun TaxPaymentAndChallanHubModal(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                     OutlinedTextField(
                                         value = bsrCodeInput,
                                         onValueChange = { bsrCodeInput = it.take(7) },
                                         label = { Text("BSR Code (7 Digits)") },
                                         placeholder = { Text("0002134") },
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier.fillMaxWidth(),
                                         singleLine = true
                                     )
                                     OutlinedTextField(
@@ -2099,7 +2099,7 @@ fun TaxPaymentAndChallanHubModal(
                                         onValueChange = { challanSerialInput = it.take(5) },
                                         label = { Text("Challan No (5 Digits)") },
                                         placeholder = { Text("01234") },
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier.fillMaxWidth(),
                                         singleLine = true
                                     )
                                 }

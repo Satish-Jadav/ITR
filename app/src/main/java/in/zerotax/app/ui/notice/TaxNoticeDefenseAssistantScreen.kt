@@ -86,6 +86,8 @@ fun TaxNoticeDefenseAssistantScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
+
     var selectedNotice by remember { mutableStateOf(NoticeCategory.SEC_143_1_DEMAND) }
     var dinNumber by remember { mutableStateOf("") }
     var demandAmountStr by remember { mutableStateOf("") }
@@ -310,7 +312,7 @@ fun TaxNoticeDefenseAssistantScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Notice Particulars (From CPC Intimation PDF)",
+                                    text = "Notice Particulars",
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                                 )
                                 OutlinedButton(
@@ -326,7 +328,7 @@ fun TaxNoticeDefenseAssistantScreen(
                                     } else {
                                         Icon(Icons.Default.DocumentScanner, contentDescription = null, modifier = Modifier.size(14.dp))
                                         Spacer(Modifier.width(4.dp))
-                                        Text("Scan Notice PDF", fontSize = 11.sp)
+                                        Text("Scan PDF", fontSize = 11.sp)
                                     }
                                 }
                             }
@@ -340,15 +342,15 @@ fun TaxNoticeDefenseAssistantScreen(
                             }
                             Spacer(Modifier.height(10.dp))
 
-                            Row(
+                            Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 OutlinedTextField(
                                     value = dinNumber,
                                     onValueChange = { dinNumber = it },
                                     label = { Text("Notice DIN / Reference No") },
-                                    modifier = Modifier.weight(1.2f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                                 )
@@ -356,7 +358,7 @@ fun TaxNoticeDefenseAssistantScreen(
                                     value = demandAmountStr,
                                     onValueChange = { demandAmountStr = it },
                                     label = { Text("Demand (₹)") },
-                                    modifier = Modifier.weight(0.8f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
                                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                                 )

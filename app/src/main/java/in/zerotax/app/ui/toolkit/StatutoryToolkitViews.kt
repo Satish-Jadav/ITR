@@ -368,56 +368,48 @@ fun Form12BbDeclarationView(
                         singleLine = true
                     )
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = rentPaidText,
-                            onValueChange = { rentPaidText = it },
-                            label = { Text("Annual Rent (₹)") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = landlordPan,
-                            onValueChange = { landlordPan = it },
-                            label = { Text("Landlord PAN") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                    }
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = sec80CText,
-                            onValueChange = { sec80CText = it },
-                            label = { Text("Section 80C (₹)") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = sec80CCD1BText,
-                            onValueChange = { sec80CCD1BText = it },
-                            label = { Text("NPS 80CCD(1B) (₹)") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                    }
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = sec80DText,
-                            onValueChange = { sec80DText = it },
-                            label = { Text("Health 80D (₹)") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = homeLoanInterestText,
-                            onValueChange = { homeLoanInterestText = it },
-                            label = { Text("Home Loan 24(b) (₹)") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                    }
+                    OutlinedTextField(
+                        value = rentPaidText,
+                        onValueChange = { rentPaidText = it },
+                        label = { Text("Annual Rent (₹)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = landlordPan,
+                        onValueChange = { landlordPan = it },
+                        label = { Text("Landlord PAN") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = sec80CText,
+                        onValueChange = { sec80CText = it },
+                        label = { Text("Section 80C (₹)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = sec80CCD1BText,
+                        onValueChange = { sec80CCD1BText = it },
+                        label = { Text("NPS 80CCD(1B) (₹)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = sec80DText,
+                        onValueChange = { sec80DText = it },
+                        label = { Text("Health 80D (₹)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = homeLoanInterestText,
+                        onValueChange = { homeLoanInterestText = it },
+                        label = { Text("Home Loan 24(b) (₹)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
 
                     Spacer(Modifier.height(8.dp))
                     Button(
@@ -561,22 +553,20 @@ fun Form15GOr15HZeroTdsView(pan: String) {
                         singleLine = true
                     )
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = bankName,
-                            onValueChange = { bankName = it },
-                            label = { Text("Bank Name") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = branchName,
-                            onValueChange = { branchName = it },
-                            label = { Text("Branch") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                    }
+                    OutlinedTextField(
+                        value = bankName,
+                        onValueChange = { bankName = it },
+                        label = { Text("Bank Name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = branchName,
+                        onValueChange = { branchName = it },
+                        label = { Text("Branch") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
 
                     OutlinedTextField(
                         value = fdAccountNumber,
@@ -586,22 +576,20 @@ fun Form15GOr15HZeroTdsView(pan: String) {
                         singleLine = true
                     )
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = estimatedFdInterestText,
-                            onValueChange = { estimatedFdInterestText = it },
-                            label = { Text("Estimated FD Interest (₹)") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = estimatedTotalIncomeText,
-                            onValueChange = { estimatedTotalIncomeText = it },
-                            label = { Text("Total Est. Income (₹)") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                    }
+                    OutlinedTextField(
+                        value = estimatedFdInterestText,
+                        onValueChange = { estimatedFdInterestText = it },
+                        label = { Text("Estimated FD Interest (₹)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = estimatedTotalIncomeText,
+                        onValueChange = { estimatedTotalIncomeText = it },
+                        label = { Text("Total Est. Income (₹)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
 
                     Spacer(Modifier.height(8.dp))
                     Button(
@@ -740,19 +728,22 @@ fun ResidentialStatusAndFamilyArbitrageView() {
                     }
                     Text(residentialEvaluation.detailedExplanation, style = MaterialTheme.typography.bodySmall, color = Slate700)
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         OutlinedTextField(
                             value = daysCurrentYearText,
                             onValueChange = { daysCurrentYearText = it },
                             label = { Text("Days in India FY 25-26") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
                         OutlinedTextField(
                             value = daysPreceding4YearsText,
                             onValueChange = { daysPreceding4YearsText = it },
                             label = { Text("Days in Preceding 4 FYs") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
                     }

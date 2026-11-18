@@ -122,7 +122,19 @@ fun AutomatedOnboardingScreen(
                     OnboardingWizardStep.STREAM_HYDRATION_RADAR -> {
                         AutomatedIngestionRadarView(
                             streams = uiState.ingestionStreams,
-                            isIngesting = uiState.isIngestingStreams
+                            isIngesting = uiState.isIngestingStreams,
+                            onProceed = {
+                                val autoForm = uiState.formRoutingDecision.selectedForm
+                                val autoTier = when (autoForm) {
+                                    `in`.zerotax.core.model.ItrFormType.ITR_1_SAHAJ -> FilingTierMode.SAHAJ_SIMPLE
+                                    `in`.zerotax.core.model.ItrFormType.ITR_2 -> FilingTierMode.INVESTOR_PRO
+                                    else -> FilingTierMode.ENTERPRISE_AUDIT
+                                }
+                                viewModel.setOnboardingStep(
+                                    if (autoTier == FilingTierMode.SAHAJ_SIMPLE) OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW
+                                    else OnboardingWizardStep.PLAN_SPECIFIC_INPUTS
+                                )
+                            }
                         )
                     }
                     OnboardingWizardStep.PLAN_SPECIFIC_INPUTS -> {

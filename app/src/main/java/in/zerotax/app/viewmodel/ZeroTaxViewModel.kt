@@ -409,30 +409,33 @@ class ZeroTaxViewModel : ViewModel() {
                 ItrFormType.ITR_2 -> FilingTierMode.INVESTOR_PRO
                 else -> FilingTierMode.ENTERPRISE_AUDIT
             }
-            _uiState.update { it.copy(filingTierMode = autoTier, recommendedTierMode = autoTier) }
-
-            generateUnifiedDossier()
-            syncVaultToApi()
-
-            // Pre-fetch personalized post-sync briefing
-            viewModelScope.launch(Dispatchers.IO) {
-                val state = _uiState.value
-                val newTax = state.newRegimeResult.totalTaxLiabilityRounded288B
-                val oldTax = state.oldRegimeResult.totalTaxLiabilityRounded288B
-                val bestTax = minOf(newTax, oldTax)
-                ZeroTaxCloudApiBridge.fetchPostSyncBriefing(
-                    pan = state.pan,
-                    salaryGross = state.grossSalaryRupees
-                )
-            }
-
             // Navigate forward: Sahaj goes straight to Dossier review, others to Plan-Specific Inputs
             val nextStep = if (autoTier == FilingTierMode.SAHAJ_SIMPLE) {
                 OnboardingWizardStep.UNIFIED_DOSSIER_REVIEW
             } else {
                 OnboardingWizardStep.PLAN_SPECIFIC_INPUTS
             }
-            _uiState.update { it.copy(onboardingStep = nextStep) }
+            _uiState.update {
+                it.copy(
+                    filingTierMode = autoTier,
+                    recommendedTierMode = autoTier,
+                    onboardingStep = nextStep
+                )
+            }
+
+            generateUnifiedDossier()
+            runCatching { syncVaultToApi() }
+
+            // Pre-fetch personalized post-sync briefing
+            viewModelScope.launch(Dispatchers.IO) {
+                runCatching {
+                    val state = _uiState.value
+                    ZeroTaxCloudApiBridge.fetchPostSyncBriefing(
+                        pan = state.pan,
+                        salaryGross = state.grossSalaryRupees
+                    )
+                }
+            }
         }
     }
 

@@ -64,6 +64,8 @@ fun ConversationalFilingChatScreen(
     viewModel: ZeroTaxViewModel? = null,
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
+
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val fallbackBot = remember { ConversationalTaxFilingBot() }
@@ -313,7 +315,7 @@ fun ConversationalFilingChatScreen(
                             onValueChange = { inputText = it },
                             placeholder = {
                                 Text(
-                                    "Ask Copilot (e.g. 'What if I put 50k in NPS?')",
+                                    "Ask Copilot (e.g. NPS, 80C)...",
                                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
                                 )
                             },
