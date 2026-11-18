@@ -73,7 +73,7 @@ fun ItdLivePortalSyncModal(
     var assesseePan by remember(pan) { mutableStateOf(pan.trim().uppercase()) }
 
     var currentStep by remember { mutableStateOf(PortalSyncStep.SELECT_AUTH_METHOD) }
-    var authMode by remember { mutableStateOf("AADHAAR_OTP") } // AADHAAR_OTP or OFFICIAL_WEB
+    var authMode by remember { mutableStateOf("OFFICIAL_WEB") } // OFFICIAL_WEB or AADHAAR_OTP
     var aadhaarOtp by remember { mutableStateOf("") }
     var showOfficialWebLogin by remember { mutableStateOf(false) }
     var syncProgressAnim by remember { mutableFloatStateOf(0f) }
@@ -310,47 +310,13 @@ fun ItdLivePortalSyncModal(
 
         when (currentStep) {
             PortalSyncStep.SELECT_AUTH_METHOD -> {
-                // Method Selector
+                // Method Selector: Official Web Portal (Recommended • Direct CBDT OTP) & Aadhaar OTP (ERI API)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (authMode == "AADHAAR_OTP") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            if (authMode == "AADHAAR_OTP") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clickable { authMode = "AADHAAR_OTP" }
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(10.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(
-                                    selected = authMode == "AADHAAR_OTP",
-                                    onClick = { authMode = "AADHAAR_OTP" },
-                                    colors = RadioButtonDefaults.colors(selectedColor = EnterpriseTeal600)
-                                )
-                                Text("Aadhaar OTP", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
-                            Text(
-                                "Instant sync without portal password",
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 6.dp)
-                            )
-                        }
-                    }
-
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = if (authMode == "OFFICIAL_WEB") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
@@ -377,7 +343,41 @@ fun ItdLivePortalSyncModal(
                                 Text("Web Portal", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                             Text(
-                                "Official isolated CBDT login sheet",
+                                "Official CBDT login • Real SMS OTP",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 6.dp)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (authMode == "AADHAAR_OTP") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            if (authMode == "AADHAAR_OTP") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clickable { authMode = "AADHAAR_OTP" }
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = authMode == "AADHAAR_OTP",
+                                    onClick = { authMode = "AADHAAR_OTP" },
+                                    colors = RadioButtonDefaults.colors(selectedColor = EnterpriseTeal600)
+                                )
+                                Text("Aadhaar OTP", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
+                            Text(
+                                "Direct ERI API (Requires Gateway)",
                                 fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(start = 6.dp)
@@ -440,6 +440,14 @@ fun ItdLivePortalSyncModal(
                                 text = otpErrorMessage!!,
                                 style = MaterialTheme.typography.bodySmall.copy(color = AmberWarning, fontSize = 11.sp)
                             )
+                            Spacer(Modifier.height(6.dp))
+                            ZeroTaxSecondaryButton(
+                                text = "Use Official Web Login (Real CBDT OTP)",
+                                onClick = {
+                                    authMode = "OFFICIAL_WEB"
+                                    otpErrorMessage = null
+                                }
+                            )
                         }
 
                         Spacer(Modifier.height(16.dp))
@@ -459,10 +467,6 @@ fun ItdLivePortalSyncModal(
                                             maskedMobileDisplay = json?.optString("maskedMobile") ?: ("••••••" + assesseePan.takeLast(4))
                                             isOtpDispatched = true
                                             cooldownSeconds = json?.optInt("cooldownSeconds") ?: 60
-                                            val debugOtp = json?.optString("debugTestOtp")
-                                            if (!debugOtp.isNullOrBlank()) {
-                                                otpReader.injectOtpManually(debugOtp)
-                                            }
                                         } else {
                                             otpErrorMessage = reqRes.exceptionOrNull()?.message ?: "Failed to dispatch OTP. Please check PAN."
                                         }
@@ -545,10 +549,6 @@ fun ItdLivePortalSyncModal(
                                                 val json = reqRes.getOrNull()
                                                 activeTxnId = json?.optString("txnId").orEmpty()
                                                 cooldownSeconds = json?.optInt("cooldownSeconds") ?: 60
-                                                val debugOtp = json?.optString("debugTestOtp")
-                                                if (!debugOtp.isNullOrBlank()) {
-                                                    otpReader.injectOtpManually(debugOtp)
-                                                }
                                             } else {
                                                 otpErrorMessage = reqRes.exceptionOrNull()?.message ?: "Failed to resend OTP."
                                             }

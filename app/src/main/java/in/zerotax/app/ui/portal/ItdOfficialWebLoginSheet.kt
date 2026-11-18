@@ -278,56 +278,7 @@ fun ItdOfficialWebLoginSheet(
                                     ItdTransactionFetcher.updateAndPersistLiveTransactions(pan, parsedTxns, null)
                                     parsedTxns
                                 } else {
-                                    val fallback = fetcher.fetchAisTransactions(pan).getOrDefault(emptyList())
-                                    if (fallback.isNotEmpty()) {
-                                        fallback
-                                    } else {
-                                        val canonicalTaxRecords = listOf(
-                                            `in`.zerotax.core.model.AisTransactionRecord(
-                                                transactionId = "AIS-$pan-SAL-01",
-                                                category = `in`.zerotax.core.model.AisCategory.SALARY,
-                                                reportingEntity = "INFOSYS LIMITED",
-                                                accountOrFolioNumber = "BLRI01234A",
-                                                grossAmount = 1250000L,
-                                                tdsWithheld = 112500L,
-                                                quarterOrDate = "2026-03-31",
-                                                suggestedSchedule = "Salary"
-                                            ),
-                                            `in`.zerotax.core.model.AisTransactionRecord(
-                                                transactionId = "AIS-$pan-SB-01",
-                                                category = `in`.zerotax.core.model.AisCategory.SAVINGS_INTEREST,
-                                                reportingEntity = "STATE BANK OF INDIA",
-                                                accountOrFolioNumber = "SBIN0001234",
-                                                grossAmount = 18500L,
-                                                tdsWithheld = 0L,
-                                                quarterOrDate = "2026-03-31",
-                                                suggestedSchedule = "OS"
-                                            ),
-                                            `in`.zerotax.core.model.AisTransactionRecord(
-                                                transactionId = "AIS-$pan-TD-01",
-                                                category = `in`.zerotax.core.model.AisCategory.TIME_DEPOSIT_INTEREST,
-                                                reportingEntity = "HDFC BANK LIMITED",
-                                                accountOrFolioNumber = "MUMH05678B",
-                                                grossAmount = 34200L,
-                                                tdsWithheld = 3420L,
-                                                quarterOrDate = "2026-03-31",
-                                                suggestedSchedule = "OS"
-                                            ),
-                                            `in`.zerotax.core.model.AisTransactionRecord(
-                                                transactionId = "AIS-$pan-DIV-01",
-                                                category = `in`.zerotax.core.model.AisCategory.DIVIDENDS,
-                                                reportingEntity = "TATA CONSULTANCY SERVICES",
-                                                accountOrFolioNumber = "TCSI09999C",
-                                                grossAmount = 15000L,
-                                                tdsWithheld = 1500L,
-                                                quarterOrDate = "2026-03-31",
-                                                suggestedSchedule = "OS"
-                                            )
-                                        )
-                                        ItdTransactionFetcher.updateLiveTransactions(canonicalTaxRecords)
-                                        ItdTransactionFetcher.updateAndPersistLiveTransactions(pan, canonicalTaxRecords, null)
-                                        canonicalTaxRecords
-                                    }
+                                    fetcher.fetchAisTransactions(pan).getOrDefault(emptyList())
                                 }
 
                                 val totalTds = finalRecords.sumOf { it.tdsWithheld }
