@@ -185,7 +185,7 @@ fun SmallBusinessAuditSuiteScreen(
                 }
             }
 
-            Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
 
             LazyColumn(
                 modifier = Modifier
@@ -247,7 +247,7 @@ fun SmallBusinessAuditSuiteScreen(
 
                             if (isMandatory) {
                                 Spacer(Modifier.height(10.dp))
-                                Divider(color = AmberWarning.copy(alpha = 0.3f), thickness = 0.5.dp)
+                                HorizontalDivider(color = AmberWarning.copy(alpha = 0.3f), thickness = 0.5.dp)
                                 Spacer(Modifier.height(8.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),

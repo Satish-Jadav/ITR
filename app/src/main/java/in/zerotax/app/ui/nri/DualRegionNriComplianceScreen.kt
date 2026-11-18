@@ -165,7 +165,7 @@ fun DualRegionNriComplianceScreen(
                         )
 
                         Spacer(Modifier.height(10.dp))
-                        Divider(color = Slate200, thickness = 0.5.dp)
+                        HorizontalDivider(color = Slate200, thickness = 0.5.dp)
                         Spacer(Modifier.height(8.dp))
 
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -183,7 +183,7 @@ fun DualRegionNriComplianceScreen(
                                     )
                                 )
                             }
-                            Divider(color = Slate200.copy(alpha = 0.5f), thickness = 0.5.dp)
+                            HorizontalDivider(color = Slate200.copy(alpha = 0.5f), thickness = 0.5.dp)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -198,7 +198,7 @@ fun DualRegionNriComplianceScreen(
                                     )
                                 )
                             }
-                            Divider(color = Slate200.copy(alpha = 0.5f), thickness = 0.5.dp)
+                            HorizontalDivider(color = Slate200.copy(alpha = 0.5f), thickness = 0.5.dp)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -377,7 +377,7 @@ fun DualRegionNriComplianceScreen(
                                 Text("Sec 10(4) Exempted", style = MaterialTheme.typography.bodySmall.copy(color = EmeraldSuccess, fontWeight = FontWeight.Medium))
                                 Text("₹${"%,d".format(taxResult.nreInterestExemptUnderSec10_4 + taxResult.fcnrInterestExemptUnderSec10_4)}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                             }
-                            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 0.5.dp)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 0.5.dp)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -386,7 +386,7 @@ fun DualRegionNriComplianceScreen(
                                 Text("NRO TDS Withheld (30%)", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium))
                                 Text("₹${"%,d".format(taxResult.nroTdsDeductedAt30Percent)}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold))
                             }
-                            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 0.5.dp)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 0.5.dp)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,

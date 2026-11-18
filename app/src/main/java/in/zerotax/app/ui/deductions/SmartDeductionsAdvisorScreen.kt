@@ -15,8 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -247,7 +246,7 @@ fun SmartDeductionsAdvisorScreen(
                             LifeEventTag.CHARITABLE_DONATION -> Icons.Default.Favorite
                             LifeEventTag.EV_CAR_LOAN -> Icons.Default.DirectionsCar
                             LifeEventTag.SAVINGS_INTEREST -> Icons.Default.AccountBalance
-                            LifeEventTag.DISABLED_DEPENDENT, LifeEventTag.SELF_DISABILITY -> Icons.Default.Accessible
+                            LifeEventTag.DISABLED_DEPENDENT, LifeEventTag.SELF_DISABILITY -> Icons.AutoMirrored.Filled.Accessible
                             LifeEventTag.CRITICAL_ILLNESS -> Icons.Default.Medication
                             LifeEventTag.POLITICAL_DONATION -> Icons.Default.Policy
                             LifeEventTag.SENIOR_DEPOSITS -> Icons.Default.Person

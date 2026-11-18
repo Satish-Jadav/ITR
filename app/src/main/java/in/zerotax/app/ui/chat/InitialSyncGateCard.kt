@@ -231,7 +231,7 @@ fun PostSyncDiagnosticCard(
                 }
 
                 if (refundDue > 0L) {
-                    Divider(modifier = Modifier.padding(vertical = 4.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween

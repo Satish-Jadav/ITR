@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -114,7 +115,7 @@ fun DocumentVaultScreen(
                 description = if (uiState.tdsDeposited26As > 0L) "TDS u/s 192/194 Deposited: ₹${uiState.tdsDeposited26As}" else "Tax deducted at source and advance tax deposits",
                 isAttached = uiState.tdsDeposited26As > 0L,
                 badgeText = if (uiState.tdsDeposited26As > 0L) "Synced" else "Pending",
-                icon = Icons.Default.ReceiptLong
+                icon = Icons.AutoMirrored.Filled.ReceiptLong
             ),
             VaultDocumentItem(
                 id = "ais_tis",
@@ -130,7 +131,7 @@ fun DocumentVaultScreen(
                 description = "Consolidated mutual fund & stock transactions ledger",
                 isAttached = false,
                 badgeText = "Auto-Unlock",
-                icon = Icons.Default.TrendingUp
+                icon = Icons.AutoMirrored.Filled.TrendingUp
             ),
             VaultDocumentItem(
                 id = "bank_stmt",

@@ -478,7 +478,7 @@ fun ItdLivePortalSyncModal(
                             isLoading = isGeneratingOtp,
                             enabled = assesseePan.length == 10 && !isGeneratingOtp,
                             leadingIcon = {
-                                Icon(Icons.Default.Send, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
                             }
                         )
                     } else {

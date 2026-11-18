@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -233,7 +234,7 @@ private fun OnboardingTopBar(
             ) {
                 if (currentStep != OnboardingWizardStep.TRUST_AND_AUTH && currentStep != OnboardingWizardStep.STREAM_HYDRATION_RADAR) {
                     IconButton(onClick = onBack, modifier = Modifier.size(28.dp)) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", modifier = Modifier.size(20.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", modifier = Modifier.size(20.dp))
                     }
                 } else {
                     ZeroTaxBrandLogo(size = 28.dp)
@@ -352,7 +353,7 @@ private fun PlanSelectionStepView(
                         Icon(
                             imageVector = when (tier) {
                                 FilingTierMode.SAHAJ_SIMPLE -> Icons.Default.Eco
-                                FilingTierMode.INVESTOR_PRO -> Icons.Default.TrendingUp
+                                FilingTierMode.INVESTOR_PRO -> Icons.AutoMirrored.Filled.TrendingUp
                                 FilingTierMode.ENTERPRISE_AUDIT -> Icons.Default.Shield
                             },
                             contentDescription = null,
@@ -659,7 +660,7 @@ private fun TrustAndAuthStepView(
                     Spacer(Modifier.height(4.dp))
                     Text("Pulls prefilled salary, 26AS, and AIS in 30 seconds directly from CBDT.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
-                Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
             }
         }
         Surface(
@@ -686,7 +687,7 @@ private fun TrustAndAuthStepView(
                     Spacer(Modifier.height(4.dp))
                     Text("Log in securely on eportal.incometax.gov.in in an isolated ephemeral session.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
-                Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
             }
         }
         Surface(
@@ -713,7 +714,7 @@ private fun TrustAndAuthStepView(
                     Spacer(Modifier.height(4.dp))
                     Text("Silently unlocks with PAN and auto-fills your entire return in seconds.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
-                Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
             }
         }
         Surface(
@@ -740,7 +741,7 @@ private fun TrustAndAuthStepView(
                     Spacer(Modifier.height(4.dp))
                     Text("Pulls interest & capital gains from 23 Banks & CAMS/KFintech via RBI-licensed AA.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
-                Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
             }
         }
         Spacer(Modifier.height(8.dp))

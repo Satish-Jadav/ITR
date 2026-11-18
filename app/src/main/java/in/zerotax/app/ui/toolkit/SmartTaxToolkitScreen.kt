@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -65,10 +66,10 @@ enum class ToolkitTab(val label: String, val icon: ImageVector) {
     FORM_10E_RELIEF("Salary Arrears Sec 89", Icons.Default.Description),
     ITR_U_UPDATED_RETURN("ITR-U Updated Return", Icons.Default.Sync),
     ADVANCE_TAX_RADAR("Advance Tax & Challan 280", Icons.Default.Bolt),
-    LTCG_HARVESTING("LTCG Tax-Harvesting", Icons.Default.TrendingUp),
-    STATEMENT_EXPORTER("Bank-Ready Summary", Icons.Default.Article),
+    LTCG_HARVESTING("LTCG Tax-Harvesting", Icons.AutoMirrored.Filled.TrendingUp),
+    STATEMENT_EXPORTER("Bank-Ready Summary", Icons.AutoMirrored.Filled.Article),
     WHAT_IF_SIMULATOR("What-If Simulator", Icons.Default.AutoAwesome),
-    FORM_12BB_PROOF("Form 12BB Proofs", Icons.Default.Assignment),
+    FORM_12BB_PROOF("Form 12BB Proofs", Icons.AutoMirrored.Filled.Assignment),
     FORM_15G_15H("Form 15G/H Zero-TDS", Icons.Default.Security),
     RESIDENTIAL_STATUS("NRI & Family Arbitrage", Icons.Default.Public),
     REFUND_AUDIT_244A("Refund 244A & GST", Icons.Default.Gavel),
@@ -391,7 +392,7 @@ private fun HraOptimizerView(
                 ) {
                     if (!showRentReceiptPreview) {
                         Icon(
-                            imageVector = Icons.Default.Article,
+                            imageVector = Icons.AutoMirrored.Filled.Article,
                             contentDescription = null,
                             tint = PureWhite,
                             modifier = Modifier.size(16.dp)
@@ -859,7 +860,7 @@ private fun BankReadyStatementView(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Article,
+                                imageVector = Icons.AutoMirrored.Filled.Article,
                                 contentDescription = null,
                                 tint = PureWhite,
                                 modifier = Modifier.size(16.dp)
@@ -1076,7 +1077,7 @@ private fun CtcRestructuringView(grossSalary: Long) {
                         Text("Current", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), modifier = Modifier.weight(1f))
                         Text("Optimized", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal700), modifier = Modifier.weight(1f))
                     }
-                    Divider(color = Slate200, thickness = 0.5.dp)
+                    HorizontalDivider(color = Slate200, thickness = 0.5.dp)
 
                     compRows.forEach { (title, cur, opt) ->
                         Row(
@@ -1878,7 +1879,7 @@ private fun Form10EReliefView(pan: String) {
                         Text("2. Incremental Tax in Accrual Year(s) (Diff B):", style = MaterialTheme.typography.bodySmall)
                         Text("₹${"%,d".format(result.totalIncrementalTaxInAccrualYears)}", style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold))
                     }
-                    Divider(Modifier.padding(vertical = 6.dp), thickness = 0.5.dp, color = Slate200)
+                    HorizontalDivider(Modifier.padding(vertical = 6.dp), thickness = 0.5.dp, color = Slate200)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -2091,7 +2092,7 @@ private fun ItrUView() {
                     }
 
                     Spacer(Modifier.height(8.dp))
-                    Divider(color = Slate200, thickness = 0.5.dp)
+                    HorizontalDivider(color = Slate200, thickness = 0.5.dp)
                     Spacer(Modifier.height(6.dp))
 
                     Text(

@@ -54,6 +54,26 @@ jobs:
       - name: Build Compact Release APK with R8 Full Mode
         run: ./gradlew :app:assembleRelease
 
+      - name: Locate Generated Release APK
+        id: find_apk
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        run: |
+          echo "Inspecting all generated build outputs:"
+          find app/build/outputs -type f || true
+
+          APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | grep -i "release" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | head -n 1)
+          fi
+
+          if [ -z "$APK_PATH" ]; then
+            echo "::error::No APK file found in app/build/outputs/apk"
+            exit 1
+          fi
+
+          echo "Target APK for Firebase Distribution: $APK_PATH"
+          echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
+
       - name: Generate Quick Summary Release Notes
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         run: |
@@ -80,5 +100,5 @@ jobs:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           groups: clients
-          file: app/build/outputs/apk/release/app-release.apk
+          file: ${{ steps.find_apk.outputs.apk_path }}
           releaseNotesFile: release-notes.txt

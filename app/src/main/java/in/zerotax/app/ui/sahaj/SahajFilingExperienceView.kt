@@ -418,7 +418,7 @@ fun SahajFilingExperienceView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.TrendingUp,
+                        imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                         contentDescription = null,
                         tint = EmeraldSuccess,
                         modifier = Modifier.size(16.dp)

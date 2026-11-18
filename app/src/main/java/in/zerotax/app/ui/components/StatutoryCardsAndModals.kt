@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -1516,7 +1517,7 @@ fun FilingTierSelectorCard(
         ),
         PlanDetail(
             tier = FilingTierMode.INVESTOR_PRO,
-            icon = Icons.Default.TrendingUp,
+            icon = Icons.AutoMirrored.Filled.TrendingUp,
             eligibility = "Investors, freelancers, multiple properties, capital gains",
             incomeLimit = "No upper income limit (domestic income)",
             forms = listOf("ITR-2", "ITR-4 Sugam (44ADA/44AD)"),
