@@ -167,6 +167,16 @@ class ParallelOnboardingPrefetcher(
                 }
             }
 
+            // Incorporate any locally captured portal records from live session
+            val localTxns = ItdTransactionFetcher().fetchAisTransactions(cleanPan).getOrDefault(emptyList())
+            localTxns.forEach { rec ->
+                if (rec.category == AisCategory.SALARY || rec.category == AisCategory.TIME_DEPOSIT_INTEREST) {
+                    if (parsed26As.none { it.transactionId == rec.transactionId }) parsed26As.add(rec)
+                } else {
+                    if (parsedAis.none { it.transactionId == rec.transactionId }) parsedAis.add(rec)
+                }
+            }
+
             val elapsed = System.currentTimeMillis() - start
             ZeroTaxLogger.i(TAG, "5-way parallel onboarding prefetch completed in ${elapsed}ms")
 

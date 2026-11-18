@@ -50,7 +50,6 @@ fun AutomatedOnboardingScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isDark = isSystemInDarkTheme()
     var showWebLoginSheet by remember { mutableStateOf(false) }
-    var showAadhaarOtpModal by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             OnboardingTopBar(
@@ -105,19 +104,7 @@ fun AutomatedOnboardingScreen(
                             onPanChanged = { viewModel.onPanChanged(it) },
                             onVerifyPanWithItr = { viewModel.verifyPanWithItr() },
                             onStartHydration = { viewModel.startDynamicHydrationRadar() },
-                            onLaunchAadhaarOtp = { showAadhaarOtpModal = true },
-                            onLaunchWebLogin = { showWebLoginSheet = true },
-                            onDocumentIngested = { bytes, fName ->
-                                viewModel.ingestDocumentBytes(bytes, fName)
-                                viewModel.startDynamicHydrationRadar()
-                            },
-                            onAaSync = {
-                                viewModel.ingestAccountAggregatorFiData(
-                                    depositJson = """{"bank_name":"HDFC Bank","masked_account":"••••5512","transactions":[{"narration":"INTEREST CREDIT SB","amount":18500.0,"type":"CREDIT"},{"narration":"PPF CONTRIBUTION","amount":50000.0,"type":"DEBIT"}]}""",
-                                    securitiesJson = """{"depository_or_rta":"CAMS","holdingsCount":4,"holdings":[{"isin":"INE002A01018","cost_rupees":100000,"current_or_sale_value_rupees":145000}]}"""
-                                )
-                                viewModel.startDynamicHydrationRadar()
-                            }
+                            onLaunchWebLogin = { showWebLoginSheet = true }
                         )
                     }
                     OnboardingWizardStep.STREAM_HYDRATION_RADAR -> {
@@ -194,18 +181,7 @@ fun AutomatedOnboardingScreen(
                 )
             }
 
-            // Aadhaar OTP Live Modal
-            if (showAadhaarOtpModal) {
-                `in`.zerotax.app.ui.portal.ItdLivePortalSyncModal(
-                    pan = uiState.pan,
-                    onDismiss = { showAadhaarOtpModal = false },
-                    onSyncCompleted = { count, tds, interest, grossSalary ->
-                        showAadhaarOtpModal = false
-                        viewModel.applyPortalSyncData(tds, interest, grossSalary)
-                        viewModel.startDynamicHydrationRadar()
-                    }
-                )
-            }
+
         }
     }
 }
@@ -232,7 +208,7 @@ private fun OnboardingTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                if (currentStep != OnboardingWizardStep.TRUST_AND_AUTH && currentStep != OnboardingWizardStep.STREAM_HYDRATION_RADAR) {
+                if (currentStep != OnboardingWizardStep.TRUST_AND_AUTH) {
                     IconButton(onClick = onBack, modifier = Modifier.size(28.dp)) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", modifier = Modifier.size(20.dp))
                     }
@@ -429,43 +405,18 @@ private fun TrustAndAuthStepView(
     onPanChanged: (String) -> Unit,
     onVerifyPanWithItr: () -> Unit,
     onStartHydration: () -> Unit,
-    onLaunchAadhaarOtp: () -> Unit,
-    onLaunchWebLogin: () -> Unit,
-    onDocumentIngested: (ByteArray, String) -> Unit = { _, _ -> },
-    onAaSync: () -> Unit = {}
+    onLaunchWebLogin: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
     val scrollState = rememberScrollState()
     val panEntity = remember(pan) { PanEntityDecoder.decode(pan) }
     val isPanValid = remember(pan) { pan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$")) }
-    val context = androidx.compose.ui.platform.LocalContext.current
-    var uploadStatusMessage by remember { mutableStateOf<String?>(null) }
 
     val executeIfVerified: (() -> Unit) -> Unit = { action ->
         if (isPanVerifiedWithItr) {
             action()
         } else {
             onVerifyPanWithItr()
-        }
-    }
-
-    val docLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-        contract = androidx.activity.result.contract.ActivityResultContracts.OpenMultipleDocuments()
-    ) { uris ->
-        if (uris.isNotEmpty()) {
-            uris.forEach { uri ->
-                val fName = uri.lastPathSegment ?: "Form16.pdf"
-                try {
-                    val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-                    if (bytes != null && bytes.isNotEmpty()) {
-                        executeIfVerified { onDocumentIngested(bytes, fName) }
-                    } else {
-                        executeIfVerified { onStartHydration() }
-                    }
-                } catch (_: Exception) {
-                    executeIfVerified { onStartHydration() }
-                }
-            }
         }
     }
     Column(
@@ -631,38 +582,11 @@ private fun TrustAndAuthStepView(
             )
         }
 
-        // Auth Method Selector
+        // Official Portal Bridge
         Text(
-            text = "Automated Data Ingestion Method",
+            text = "Official Data Ingestion Bridge",
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
         )
-        Surface(
-            onClick = { executeIfVerified { onLaunchAadhaarOtp() } },
-            shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PaletteSurface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(Icons.Default.PhonelinkRing, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Instant Government Aadhaar OTP", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                    Spacer(Modifier.height(4.dp))
-                    if (isPanVerifiedWithItr) {
-                        StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
-                    } else {
-                        StatutoryBadge(text = "REQUIRES VERIFIED PAN", tone = BadgeTone.WARNING)
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    Text("Pulls prefilled salary, 26AS, and AIS in 30 seconds directly from CBDT.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                }
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
-            }
-        }
         Surface(
             onClick = { executeIfVerified { onLaunchWebLogin() } },
             shape = RoundedCornerShape(10.dp),
@@ -686,60 +610,6 @@ private fun TrustAndAuthStepView(
                     }
                     Spacer(Modifier.height(4.dp))
                     Text("Log in securely on eportal.incometax.gov.in in an isolated ephemeral session.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                }
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
-            }
-        }
-        Surface(
-            onClick = { executeIfVerified { docLauncher.launch(arrayOf("application/pdf")) } },
-            shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PaletteSurface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(Icons.Default.UploadFile, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Import Form 16 / Tax Statement PDF", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                    Spacer(Modifier.height(4.dp))
-                    if (isPanVerifiedWithItr) {
-                        StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
-                    } else {
-                        StatutoryBadge(text = "REQUIRES VERIFIED PAN", tone = BadgeTone.WARNING)
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    Text("Silently unlocks with PAN and auto-fills your entire return in seconds.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                }
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
-            }
-        }
-        Surface(
-            onClick = { executeIfVerified { onAaSync() } },
-            shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PaletteSurface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(Icons.Default.AccountBalance, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("1-Click Account Aggregator (AA) Sync", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                    Spacer(Modifier.height(4.dp))
-                    if (isPanVerifiedWithItr) {
-                        StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
-                    } else {
-                        StatutoryBadge(text = "REQUIRES VERIFIED PAN", tone = BadgeTone.WARNING)
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    Text("Pulls interest & capital gains from 23 Banks & CAMS/KFintech via RBI-licensed AA.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
             }

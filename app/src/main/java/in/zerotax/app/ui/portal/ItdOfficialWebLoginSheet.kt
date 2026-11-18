@@ -6,10 +6,14 @@ import android.annotation.SuppressLint
 import android.webkit.WebView
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +29,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge
 import `in`.zerotax.feature.portalbridge.ItdTransactionFetcher
+import `in`.zerotax.feature.portalbridge.PayloadType
 import `in`.zerotax.core.model.AisCategory
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.window.Dialog
@@ -59,12 +64,29 @@ fun ItdOfficialWebLoginSheet(
 ) {
     val scope = rememberCoroutineScope()
     val isDark = isSystemInDarkTheme()
-    val bridge = remember { HardenedEphemeralPortalBridge(scope) }
+    val cleanPan = remember(pan) { pan.trim().uppercase() }
+    val bridge = remember {
+        HardenedEphemeralPortalBridge(scope).apply {
+            activePan = cleanPan
+        }
+    }
     val fetcher = remember { ItdTransactionFetcher() }
     val bridgeState by bridge.state.collectAsState()
 
     var isFetchingRecords by remember { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    var webProgress by remember { mutableIntStateOf(0) }
+    var canGoBack by remember { mutableStateOf(false) }
+    var canGoForward by remember { mutableStateOf(false) }
+
+    val capturedTypes = remember(bridgeState) {
+        when (val s = bridgeState) {
+            is PortalBridgeState.CapturingPayloads -> s.captured
+            is PortalBridgeState.CompletedAndSanitized -> s.payloads.keys
+            else -> bridge.getCapturedPayloads().keys
+        }
+    }
+
     val context = androidx.compose.ui.platform.LocalContext.current
     val otpReader = remember {
         ItdAndAaOtpAutoReader(context) { code ->
@@ -79,6 +101,16 @@ fun ItdOfficialWebLoginSheet(
         }
     }
 
+    // Hands-free credential automation for official ITD login flow
+    LaunchedEffect(cleanPan) {
+        while (true) {
+            delay(1500)
+            webViewRef?.let { wv ->
+                bridge.injectPortalLoginCredentials(wv, cleanPan, "[REDACTED_PASSWORD]")
+            }
+        }
+    }
+
     // React to bridge state changes
     LaunchedEffect(bridgeState) {
         when (val state = bridgeState) {
@@ -86,12 +118,12 @@ fun ItdOfficialWebLoginSheet(
                 scope.launch {
                     try {
                         ZeroTaxCloudApiBridge.ingestLivePrefill(
-                            pan = pan,
+                            pan = cleanPan,
                             sourceOrigin = "OFFICIAL_WEBVIEW_EPHEMERAL_SESSION"
                         )
                     } catch (_: Exception) {}
                 }
-                val allTxns = fetcher.fetchAisTransactions(pan).getOrDefault(emptyList())
+                val allTxns = fetcher.fetchAisTransactions(cleanPan).getOrDefault(emptyList())
                 val totalTds = allTxns.sumOf { it.tdsWithheld }
                 val totalInterest = allTxns
                     .filter { it.category == AisCategory.SAVINGS_INTEREST || it.category == AisCategory.TIME_DEPOSIT_INTEREST }
@@ -114,13 +146,18 @@ fun ItdOfficialWebLoginSheet(
         },
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
+            dismissOnClickOutside = false,
+            dismissOnBackPress = false
         )
     ) {
         BackHandler {
-            bridge.sanitizePortalSessionImmediately {
-                webViewRef?.destroy()
-                onDismiss()
+            if (webViewRef?.canGoBack() == true) {
+                webViewRef?.goBack()
+            } else {
+                bridge.sanitizePortalSessionImmediately {
+                    webViewRef?.destroy()
+                    onDismiss()
+                }
             }
         }
 
@@ -129,82 +166,207 @@ fun ItdOfficialWebLoginSheet(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // Ultra-slim Top Security Header (URL + GOV.IN + Close)
+            // 1. Top Navigation & Security Header
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
-                tonalElevation = 2.dp,
+                tonalElevation = 1.dp,
                 border = androidx.compose.foundation.BorderStroke(
                     0.5.dp,
                     if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate200
                 )
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = "Secure Connection",
-                            tint = EmeraldSuccess,
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Text(
-                            text = "eportal.incometax.gov.in",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            maxLines = 1
-                        )
-                        Box(
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified) {
+                        Row(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(getEmeraldSuccessBg())
-                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = "GOV.IN",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = EmeraldSuccess,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 9.sp
+                            // Navigation controls: Back, Forward, Reload
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                IconButton(
+                                    onClick = { webViewRef?.goBack() },
+                                    enabled = canGoBack,
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = if (canGoBack) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = { webViewRef?.goForward() },
+                                    enabled = canGoForward,
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = "Forward",
+                                        tint = if (canGoForward) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = { webViewRef?.reload() },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = "Reload",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+
+                            // Portal Address & Security Badge
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.weight(1f, fill = false)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Secure Connection",
+                                    tint = EmeraldSuccess,
+                                    modifier = Modifier.size(13.dp)
                                 )
-                            )
+                                Text(
+                                    text = "eportal.incometax.gov.in",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    maxLines = 1
+                                )
+                            }
+
+                            // Close Button
+                            IconButton(
+                                onClick = {
+                                    bridge.sanitizePortalSessionImmediately {
+                                        webViewRef?.destroy()
+                                        onDismiss()
+                                    }
+                                },
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Close",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
 
-                    IconButton(
-                        onClick = {
-                            bridge.sanitizePortalSessionImmediately {
-                                webViewRef?.destroy()
-                                onDismiss()
-                            }
-                        },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
+                    // Progress indicator during web loads
+                    if (webProgress in 1..99) {
+                        LinearProgressIndicator(
+                            progress = { webProgress / 100f },
+                            modifier = Modifier.fillMaxWidth().height(2.dp),
+                            color = PaletteAccent,
+                            trackColor = Color.Transparent
                         )
                     }
                 }
             }
 
-            // Full WebView with exactly one button at bottom right
+            // 2. User Guidance & Live Bridge Interception Bar
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = if (isDark) EnterpriseTeal900.copy(alpha = 0.5f) else EnterpriseTeal50,
+                border = androidx.compose.foundation.BorderStroke(
+                    0.5.dp,
+                    if (isDark) EnterpriseTeal700.copy(alpha = 0.6f) else EnterpriseTeal200
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "PAN: ",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 11.sp
+                                )
+                            )
+                            Text(
+                                text = cleanPan,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = if (isDark) EnterpriseTeal300 else EnterpriseTeal800,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                        Text(
+                            text = "1. Sign in with password/OTP • 2. Tap Sync below",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
+
+                    // Auto-fill Credentials Pill
+                    androidx.compose.material3.Button(
+                        onClick = {
+                            webViewRef?.let { wv ->
+                                bridge.injectPortalLoginCredentials(wv, cleanPan, "[REDACTED_PASSWORD]")
+                            }
+                        },
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 1.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = if (isDark) EnterpriseTeal700 else EnterpriseTeal600
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.height(24.dp)
+                    ) {
+                        Text(
+                            text = "Auto-Fill",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    Spacer(Modifier.width(6.dp))
+
+                    // Live Intercept Badges
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        LiveBadgeChip("Pre-fill", capturedTypes.contains(PayloadType.PREFILL_JSON), isDark)
+                        LiveBadgeChip("26AS", capturedTypes.contains(PayloadType.FORM_26AS_JSON), isDark)
+                        LiveBadgeChip("AIS", capturedTypes.contains(PayloadType.AIS_TIS_JSON), isDark)
+                    }
+                }
+            }
+
+            // 3. Isolated Portal WebView with Floating Sync Action Bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,36 +375,61 @@ fun ItdOfficialWebLoginSheet(
                 AndroidView(
                     factory = { ctx ->
                         WebView(ctx).apply {
-                            bridge.configureIsolatedWebView(this)
+                            bridge.activePan = cleanPan
+                            bridge.configureIsolatedWebView(this) { progress ->
+                                webProgress = progress
+                                canGoBack = this.canGoBack()
+                                canGoForward = this.canGoForward()
+                            }
                             loadUrl("https://eportal.incometax.gov.in/iec/foservices/#/login")
                             webViewRef = this
                             postDelayed({
-                                bridge.injectPanLoginScript(this, pan)
+                                bridge.injectPanLoginScript(this, cleanPan)
                             }, 1500)
                         }
                     },
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Single button visible at bottom right: Icon-only Sync FAB to fetch live data
-                FloatingActionButton(
+                // 4. Prominent, User-Friendly Extended Sync Action Pill
+                val liveCount = bridge.getCapturedPayloads().size
+                Surface(
                     onClick = {
                         if (!isFetchingRecords) {
                             isFetchingRecords = true
-                            `in`.zerotax.core.security.logging.ZeroTaxLogger.i("ItdOfficialWebLoginSheet", "Live sync FAB clicked: querying verified portal sync for PAN $pan")
+                            `in`.zerotax.core.security.logging.ZeroTaxLogger.i("ItdOfficialWebLoginSheet", "Live sync button clicked for PAN $cleanPan")
                             scope.launch {
+                                // 1. Inject script to fetch live prefill & AIS and scrape session/DOM in current session
+                                webViewRef?.let {
+                                    bridge.injectFetchLivePrefillAndAisScript(it, "2026-27")
+                                    bridge.injectExtractSessionAndDomDataScript(it)
+                                }
+                                delay(700)
+
                                 val activeTxnId = java.util.UUID.randomUUID().toString()
                                 val verificationToken = "LIVE_OFFICIAL_WEB_PORTAL_SESSION_${System.currentTimeMillis()}"
 
-                                // Fetch live 26AS/AIS records from verified portal sync endpoint
+                                // 2. Query portal sync endpoint
                                 val syncRes = ZeroTaxCloudApiBridge.syncPortalRecords(
-                                    pan = pan,
+                                    pan = cleanPan,
                                     txnId = activeTxnId,
                                     verificationToken = verificationToken,
                                     assessmentYear = "2026-27"
                                 )
 
                                 val parsedTxns = mutableListOf<`in`.zerotax.core.model.AisTransactionRecord>()
+
+                                // Incorporate any payloads captured directly by WebView bridge
+                                parsedTxns.addAll(bridge.parseAllCapturedToTransactions())
+
+                                // Wait for in-flight download & parsing if bridge capture is arriving
+                                var attempts = 0
+                                while (parsedTxns.isEmpty() && attempts < 8) {
+                                    delay(500)
+                                    parsedTxns.addAll(bridge.parseAllCapturedToTransactions())
+                                    attempts++
+                                }
+
                                 if (syncRes.isSuccess) {
                                     val syncJson = syncRes.getOrNull()
                                     val txnsArray = syncJson?.optJSONArray("transactions")
@@ -275,10 +462,10 @@ fun ItdOfficialWebLoginSheet(
 
                                 val finalRecords = if (parsedTxns.isNotEmpty()) {
                                     ItdTransactionFetcher.updateLiveTransactions(parsedTxns)
-                                    ItdTransactionFetcher.updateAndPersistLiveTransactions(pan, parsedTxns, null)
+                                    ItdTransactionFetcher.updateAndPersistLiveTransactions(cleanPan, parsedTxns, null)
                                     parsedTxns
                                 } else {
-                                    fetcher.fetchAisTransactions(pan).getOrDefault(emptyList())
+                                    fetcher.fetchAisTransactions(cleanPan).getOrDefault(emptyList())
                                 }
 
                                 val totalTds = finalRecords.sumOf { it.tdsWithheld }
@@ -289,38 +476,114 @@ fun ItdOfficialWebLoginSheet(
                                     .filter { it.category == `in`.zerotax.core.model.AisCategory.SALARY }
                                     .sumOf { it.grossAmount }
 
-                                `in`.zerotax.core.security.logging.ZeroTaxLogger.i("ItdOfficialWebLoginSheet", "Sync completed: discovered ${finalRecords.size} live items, totalTds=$totalTds, interest=$totalInterest, grossSalary=$grossSalary")
-
-                                delay(300)
-                                bridge.sanitizePortalSessionImmediately {
-                                    webViewRef?.destroy()
-                                    onSyncSuccess(finalRecords.size, totalTds, totalInterest, grossSalary)
+                                if (finalRecords.isNotEmpty()) {
+                                    `in`.zerotax.core.security.logging.ZeroTaxLogger.i("ItdOfficialWebLoginSheet", "Sync completed: discovered ${finalRecords.size} live items, totalTds=$totalTds, interest=$totalInterest, grossSalary=$grossSalary")
+                                    delay(300)
+                                    bridge.sanitizePortalSessionImmediately {
+                                        webViewRef?.destroy()
+                                        onSyncSuccess(finalRecords.size, totalTds, totalInterest, grossSalary)
+                                    }
+                                } else {
+                                    `in`.zerotax.core.security.logging.ZeroTaxLogger.w("ItdOfficialWebLoginSheet", "No live records extracted yet; keeping session active")
+                                    isFetchingRecords = false
                                 }
                             }
                         }
                     },
+                    shape = RoundedCornerShape(28.dp),
+                    color = EnterpriseTeal600,
+                    shadowElevation = 8.dp,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 24.dp, bottom = 48.dp),
-                    containerColor = EnterpriseTeal600,
-                    contentColor = Color.White,
-                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 8.dp)
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 32.dp, start = 20.dp, end = 20.dp)
                 ) {
-                    if (isFetchingRecords) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.5.dp,
-                            color = Color.White
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Sync,
-                            contentDescription = "Fetch Live Data & Sync",
-                            modifier = Modifier.size(24.dp)
-                        )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        if (isFetchingRecords) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "Syncing Official Tax Records...",
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 14.sp
+                                )
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Sync,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Column {
+                                Text(
+                                    text = "Fetch & Sync Tax Data",
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                )
+                                Text(
+                                    text = if (liveCount > 0) "$liveCount official payload(s) intercepted • Tap to import" else "Pulls 26AS, AIS/TIS & Pre-fill into ZeroTax",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = Color.White.copy(alpha = 0.85f),
+                                        fontSize = 10.sp
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LiveBadgeChip(name: String, isCaptured: Boolean, isDark: Boolean) {
+    Surface(
+        shape = RoundedCornerShape(6.dp),
+        color = if (isCaptured) {
+            getEmeraldSuccessBg().copy(alpha = 0.85f)
+        } else {
+            if (isDark) Slate800 else Slate200
+        },
+        border = androidx.compose.foundation.BorderStroke(
+            0.5.dp,
+            if (isCaptured) EmeraldSuccess else Color.Transparent
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            if (isCaptured) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = EmeraldSuccess,
+                    modifier = Modifier.size(10.dp)
+                )
+            }
+            Text(
+                text = name,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 9.sp,
+                    fontWeight = if (isCaptured) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isCaptured) EmeraldSuccess else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
         }
     }
 }

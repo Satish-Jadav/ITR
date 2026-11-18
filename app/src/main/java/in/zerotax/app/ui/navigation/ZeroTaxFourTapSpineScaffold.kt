@@ -40,7 +40,7 @@ import `in`.zerotax.app.ui.insights.TaxVisualizerAndAnalyticsScreen
 import `in`.zerotax.app.ui.legal.ComprehensiveLegalAcknowledgementDialog
 import `in`.zerotax.app.ui.notice.TaxNoticeDefenseAssistantScreen
 import `in`.zerotax.app.ui.nri.DualRegionNriComplianceScreen
-import `in`.zerotax.app.ui.portal.ItdLivePortalSyncModal
+import `in`.zerotax.app.ui.portal.ItdOfficialWebLoginSheet
 import `in`.zerotax.app.ui.portal.PortalAssistantScreen
 import `in`.zerotax.app.ui.portal.SmartTransactionSuggestionsView
 import `in`.zerotax.app.ui.enterprise.EnterpriseAuditFastStartView
@@ -523,10 +523,10 @@ fun ZeroTaxFourTapSpineScaffold(
             }
 
             if (showPortalSyncModal) {
-                ItdLivePortalSyncModal(
+                ItdOfficialWebLoginSheet(
                     pan = uiState.pan,
                     onDismiss = { showPortalSyncModal = false },
-                    onSyncCompleted = { count, tds, interest, grossSalary ->
+                    onSyncSuccess = { count, tds, interest, grossSalary ->
                         viewModel.applyPortalSyncData(tds, interest, grossSalary)
                         showPortalSyncModal = false
                     }

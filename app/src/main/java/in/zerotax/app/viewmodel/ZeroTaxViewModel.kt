@@ -355,9 +355,10 @@ class ZeroTaxViewModel : ViewModel() {
             }
 
             // Stream 4: Dynamic Stream
-            val discoveredSalary = if (bundle.form26AsTdsRecords.isNotEmpty()) {
-                bundle.form26AsTdsRecords.filter { it.category == AisCategory.SALARY }.fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.grossAmount }
-            } else 0L
+            val discoveredSalary = (bundle.form26AsTdsRecords + bundle.aisTisRecords)
+                .filter { it.category == AisCategory.SALARY }
+                .fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.grossAmount }
+            val resolvedSalary = if (discoveredSalary > 0L) discoveredSalary else _uiState.value.grossSalaryRupees
 
             _uiState.update { state ->
                 val pdfCount = bundle.discoveredLocalPdfs.size
@@ -376,7 +377,7 @@ class ZeroTaxViewModel : ViewModel() {
                 }
                 state.copy(
                     ingestionStreams = updated,
-                    grossSalaryRupees = if (discoveredSalary > 0L) discoveredSalary else state.grossSalaryRupees
+                    grossSalaryRupees = resolvedSalary
                 )
             }
 
@@ -443,11 +444,36 @@ class ZeroTaxViewModel : ViewModel() {
         val state = _uiState.value
         val pan = state.pan
         val tier = state.filingTierMode
-        val grossIncome = state.grossSalaryRupees
+        val salaryGross = state.grossSalaryRupees
+        val grossIncome = maxOf(0L, salaryGross) + state.savingsInterestRupees + state.presumptiveGross44ADA
         val deductions = state.section80CInvestments + state.section80DSelf + state.section80CCD1BNps
         val taxable = maxOf(0L, grossIncome - deductions - 75000L)
-        val newTax: Long = state.newRegimeResult.totalTaxLiabilityRounded288B
-        val oldTax: Long = state.oldRegimeResult.totalTaxLiabilityRounded288B
+        val newTax: Long = if (state.newRegimeResult.totalTaxLiabilityRounded288B > 0L) {
+            state.newRegimeResult.totalTaxLiabilityRounded288B
+        } else {
+            val calc = DeterministicIndianTaxEngine.computeNewRegime(
+                TaxpayerFinancialInput(
+                    citizenCategory = state.citizenCategory,
+                    grossSalary = salaryGross,
+                    savingsBankInterest = state.savingsInterestRupees,
+                    assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+                )
+            )
+            calc.totalTaxLiabilityRounded288B
+        }
+        val oldTax: Long = if (state.oldRegimeResult.totalTaxLiabilityRounded288B > 0L) {
+            state.oldRegimeResult.totalTaxLiabilityRounded288B
+        } else {
+            val calc = DeterministicIndianTaxEngine.computeOldRegime(
+                TaxpayerFinancialInput(
+                    citizenCategory = state.citizenCategory,
+                    grossSalary = salaryGross,
+                    savingsBankInterest = state.savingsInterestRupees,
+                    assessmentYearProfile = AssessmentYearProfile.AY_2026_27
+                )
+            )
+            calc.totalTaxLiabilityRounded288B
+        }
         val recommendedRegime = if (newTax <= oldTax) TaxRegime.NEW_REGIME_115BAC else TaxRegime.OLD_REGIME
         val taxSavings: Long = if (oldTax >= newTax) oldTax - newTax else newTax - oldTax
         val tdsTotal: Long = state.tdsDeposited26As

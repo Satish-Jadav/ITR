@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +37,7 @@ fun SplashScreen(
     onInitializationComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
     var stageIndex by remember { mutableIntStateOf(0) }
     var isReadyToExit by remember { mutableStateOf(false) }
 
@@ -101,18 +103,26 @@ fun SplashScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Slate950),
+            .background(if (isDark) Slate950 else PureWhite),
         contentAlignment = Alignment.Center
     ) {
         // Ambient radial teal glow
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(
-                        EnterpriseTeal600.copy(alpha = 0.15f * shieldGlowAlpha),
-                        EnterpriseTeal900.copy(alpha = 0.05f),
-                        Color.Transparent
-                    ),
+                    colors = if (isDark) {
+                        listOf(
+                            EnterpriseTeal600.copy(alpha = 0.15f * shieldGlowAlpha),
+                            EnterpriseTeal900.copy(alpha = 0.05f),
+                            Color.Transparent
+                        )
+                    } else {
+                        listOf(
+                            EnterpriseTeal500.copy(alpha = 0.10f * shieldGlowAlpha),
+                            EnterpriseTeal100.copy(alpha = 0.04f),
+                            Color.Transparent
+                        )
+                    },
                     center = center,
                     radius = size.minDimension * 0.75f
                 )
@@ -139,21 +149,21 @@ fun SplashScreen(
 
                     // Rotating segmented cryptographic perimeter ring
                     drawArc(
-                        color = EnterpriseTeal500.copy(alpha = 0.85f),
+                        color = EnterpriseTeal500.copy(alpha = if (isDark) 0.85f else 0.90f),
                         startAngle = outerRingRotation,
                         sweepAngle = 70f,
                         useCenter = false,
                         style = Stroke(width = 2.5f, cap = StrokeCap.Round)
                     )
                     drawArc(
-                        color = EnterpriseTeal600.copy(alpha = 0.45f),
+                        color = if (isDark) EnterpriseTeal600.copy(alpha = 0.45f) else EnterpriseTeal300.copy(alpha = 0.60f),
                         startAngle = outerRingRotation + 120f,
                         sweepAngle = 60f,
                         useCenter = false,
                         style = Stroke(width = 2.5f, cap = StrokeCap.Round)
                     )
                     drawArc(
-                        color = EnterpriseTeal500.copy(alpha = 0.75f),
+                        color = EnterpriseTeal500.copy(alpha = if (isDark) 0.75f else 0.80f),
                         startAngle = outerRingRotation + 240f,
                         sweepAngle = 70f,
                         useCenter = false,
@@ -177,10 +187,17 @@ fun SplashScreen(
                     drawPath(
                         path = shieldPath,
                         brush = Brush.verticalGradient(
-                            colors = listOf(
-                                EnterpriseTeal800.copy(alpha = 0.35f),
-                                Slate900.copy(alpha = 0.65f)
-                            )
+                            colors = if (isDark) {
+                                listOf(
+                                    EnterpriseTeal800.copy(alpha = 0.35f),
+                                    Slate900.copy(alpha = 0.65f)
+                                )
+                            } else {
+                                listOf(
+                                    EnterpriseTeal50.copy(alpha = 0.85f),
+                                    Slate100.copy(alpha = 0.95f)
+                                )
+                            }
                         )
                     )
 
@@ -198,7 +215,7 @@ fun SplashScreen(
 
                     // Shackle
                     drawArc(
-                        color = PureWhite,
+                        color = if (isDark) PureWhite else Slate800,
                         startAngle = 180f,
                         sweepAngle = 180f,
                         useCenter = false,
@@ -217,7 +234,7 @@ fun SplashScreen(
 
                     // Keyhole dot
                     drawCircle(
-                        color = Slate950,
+                        color = if (isDark) Slate950 else PureWhite,
                         radius = 2.5f,
                         center = Offset(lockCenter.x, lockCenter.y + lockHeight * 0.25f)
                     )
@@ -231,7 +248,7 @@ fun SplashScreen(
                 text = "ZeroTax",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = PureWhite,
+                    color = if (isDark) PureWhite else Slate900,
                     letterSpacing = (-0.5).sp
                 )
             )
@@ -241,7 +258,7 @@ fun SplashScreen(
             Text(
                 text = "Cloud Compute + Encrypted Cloud Vault",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Slate400,
+                    color = if (isDark) Slate400 else Slate600,
                     fontWeight = FontWeight.Normal
                 )
             )
@@ -251,8 +268,12 @@ fun SplashScreen(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(3.dp))
-                    .background(EnterpriseTeal900)
-                    .border(0.75.dp, EnterpriseTeal600.copy(alpha = 0.5f), RoundedCornerShape(3.dp))
+                    .background(if (isDark) EnterpriseTeal900 else EnterpriseTeal50)
+                    .border(
+                        0.75.dp,
+                        if (isDark) EnterpriseTeal600.copy(alpha = 0.5f) else EnterpriseTeal300,
+                        RoundedCornerShape(3.dp)
+                    )
                     .padding(horizontal = 8.dp, vertical = 3.dp)
             ) {
                 Text(
@@ -261,7 +282,7 @@ fun SplashScreen(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = EnterpriseTeal500,
+                        color = if (isDark) EnterpriseTeal500 else EnterpriseTeal800,
                         letterSpacing = 0.8.sp
                     )
                 )
@@ -275,7 +296,7 @@ fun SplashScreen(
                     .fillMaxWidth(0.65f)
                     .height(2.dp)
                     .clip(RoundedCornerShape(1.dp))
-                    .background(Slate800)
+                    .background(if (isDark) Slate800 else Slate200)
             ) {
                 Box(
                     modifier = Modifier
@@ -283,7 +304,11 @@ fun SplashScreen(
                         .fillMaxHeight()
                         .background(
                             Brush.horizontalGradient(
-                                colors = listOf(EnterpriseTeal700, EnterpriseTeal500)
+                                colors = if (isDark) {
+                                    listOf(EnterpriseTeal700, EnterpriseTeal500)
+                                } else {
+                                    listOf(EnterpriseTeal600, EnterpriseTeal400)
+                                }
                             )
                         )
                 )
@@ -310,7 +335,7 @@ fun SplashScreen(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Normal,
-                        color = if (currentIdx == verificationStages.lastIndex) EmeraldSuccess else Slate400
+                        color = if (currentIdx == verificationStages.lastIndex) EmeraldSuccess else (if (isDark) Slate400 else Slate600)
                     ),
                     maxLines = 1
                 )
@@ -323,7 +348,7 @@ fun SplashScreen(
             style = TextStyle(
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
-                color = Slate500
+                color = if (isDark) Slate500 else Slate500
             ),
             modifier = Modifier
                 .align(Alignment.BottomCenter)

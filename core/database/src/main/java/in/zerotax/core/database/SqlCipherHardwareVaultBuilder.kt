@@ -24,6 +24,7 @@ object SqlCipherHardwareVaultBuilder {
     private const val PASSPHRASE_BYTE_COUNT = 32
 
     fun build(context: Context): ZeroTaxVaultDatabase {
+        runCatching { System.loadLibrary("sqlcipher") }
         val passphrase = getOrCreateWrappedPassphrase(context)
         val factory = SupportOpenHelperFactory(passphrase.copyOf(), null, true)
         // Memory hardening: Immediately wipe local passphrase byte array
@@ -38,12 +39,9 @@ object SqlCipherHardwareVaultBuilder {
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     super.onOpen(db)
-                    // Zero out cleared pages in system memory immediately
-                    db.execSQL("PRAGMA cipher_memory_security = ON;")
-                    // Overwrite deleted data with zeros to prevent disk recovery
-                    db.execSQL("PRAGMA secure_delete = ON;")
-                    // Enforce referential integrity
-                    db.execSQL("PRAGMA foreign_keys = ON;")
+                    runCatching { db.query("PRAGMA cipher_memory_security = ON;").close() }
+                    runCatching { db.query("PRAGMA secure_delete = ON;").close() }
+                    runCatching { db.query("PRAGMA foreign_keys = ON;").close() }
                 }
             })
             .build()

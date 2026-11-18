@@ -7,10 +7,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -24,9 +24,11 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.ZeroTaxBrandLogo
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.core.model.IngestionStreamItem
 import `in`.zerotax.core.model.IngestionStreamStatus
@@ -34,6 +36,7 @@ import `in`.zerotax.core.model.IngestionStreamStatus
 /**
  * Animated Multi-Stream Ingestion Radar displaying parallel automated data streams
  * fetching taxpayer records directly into device volatile memory.
+ * Optimized for full responsiveness across all Android screen sizes and densities.
  */
 @Composable
 fun AutomatedIngestionRadarView(
@@ -43,12 +46,13 @@ fun AutomatedIngestionRadarView(
     modifier: Modifier = Modifier
 ) {
     val isDark = isSystemInDarkTheme()
+    val scrollState = rememberScrollState()
 
     // Pulsing radar animation
     val infiniteTransition = rememberInfiniteTransition(label = "RadarPulse")
     val pulseRadius by infiniteTransition.animateFloat(
-        initialValue = 20f,
-        targetValue = 75f,
+        initialValue = 18f,
+        targetValue = 60f,
         animationSpec = infiniteRepeatable(
             animation = tween(1600, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
@@ -67,15 +71,17 @@ fun AutomatedIngestionRadarView(
 
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Radar Visualization Hub
+        // 1. Compact Radar Visualization Hub
         Box(
             modifier = Modifier
-                .size(110.dp)
+                .size(88.dp)
                 .clip(CircleShape)
                 .background(if (isDark) Slate850 else Slate100),
             contentAlignment = Alignment.Center
@@ -86,13 +92,13 @@ fun AutomatedIngestionRadarView(
                 // Static concentric circles
                 drawCircle(
                     color = EnterpriseTeal500.copy(alpha = 0.2f),
-                    radius = 35f,
+                    radius = 28f,
                     center = center,
                     style = Stroke(width = 1.5f)
                 )
                 drawCircle(
                     color = EnterpriseTeal500.copy(alpha = 0.15f),
-                    radius = 55f,
+                    radius = 42f,
                     center = center,
                     style = Stroke(width = 1.5f)
                 )
@@ -109,10 +115,10 @@ fun AutomatedIngestionRadarView(
             }
 
             // Central Sovereign Core
-            ZeroTaxBrandLogo(size = 44.dp)
+            ZeroTaxBrandLogo(size = 38.dp)
         }
 
-        // Live Header
+        // 2. Live Header
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = if (isIngesting) "Automated Ingestion Radar Active" else "Data Hydration Complete",
@@ -121,34 +127,36 @@ fun AutomatedIngestionRadarView(
                     color = if (isDark) EnterpriseTeal300 else EnterpriseTeal700
                 )
             )
+            Spacer(Modifier.height(2.dp))
             Text(
                 text = "Parallel streams syncing statutory records in volatile memory",
                 style = MaterialTheme.typography.bodySmall.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp
+                    fontSize = 11.sp
                 )
             )
         }
 
-        // Streams List
+        // 3. Streams List
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             streams.forEach { stream ->
                 StreamStatusCard(stream = stream, isDark = isDark)
             }
         }
 
+        // 4. Action Button
         if (!isIngesting && onProceed != null) {
-            `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton(
+            ZeroTaxPrimaryButton(
                 text = "Continue to Master Dossier (Step 3) →",
                 onClick = onProceed,
                 modifier = Modifier.fillMaxWidth()
             )
         }
 
-        // Hardware Vault Bottom Badge
+        // 5. Hardware Vault Bottom Badge
         Surface(
             shape = RoundedCornerShape(8.dp),
             color = if (isDark) Slate850 else Slate100,
@@ -181,6 +189,8 @@ fun AutomatedIngestionRadarView(
                 )
             }
         }
+
+        Spacer(Modifier.height(16.dp))
     }
 }
 
@@ -212,9 +222,9 @@ private fun StreamStatusCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // Status Icon
             Box(
@@ -269,41 +279,49 @@ private fun StreamStatusCard(
             // Stream Info
             Column(modifier = Modifier.weight(1f)) {
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         text = stream.title,
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp
-                        )
+                            fontSize = 12.5.sp
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     if (stream.badgeText.isNotBlank()) {
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = EnterpriseTeal100,
-                            modifier = Modifier.padding(vertical = 1.dp)
+                            color = if (isDark) EnterpriseTeal900 else EnterpriseTeal100,
+                            modifier = Modifier.padding(start = 6.dp)
                         ) {
                             Text(
                                 text = stream.badgeText,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp,
-                                    color = EnterpriseTeal900
+                                    fontSize = 9.5.sp,
+                                    color = if (isDark) EnterpriseTeal300 else EnterpriseTeal900
                                 ),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                             )
                         }
                     }
                 }
 
+                Spacer(Modifier.height(2.dp))
+
                 Text(
                     text = if (stream.details.isNotBlank()) stream.details else stream.subtitle,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = if (stream.details.isNotBlank()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
-                    )
+                        fontSize = 10.5.sp
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

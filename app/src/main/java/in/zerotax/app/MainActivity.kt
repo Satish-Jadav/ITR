@@ -26,12 +26,18 @@ import `in`.zerotax.app.viewmodel.ZeroTaxViewModel
 import `in`.zerotax.core.database.SqlCipherHardwareVaultBuilder
 import `in`.zerotax.core.model.AuthSessionState
 import `in`.zerotax.core.security.ZeroTaxAuthSecurityManager
+import `in`.zerotax.feature.portalbridge.ItdTransactionFetcher
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         ZeroTaxAuthSecurityManager.init(applicationContext)
+
+        runCatching {
+            ItdTransactionFetcher.databaseInstance =
+                SqlCipherHardwareVaultBuilder.build(applicationContext)
+        }
 
         // Strict Enterprise Security Invariant: Hardware-level screen capture and switcher preview prevention in production
         if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) == 0) {

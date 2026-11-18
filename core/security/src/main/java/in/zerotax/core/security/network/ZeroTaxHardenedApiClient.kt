@@ -71,7 +71,7 @@ object ZeroTaxHardenedApiClient {
     const val LIVE_API_BASE_URL = "https://api-zerotax-itr.vercel.app"
 
     private fun resolveDefaultBaseUrl(): String {
-        return if (isRunningOnEmulator()) "http://10.0.2.2:3000" else LIVE_API_BASE_URL
+        return LIVE_API_BASE_URL
     }
 
     var apiBaseUrl: String = resolveDefaultBaseUrl()

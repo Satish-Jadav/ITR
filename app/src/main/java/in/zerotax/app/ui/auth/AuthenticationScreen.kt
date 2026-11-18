@@ -215,9 +215,9 @@ fun AuthenticationScreen(
                 )
                 StepPreviewCard(
                     stepNumber = "2",
-                    icon = Icons.Default.Description,
-                    title = "Upload Form 16 or Salary",
-                    description = "Auto-extracts your earnings and TDS in seconds."
+                    icon = Icons.Default.Language,
+                    title = "Sync Official Portal Records",
+                    description = "Extracts verified Form 16, 26AS & AIS from ITD portal."
                 )
                 StepPreviewCard(
                     stepNumber = "3",
