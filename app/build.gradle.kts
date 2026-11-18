@@ -130,10 +130,6 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
 
-    // Chucker on-device HTTP inspector (Active in debug builds, zero-overhead no-op in release builds)
-    debugImplementation("com.github.chuckerteam.chucker:library:4.1.0")
-    releaseImplementation("com.github.chuckerteam.chucker:library-no-op:4.1.0")
-
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

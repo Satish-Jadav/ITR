@@ -51,50 +51,62 @@ jobs:
       - name: Build Encrypted SQLCipher 4.5.x Room Database & Verify Schema Export
         run: ./gradlew :core:database:assembleDebug :core:security:assembleDebug
 
-      - name: Build Debug APK with Chucker API Inspector for Testing
-        run: ./gradlew :app:assembleDebug
+      - name: Build Compact Release APK with R8 Full Mode
+        run: ./gradlew :app:assembleRelease
 
-      - name: Locate Generated Debug APK
+      - name: Locate Generated Release APK
         id: find_apk
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         run: |
           echo "Inspecting all generated build outputs:"
           find app/build/outputs -type f || true
 
-          APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | grep -i "debug" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | grep -i "release" | head -n 1)
           if [ -z "$APK_PATH" ]; then
             APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | head -n 1)
           fi
 
           if [ -z "$APK_PATH" ]; then
-            echo "::error::No APK file found in app/build/outputs/apk"
+            echo "::error::No release APK found in app/build/outputs/apk"
             exit 1
           fi
 
-          echo "Target APK for Firebase Distribution: $APK_PATH"
+          echo "Target Release APK for Firebase Distribution: $APK_PATH"
           echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Generate Quick Summary Release Notes
+      - name: Generate Proper Summary Release Notes
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         run: |
           COMMIT_SHORT=$(git rev-parse --short HEAD)
-          LATEST_LOG=$(git log -1 --pretty=format:"• %s%n%b" | sed '/^$/d')
-          RECENT_LOG=$(git log -n 4 --pretty=format:"• %s" | sed '/^$/d')
+          COMMIT_DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
+          LATEST_SUBJECT=$(git log -1 --pretty=format:"%s")
+          LATEST_BODY=$(git log -1 --pretty=format:"%b" | sed '/^$/d')
+          RECENT_COMMITS=$(git log -n 5 --pretty=format:"• %s (%h)" | sed '/^$/d')
 
           cat << EOF > release-notes.txt
-          🚀 ZeroTax Debug Build (AY 2026-27) • Commit: ${COMMIT_SHORT}
-          🔍 Chucker API Inspector Active for Testing
+          🚀 ZeroTax Production Release (AY 2026-27)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          📦 Build: Release (R8 Full Mode Optimized)
+          🔖 Commit: ${COMMIT_SHORT} • ${COMMIT_DATE}
 
-          What was Updated / Added:
-          ${LATEST_LOG}
+          ✨ Latest Update:
+          ${LATEST_SUBJECT}
+          ${LATEST_BODY}
 
-          Recent Highlights:
-          ${RECENT_LOG}
+          📋 Recent Highlights:
+          ${RECENT_COMMITS}
+
+          🛡️ Key Release Highlights:
+          • Hardware-backed SQLCipher 4.5.x encrypted database
+          • Direct Zero-Cost In-App ITD Portal Bridge (eportal.incometax.gov.in)
+          • Instant statutory PAN entity validation u/s 139A
+          • Deprecations resolved, Chucker stripped for zero-overhead production binary
+          • R8 tree-shaking & code shrinking enabled
           EOF
           echo "Generated Firebase Release Notes:"
           cat release-notes.txt
 
-      - name: Distribute Debug APK to Client via Firebase
+      - name: Distribute Release APK to Client via Firebase
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
