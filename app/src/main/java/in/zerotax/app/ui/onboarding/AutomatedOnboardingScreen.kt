@@ -243,13 +243,14 @@ private fun OnboardingTopBar(
                         border = androidx.compose.foundation.BorderStroke(0.5.dp, EnterpriseTeal500)
                     ) {
                         Text(
-                            text = "Auto-Selected: Sahaj ITR-1",
+                            text = "ITR-1",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = if (isDark) EnterpriseTeal300 else EnterpriseTeal700,
                                 fontSize = 10.sp
                             ),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            maxLines = 1,
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                         )
                     }
                 }
@@ -270,6 +271,7 @@ private fun OnboardingTopBar(
                             color = EnterpriseTeal500,
                             fontSize = 11.sp
                         ),
+                        maxLines = 1,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -635,14 +637,14 @@ private fun TrustAndAuthStepView(
             ) {
                 Icon(Icons.Default.PhonelinkRing, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Instant Government Aadhaar OTP", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                        if (isPanVerifiedWithItr) {
-                            StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
-                        } else {
-                            StatutoryBadge(text = "REQUIRES ITR VERIFIED PAN", tone = BadgeTone.WARNING)
-                        }
+                    Text("Instant Government Aadhaar OTP", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Spacer(Modifier.height(4.dp))
+                    if (isPanVerifiedWithItr) {
+                        StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
+                    } else {
+                        StatutoryBadge(text = "REQUIRES VERIFIED PAN", tone = BadgeTone.WARNING)
                     }
+                    Spacer(Modifier.height(4.dp))
                     Text("Pulls prefilled salary, 26AS, and AIS in 30 seconds directly from CBDT.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
@@ -662,14 +664,14 @@ private fun TrustAndAuthStepView(
             ) {
                 Icon(Icons.Default.Language, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Official In-App Web Portal Login", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                        if (isPanVerifiedWithItr) {
-                            StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
-                        } else {
-                            StatutoryBadge(text = "REQUIRES ITR VERIFIED PAN", tone = BadgeTone.WARNING)
-                        }
+                    Text("Official In-App Web Portal Login", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Spacer(Modifier.height(4.dp))
+                    if (isPanVerifiedWithItr) {
+                        StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
+                    } else {
+                        StatutoryBadge(text = "REQUIRES VERIFIED PAN", tone = BadgeTone.WARNING)
                     }
+                    Spacer(Modifier.height(4.dp))
                     Text("Log in securely on eportal.incometax.gov.in in an isolated ephemeral session.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
@@ -689,14 +691,14 @@ private fun TrustAndAuthStepView(
             ) {
                 Icon(Icons.Default.UploadFile, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Import Form 16 / Tax Statement PDF", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                        if (isPanVerifiedWithItr) {
-                            StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
-                        } else {
-                            StatutoryBadge(text = "REQUIRES ITR VERIFIED PAN", tone = BadgeTone.WARNING)
-                        }
+                    Text("Import Form 16 / Tax Statement PDF", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Spacer(Modifier.height(4.dp))
+                    if (isPanVerifiedWithItr) {
+                        StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
+                    } else {
+                        StatutoryBadge(text = "REQUIRES VERIFIED PAN", tone = BadgeTone.WARNING)
                     }
+                    Spacer(Modifier.height(4.dp))
                     Text("Silently unlocks with PAN and auto-fills your entire return in seconds.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = Slate400, modifier = Modifier.size(18.dp))
@@ -716,14 +718,14 @@ private fun TrustAndAuthStepView(
             ) {
                 Icon(Icons.Default.AccountBalance, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("1-Click Account Aggregator (AA) Sync", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                        if (isPanVerifiedWithItr) {
-                            StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
-                        } else {
-                            StatutoryBadge(text = "REQUIRES ITR VERIFIED PAN", tone = BadgeTone.WARNING)
-                        }
+                    Text("1-Click Account Aggregator (AA) Sync", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Spacer(Modifier.height(4.dp))
+                    if (isPanVerifiedWithItr) {
+                        StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
+                    } else {
+                        StatutoryBadge(text = "REQUIRES VERIFIED PAN", tone = BadgeTone.WARNING)
                     }
+                    Spacer(Modifier.height(4.dp))
                     Text("Pulls interest & capital gains from 23 Banks & CAMS/KFintech via RBI-licensed AA.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
                 Icon(Icons.Default.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))

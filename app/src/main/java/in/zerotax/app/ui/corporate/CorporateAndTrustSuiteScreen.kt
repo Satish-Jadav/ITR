@@ -37,7 +37,7 @@ enum class CorporateSuiteTab(val title: String, val subtitle: String) {
     ITR_7_TRUST("ITR-7: Trust & NGO", "Sec 11, 12, 13 & 115BBI")
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CorporateAndTrustSuiteScreen(
     pan: String = "",
@@ -48,8 +48,8 @@ fun CorporateAndTrustSuiteScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ZeroTaxTopAppBar(
-                title = "Corporate & Trust Suite",
-                subtitle = "Statutory Filing for ITR-5, ITR-6 & ITR-7",
+                title = "Corporate Suite",
+                subtitle = "ITR-5, ITR-6 & ITR-7 Statutory Suite",
                 pan = pan,
                 onBack = onBack
             )
@@ -120,6 +120,7 @@ fun CorporateAndTrustSuiteContent(
 // ============================================================================
 // TAB 1: ITR-5 FIRM & LLP CALCULATOR VIEW
 // ============================================================================
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Itr5FirmCalculatorView(pan: String) {
     val isDark = isSystemInDarkTheme()
@@ -179,7 +180,11 @@ fun Itr5FirmCalculatorView(pan: String) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.weight(1f, fill = false)
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(28.dp)
@@ -196,11 +201,13 @@ fun Itr5FirmCalculatorView(pan: String) {
                             }
                             Text(
                                 text = "ITR-5 Entity Classification",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
+                                maxLines = 1
                             )
                         }
+                        Spacer(Modifier.width(6.dp))
                         StatutoryBadge(
-                            text = if (isLlp) "LLP (Sec 44AD Barred)" else "Partnership Firm",
+                            text = if (isLlp) "LLP (Sec 44AD)" else "Partnership",
                             tone = if (isLlp) BadgeTone.WARNING else BadgeTone.STATUTORY
                         )
                     }
@@ -211,7 +218,10 @@ fun Itr5FirmCalculatorView(pan: String) {
                             "Partnership firms with partner remuneration/interest or audit mandate file ITR-5 with Section 40(b) ceilings.",
                         style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         FilterChip(
                             selected = isLlp,
                             onClick = { isLlp = true },
@@ -303,32 +313,28 @@ fun Itr5FirmCalculatorView(pan: String) {
                         singleLine = true
                     )
 
-                    Row(
+                    OutlinedTextField(
+                        value = interestRateText,
+                        onValueChange = { interestRateText = it },
+                        label = { Text("Interest Rate % p.a. (Sec 40(b) max 12%)") },
+                        placeholder = { Text("12.0") },
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = interestRateText,
-                            onValueChange = { interestRateText = it },
-                            label = { Text("Interest Rate % p.a.") },
-                            placeholder = { Text("12.0") },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            shape = RoundedCornerShape(10.dp),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = interestClaimedText,
-                            onValueChange = { interestClaimedText = it },
-                            label = { Text("Interest Claimed") },
-                            placeholder = { Text("e.g. 6,00,000") },
-                            leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            shape = RoundedCornerShape(10.dp),
-                            singleLine = true
-                        )
-                    }
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        shape = RoundedCornerShape(10.dp),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = interestClaimedText,
+                        onValueChange = { interestClaimedText = it },
+                        label = { Text("Partner Interest Claimed") },
+                        placeholder = { Text("e.g. 6,00,000") },
+                        leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(10.dp),
+                        singleLine = true
+                    )
 
                     OutlinedTextField(
                         value = remunerationClaimedText,
@@ -768,6 +774,7 @@ fun Itr6CorporateCalculatorView(pan: String) {
 // ============================================================================
 // TAB 3: ITR-7 TRUST & NGO CALCULATOR VIEW
 // ============================================================================
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Itr7TrustCalculatorView(pan: String) {
     var isPoliticalParty by remember { mutableStateOf(false) }
@@ -848,7 +855,11 @@ fun Itr7TrustCalculatorView(pan: String) {
                         text = "Charitable & religious trusts registered u/s 12AB must apply 85% of income to charitable purposes in India. Corpus donations are 100% exempt u/s 11(1)(d).",
                         style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         FilterChip(
                             selected = !isPoliticalParty,
                             onClick = { isPoliticalParty = false },
@@ -952,33 +963,29 @@ fun Itr7TrustCalculatorView(pan: String) {
                         singleLine = true
                     )
 
-                    Row(
+                    OutlinedTextField(
+                        value = deemed9AText,
+                        onValueChange = { deemed9AText = it },
+                        label = { Text("Deemed Application (Form 9A)") },
+                        placeholder = { Text("0") },
+                        leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = deemed9AText,
-                            onValueChange = { deemed9AText = it },
-                            label = { Text("Deemed App (Form 9A)") },
-                            placeholder = { Text("0") },
-                            leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            shape = RoundedCornerShape(10.dp),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = form10Text,
-                            onValueChange = { form10Text = it },
-                            label = { Text("Accumulated (Form 10)") },
-                            placeholder = { Text("0") },
-                            leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            shape = RoundedCornerShape(10.dp),
-                            singleLine = true
-                        )
-                    }
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(10.dp),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = form10Text,
+                        onValueChange = { form10Text = it },
+                        label = { Text("Accumulated Income (Form 10)") },
+                        placeholder = { Text("0") },
+                        leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(10.dp),
+                        singleLine = true
+                    )
 
                     OutlinedTextField(
                         value = sec13ViolationText,

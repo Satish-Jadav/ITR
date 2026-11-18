@@ -294,22 +294,22 @@ fun PlanSpecificHydrationCard(
 
                         Text("Statutory Auditor Particulars", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
 
-                        Row(
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             OutlinedTextField(
                                 value = caMembershipInput,
                                 onValueChange = { caMembershipInput = it },
                                 label = { Text("ICAI Membership No") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                             )
                             OutlinedTextField(
                                 value = caNameInput,
                                 onValueChange = { caNameInput = it },
                                 label = { Text("Auditor Name") },
-                                modifier = Modifier.weight(1.5f)
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }

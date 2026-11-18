@@ -111,6 +111,7 @@ fun PreFilingAuditView(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = if (isDark) Slate950 else Slate50,
         topBar = {
             val topInset = getSafeStatusBarTopInset()
             TopAppBar(
@@ -189,9 +190,9 @@ fun PreFilingAuditView(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.weight(1f, fill = false)) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Audit Verification Score",
+                            text = "Audit Score",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
@@ -201,10 +202,11 @@ fun PreFilingAuditView(
                             text = "${auditReport.auditScorePercentage}% Notice-Proof",
                             style = TextStyle(
                                 fontFamily = FontFamily.Monospace,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = EmeraldSuccess
-                            )
+                            ),
+                            maxLines = 1
                         )
                     }
                     Spacer(Modifier.width(12.dp))
@@ -218,7 +220,7 @@ fun PreFilingAuditView(
                             }
                         },
                         enabled = auditReport.canFileDirectly,
-                        modifier = Modifier.height(44.dp)
+                        modifier = Modifier.weight(1.2f)
                     )
                 }
             }
@@ -354,9 +356,7 @@ fun PreFilingAuditView(
                             ZeroTaxPrimaryButton(
                                 text = "1-Tap Auto-Optimize Return & Enforce Zero-Notice",
                                 onClick = onAutoOptimizeRegime,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(40.dp)
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
@@ -468,7 +468,7 @@ fun PreFilingAuditView(
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.Top
                                     ) {
                                         Text(
                                             text = "Gate ${gate.gateNumber}: ${gate.gateTitle}",
@@ -478,6 +478,7 @@ fun PreFilingAuditView(
                                             ),
                                             modifier = Modifier.weight(1f, fill = false)
                                         )
+                                        Spacer(Modifier.width(8.dp))
                                         StatutoryBadge(
                                             text = if (gate.isPassed) "Passed" else "Review",
                                             tone = if (gate.isPassed) BadgeTone.SUCCESS else BadgeTone.DANGER
@@ -492,11 +493,10 @@ fun PreFilingAuditView(
                                         )
                                     )
 
-                                    Spacer(Modifier.height(4.dp))
-                                    Row(
+                                    Spacer(Modifier.height(6.dp))
+                                    Column(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         Surface(
                                             shape = RoundedCornerShape(4.dp),

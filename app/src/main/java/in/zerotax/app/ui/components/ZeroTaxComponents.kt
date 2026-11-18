@@ -206,6 +206,8 @@ fun StatutoryBadge(
         Text(
             text = text,
             color = textColor,
+            maxLines = 1,
+            softWrap = false,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontSize = 10.sp,
                 letterSpacing = 0.3.sp
@@ -256,16 +258,16 @@ fun EnterpriseTopHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
                     ZeroTaxBrandLogo(size = 24.dp, showText = false)
-                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = "ZeroTax",
                         style = MaterialTheme.typography.titleMedium.copy(
@@ -273,7 +275,6 @@ fun EnterpriseTopHeader(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     )
-                    Spacer(Modifier.width(6.dp))
                     // On-device security indicator dot
                     Box(
                         modifier = Modifier
@@ -281,7 +282,6 @@ fun EnterpriseTopHeader(
                             .clip(CircleShape)
                             .background(if (isVaultEncrypted) EmeraldSuccess else AmberWarning)
                     )
-                    Spacer(Modifier.width(6.dp))
                     StatutoryBadge(text = "AY $assessmentYear", tone = BadgeTone.STATUTORY)
                 }
 
@@ -293,20 +293,6 @@ fun EnterpriseTopHeader(
                         StatutoryBadge(text = pan, tone = BadgeTone.NEUTRAL)
                     }
 
-                    if (onLockVault != null) {
-                        IconButton(
-                            onClick = onLockVault,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Lock Vault",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-
                     if (userProfile != null) {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
@@ -316,7 +302,7 @@ fun EnterpriseTopHeader(
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.AccountCircle,
@@ -324,12 +310,25 @@ fun EnterpriseTopHeader(
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(14.dp)
                                 )
-                                Spacer(Modifier.width(4.dp))
+                                Spacer(Modifier.width(3.dp))
                                 Text(
-                                    text = userProfile.displayName.take(8),
-                                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                                    text = userProfile.displayName.split(" ").firstOrNull() ?: userProfile.displayName.take(6),
+                                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface),
+                                    maxLines = 1
                                 )
                             }
+                        }
+                    } else if (onLockVault != null) {
+                        IconButton(
+                            onClick = onLockVault,
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Lock Vault",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
                     }
                 }
