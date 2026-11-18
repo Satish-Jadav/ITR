@@ -42,6 +42,7 @@ fun DualRegionNriComplianceScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
     // Section 6 Residency Inputs
     var daysCurrentFyText by remember { mutableStateOf("") }
     var daysPast4FysText by remember { mutableStateOf("") }
@@ -103,8 +104,8 @@ fun DualRegionNriComplianceScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ZeroTaxTopAppBar(
-                title = "Dual-Region NRI Tax Suite",
-                subtitle = "Section 6 Residency, Section 90 DTAA & Form 10F Relief",
+                title = "NRI Tax Suite",
+                subtitle = "Sec 6 Residency & DTAA Form 10F",
                 pan = pan,
                 onBack = onBack,
                 badgeText = residencyDecision.status.shortCode,
@@ -167,12 +168,13 @@ fun DualRegionNriComplianceScreen(
                         Divider(color = Slate200, thickness = 0.5.dp)
                         Spacer(Modifier.height(8.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text("Global Income Taxable?", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Global Income Taxable?", style = TextStyle(fontSize = 11.sp, color = Slate600))
                                 Text(
                                     if (residencyDecision.isGlobalIncomeTaxableInIndia) "YES (All Worldwide)" else "NO (India Only)",
                                     style = MaterialTheme.typography.labelMedium.copy(
@@ -181,8 +183,13 @@ fun DualRegionNriComplianceScreen(
                                     )
                                 )
                             }
-                            Column {
-                                Text("NRE 100% Tax Exemption?", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                            Divider(color = Slate200.copy(alpha = 0.5f), thickness = 0.5.dp)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("NRE 100% Tax Exemption?", style = TextStyle(fontSize = 11.sp, color = Slate600))
                                 Text(
                                     if (residencyDecision.isEligibleForNreTaxExemption) "YES (Sec 10(4))" else "NO (Resident NRO/SB)",
                                     style = MaterialTheme.typography.labelMedium.copy(
@@ -191,8 +198,13 @@ fun DualRegionNriComplianceScreen(
                                     )
                                 )
                             }
-                            Column {
-                                Text("Sec 44AD Presumptive?", style = TextStyle(fontSize = 10.sp, color = Slate600))
+                            Divider(color = Slate200.copy(alpha = 0.5f), thickness = 0.5.dp)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Sec 44AD Presumptive?", style = TextStyle(fontSize = 11.sp, color = Slate600))
                                 Text(
                                     if (residencyDecision.isEligibleForSection44AD) "ELIGIBLE" else "BARRED (Resident Only)",
                                     style = MaterialTheme.typography.labelMedium.copy(
@@ -225,25 +237,22 @@ fun DualRegionNriComplianceScreen(
                         )
                         Spacer(Modifier.height(10.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = daysCurrentFyText,
                                 onValueChange = { daysCurrentFyText = it },
                                 label = { Text("Days in India (Current FY)") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                             )
                             OutlinedTextField(
                                 value = daysPast4FysText,
                                 onValueChange = { daysPast4FysText = it },
                                 label = { Text("Days in Preceding 4 FYs") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                             )
                         }
 
@@ -306,7 +315,8 @@ fun DualRegionNriComplianceScreen(
                         ) {
                             Text(
                                 text = "NRE, FCNR & NRO Bank Portfolios",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.weight(1f).padding(end = 8.dp)
                             )
                             StatutoryBadge(
                                 text = "NRE 100% Tax-Free",
@@ -315,106 +325,75 @@ fun DualRegionNriComplianceScreen(
                         }
                         Spacer(Modifier.height(10.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = nreInterestText,
                                 onValueChange = { nreInterestText = it },
                                 label = { Text("NRE Savings Interest (₹)") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                             )
                             OutlinedTextField(
                                 value = fcnrInterestText,
                                 onValueChange = { fcnrInterestText = it },
                                 label = { Text("FCNR Deposit Interest (₹)") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                             )
-                        }
-
-                        Spacer(Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
                             OutlinedTextField(
                                 value = nroInterestText,
                                 onValueChange = { nroInterestText = it },
                                 label = { Text("NRO Interest (30% TDS ₹)") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                             )
                             OutlinedTextField(
                                 value = foreignIncomeText,
                                 onValueChange = { foreignIncomeText = it },
                                 label = { Text("Foreign Sourced Salary (₹)") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                             )
                         }
 
                         Spacer(Modifier.height(10.dp))
-                        Row(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else Slate100)
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Card(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                colors = CardDefaults.cardColors(containerColor = getEmeraldSuccessBg())
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .padding(8.dp),
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("Sec 10(4) Exempted", style = TextStyle(fontSize = 10.sp, color = EmeraldSuccess))
-                                    Text("₹${"%,d".format(taxResult.nreInterestExemptUnderSec10_4 + taxResult.fcnrInterestExemptUnderSec10_4)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
-                                }
+                                Text("Sec 10(4) Exempted", style = MaterialTheme.typography.bodySmall.copy(color = EmeraldSuccess, fontWeight = FontWeight.Medium))
+                                Text("₹${"%,d".format(taxResult.nreInterestExemptUnderSec10_4 + taxResult.fcnrInterestExemptUnderSec10_4)}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess))
                             }
-                            Card(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                colors = CardDefaults.cardColors(containerColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else Slate100)
+                            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 0.5.dp)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .padding(8.dp),
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("NRO TDS Withheld", style = TextStyle(fontSize = 10.sp, color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate600))
-                                    Text("₹${"%,d".format(taxResult.nroTdsDeductedAt30Percent)}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
-                                }
+                                Text("NRO TDS Withheld (30%)", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium))
+                                Text("₹${"%,d".format(taxResult.nroTdsDeductedAt30Percent)}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold))
                             }
-                            Card(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                colors = CardDefaults.cardColors(containerColor = if (taxResult.estimatedRefundOrBalancePayable >= 0) getEmeraldSuccessBg() else getAmberWarningBg())
+                            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 0.5.dp)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .padding(8.dp),
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(if (taxResult.estimatedRefundOrBalancePayable >= 0) "Estimated Refund" else "Balance Payable", style = TextStyle(fontSize = 10.sp, color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurfaceVariant else Slate600))
-                                    Text("₹${"%,d".format(kotlin.math.abs(taxResult.estimatedRefundOrBalancePayable))}", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold))
-                                }
+                                Text(if (taxResult.estimatedRefundOrBalancePayable >= 0) "Estimated Refund" else "Balance Payable", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                                Text("₹${"%,d".format(kotlin.math.abs(taxResult.estimatedRefundOrBalancePayable))}", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = if (taxResult.estimatedRefundOrBalancePayable >= 0) EmeraldSuccess else AmberWarning))
                             }
                         }
                     }
@@ -440,8 +419,9 @@ fun DualRegionNriComplianceScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "DTAA Section 90 & Form 10F Self-Declaration",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                text = "DTAA Section 90 & Form 10F",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.weight(1f).padding(end = 8.dp)
                             )
                             Button(
                                 onClick = {
@@ -470,25 +450,22 @@ fun DualRegionNriComplianceScreen(
 
                         Spacer(Modifier.height(10.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = selectedCountry,
                                 onValueChange = { selectedCountry = it },
                                 label = { Text("Country of Residence") },
-                                modifier = Modifier.weight(1.2f),
+                                modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                textStyle = TextStyle(fontSize = 12.sp)
+                                textStyle = TextStyle(fontSize = 13.sp)
                             )
                             OutlinedTextField(
                                 value = treatyRateText,
                                 onValueChange = { treatyRateText = it },
                                 label = { Text("DTAA Rate (%)") },
-                                modifier = Modifier.weight(0.8f),
+                                modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                             )
                         }
 

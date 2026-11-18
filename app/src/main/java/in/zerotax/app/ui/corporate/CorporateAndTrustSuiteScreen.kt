@@ -44,6 +44,7 @@ fun CorporateAndTrustSuiteScreen(
     onBack: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -89,12 +90,14 @@ fun CorporateAndTrustSuiteContent(
                             Text(
                                 text = tab.title,
                                 fontWeight = if (selectedTab == tab) FontWeight.Bold else FontWeight.Medium,
-                                fontSize = 12.sp,
+                                fontSize = 11.sp,
+                                maxLines = 1,
                                 color = if (selectedTab == tab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = tab.subtitle,
-                                fontSize = 10.sp,
+                                fontSize = 9.sp,
+                                maxLines = 1,
                                 color = if (selectedTab == tab) EnterpriseTeal600 else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -475,6 +478,7 @@ fun Itr5FirmCalculatorView(pan: String) {
 // ============================================================================
 // TAB 2: ITR-6 CORPORATE COMPANY CALCULATOR VIEW
 // ============================================================================
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Itr6CorporateCalculatorView(pan: String) {
     var has115Baa by remember { mutableStateOf(true) }
@@ -550,7 +554,11 @@ fun Itr6CorporateCalculatorView(pan: String) {
                         text = "Domestic companies can elect Section 115BAA (22% base + 10% surcharge = 25.168% flat) to be permanently exempt from Section 115JB MAT.",
                         style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         FilterChip(
                             selected = has115Baa,
                             onClick = {
@@ -567,15 +575,15 @@ fun Itr6CorporateCalculatorView(pan: String) {
                             },
                             label = { Text("Sec 115BAB (15% Mfg)") }
                         )
+                        FilterChip(
+                            selected = !has115Baa && !isMfg115Bab,
+                            onClick = {
+                                has115Baa = false
+                                isMfg115Bab = false
+                            },
+                            label = { Text("Normal Corporate Tax (25% / 30% with MAT)") }
+                        )
                     }
-                    FilterChip(
-                        selected = !has115Baa && !isMfg115Bab,
-                        onClick = {
-                            has115Baa = false
-                            isMfg115Bab = false
-                        },
-                        label = { Text("Normal Corporate Tax (25% / 30% with MAT)") }
-                    )
                 }
             }
         }
