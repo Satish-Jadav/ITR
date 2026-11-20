@@ -62,11 +62,10 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
         val ALLOWED_HOSTS = setOf(
             "eportal.incometax.gov.in",
             "www.incometax.gov.in",
+            "incometax.gov.in",
             "contents.tdscpc.gov.in",
             "ais.insight.gov.in",
-            "digilocker.meripehchan.gov.in",
-            "api.digitallocker.gov.in",
-            "accounts.google.com"
+            "insight.gov.in"
         )
         const val PORTAL_TIMEOUT_MS = 15_000L
         // VUL-09 FIX: Extend Aadhaar scrub regex to also cover hyphen and dot separators.
@@ -103,13 +102,7 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val host = request?.url?.host?.lowercase() ?: return true
-                val isAllowed = ALLOWED_HOSTS.contains(host) ||
-                    host.endsWith(".incometax.gov.in") ||
-                    host.endsWith(".gov.in") ||
-                    host.endsWith(".bank.sbi") ||
-                    host.endsWith(".onlinesbi.sbi") ||
-                    host.endsWith(".hdfcbank.com") ||
-                    host.endsWith(".icicibank.com")
+                val isAllowed = ALLOWED_HOSTS.contains(host)
                 return !isAllowed
             }
             override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
@@ -715,10 +708,9 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
         webView.evaluateJavascript(script, null)
     }
 
-    fun injectPortalLoginCredentials(webView: WebView, pan: String, password: String) {
+    fun injectPortalUserId(webView: WebView, pan: String) {
         val safePan = pan.trim().uppercase().filter { it.isLetterOrDigit() }.take(10)
         val escapedPan = JSONObject.quote(safePan)
-        val escapedPassword = JSONObject.quote(password)
         val script = """
             (function() {
                 try {
@@ -761,30 +753,7 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                         }
                     }
 
-                    // 3. Fill Password if password input is present
-                    const pwdSelectors = [
-                        '#loginPasswordField',
-                        'input[type="password"]',
-                        'input[name*="password" i]',
-                        'input[id*="password" i]',
-                        'input[formcontrolname*="password" i]'
-                    ];
-                    let pwdFilled = false;
-                    for (let sel of pwdSelectors) {
-                        let pwd = document.querySelector(sel);
-                        if (pwd && !pwd.disabled) {
-                            if (pwd.value !== $escapedPassword) {
-                                pwd.focus();
-                                pwd.value = $escapedPassword;
-                                pwd.dispatchEvent(new Event('input', { bubbles: true }));
-                                pwd.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                            pwdFilled = true;
-                            break;
-                        }
-                    }
-
-                    // 4. Handle "Dual Login Detected" dialog if present
+                    // 3. Handle "Dual Login Detected" dialog if present
                     const allButtons = Array.from(document.querySelectorAll('button'));
                     const dualLoginBtn = allButtons.find(b => b.innerText && b.innerText.includes('Login Here') && b.offsetParent !== null);
                     if (dualLoginBtn) {
@@ -792,16 +761,16 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                         return;
                     }
 
-                    // 5. Click Continue / Submit button if enabled
+                    // 4. Click Continue / Submit button on PAN screen (only if password field is not shown)
                     const continueBtn = allButtons.find(b => {
                         const txt = (b.innerText || '').toLowerCase().trim();
                         return (txt === 'continue' || txt === 'login' || txt === 'submit') && !b.disabled && b.offsetParent !== null;
                     });
-                    if (continueBtn && (pwdFilled || !document.querySelector('input[type="password"]'))) {
+                    if (continueBtn && !document.querySelector('input[type="password"]')) {
                         continueBtn.click();
                     }
 
-                    // 6. When authenticated on dashboard, navigate to view filed returns / itrStatus
+                    // 5. When authenticated on dashboard, navigate to view filed returns / itrStatus
                     if (window.location.hash.includes('dashboard') && !window.location.hash.includes('itrStatus')) {
                         const filedBtn = Array.from(document.querySelectorAll('a, span')).find(el => (el.innerText || '').trim() === 'View Filed Returns');
                         if (filedBtn) {
@@ -811,7 +780,7 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                         }
                     }
 
-                    // 7. When on itrStatus, click Download JSON for latest filed return to fetch genuine return data
+                    // 6. When on itrStatus, click Download JSON for latest filed return to fetch genuine return data
                     if (window.location.hash.includes('itrStatus')) {
                         const dlBtn = document.querySelector('button.dxmlback') || Array.from(document.querySelectorAll('button')).find(b => (b.innerText || '').trim() === 'Download JSON');
                         if (dlBtn && !window.__downloadTriggered) {
@@ -823,6 +792,11 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
             })();
         """.trimIndent()
         webView.evaluateJavascript(script, null)
+    }
+
+    @Deprecated("Zero-Password Architecture: passwords must never be handled or injected by the app.", ReplaceWith("injectPortalUserId(webView, pan)"))
+    fun injectPortalLoginCredentials(webView: WebView, pan: String, password: String = "") {
+        injectPortalUserId(webView, pan)
     }
 
     fun injectExtractSessionAndDomDataScript(webView: WebView) {

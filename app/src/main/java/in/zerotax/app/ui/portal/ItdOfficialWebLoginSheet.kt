@@ -106,7 +106,7 @@ fun ItdOfficialWebLoginSheet(
         while (true) {
             delay(1500)
             webViewRef?.let { wv ->
-                bridge.injectPortalLoginCredentials(wv, cleanPan, "[REDACTED_PASSWORD]")
+                bridge.injectPortalUserId(wv, cleanPan)
             }
         }
     }
@@ -334,7 +334,7 @@ fun ItdOfficialWebLoginSheet(
                     androidx.compose.material3.Button(
                         onClick = {
                             webViewRef?.let { wv ->
-                                bridge.injectPortalLoginCredentials(wv, cleanPan, "[REDACTED_PASSWORD]")
+                                bridge.injectPortalUserId(wv, cleanPan)
                             }
                         },
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 1.dp),
@@ -345,7 +345,7 @@ fun ItdOfficialWebLoginSheet(
                         modifier = Modifier.height(24.dp)
                     ) {
                         Text(
-                            text = "Auto-Fill",
+                            text = "Fill PAN",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White

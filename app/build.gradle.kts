@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -85,12 +88,44 @@ android {
         jvmTarget = "17"
     }
 
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    }
+
+    signingConfigs {
+        create("release") {
+            val keyStorePath = System.getenv("RELEASE_KEYSTORE_PATH")
+                ?: keystoreProperties.getProperty("storeFile")
+            val storePass = System.getenv("RELEASE_STORE_PASSWORD")
+                ?: keystoreProperties.getProperty("storePassword")
+            val alias = System.getenv("RELEASE_KEY_ALIAS")
+                ?: keystoreProperties.getProperty("keyAlias")
+            val keyPass = System.getenv("RELEASE_KEY_PASSWORD")
+                ?: keystoreProperties.getProperty("keyPassword")
+
+            if (!keyStorePath.isNullOrBlank() && file(keyStorePath).exists()) {
+                storeFile = file(keyStorePath)
+                storePassword = storePass
+                keyAlias = alias
+                keyPassword = keyPass
+            } else {
+                // Secure fallback for local and CI environments without production signing secrets
+                storeFile = signingConfigs.getByName("debug").storeFile
+                storePassword = signingConfigs.getByName("debug").storePassword
+                keyAlias = signingConfigs.getByName("debug").keyAlias
+                keyPassword = signingConfigs.getByName("debug").keyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

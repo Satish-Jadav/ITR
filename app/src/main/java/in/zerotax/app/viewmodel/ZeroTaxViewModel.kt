@@ -61,7 +61,7 @@ data class AuditEntryUiModel(
 data class ZeroTaxUiState(
     val currentTap: OnboardingTap? = OnboardingTap.Tap1IdentityConsent,
     val selectedWorkspaceTab: WorkspaceTab = WorkspaceTab.FilingAndRefundHub,
-    val pan: String = "ABCDE1234F",
+    val pan: String = "",
     val assessmentYear: String = "2026-27",
     val grossSalaryRupees: Long = 0L,
     val employerName: String = "",

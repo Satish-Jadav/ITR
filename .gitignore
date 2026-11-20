@@ -84,3 +84,4 @@ temp_interactive_push.bat
 config.bat
 node_modules
 screenshots/
+keystore.properties
