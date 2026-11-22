@@ -120,7 +120,7 @@ fun SahajFilingExperienceView(
                         )
                     }
                 }
-                StatutoryBadge(text = "1-Tap Sync →", tone = BadgeTone.SUCCESS)
+                StatutoryBadge(text = "1-Tap Sync", tone = BadgeTone.SUCCESS)
             }
         }
 

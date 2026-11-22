@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -578,7 +579,10 @@ fun UnifiedPreFilingDossierView(
                         }
 
                         ZeroTaxPrimaryButton(
-                            text = "Grant Final Approval & Submit to Portal →",
+                            text = "Grant Final Approval & Submit to Portal",
+                            trailingIcon = {
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                            },
                             onClick = {
                                 showFinalApprovalModal = false
                                 onConfirmAndFile()

@@ -25,7 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lightbulb
@@ -504,7 +504,10 @@ fun ConversationalFilingChatScreen(
                         }
 
                         ZeroTaxPrimaryButton(
-                            text = "Grant Final Approval & Submit to Portal →",
+                            text = "Grant Final Approval & Submit to Portal",
+                            trailingIcon = {
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                            },
                             onClick = {
                                 showChatFinalApprovalDialog = false
                                 onProceedToFullReview(

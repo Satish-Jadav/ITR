@@ -691,7 +691,10 @@ private fun ReviewAndConsentStage(
             Spacer(Modifier.height(18.dp))
 
             ZeroTaxPrimaryButton(
-                text = "Proceed to Direct In-App Authentication →",
+                text = "Proceed to Direct In-App Authentication",
+                trailingIcon = {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
+                },
                 onClick = onProceed,
                 enabled = isDeclarationAccepted,
                 modifier = Modifier.fillMaxWidth().height(48.dp)
@@ -825,17 +828,23 @@ private fun InAppAuthenticationStage(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ZeroTaxPrimaryButton(
-                text = "Open Official Web Login (eportal.incometax.gov.in) →",
+                text = "Open Official Web Login (eportal.incometax.gov.in)",
                 onClick = onOpenWebLogin,
                 enabled = pan.length == 10,
                 leadingIcon = {
                     Icon(imageVector = Icons.AutoMirrored.Filled.Launch, contentDescription = null, modifier = Modifier.size(16.dp))
                 },
+                trailingIcon = {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             ZeroTaxOutlinedButton(
-                text = "← Back to Pre-Filing Review",
+                text = "Back to Pre-Filing Review",
+                leadingIcon = {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
+                },
                 onClick = onBack,
                 modifier = Modifier.fillMaxWidth()
             )

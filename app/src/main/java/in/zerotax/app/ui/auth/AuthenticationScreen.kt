@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -234,7 +235,7 @@ fun AuthenticationScreen(
 
             // 4. Primary: Fast Access Sign In
             ZeroTaxPrimaryButton(
-                text = "Start Filing Return with Google →",
+                text = "Start Filing Return with Google",
                 onClick = launchGoogleSignIn,
                 leadingIcon = {
                     Icon(
@@ -242,6 +243,14 @@ fun AuthenticationScreen(
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(20.dp)
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             )

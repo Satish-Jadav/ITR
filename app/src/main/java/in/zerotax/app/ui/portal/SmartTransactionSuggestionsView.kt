@@ -160,7 +160,11 @@ fun SmartTransactionSuggestionsView(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleLarge)
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
                 actions = {
@@ -375,8 +379,8 @@ fun SmartTransactionSuggestionsView(
                     val txIcon = when (tx.category) {
                         AisCategory.SALARY -> Icons.Default.Apartment
                         AisCategory.SAVINGS_INTEREST, AisCategory.TIME_DEPOSIT_INTEREST -> Icons.Default.AccountBalance
-                        AisCategory.DIVIDENDS -> Icons.Default.TrendingUp
-                        else -> Icons.Default.ReceiptLong
+                        AisCategory.DIVIDENDS -> Icons.AutoMirrored.Filled.TrendingUp
+                        else -> Icons.AutoMirrored.Filled.ReceiptLong
                     }
                     val isDark = isSystemInDarkTheme()
 

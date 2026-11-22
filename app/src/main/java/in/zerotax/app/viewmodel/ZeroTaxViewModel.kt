@@ -1269,7 +1269,7 @@ class ZeroTaxViewModel : ViewModel() {
         val newAudit = AuditEntryUiModel(
             auditId = "AUD-270A-${System.currentTimeMillis() % 100000}",
             eventCategory = "SECTION_270A_OVERRIDE",
-            description = "$fieldName overridden: ₹$originalValue → ₹$overriddenValue ($statutoryReasonCode)",
+            description = "$fieldName overridden: ₹$originalValue to ₹$overriddenValue ($statutoryReasonCode)",
             warningTextHashSha256 = hash,
             timestampFormatted = "Audit Logged"
         )

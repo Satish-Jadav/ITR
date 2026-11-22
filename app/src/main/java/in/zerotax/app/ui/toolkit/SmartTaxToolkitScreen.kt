@@ -1414,7 +1414,19 @@ private fun CapitalGainsLedgerView() {
                                     )
                                     Spacer(Modifier.width(6.dp))
                                     Text(
-                                        "${step.lossSource} → ${step.setOffAgainstGain}",
+                                        step.lossSource,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = null,
+                                        tint = Slate400,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        step.setOffAgainstGain,
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }

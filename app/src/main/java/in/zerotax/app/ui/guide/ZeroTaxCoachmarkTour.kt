@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -202,7 +203,9 @@ fun ZeroTaxCoachmarkPopup(
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                             modifier = Modifier.height(32.dp)
                         ) {
-                            Text("← Back", color = Slate300, fontSize = 12.sp)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Slate300, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Back", color = Slate300, fontSize = 12.sp)
                         }
                     }
 
@@ -214,10 +217,14 @@ fun ZeroTaxCoachmarkPopup(
                         modifier = Modifier.height(32.dp)
                     ) {
                         Text(
-                            text = if (currentStep.stepNumber == totalSteps) "Finish Tour" else "Next Step →",
+                            text = if (currentStep.stepNumber == totalSteps) "Finish Tour" else "Next Step",
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp
                         )
+                        if (currentStep.stepNumber != totalSteps) {
+                            Spacer(Modifier.width(4.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(14.dp))
+                        }
                     }
                 }
             }

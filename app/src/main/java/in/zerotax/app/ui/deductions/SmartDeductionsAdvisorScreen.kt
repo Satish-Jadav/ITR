@@ -204,7 +204,9 @@ fun SmartDeductionsAdvisorScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                         modifier = Modifier.height(44.dp)
                     ) {
-                        Text("Apply to Return →", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        Text("Apply to Return", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        Spacer(Modifier.width(6.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
                     }
                 }
             }

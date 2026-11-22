@@ -585,12 +585,15 @@ private fun TrustAndAuthStepView(
 
         // Direct Web Portal Login Bridge (Mandatory Step Always After PAN)
         ZeroTaxPrimaryButton(
-            text = if (isPanValid) "Login to ITD Web Portal (eportal.incometax.gov.in) →" else "Enter 10-Digit PAN to Continue",
+            text = if (isPanValid) "Login to ITD Web Portal (eportal.incometax.gov.in)" else "Enter 10-Digit PAN to Continue",
             onClick = { onLaunchWebLogin() },
             enabled = isPanValid,
             leadingIcon = {
                 Icon(Icons.Default.Language, contentDescription = null, modifier = Modifier.size(18.dp))
             },
+            trailingIcon = if (isPanValid) {
+                { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp)) }
+            } else null,
             modifier = Modifier.fillMaxWidth().height(48.dp)
         )
 

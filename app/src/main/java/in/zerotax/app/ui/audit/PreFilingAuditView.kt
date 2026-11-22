@@ -14,7 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -211,7 +211,10 @@ fun PreFilingAuditView(
                     }
                     Spacer(Modifier.width(12.dp))
                     ZeroTaxPrimaryButton(
-                        text = if (isLegalAcknowledgementSigned) "Proceed to E-File →" else "Review & Sign →",
+                        text = if (isLegalAcknowledgementSigned) "Proceed to E-File" else "Review & Sign",
+                        trailingIcon = {
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                        },
                         onClick = {
                             if (!isLegalAcknowledgementSigned) {
                                 showLegalDialog = true
@@ -641,7 +644,10 @@ fun PreFilingAuditView(
 
                         Spacer(Modifier.height(12.dp))
                         ZeroTaxOutlinedButton(
-                            text = if (isLegalAcknowledgementSigned) "View Signed Legal Terms & Cloud Sync Status" else "Review & Sign Statutory Terms (Mandatory) →",
+                            text = if (isLegalAcknowledgementSigned) "View Signed Legal Terms & Cloud Sync Status" else "Review & Sign Statutory Terms (Mandatory)",
+                            trailingIcon = if (!isLegalAcknowledgementSigned) {
+                                { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                            } else null,
                             onClick = { showLegalDialog = true },
                             modifier = Modifier.fillMaxWidth()
                         )

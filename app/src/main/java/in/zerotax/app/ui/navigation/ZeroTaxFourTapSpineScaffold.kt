@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -824,9 +825,12 @@ private fun Stage1IdentityConsent(
             text = when {
                 !isPanValid -> "Enter Valid 10-Digit PAN"
                 isPanVerifying -> "Verifying PAN with Income Tax Dept..."
-                !isPanVerifiedWithItr -> "Verify PAN with ITR to Proceed →"
-                else -> "Continue to Step 2: Income (" + filingTier.title + ") →"
+                !isPanVerifiedWithItr -> "Verify PAN with ITR to Proceed"
+                else -> "Continue to Step 2: Income (" + filingTier.title + ")"
             },
+            trailingIcon = if (isPanValid && !isPanVerifying) {
+                { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp)) }
+            } else null,
             onClick = {
                 if (isPanVerifiedWithItr) {
                     onProceed()
@@ -984,7 +988,7 @@ private fun Stage2DocumentDiscovery(
             description = "Upload employer Form 16 to skip typing salary numbers manually.",
             icon = Icons.Default.CloudUpload,
             onClick = onOpenForm16Upload,
-            badgeText = "1-Tap Import →",
+            badgeText = "1-Tap Import",
             badgeTone = BadgeTone.STATUTORY,
             iconTint = PalettePrimary,
             iconBgColor = PaletteMuted
@@ -1195,7 +1199,7 @@ private fun Stage2DocumentDiscovery(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                StatutoryBadge(text = "View Records →", tone = BadgeTone.STATUTORY)
+                StatutoryBadge(text = "View Records", tone = BadgeTone.STATUTORY)
             }
         }
 
@@ -1206,12 +1210,16 @@ private fun Stage2DocumentDiscovery(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ZeroTaxOutlinedButton(
-                text = "← Back",
+                text = "Back",
+                leadingIcon = { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp)) },
                 onClick = onBack,
                 modifier = Modifier.weight(1f)
             )
             ZeroTaxPrimaryButton(
-                text = if (grossSalary > 0L) "Continue to Deductions →" else "Enter Salary to Continue",
+                text = if (grossSalary > 0L) "Continue to Deductions" else "Enter Salary to Continue",
+                trailingIcon = if (grossSalary > 0L) {
+                    { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp)) }
+                } else null,
                 onClick = onProceed,
                 enabled = grossSalary > 0L,
                 modifier = Modifier.weight(2f)
@@ -1459,7 +1467,7 @@ private fun Stage3Reconciliation(
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
                     )
                 }
-                StatutoryBadge(text = "Advisor →", tone = BadgeTone.SUCCESS)
+                StatutoryBadge(text = "Advisor", tone = BadgeTone.SUCCESS)
             }
         }
 
@@ -1470,12 +1478,14 @@ private fun Stage3Reconciliation(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ZeroTaxOutlinedButton(
-                text = "← Back",
+                text = "Back",
+                leadingIcon = { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp)) },
                 onClick = onBack,
                 modifier = Modifier.weight(1f)
             )
             ZeroTaxPrimaryButton(
-                text = "Compare Tax Regimes →",
+                text = "Compare Tax Regimes",
+                trailingIcon = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp)) },
                 onClick = onProceed,
                 modifier = Modifier.weight(2f)
             )
@@ -1612,12 +1622,14 @@ private fun Stage4RegimeShowdown(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ZeroTaxOutlinedButton(
-                text = "← Back",
+                text = "Back",
+                leadingIcon = { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp)) },
                 onClick = onBack,
                 modifier = Modifier.weight(1f)
             )
             ZeroTaxPrimaryButton(
-                text = "E-File Tax Return Now →",
+                text = "E-File Tax Return Now",
+                trailingIcon = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp)) },
                 onClick = onLaunchPortalAssistant,
                 modifier = Modifier.weight(2.2f)
             )

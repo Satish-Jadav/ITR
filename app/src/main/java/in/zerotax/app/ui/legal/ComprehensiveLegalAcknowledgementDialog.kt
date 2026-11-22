@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -215,10 +216,14 @@ fun ComprehensiveLegalAcknowledgementDialog(
                             .defaultMinSize(minHeight = 48.dp)
                     ) {
                         Text(
-                            text = if (allAccepted) "I Solemnly Acknowledge & Accept Terms →" else "Check All 4 Clauses to Proceed",
+                            text = if (allAccepted) "I Solemnly Acknowledge & Accept Terms" else "Check All 4 Clauses to Proceed",
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
+                        if (allAccepted) {
+                            Spacer(Modifier.width(6.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
+                        }
                     }
 
                     OutlinedButton(

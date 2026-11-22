@@ -101,7 +101,7 @@ fun EnterpriseAuditFastStartView(
                         )
                     }
                 }
-                StatutoryBadge(text = "1-Tap Sync →", tone = BadgeTone.SUCCESS)
+                StatutoryBadge(text = "1-Tap Sync", tone = BadgeTone.SUCCESS)
             }
         }
 
@@ -254,7 +254,7 @@ fun EnterpriseAuditFastStartView(
                                 Text("ITR-5 Firm, ITR-6 MAT, ITR-7 Trust", color = Slate300, fontSize = 10.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             }
                             Spacer(Modifier.height(6.dp))
-                            StatutoryBadge(text = "Launch Desk →", tone = BadgeTone.STATUTORY)
+                            StatutoryBadge(text = "Launch Desk", tone = BadgeTone.STATUTORY)
                         }
                     }
 
@@ -289,7 +289,7 @@ fun EnterpriseAuditFastStartView(
                                 Text("Form 3CD 44 Clauses & Balance Sheet", color = Slate300, fontSize = 10.sp)
                             }
                             Spacer(Modifier.height(6.dp))
-                            StatutoryBadge(text = "Open 3CD →", tone = BadgeTone.SUCCESS)
+                            StatutoryBadge(text = "Open 3CD", tone = BadgeTone.SUCCESS)
                         }
                     }
                 }
