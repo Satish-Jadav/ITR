@@ -69,9 +69,10 @@ enum class OnboardingTap(val title: String) {
 }
 
 enum class WorkspaceTab(val title: String) {
-    FilingAndRefundHub("Filing Hub"),
-    SmartTaxVaultAndCopilot("Audit Vault"),
-    PrivacyAndSettings("DPDP & Security")
+    Filing("Filing"),
+    AiCopilot("AI Copilot"),
+    AisAndVault("AIS & Vault"),
+    Tools("Tools")
 }
 
 @Composable
@@ -358,9 +359,10 @@ fun ZeroTaxFourTapSpineScaffold(
                     tonalElevation = 2.dp
                 ) {
                     val icons = mapOf(
-                        WorkspaceTab.FilingAndRefundHub to Icons.Default.AccountBalance,
-                        WorkspaceTab.SmartTaxVaultAndCopilot to Icons.Default.Security,
-                        WorkspaceTab.PrivacyAndSettings to Icons.Default.Lock
+                        WorkspaceTab.Filing to Icons.Default.AccountBalance,
+                        WorkspaceTab.AiCopilot to Icons.Default.SmartToy,
+                        WorkspaceTab.AisAndVault to Icons.Default.Receipt,
+                        WorkspaceTab.Tools to Icons.Default.Build
                     )
                     val isDarkNav = isSystemInDarkTheme()
                     WorkspaceTab.entries.forEach { tab ->
@@ -525,6 +527,8 @@ fun ZeroTaxFourTapSpineScaffold(
                     null -> ProWorkspaceView(
                         selectedTab = uiState.selectedWorkspaceTab,
                         uiState = uiState,
+                        viewModel = viewModel,
+                        onSelectTab = { viewModel.onSelectWorkspaceTab(it) },
                         onTierSelected = { viewModel.onFilingTierChanged(it) },
                         onOpenTaxPaymentHub = { showTaxPaymentHub = true },
                         onOpenDeductionsAdvisor = { showDeductionsAdvisor = true },
@@ -1628,6 +1632,8 @@ private fun Stage4RegimeShowdown(
 private fun ProWorkspaceView(
     selectedTab: WorkspaceTab,
     uiState: `in`.zerotax.app.viewmodel.ZeroTaxUiState,
+    viewModel: ZeroTaxViewModel,
+    onSelectTab: (WorkspaceTab) -> Unit,
     onTierSelected: (FilingTierMode) -> Unit,
     onOpenTaxPaymentHub: () -> Unit,
     onOpenDeductionsAdvisor: () -> Unit,
@@ -1690,7 +1696,7 @@ private fun ProWorkspaceView(
             modifier = Modifier.weight(1f).fillMaxWidth()
         ) { currentTab ->
             when (currentTab) {
-                WorkspaceTab.FilingAndRefundHub -> {
+                WorkspaceTab.Filing -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = 120.dp)
@@ -1764,230 +1770,35 @@ private fun ProWorkspaceView(
                     }
                 }
 
-                WorkspaceTab.SmartTaxVaultAndCopilot -> {
-                    LaunchedEffect(Unit) {
-                        onLoadAuditTrail()
-                    }
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 120.dp)
-                    ) {
-                        item {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = CardDefaults.outlinedCardBorder().copy(
-                                    width = 1.dp,
-                                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
-                                )
-                            ) {
-                                Column(modifier = Modifier.padding(14.dp)) {
-                                    Text(
-                                        text = "Cryptographic Non-Repudiation Audit Ledger",
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                    )
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(
-                                        text = "Hardware-secured chronological trail of every verified calculation and statutory override.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.height(10.dp))
+                WorkspaceTab.AiCopilot -> {
+                    ConversationalFilingChatScreen(
+                        pan = uiState.pan,
+                        viewModel = viewModel,
+                        onBack = { onSelectTab(WorkspaceTab.Filing) },
+                        onProceedToFullReview = { grossSalary, _, _, deductions, _ ->
+                            viewModel.applyChatbotFiling(grossSalary, deductions)
+                            onSelectTab(WorkspaceTab.Filing)
+                            onRunAudit()
                         }
-
-                        if (uiState.lazyAuditTrail is `in`.zerotax.core.model.LazyLoadState.Loading) {
-                            item {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth().padding(24.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                                }
-                            }
-                        }
-
-                        items(
-                            items = uiState.auditTrail,
-                            key = { it.auditId }
-                        ) { audit ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-                                border = CardDefaults.outlinedCardBorder().copy(
-                                    width = 0.5.dp,
-                                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
-                                )
-                            ) {
-                                Column(modifier = Modifier.padding(10.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = audit.eventCategory,
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
-                                        )
-                                        Text(
-                                            text = audit.timestampFormatted,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(text = audit.description, style = MaterialTheme.typography.bodySmall)
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(
-                                        text = "SHA-256: ${audit.warningTextHashSha256.take(24)}...",
-                                        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    )
                 }
 
-                WorkspaceTab.PrivacyAndSettings -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 120.dp)
-                    ) {
-                        // Statutory Legal Protection & Cloud Shield Summary Card
-                        item {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = CardDefaults.outlinedCardBorder().copy(
-                                    width = 1.dp,
-                                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
-                                )
-                            ) {
-                                Column(modifier = Modifier.padding(14.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "Statutory Legal Protection & Cloud Shield",
-                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                                        )
-                                        StatutoryBadge(text = "DPDP §6 & §140", tone = BadgeTone.STATUTORY)
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    Text(
-                                        text = "Comprehensive legal coverage active: Section 140 taxpayer declaration, Section 277 penal disclaimers, technology intermediary protections, and zero-knowledge cloud crash resilience for session recovery.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(Modifier.height(10.dp))
-                                    ZeroTaxOutlinedButton(
-                                        text = "Review Master Legal Terms & Declarations",
-                                        onClick = onOpenLegalDialog,
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Default.Gavel,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                        },
-                                        modifier = Modifier.fillMaxWidth().height(40.dp)
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.height(12.dp))
-                        }
+                WorkspaceTab.AisAndVault -> {
+                    SmartTransactionSuggestionsView(
+                        pan = uiState.pan,
+                        onBack = { onSelectTab(WorkspaceTab.Filing) }
+                    )
+                }
 
-                        item {
-                            val dangerTextColor = if (isSystemInDarkTheme()) CrimsonDangerDark else CrimsonDanger
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = getCrimsonDangerBg()),
-                                border = CardDefaults.outlinedCardBorder().copy(
-                                    width = 0.75.dp,
-                                    brush = androidx.compose.ui.graphics.SolidColor(CrimsonDanger.copy(alpha = 0.4f))
-                                )
-                            ) {
-                                Column(modifier = Modifier.padding(14.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(8.dp)
-                                                .clip(CircleShape)
-                                                .background(CrimsonDanger)
-                                        )
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            text = "DPDP Act 2023 Section 12(3) Right to Erasure",
-                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                            color = dangerTextColor
-                                        )
-                                    }
-                                    Spacer(Modifier.height(6.dp))
-                                    Text(
-                                        text = "Initiating cryptographic shredding permanently zeroes all database pages with random bytes, deletes hardware Keystore wrapping keys, and wipes volatile memory caches.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = dangerTextColor
-                                    )
-
-                                    if (isShreddingInProgress) {
-                                        Spacer(Modifier.height(12.dp))
-                                        Text(
-                                            text = "Cryptographically overwriting memory pages...",
-                                            style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = CrimsonDanger)
-                                        )
-                                        Spacer(Modifier.height(6.dp))
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(3.dp)
-                                                .clip(RoundedCornerShape(1.5.dp))
-                                                .background(CrimsonDanger.copy(alpha = 0.2f))
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxWidth(shredProgressAnim.value)
-                                                    .fillMaxHeight()
-                                                    .background(CrimsonDanger)
-                                            )
-                                        }
-                                    }
-
-                                    Spacer(Modifier.height(14.dp))
-
-                                    Button(
-                                        onClick = {
-                                            if (!isShreddingInProgress) {
-                                                scope.launch {
-                                                    isShreddingInProgress = true
-                                                    shredProgressAnim.animateTo(1f, tween(800, easing = LinearEasing))
-                                                    onShredVault()
-                                                    isShreddingInProgress = false
-                                                }
-                                            }
-                                        },
-                                        enabled = !isShreddingInProgress && !uiState.isVaultShredded,
-                                        shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = CrimsonDanger),
-                                        modifier = Modifier.fillMaxWidth().height(40.dp)
-                                    ) {
-                                        Text(
-                                            text = if (uiState.isVaultShredded) "Vault Data Cryptographically Shredded"
-                                                   else "Cryptographically Shred All Vault Data (DPDP §12(3))",
-                                            style = MaterialTheme.typography.labelMedium
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                WorkspaceTab.Tools -> {
+                    SmartTaxToolkitScreen(
+                        pan = uiState.pan,
+                        grossSalary = uiState.grossSalaryRupees,
+                        taxLiability = uiState.newRegimeResult.totalTaxLiabilityRounded288B,
+                        tdsClaimed = uiState.salarySummary.aggregateTdsAllowed,
+                        viewModel = viewModel,
+                        onBack = { onSelectTab(WorkspaceTab.Filing) }
+                    )
                 }
             }
         }

@@ -61,7 +61,7 @@ data class AuditEntryUiModel(
 
 data class ZeroTaxUiState(
     val currentTap: OnboardingTap? = OnboardingTap.Tap1IdentityConsent,
-    val selectedWorkspaceTab: WorkspaceTab = WorkspaceTab.FilingAndRefundHub,
+    val selectedWorkspaceTab: WorkspaceTab = WorkspaceTab.Filing,
     val pan: String = "",
     val assessmentYear: String = "2026-27",
     val grossSalaryRupees: Long = 0L,
@@ -1155,7 +1155,7 @@ class ZeroTaxViewModel : ViewModel() {
 
     fun onSelectWorkspaceTab(tab: WorkspaceTab) {
         _uiState.update { it.copy(selectedWorkspaceTab = tab) }
-        if (tab == WorkspaceTab.SmartTaxVaultAndCopilot || tab == WorkspaceTab.PrivacyAndSettings) {
+        if (tab == WorkspaceTab.Tools) {
             loadAuditTrailLazy()
         }
     }
