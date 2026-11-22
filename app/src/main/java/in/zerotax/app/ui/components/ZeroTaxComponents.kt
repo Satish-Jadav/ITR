@@ -165,6 +165,7 @@ enum class BadgeTone {
 fun StatutoryBadge(
     text: String,
     tone: BadgeTone = BadgeTone.NEUTRAL,
+    showIndicatorDot: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val isDark = isSystemInDarkTheme()
@@ -198,21 +199,36 @@ fun StatutoryBadge(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(3.dp))
+            .clip(RoundedCornerShape(6.dp))
             .background(bgColor)
-            .border(0.75.dp, borderColor, RoundedCornerShape(3.dp))
-            .padding(horizontal = 7.dp, vertical = 2.5.dp)
+            .border(0.75.dp, borderColor, RoundedCornerShape(6.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            color = textColor,
-            maxLines = 1,
-            softWrap = false,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 10.sp,
-                letterSpacing = 0.3.sp
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            if (showIndicatorDot && tone != BadgeTone.NEUTRAL) {
+                Box(
+                    modifier = Modifier
+                        .size(5.dp)
+                        .clip(CircleShape)
+                        .background(textColor)
+                )
+            }
+            Text(
+                text = text,
+                color = textColor,
+                maxLines = 1,
+                softWrap = false,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 0.3.sp
+                )
             )
-        )
+        }
     }
 }
 
@@ -345,254 +361,86 @@ fun EnterpriseTopHeader(
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (onOpenChatbot != null) {
                     item {
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenChatbot() }
+                            shape = RoundedCornerShape(20.dp),
+                            color = if (isTopDark) EnterpriseTeal900 else EnterpriseTeal50,
+                            border = androidx.compose.foundation.BorderStroke(1.25.dp, if (isTopDark) EnterpriseTeal500 else EnterpriseTeal400),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .clickable { onOpenChatbot() }
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.SmartToy,
                                     contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
+                                    tint = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700,
+                                    modifier = Modifier.size(14.dp)
                                 )
-                                Spacer(Modifier.width(5.dp))
-                                Text("AI Copilot", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = "AI Copilot",
+                                    style = TextStyle(
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700,
+                                        letterSpacing = 0.2.sp
+                                    )
+                                )
                             }
                         }
                     }
                 }
 
-                if (onOpenToolkit != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenToolkit() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Build,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text("Tools", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
-                        }
-                    }
-                }
+                val standardChips = listOfNotNull(
+                    onOpenToolkit?.let { "Tools" to Pair(Icons.Default.Build, it) },
+                    onOpenAnalytics?.let { "Insights" to Pair(Icons.Default.BarChart, it) },
+                    onOpenNotices?.let { "Notices" to Pair(Icons.Default.Security, it) },
+                    onOpenThinkLikeCa?.let { "Think Like CA" to Pair(Icons.AutoMirrored.Filled.TrendingUp, it) },
+                    onOpenCaPortal?.let { "CA Desk" to Pair(Icons.Default.AssignmentInd, it) },
+                    onOpenBusinessAudit?.let { "Business Audit" to Pair(Icons.Default.Domain, it) },
+                    onOpenNriSuite?.let { "NRI Suite" to Pair(Icons.Default.Public, it) },
+                    onOpenCorporateSuite?.let { "Corporate Suite" to Pair(Icons.Default.Apartment, it) },
+                    onOpenTrustShield?.let { "Trust Shield" to Pair(Icons.Default.VerifiedUser, it) }
+                )
 
-                if (onOpenAnalytics != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenAnalytics() }
+                items(standardChips.size) { index ->
+                    val (label, iconAndAction) = standardChips[index]
+                    val (icon, action) = iconAndAction
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = chipBg,
+                        border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .clickable { action() }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.BarChart,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = chipContent,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(Modifier.width(5.dp))
+                            Text(
+                                text = label,
+                                style = TextStyle(
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = chipContent,
+                                    letterSpacing = 0.1.sp
                                 )
-                                Spacer(Modifier.width(5.dp))
-                                Text("Insights", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
-                        }
-                    }
-                }
-
-                if (onOpenNotices != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenNotices() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Security,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text("Notices", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
-                        }
-                    }
-                }
-
-                if (onOpenThinkLikeCa != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenThinkLikeCa() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text("Think Like CA", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
-                        }
-                    }
-                }
-
-                if (onOpenCaPortal != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenCaPortal() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AssignmentInd,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text("CA Desk", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
-                        }
-                    }
-                }
-
-                if (onOpenBusinessAudit != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenBusinessAudit() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Domain,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text("Business Audit", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
-                        }
-                    }
-                }
-
-                if (onOpenNriSuite != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenNriSuite() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Public,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text("NRI Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
-                        }
-                    }
-                }
-
-                if (onOpenCorporateSuite != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenCorporateSuite() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Apartment,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text("Corporate Suite", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
-                        }
-                    }
-                }
-
-                if (onOpenTrustShield != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = chipBg,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                            modifier = Modifier.clickable { onOpenTrustShield() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.VerifiedUser,
-                                    contentDescription = null,
-                                    tint = chipContent,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text("Trust Shield", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = chipContent))
-                            }
+                            )
                         }
                     }
                 }
@@ -1415,7 +1263,7 @@ fun ZeroTaxTopAppBar(
 
 /**
  * Standardized Primary Button adhering strictly to the Enterprise Teal 600 palette.
- * Inherently responsive with full-width scaling, minHeight 48.dp, and accessible touch target.
+ * Enhanced with subtle fintech gradient sheen, 12.dp radius, top highlight border, and tactile depth.
  */
 @Composable
 fun ZeroTaxPrimaryButton(
@@ -1430,44 +1278,73 @@ fun ZeroTaxPrimaryButton(
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     val isDark = isSystemInDarkTheme()
-    val effectiveContainerColor = containerColor ?: if (isDark) ButtonPrimaryBgDark else ButtonPrimaryBg
+    val defaultContainerColor = if (isDark) ButtonPrimaryBgDark else ButtonPrimaryBg
+    val effectiveContainerColor = containerColor ?: defaultContainerColor
     val effectiveContentColor = contentColor ?: if (isDark) ButtonPrimaryTextDark else ButtonPrimaryText
     val disabledContainer = if (isDark) Slate800 else Slate200
     val disabledContent = if (isDark) Slate500 else Slate400
 
-    Button(
-        onClick = { if (!isLoading) onClick() },
+    val buttonBrush = if (enabled && !isLoading) {
+        if (containerColor != null) {
+            Brush.verticalGradient(listOf(containerColor, containerColor))
+        } else if (isDark) {
+            Brush.verticalGradient(listOf(EnterpriseTeal500, EnterpriseTeal700))
+        } else {
+            Brush.verticalGradient(listOf(EnterpriseTeal600, EnterpriseTeal800))
+        }
+    } else {
+        Brush.verticalGradient(listOf(disabledContainer, disabledContainer))
+    }
+
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 48.dp),
-        enabled = enabled && !isLoading,
-        shape = RoundedCornerShape(10.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = effectiveContainerColor,
-            contentColor = effectiveContentColor,
-            disabledContainerColor = disabledContainer,
-            disabledContentColor = disabledContent
-        ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp, pressedElevation = 2.dp)
+            .heightIn(min = 48.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(enabled = enabled && !isLoading, onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = Color.Transparent,
+        shadowElevation = if (enabled && !isLoading) 2.5.dp else 0.dp
     ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(18.dp),
-                color = effectiveContentColor,
-                strokeWidth = 2.dp
-            )
-            Spacer(Modifier.width(8.dp))
-        } else if (leadingIcon != null) {
-            leadingIcon()
-            Spacer(Modifier.width(8.dp))
-        }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.2.sp)
-        )
-        if (!isLoading && trailingIcon != null) {
-            Spacer(Modifier.width(8.dp))
-            trailingIcon()
+        Box(
+            modifier = Modifier
+                .background(buttonBrush)
+                .border(
+                    width = 0.75.dp,
+                    color = if (enabled && !isLoading) Color.White.copy(alpha = if (isDark) 0.22f else 0.32f) else Color.Transparent,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = effectiveContentColor,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(Modifier.width(8.dp))
+                } else if (leadingIcon != null) {
+                    leadingIcon()
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        color = if (enabled) effectiveContentColor else disabledContent,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.25.sp
+                    )
+                )
+                if (!isLoading && trailingIcon != null) {
+                    Spacer(Modifier.width(8.dp))
+                    trailingIcon()
+                }
+            }
         }
     }
 }
@@ -1495,38 +1372,52 @@ fun ZeroTaxOutlinedButton(
     }
     val effectiveContentColor = contentColor ?: if (isDark) ButtonOutlinedTextDark else ButtonOutlinedText
     val disabledContentColor = if (isDark) Slate500 else Slate400
+    val surfaceColor = if (enabled) {
+        if (isDark) Slate800.copy(alpha = 0.45f) else EnterpriseTeal50.copy(alpha = 0.35f)
+    } else Color.Transparent
 
-    OutlinedButton(
-        onClick = { if (!isLoading) onClick() },
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 48.dp),
-        enabled = enabled && !isLoading,
-        shape = RoundedCornerShape(10.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, effectiveBorderColor),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = effectiveContentColor,
-            disabledContentColor = disabledContentColor
-        )
+            .heightIn(min = 48.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(enabled = enabled && !isLoading, onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = surfaceColor,
+        border = androidx.compose.foundation.BorderStroke(1.25.dp, effectiveBorderColor)
     ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(18.dp),
-                color = effectiveContentColor,
-                strokeWidth = 2.dp
-            )
-            Spacer(Modifier.width(8.dp))
-        } else if (leadingIcon != null) {
-            leadingIcon()
-            Spacer(Modifier.width(8.dp))
-        }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-        )
-        if (!isLoading && trailingIcon != null) {
-            Spacer(Modifier.width(8.dp))
-            trailingIcon()
+        Box(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = effectiveContentColor,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(Modifier.width(8.dp))
+                } else if (leadingIcon != null) {
+                    leadingIcon()
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        color = if (enabled) effectiveContentColor else disabledContentColor,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.2.sp
+                    )
+                )
+                if (!isLoading && trailingIcon != null) {
+                    Spacer(Modifier.width(8.dp))
+                    trailingIcon()
+                }
+            }
         }
     }
 }
@@ -1545,66 +1436,80 @@ fun ZeroTaxSecondaryButton(
     val isDark = isSystemInDarkTheme()
     val secondaryBg = if (isDark) ButtonSecondaryBgDark else ButtonSecondaryBg
     val secondaryText = if (isDark) ButtonSecondaryTextDark else ButtonSecondaryText
+    val borderColor = if (isDark) EnterpriseTeal700.copy(alpha = 0.7f) else EnterpriseTeal200
 
-    Button(
-        onClick = onClick,
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 44.dp),
-        enabled = enabled,
-        shape = RoundedCornerShape(10.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = secondaryBg,
-            contentColor = secondaryText,
-            disabledContainerColor = if (isDark) Slate800 else Slate100,
-            disabledContentColor = if (isDark) Slate600 else Slate400
-        ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+            .heightIn(min = 44.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(enabled = enabled, onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = secondaryBg,
+        border = androidx.compose.foundation.BorderStroke(0.75.dp, borderColor)
     ) {
-        if (leadingIcon != null) {
-            leadingIcon()
-            Spacer(Modifier.width(8.dp))
+        Box(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (leadingIcon != null) {
+                    leadingIcon()
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        color = secondaryText,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.2.sp
+                    )
+                )
+            }
         }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-        )
     }
 }
 
 /**
  * Standardized Sovereign Slate Card with unified radius and elevated borders.
- * Responsive by default with adaptive padding and full width.
+ * Responsive by default with adaptive padding, 16.dp radius, and modern fintech elevation.
  */
 @Composable
 fun ZeroTaxCard(
     modifier: Modifier = Modifier,
     accentBorderColor: Color? = null,
     containerColor: Color = MaterialTheme.colorScheme.surface,
-    shape: RoundedCornerShape = RoundedCornerShape(12.dp),
+    shape: RoundedCornerShape = RoundedCornerShape(16.dp),
     contentPadding: PaddingValues = PaddingValues(16.dp),
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
+    val defaultBorderColor = if (isDark) Slate700.copy(alpha = 0.6f) else Slate200
+    val effectiveBorderColor = accentBorderColor ?: defaultBorderColor
+
     val baseModifier = modifier
         .fillMaxWidth()
+        .clip(shape)
         .border(
             width = 1.dp,
-            color = accentBorderColor ?: MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+            color = effectiveBorderColor,
             shape = shape
         )
     val cardModifier = if (onClick != null) {
-        baseModifier
-            .clip(shape)
-            .clickable(onClick = onClick)
+        baseModifier.clickable(onClick = onClick)
     } else {
         baseModifier
     }
 
-    Card(
+    Surface(
         modifier = cardModifier,
         shape = shape,
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        color = containerColor,
+        shadowElevation = if (isDark) 0.dp else 1.5.dp
     ) {
         Column(
             modifier = Modifier.padding(contentPadding),
@@ -1634,23 +1539,24 @@ fun ZeroTaxActionCard(
 ) {
     val isDark = isSystemInDarkTheme()
     val defaultBg = containerColor ?: if (isDark) Slate850 else PureWhite
-    val defaultBorder = accentBorderColor ?: if (isDark) Slate700 else Slate200
+    val defaultBorder = accentBorderColor ?: if (isDark) Slate700.copy(alpha = 0.6f) else Slate200
     val effectiveIconTint = iconTint ?: if (isDark) EnterpriseTeal300 else EnterpriseTeal600
     val effectiveIconBgColor = iconBgColor ?: if (isDark) Slate800 else EnterpriseTeal50
 
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         color = defaultBg,
+        shadowElevation = if (isDark) 0.dp else 1.5.dp,
         border = androidx.compose.foundation.BorderStroke(1.dp, defaultBorder),
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -1660,49 +1566,70 @@ fun ZeroTaxActionCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(effectiveIconBgColor),
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(effectiveIconBgColor, effectiveIconBgColor.copy(alpha = 0.65f))
+                            )
+                        )
+                        .border(
+                            0.5.dp,
+                            effectiveIconTint.copy(alpha = 0.25f),
+                            RoundedCornerShape(12.dp)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = effectiveIconTint,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         )
-                    )
-                    if (badgeText != null) {
-                        Spacer(Modifier.height(4.dp))
-                        StatutoryBadge(text = badgeText, tone = badgeTone)
+                        if (badgeText != null) {
+                            StatutoryBadge(text = badgeText, tone = badgeTone)
+                        }
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = description,
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 11.sp,
-                            lineHeight = 15.sp
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
                         )
                     )
                 }
             }
             Spacer(Modifier.width(8.dp))
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = effectiveIconTint,
-                modifier = Modifier.size(18.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(if (isDark) Slate800 else Slate100),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = effectiveIconTint,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }
@@ -1834,6 +1761,9 @@ fun ZeroTaxTextField(
     enabled: Boolean = true,
     readOnly: Boolean = false
 ) {
+    val isDark = isSystemInDarkTheme()
+    val containerBg = if (isDark) Slate850 else PureWhite
+
     Column(modifier = modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = value,
@@ -1841,7 +1771,7 @@ fun ZeroTaxTextField(
             label = { Text(label) },
             placeholder = placeholder?.let { { Text(it, color = Slate400) } },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(12.dp),
             isError = isError,
             enabled = enabled,
             readOnly = readOnly,
@@ -1853,8 +1783,11 @@ fun ZeroTaxTextField(
             prefix = prefix,
             suffix = suffix,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = EnterpriseTeal600,
-                focusedLabelColor = EnterpriseTeal700,
+                focusedContainerColor = containerBg,
+                unfocusedContainerColor = containerBg,
+                focusedBorderColor = EnterpriseTeal500,
+                unfocusedBorderColor = if (isDark) Slate700 else Slate300,
+                focusedLabelColor = EnterpriseTeal600,
                 cursorColor = EnterpriseTeal600
             ),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)

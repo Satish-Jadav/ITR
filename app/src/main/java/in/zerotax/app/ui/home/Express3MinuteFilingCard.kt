@@ -2,7 +2,9 @@ package `in`.zerotax.app.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -12,12 +14,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import `in`.zerotax.app.ui.components.BadgeTone
 import `in`.zerotax.app.ui.components.IndianCurrencyFormatter
+import `in`.zerotax.app.ui.components.StatutoryBadge
+import `in`.zerotax.app.ui.components.ZeroTaxPrimaryButton
 import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.app.viewmodel.ZeroTaxUiState
 
@@ -32,6 +38,7 @@ fun Express3MinuteFilingCard(
     onFileAndEVerifyNow: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
     val winningRegime = uiState.selectedRegime
     val newTax = uiState.newRegimeResult.totalTaxLiabilityRounded288B
     val oldTax = uiState.oldRegimeResult.totalTaxLiabilityRounded288B
@@ -45,22 +52,26 @@ fun Express3MinuteFilingCard(
         "••••" + uiState.bankAccount.accountNumber.takeLast(4)
     } else "Not Linked"
 
-    Card(
+    val cardBorderBrush = Brush.horizontalGradient(
+        listOf(EnterpriseTeal500, EmeraldSuccess, Color(0xFF10B981))
+    )
+
+    Surface(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .border(
-                width = 1.dp,
-                brush = Brush.horizontalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
-                shape = RoundedCornerShape(12.dp)
+                width = 1.25.dp,
+                brush = cardBorderBrush,
+                shape = RoundedCornerShape(16.dp)
             ),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-        )
+        shape = RoundedCornerShape(16.dp),
+        color = if (isDark) Slate850 else PureWhite,
+        shadowElevation = if (isDark) 0.dp else 2.dp
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // Header: ⚡ 90-Second Express Filing Ready
             Row(
@@ -68,45 +79,57 @@ fun Express3MinuteFilingCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.ElectricBolt,
-                        contentDescription = "Express Filing",
-                        tint = Color(0xFF10B981),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "⚡ 90-Second Express Filing Ready",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF10B981).copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ElectricBolt,
+                            contentDescription = "Express Filing",
+                            tint = Color(0xFF10B981),
+                            modifier = Modifier.size(20.dp)
                         )
-                    )
+                    }
+                    Column {
+                        Text(
+                            text = "⚡ 90-Second Express Filing",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                letterSpacing = (-0.2).sp
+                            )
+                        )
+                        Text(
+                            text = "Pre-filled & Reconciled with ITD",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
                 }
 
-                Surface(
-                    shape = RoundedCornerShape(4.dp),
-                    color = Color(0xFF10B981).copy(alpha = 0.15f)
-                ) {
-                    Text(
-                        text = formName,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF10B981)
-                        )
-                    )
-                }
+                StatutoryBadge(text = formName, tone = BadgeTone.SUCCESS)
             }
 
             // Regime and Refund / Tax Payable Summary Row
             Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(12.dp),
+                color = if (isDark) Slate800.copy(alpha = 0.7f) else Slate50,
+                border = androidx.compose.foundation.BorderStroke(
+                    0.75.dp,
+                    if (isDark) Slate700 else Slate200
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = if (newTax <= oldTax) {
                             "✓ New Regime saves you ₹${IndianCurrencyFormatter.formatLakhs(taxSavings)} more"
@@ -118,8 +141,6 @@ fun Express3MinuteFilingCard(
                             color = Color(0xFF059669)
                         )
                     )
-
-                    Spacer(Modifier.height(4.dp))
 
                     if (refundDue > 0L) {
                         Text(
@@ -134,7 +155,8 @@ fun Express3MinuteFilingCard(
                         Text(
                             text = "Crediting to $bankLabel$accountSuffix u/s 244A",
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.5.sp
                             )
                         )
                     } else if (taxPayable > 0L) {
@@ -148,7 +170,8 @@ fun Express3MinuteFilingCard(
                         Text(
                             text = "1-Tap UPI Challan 280 Payment without leaving flow",
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.5.sp
                             )
                         )
                     } else {
@@ -157,6 +180,13 @@ fun Express3MinuteFilingCard(
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = EmeraldSuccess
+                            )
+                        )
+                        Text(
+                            text = "100% Tax Rebate under Section 87A auto-applied",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.5.sp
                             )
                         )
                     }
@@ -178,37 +208,26 @@ fun Express3MinuteFilingCard(
                 Text(
                     text = "0 CBDT Category-A Defects • AIS & 26AS 100% Reconciled",
                     style = MaterialTheme.typography.labelSmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp
                     )
                 )
             }
 
-            // Primary 1-Tap CTA Button
-            Button(
+            // Primary 1-Tap CTA Button with tactile feedback
+            ZeroTaxPrimaryButton(
+                text = if (taxPayable > 0L) "Pay Tax via UPI & File (1 Tap)" else "File & e-Verify Now (1 Tap)",
                 onClick = onFileAndEVerifyNow,
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = ButtonSuccessBg,
-                    contentColor = ButtonSuccessText
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ElectricBolt,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = if (taxPayable > 0L) "Pay Tax via UPI & File (1 Tap)" else "File & e-Verify Now (1 Tap)",
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                containerColor = EmeraldSuccess,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.ElectricBolt,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
                     )
-                )
-            }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
