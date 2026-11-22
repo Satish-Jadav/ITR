@@ -71,7 +71,7 @@ class MainActivity : FragmentActivity() {
                         val activeClientSession = `in`.zerotax.core.model.ClientPairingSession(
                             pairingCode = "ZT-9498",
                             clientPan = uiState.pan,
-                            clientName = "SATISH JADAV",
+                            clientName = uiState.taxpayerFullName.ifBlank { "SATISH JADAV" },
                             grossTurnoverOrIncome = uiState.grossSalaryRupees,
                             auditType = `in`.zerotax.core.model.AuditType.TAX_AUDIT_44AB,
                             itrForm = uiState.filingTierMode.name,

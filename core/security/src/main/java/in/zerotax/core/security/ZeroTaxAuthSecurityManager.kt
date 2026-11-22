@@ -122,6 +122,10 @@ object ZeroTaxAuthSecurityManager {
 
     fun isAuthenticated(): Boolean = activeUserSession != null
 
+    fun restoreSession(profile: UserAuthProfile) {
+        activeUserSession = profile
+    }
+
     fun linkPanToActiveUser(pan: String) {
         val cleanPan = pan.trim().uppercase()
         val current = activeUserSession ?: return

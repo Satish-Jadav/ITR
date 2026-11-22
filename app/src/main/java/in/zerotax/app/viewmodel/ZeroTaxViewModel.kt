@@ -167,8 +167,32 @@ class ZeroTaxViewModel : ViewModel() {
             assessmentYearProfile = AssessmentYearProfile.AY_2026_27
         )
 
+        val enrolledUser = ZeroTaxAuthSecurityManager.getLastEnrolledUser()
+        val hasCompletedFirstLogin = ZeroTaxAuthSecurityManager.hasCompletedFirstLogin()
+        val initialAuth = if (hasCompletedFirstLogin && enrolledUser != null) {
+            val profile = `in`.zerotax.core.model.UserAuthProfile(
+                uid = enrolledUser.uid,
+                email = enrolledUser.email,
+                displayName = enrolledUser.displayName,
+                authProvider = enrolledUser.authProvider,
+                isEmailVerified = enrolledUser.isVerified,
+                lastLoginEpochMs = System.currentTimeMillis(),
+                primaryPanLinked = enrolledUser.pan
+            )
+            ZeroTaxAuthSecurityManager.restoreSession(profile)
+            AuthSessionState.Authenticated(profile)
+        } else {
+            AuthSessionState.Unauthenticated
+        }
+        val initialPan = enrolledUser?.pan ?: ""
+
         _uiState = MutableStateFlow(
             ZeroTaxUiState(
+                authSessionState = initialAuth,
+                pan = initialPan,
+                taxpayerFullName = enrolledUser?.displayName ?: "",
+                isPanVerifiedWithItr = initialPan.isNotBlank(),
+                hasCompletedOnboarding = hasCompletedFirstLogin && initialPan.isNotBlank(),
                 newRegimeResult = DeterministicIndianTaxEngine.computeNewRegime(initialInput),
                 oldRegimeResult = DeterministicIndianTaxEngine.computeOldRegime(initialInput),
                 formRoutingDecision = initialRouting,
@@ -180,6 +204,10 @@ class ZeroTaxViewModel : ViewModel() {
 
         // Fetch live statutory rules & ITD portal health telemetry in real-time
         syncRealtimeBackendData()
+        if (initialPan.isNotBlank()) {
+            verifyPanWithItr(initialPan)
+            syncRealtimeBackendData()
+        }
     }
 
     val uiState: StateFlow<ZeroTaxUiState> = _uiState.asStateFlow()
