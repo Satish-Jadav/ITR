@@ -107,7 +107,8 @@ jobs:
 
       - name: Distribute Release APK to Client via Firebase
         uses: wzieba/Firebase-Distribution-Github-Action@v1
-        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && secrets.FIREBASE_APP_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT != ''
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        continue-on-error: true
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
