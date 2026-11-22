@@ -616,6 +616,11 @@ class ZeroTaxViewModel : ViewModel() {
         }
     }
 
+    fun onAssessmentYearChanged(year: String) {
+        _uiState.update { it.copy(assessmentYear = year) }
+        recompute()
+    }
+
     fun onPanChanged(pan: String) {
         val cleanPan = pan.uppercase().trim().take(10)
         _uiState.update { 

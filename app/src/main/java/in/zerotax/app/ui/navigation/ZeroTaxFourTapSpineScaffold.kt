@@ -458,6 +458,8 @@ fun ZeroTaxFourTapSpineScaffold(
                     OnboardingTap.Tap1IdentityConsent -> Stage1IdentityConsent(
                         pan = uiState.pan,
                         onPanChanged = { viewModel.onPanChanged(it) },
+                        assessmentYear = uiState.assessmentYear,
+                        onAssessmentYearChanged = { viewModel.onAssessmentYearChanged(it) },
                         citizenCategory = uiState.citizenCategory,
                         onCitizenCategoryChanged = { viewModel.onCitizenCategoryChanged(it) },
                         filingTier = uiState.filingTierMode,
@@ -651,6 +653,8 @@ fun ZeroTaxFourTapSpineScaffold(
 private fun Stage1IdentityConsent(
     pan: String,
     onPanChanged: (String) -> Unit,
+    assessmentYear: String = "2026-27",
+    onAssessmentYearChanged: (String) -> Unit = {},
     citizenCategory: CitizenCategory,
     onCitizenCategoryChanged: (CitizenCategory) -> Unit,
     filingTier: FilingTierMode,
@@ -730,6 +734,69 @@ private fun Stage1IdentityConsent(
         }
 
         Spacer(Modifier.height(14.dp))
+
+        // Assessment Year Selector (Current & Previous Year Option)
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = if (assessmentYear != "2026-27") AmberWarning.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (assessmentYear != "2026-27") AmberWarning.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(Icons.Default.DateRange, null, modifier = Modifier.size(16.dp), tint = if (assessmentYear != "2026-27") AmberWarning else EnterpriseTeal600)
+                        Text(
+                            text = "Assessment Year (AY)",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                    if (assessmentYear != "2026-27") {
+                        Text(
+                            text = "Previous Year Mode",
+                            style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = AmberWarning)
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf("2026-27" to "AY 26-27 (Current)", "2025-26" to "AY 25-26 (Past)", "2024-25" to "AY 24-25 (ITR-U)").forEach { (ayCode, ayLabel) ->
+                        val isSelected = assessmentYear == ayCode
+                        Surface(
+                            onClick = { onAssessmentYearChanged(ayCode) },
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSelected) EnterpriseTeal600 else MaterialTheme.colorScheme.surface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (isSelected) EnterpriseTeal600 else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = ayLabel,
+                                style = TextStyle(
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                ),
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 2.dp)
+                            )
+                        }
+                    }
+                }
+                if (assessmentYear != "2026-27") {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = if (assessmentYear == "2024-25") "• Section 139(8A) ITR-U mode: File past missed return or declare income safely." else "• Belated Return u/s 139(4) or ITR-U mode enabled for FY 2024-25.",
+                        style = TextStyle(fontSize = 10.sp, color = AmberWarning, fontWeight = FontWeight.Medium)
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
 
         // 1. Primary Inputs: PAN & Age Category (Instantly visible & accessible)
         SmartIndividualPanField(
