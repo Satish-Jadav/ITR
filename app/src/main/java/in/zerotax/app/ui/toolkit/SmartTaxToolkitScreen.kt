@@ -86,6 +86,7 @@ fun SmartTaxToolkitScreen(
     tdsClaimed: Long,
     onBack: () -> Unit,
     viewModel: `in`.zerotax.app.viewmodel.ZeroTaxViewModel? = null,
+    showTopBar: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     androidx.activity.compose.BackHandler(onBack = onBack)
@@ -93,9 +94,10 @@ fun SmartTaxToolkitScreen(
     val liveUiState = viewModel?.uiState?.collectAsState()?.value
     var selectedTab by remember { mutableStateOf(ToolkitTab.HRA_OPTIMIZER) }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        if (showTopBar) {
             ZeroTaxTopAppBar(
                 title = "Smart Tax Toolkit",
                 subtitle = "Statutory Calculators & Optimization Engines",
@@ -105,14 +107,9 @@ fun SmartTaxToolkitScreen(
                 badgeTone = BadgeTone.SUCCESS
             )
         }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            // Horizontal Tab Navigation
-            ScrollableTabRow(
+
+        // Horizontal Tab Navigation
+        ScrollableTabRow(
                 selectedTabIndex = selectedTab.ordinal,
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = EnterpriseTeal600,
@@ -176,7 +173,6 @@ fun SmartTaxToolkitScreen(
             }
         }
     }
-}
 
 // ============================================================================
 // 1. HRA EXEMPTION OPTIMIZER & RENT RECEIPTS GENERATOR (RULE 2A)

@@ -105,9 +105,9 @@ fun SmartTransactionSuggestionsView(
         bottomBar = {
             Surface(
                 color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 4.dp,
+                tonalElevation = 2.dp,
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
-                modifier = Modifier.navigationBarsPadding()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier

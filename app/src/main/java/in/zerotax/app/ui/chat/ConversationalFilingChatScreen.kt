@@ -64,6 +64,7 @@ fun ConversationalFilingChatScreen(
     onBack: () -> Unit,
     onProceedToFullReview: (grossSalary: Long, netTaxableSalary: Long, taxLiability: Long, totalDeductions: Long, refundDue: Long) -> Unit,
     viewModel: ZeroTaxViewModel? = null,
+    showTopBar: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     androidx.activity.compose.BackHandler(onBack = onBack)
@@ -151,9 +152,12 @@ fun ConversationalFilingChatScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
+    val isDark = isSystemInDarkTheme()
+
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        if (showTopBar) {
             ZeroTaxTopAppBar(
                 title = "ZeroTax AI Copilot",
                 subtitle = "Interactive Filing • Cloud Tax AI",
@@ -162,297 +166,106 @@ fun ConversationalFilingChatScreen(
                 badgeText = "Cloud AI",
                 badgeTone = BadgeTone.SUCCESS
             )
-        },
-        bottomBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 4.dp,
-                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)),
-                modifier = Modifier.imePadding().navigationBarsPadding()
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    // Quick Action Review Button when ready
-                    if (isReadyForReview) {
-                        Button(
-                            onClick = { showChatFinalApprovalDialog = true },
-                            shape = RoundedCornerShape(4.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = ButtonSuccessBg,
-                                contentColor = ButtonSuccessText
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(44.dp)
-                        ) {
-                            Text(
-                                text = "Review All Points & Submit to ITR Portal →",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-                        }
-                        Spacer(Modifier.height(8.dp))
-                    }
+        }
 
-                    // Context-Aware Dynamic Prompt Starters
-                    val dynamicPrompts = if (gross > 0L) {
-                        listOf(
-                            "Compare Regimes for Me",
-                            "Simulate ₹50k NPS 80CCD(1B)",
-                            "What if ₹25k Health Insurance 80D?",
-                            "Can I Claim HRA & Home Loan Both?",
-                            "Restructure CTC with 14% NPS"
-                        )
-                    } else {
-                        listOf(
-                            "Auto-Find Form 16 & Tax PDFs",
-                            "1-Tap Sync AIS & 26AS",
-                            "Which Regime is Better for Me?",
-                            "How to Save More Tax?",
-                            "80D Health Insurance Limits"
+        // Live Real-Time Return Snapshot Card (Modern Elevated Surface)
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
+            shape = RoundedCornerShape(14.dp),
+            color = if (isDark) Slate850 else PureWhite,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate200),
+            shadowElevation = if (isDark) 0.dp else 2.dp
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Gross Income", style = MaterialTheme.typography.labelSmall, color = Slate400)
+                        Text(
+                            text = Rupee(gross).toString(),
+                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.5.sp, color = if (isDark) PureWhite else Slate900)
                         )
                     }
-
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 6.dp)
-                    ) {
-                        items(dynamicPrompts) { prompt ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                                    .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
-                                    .clickable { handleSend(prompt) }
-                                    .padding(horizontal = 8.dp, vertical = 3.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Lightbulb,
-                                        contentDescription = null,
-                                        tint = EnterpriseTeal600,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(
-                                        text = prompt,
-                                        style = TextStyle(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Quick Reply Chips from latest message
-                    val latestQuickReplies = messages.lastOrNull { it.sender == ChatSender.BOT }?.quickReplies.orEmpty()
-                    if (latestQuickReplies.isNotEmpty()) {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp)
-                        ) {
-                            items(latestQuickReplies) { reply ->
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(MaterialTheme.colorScheme.primaryContainer)
-                                        .border(0.75.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-                                        .clickable {
-                                            if (reply.contains("Review All Points") || reply.contains("Submit", ignoreCase = true) || reply.contains("Final Approval", ignoreCase = true)) {
-                                                showChatFinalApprovalDialog = true
-                                            } else if (reply == "Apply to My Return") {
-                                                val latestCard = messages.findLast { it.actionCard is CopilotActionCardData.WhatIfResult }?.actionCard as? CopilotActionCardData.WhatIfResult
-                                                if (latestCard != null) {
-                                                    val sim = latestCard.result
-                                                    val deltas = sim.appliedDeltas
-                                                    if (deltas.sec80CRupees > 0L) {
-                                                        viewModel?.onSection80CChanged(deltas.sec80CRupees)
-                                                    }
-                                                    if (deltas.sec80DSelfRupees > 0L) {
-                                                        viewModel?.onSection80DChanged(deltas.sec80DSelfRupees)
-                                                    }
-                                                    if (deltas.nps80CCD1BRupees > 0L) {
-                                                        viewModel?.onSection80CCD1BChanged(deltas.nps80CCD1BRupees)
-                                                    }
-                                                    viewModel?.selectTaxRegime(sim.recommendedRegime)
-                                                }
-                                                handleSend("Applied recommended optimizations to my live return.")
-                                            } else {
-                                                handleSend(reply)
-                                            }
-                                        }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                                ) {
-                                    Text(
-                                        text = reply,
-                                        style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.SemiBold)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Text Input Bar
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            onClick = { docPickerLauncher.launch(arrayOf("application/pdf", "image/*")) },
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AttachFile,
-                                contentDescription = "Attach Document",
-                                tint = EnterpriseTeal600,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        Spacer(Modifier.width(8.dp))
-
-                        OutlinedTextField(
-                            value = inputText,
-                            onValueChange = { inputText = it },
-                            placeholder = {
-                                Text(
-                                    "Ask Copilot (e.g. NPS, 80C)...",
-                                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
-                                )
-                            },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(4.dp),
-                            singleLine = true,
-                            textStyle = MaterialTheme.typography.bodyMedium
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Deductions", style = MaterialTheme.typography.labelSmall, color = Slate400)
+                        Text(
+                            text = Rupee(deductions).toString(),
+                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.5.sp, color = if (isDark) IndigoStatutoryDark else IndigoStatutory)
                         )
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("Net Refund Due", style = MaterialTheme.typography.labelSmall, color = Slate400)
+                        Text(
+                            text = Rupee(refundDue).toString(),
+                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.5.sp, color = if (isDark) EnterpriseTeal300 else EmeraldSuccess)
+                        )
+                    }
+                }
 
-                        Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.height(8.dp))
+                val recRegime = uiState?.let {
+                    if (it.newRegimeResult.totalTaxLiabilityRounded288B <= it.oldRegimeResult.totalTaxLiabilityRounded288B) "New Regime (u/s 115BAC)" else "Old Regime"
+                } ?: fallbackBot.snapshot.recommendedRegime
+                val saved = uiState?.let {
+                    kotlin.math.abs(it.newRegimeResult.totalTaxLiabilityRounded288B - it.oldRegimeResult.totalTaxLiabilityRounded288B)
+                } ?: fallbackBot.snapshot.taxSavedByRecommendedRegime
 
-                        IconButton(
-                            onClick = { handleSend(inputText) },
-                            enabled = inputText.isNotBlank() && !isBotThinking,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(if (inputText.isNotBlank() && !isBotThinking) EnterpriseTeal600 else MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = "Send",
-                                tint = if (inputText.isNotBlank() && !isBotThinking) PureWhite else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isDark) EnterpriseTeal900.copy(alpha = 0.5f) else EnterpriseTeal50)
+                        .border(0.5.dp, EnterpriseTeal500.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal700,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = "Optimal: $recRegime",
+                            style = TextStyle(fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal200 else EnterpriseTeal900)
+                        )
+                    }
+                    if (saved > 0L) {
+                        Text(
+                            text = "Saves ₹${Rupee.formatInr(saved)}",
+                            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal300 else EmeraldSuccess)
+                        )
                     }
                 }
             }
         }
-    ) { innerPadding ->
-        Column(
+
+        // Chat Message Stream
+        LazyColumn(
+            state = listState,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp),
+            contentPadding = PaddingValues(top = 4.dp, bottom = 12.dp)
         ) {
-            // Live Real-Time Return Snapshot Card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text("Gross Income", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                text = Rupee(gross).toString(),
-                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
-                            )
-                        }
-                        Column {
-                            Text("Deductions Claimed", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                text = Rupee(deductions).toString(),
-                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (isSystemInDarkTheme()) IndigoStatutoryDark else IndigoStatutory)
-                            )
-                        }
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text("Net Refund Due", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                text = Rupee(refundDue).toString(),
-                                style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (isSystemInDarkTheme()) EnterpriseTeal300 else EmeraldSuccess)
-                            )
-                        }
-                    }
-
-                    Spacer(Modifier.height(6.dp))
-                    val recRegime = uiState?.let {
-                        if (it.newRegimeResult.totalTaxLiabilityRounded288B <= it.oldRegimeResult.totalTaxLiabilityRounded288B) "New Regime (u/s 115BAC)" else "Old Regime"
-                    } ?: fallbackBot.snapshot.recommendedRegime
-                    val saved = uiState?.let {
-                        kotlin.math.abs(it.newRegimeResult.totalTaxLiabilityRounded288B - it.oldRegimeResult.totalTaxLiabilityRounded288B)
-                    } ?: fallbackBot.snapshot.taxSavedByRecommendedRegime
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text(
-                                text = "Recommended: $recRegime",
-                                style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                            )
-                        }
-                        if (saved > 0L) {
-                            Text(
-                                text = "Saves ₹${Rupee.formatInr(saved)}",
-                                style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSystemInDarkTheme()) EnterpriseTeal300 else EmeraldSuccess)
-                            )
-                        }
-                    }
-                }
+            // WhatsApp-Style End-to-End Encryption Banner at top of chat
+            item {
+                WhatsAppEndToEndEncryptionBanner(
+                    onClick = { showTrustModal = true },
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    customText = "🔒 Messages & tax calculations are end-to-end encrypted. No one outside of this chat, not even ZeroTax, can read them. Tap to verify."
+                )
             }
-
-            // Chat Message Stream
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
-                // WhatsApp-Style End-to-End Encryption Banner at top of chat
-                item {
-                    WhatsAppEndToEndEncryptionBanner(
-                        onClick = { showTrustModal = true },
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        customText = "🔒 Messages & tax calculations are end-to-end encrypted. No one outside of this chat, not even ZeroTax, can read them. Tap to verify."
-                    )
-                }
 
                 // Turn 0: Sync-First Gate Card (Strict statutory rule: zero guessed figures before sync)
                 if (gross == 0L) {
@@ -507,6 +320,161 @@ fun ConversationalFilingChatScreen(
                 if (isBotThinking) {
                     item {
                         PulsingTypingIndicator()
+                    }
+                }
+            }
+
+        // Floating Bottom Actions & Modern Input Pill
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 2.dp,
+            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth().imePadding()
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // Quick Action Review Button when ready
+                if (isReadyForReview) {
+                    Button(
+                        onClick = { showChatFinalApprovalDialog = true },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = EmeraldSuccess,
+                            contentColor = PureWhite
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = PureWhite,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Review All Points & Submit to ITR Portal →",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                }
+
+                // Single consolidated prompt suggestions row
+                val allPrompts = remember(gross, messages.size) {
+                    val dynamic = if (gross > 0L) {
+                        listOf(
+                            "⚡ Compare Regimes",
+                            "💡 Simulate ₹50k NPS",
+                            "🏥 ₹25k Health Ins 80D",
+                            "🏠 HRA vs Home Loan",
+                            "📊 Restructure CTC 14% NPS"
+                        )
+                    } else {
+                        listOf(
+                            "📄 Auto-Find Form 16",
+                            "🔄 1-Tap Sync AIS & 26AS",
+                            "⚡ Which Regime is Better?",
+                            "💡 Maximize Deductions",
+                            "🏥 80D Limits"
+                        )
+                    }
+                    val replies = messages.lastOrNull { it.sender == ChatSender.BOT }?.quickReplies.orEmpty()
+                    (replies + dynamic).distinct()
+                }
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(allPrompts) { prompt ->
+                        val cleanPrompt = prompt.replace("⚡ ", "").replace("💡 ", "").replace("🏥 ", "").replace("🏠 ", "").replace("📊 ", "").replace("📄 ", "").replace("🔄 ", "")
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (isDark) Slate800 else Slate100,
+                            border = androidx.compose.foundation.BorderStroke(0.75.dp, if (isDark) Slate700 else Slate300),
+                            modifier = Modifier.clickable {
+                                if (cleanPrompt.contains("Review All Points") || cleanPrompt.contains("Submit", ignoreCase = true) || cleanPrompt.contains("Final Approval", ignoreCase = true)) {
+                                    showChatFinalApprovalDialog = true
+                                } else {
+                                    handleSend(cleanPrompt)
+                                }
+                            }
+                        ) {
+                            Text(
+                                text = prompt,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                style = TextStyle(fontSize = 11.sp, color = if (isDark) Slate200 else Slate700, fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
+                }
+
+                // Ergonomic Pill Input Field
+                Surface(
+                    shape = RoundedCornerShape(26.dp),
+                    color = if (isDark) Slate850 else PureWhite,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = { docPickerLauncher.launch(arrayOf("application/pdf", "image/*")) },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AttachFile,
+                                contentDescription = "Attach Document",
+                                tint = EnterpriseTeal500,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        TextField(
+                            value = inputText,
+                            onValueChange = { inputText = it },
+                            placeholder = {
+                                Text(
+                                    "Ask Copilot (e.g. NPS, 80C, HRA)...",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Slate400)
+                                )
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent
+                            ),
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(color = if (isDark) PureWhite else Slate900)
+                        )
+
+                        val canSend = inputText.isNotBlank() && !isBotThinking
+                        IconButton(
+                            onClick = { handleSend(inputText) },
+                            enabled = canSend,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(if (canSend) EnterpriseTeal600 else if (isDark) Slate800 else Slate200)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = "Send",
+                                tint = if (canSend) PureWhite else Slate400,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -705,35 +673,33 @@ fun ChatBubbleItem(
         }
 
         Column(
-            modifier = Modifier.widthIn(max = 310.dp),
+            modifier = Modifier.widthIn(max = 320.dp),
             horizontalAlignment = if (isBot) Alignment.Start else Alignment.End
         ) {
-            Card(
+            val isDark = isSystemInDarkTheme()
+            Surface(
                 shape = RoundedCornerShape(
-                    topStart = if (isBot) 2.dp else 12.dp,
-                    topEnd = if (isBot) 12.dp else 2.dp,
-                    bottomStart = 12.dp,
-                    bottomEnd = 12.dp
+                    topStart = if (isBot) 4.dp else 16.dp,
+                    topEnd = if (isBot) 16.dp else 4.dp,
+                    bottomStart = 16.dp,
+                    bottomEnd = 16.dp
                 ),
-                colors = CardDefaults.cardColors(
-                    containerColor = when {
-                        !isBot -> EnterpriseTeal600
-                        message.isAdvisorTip -> if (isSystemInDarkTheme()) AmberWarningBgDark else AmberWarningBg
-                        else -> MaterialTheme.colorScheme.surface
+                color = when {
+                    !isBot -> EnterpriseTeal700
+                    message.isAdvisorTip -> if (isDark) AmberWarningBgDark else AmberWarningBg
+                    else -> if (isDark) Slate850 else PureWhite
+                },
+                border = androidx.compose.foundation.BorderStroke(
+                    width = 1.dp,
+                    color = when {
+                        !isBot -> EnterpriseTeal800
+                        message.isAdvisorTip -> if (isDark) AmberWarningDark.copy(alpha = 0.5f) else AmberWarning.copy(alpha = 0.5f)
+                        else -> if (isDark) Slate700 else Slate200
                     }
                 ),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    width = 0.5.dp,
-                    brush = androidx.compose.ui.graphics.SolidColor(
-                        when {
-                            !isBot -> EnterpriseTeal700
-                            message.isAdvisorTip -> if (isSystemInDarkTheme()) AmberWarningDark else AmberWarning
-                            else -> MaterialTheme.colorScheme.outlineVariant
-                        }
-                    )
-                )
+                shadowElevation = if (isDark) 0.dp else 1.5.dp
             ) {
-                Column(modifier = Modifier.padding(10.dp)) {
+                Column(modifier = Modifier.padding(12.dp)) {
                     if (message.isAdvisorTip) {
                         StatutoryBadge(text = "ZeroTax Copilot Guidance", tone = BadgeTone.SUCCESS)
                         Spacer(Modifier.height(4.dp))
