@@ -199,20 +199,20 @@ fun StatutoryBadge(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(50))
             .background(bgColor)
-            .border(0.5.dp, borderColor, RoundedCornerShape(4.dp))
-            .padding(horizontal = 5.dp, vertical = 1.5.dp),
+            .border(0.75.dp, borderColor, RoundedCornerShape(50))
+            .padding(horizontal = 7.dp, vertical = 2.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             if (showIndicatorDot && tone != BadgeTone.NEUTRAL) {
                 Box(
                     modifier = Modifier
-                        .size(4.dp)
+                        .size(4.5.dp)
                         .clip(CircleShape)
                         .background(textColor)
                 )
@@ -224,8 +224,8 @@ fun StatutoryBadge(
                 softWrap = false,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 9.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 0.2.sp
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.25.sp
                 )
             )
         }
@@ -379,31 +379,31 @@ fun EnterpriseTopHeader(
                     val (label, iconAndAction) = standardChips[index]
                     val (icon, action) = iconAndAction
                     Surface(
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(50),
                         color = chipBg,
-                        border = androidx.compose.foundation.BorderStroke(0.5.dp, chipBorder),
+                        border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(50))
                             .clickable { action() }
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
                                 tint = chipContent,
-                                modifier = Modifier.size(10.dp)
+                                modifier = Modifier.size(11.dp)
                             )
-                            Spacer(Modifier.width(3.dp))
+                            Spacer(Modifier.width(4.dp))
                             Text(
                                 text = label,
                                 style = TextStyle(
-                                    fontSize = 9.sp,
+                                    fontSize = 9.5.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = chipContent,
-                                    letterSpacing = 0.1.sp
+                                    letterSpacing = 0.15.sp
                                 )
                             )
                         }
@@ -1249,33 +1249,33 @@ fun ZeroTaxPrimaryButton(
 
     val buttonBrush = if (enabled && !isLoading) {
         if (containerColor != null) {
-            Brush.verticalGradient(listOf(containerColor, containerColor))
+            Brush.horizontalGradient(listOf(containerColor, containerColor))
         } else if (isDark) {
-            Brush.verticalGradient(listOf(EnterpriseTeal500, EnterpriseTeal700))
+            Brush.horizontalGradient(listOf(EnterpriseTeal500, Color(0xFF14B8A6)))
         } else {
-            Brush.verticalGradient(listOf(EnterpriseTeal600, EnterpriseTeal800))
+            Brush.horizontalGradient(listOf(EnterpriseTeal600, Color(0xFF0D9488)))
         }
     } else {
-        Brush.verticalGradient(listOf(disabledContainer, disabledContainer))
+        Brush.horizontalGradient(listOf(disabledContainer, disabledContainer))
     }
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .clickable(enabled = enabled && !isLoading, onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(14.dp),
         color = Color.Transparent,
-        shadowElevation = if (enabled && !isLoading) 2.5.dp else 0.dp
+        shadowElevation = if (enabled && !isLoading) 3.dp else 0.dp
     ) {
         Box(
             modifier = Modifier
                 .background(buttonBrush)
                 .border(
                     width = 0.75.dp,
-                    color = if (enabled && !isLoading) Color.White.copy(alpha = if (isDark) 0.22f else 0.32f) else Color.Transparent,
-                    shape = RoundedCornerShape(12.dp)
+                    color = if (enabled && !isLoading) Color.White.copy(alpha = if (isDark) 0.22f else 0.30f) else Color.Transparent,
+                    shape = RoundedCornerShape(14.dp)
                 )
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center
@@ -1346,9 +1346,9 @@ fun ZeroTaxOutlinedButton(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .clickable(enabled = enabled && !isLoading, onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(14.dp),
         color = surfaceColor,
         border = androidx.compose.foundation.BorderStroke(1.25.dp, effectiveBorderColor)
     ) {
@@ -1451,20 +1451,20 @@ fun ZeroTaxCard(
     modifier: Modifier = Modifier,
     accentBorderColor: Color? = null,
     containerColor: Color = MaterialTheme.colorScheme.surface,
-    shape: RoundedCornerShape = RoundedCornerShape(16.dp),
+    shape: RoundedCornerShape = RoundedCornerShape(18.dp),
     contentPadding: PaddingValues = PaddingValues(16.dp),
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-    val defaultBorderColor = if (isDark) Slate700.copy(alpha = 0.6f) else Slate200
+    val defaultBorderColor = if (isDark) Slate700.copy(alpha = 0.5f) else Slate200
     val effectiveBorderColor = accentBorderColor ?: defaultBorderColor
 
     val baseModifier = modifier
         .fillMaxWidth()
         .clip(shape)
         .border(
-            width = 1.dp,
+            width = 0.75.dp,
             color = effectiveBorderColor,
             shape = shape
         )
@@ -1478,7 +1478,7 @@ fun ZeroTaxCard(
         modifier = cardModifier,
         shape = shape,
         color = containerColor,
-        shadowElevation = if (isDark) 0.dp else 1.5.dp
+        shadowElevation = if (isDark) 0.dp else 2.dp
     ) {
         Column(
             modifier = Modifier.padding(contentPadding),
@@ -1513,13 +1513,13 @@ fun ZeroTaxActionCard(
     val effectiveIconBgColor = iconBgColor ?: if (isDark) Slate800 else EnterpriseTeal50
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         color = defaultBg,
-        shadowElevation = if (isDark) 0.dp else 1.5.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, defaultBorder),
+        shadowElevation = if (isDark) 0.dp else 2.dp,
+        border = androidx.compose.foundation.BorderStroke(0.75.dp, defaultBorder),
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
     ) {
         Row(
@@ -1536,16 +1536,16 @@ fun ZeroTaxActionCard(
                 Box(
                     modifier = Modifier
                         .size(46.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(14.dp))
                         .background(
                             Brush.linearGradient(
                                 listOf(effectiveIconBgColor, effectiveIconBgColor.copy(alpha = 0.65f))
                             )
                         )
                         .border(
-                            0.5.dp,
+                            0.75.dp,
                             effectiveIconTint.copy(alpha = 0.25f),
-                            RoundedCornerShape(12.dp)
+                            RoundedCornerShape(14.dp)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -1684,7 +1684,7 @@ fun ZeroTaxSectionHeader(
                     modifier = Modifier
                         .size(width = 4.dp, height = 18.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(EnterpriseTeal600)
+                        .background(Brush.verticalGradient(listOf(EnterpriseTeal500, EnterpriseTeal700)))
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(

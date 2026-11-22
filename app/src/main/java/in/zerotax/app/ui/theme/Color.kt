@@ -13,10 +13,10 @@ import androidx.compose.ui.graphics.Color
 // Single Source of Truth: update variables here to re-theme the entire application.
 // ============================================================================
 
-// Sovereign Neutral Slate Foundation (Adaptive)
-val Slate950 = Color(0xFF090D16) // Deepest backdrop
-val Slate900 = Color(0xFF0F172A) // Dark background / Primary text on light
-val Slate850 = Color(0xFF131D31) // Elevated dark card surface
+// Sovereign Neutral Slate Foundation (Modern High-Contrast Architecture)
+val Slate950 = Color(0xFF0A0F1D) // Deepest Midnight Obsidian backdrop
+val Slate900 = Color(0xFF0F172A) // Rich Charcoal / Primary text on light
+val Slate850 = Color(0xFF111827) // Elevated dark card surface
 val Slate800 = Color(0xFF1E293B) // Dark surface container
 val Slate700 = Color(0xFF334155) // Dark border / muted text on dark
 val Slate600 = Color(0xFF475569) // Secondary text
@@ -25,41 +25,41 @@ val Slate400 = Color(0xFF94A3B8) // Placeholder text / subtle borders
 val Slate300 = Color(0xFFCBD5E1) // Light card border
 val Slate200 = Color(0xFFE2E8F0) // Subtle dividers
 val Slate100 = Color(0xFFF1F5F9) // Light surface variant
-val Slate50  = Color(0xFFF8FAFC) // Primary light backdrop
+val Slate50  = Color(0xFFF8FAFC) // Primary light backdrop (clean porcelain)
 val PureWhite = Color(0xFFFFFFFF) // Clean high-contrast card surface
 
-// Professional British Racing / Deep Spruce Accent (Trust & Compliance)
-val EnterpriseTeal900 = Color(0xFF072726)
-val EnterpriseTeal800 = Color(0xFF0A3D3C)
-val EnterpriseTeal700 = Color(0xFF0D5452)
-val EnterpriseTeal600 = Color(0xFF0F766E) // Brand Primary
-val EnterpriseTeal500 = Color(0xFF14B8A6) // Interactive focus
-val EnterpriseTeal400 = Color(0xFF2DD4BF)
-val EnterpriseTeal300 = Color(0xFF5EEAD4)
-val EnterpriseTeal200 = Color(0xFF99F6E4)
-val EnterpriseTeal100 = Color(0xFFCCFBF1) // Success pill container
-val EnterpriseTeal50  = Color(0xFFF0FDFA) // Subtle highlight
+// Modern Luxury Emerald & Sovereign Spruce Accent System (Authoritative, Luminous & Modern)
+val EnterpriseTeal900 = Color(0xFF063326) // Deepest Luxury Spruce
+val EnterpriseTeal800 = Color(0xFF064E3B) // Deep Forest
+val EnterpriseTeal700 = Color(0xFF047857) // Rich British Racing Green
+val EnterpriseTeal600 = Color(0xFF059669) // Modern Vivid Emerald (Brand Primary)
+val EnterpriseTeal500 = Color(0xFF10B981) // Radiant Mint (Interactive CTA / Highlights)
+val EnterpriseTeal400 = Color(0xFF34D399) // Luminous Glow Accent
+val EnterpriseTeal300 = Color(0xFF6EE7B7) // Light Mint
+val EnterpriseTeal200 = Color(0xFFA7F3D0) // Soft Pastel Mint
+val EnterpriseTeal100 = Color(0xFFD1FAE5) // Delicate Tint Container
+val EnterpriseTeal50  = Color(0xFFF0FDF4) // Ultra-clean subtle highlight
 
-// Semantic Status Colors (Restrained, High-Contrast Statutory Badges)
-val EmeraldSuccess     = Color(0xFF047857) // Verified / Zero Discrepancy
+// Semantic Status Colors (High-Contrast, Vivid FinTech Badges)
+val EmeraldSuccess     = Color(0xFF059669) // Verified / Zero Discrepancy
 val EmeraldDark        = Color(0xFF064E3B)
 val EmeraldSuccessBg   = Color(0xFFECFDF5)
 val EmeraldSuccessBgDark = Color(0xFF064E3B)
 
-val AmberWarning       = Color(0xFFB45309) // Attention / Review Needed
+val AmberWarning       = Color(0xFFD97706) // Attention / Review Needed
 val AmberWarningBg     = Color(0xFFFFFBEB)
 val AmberWarningBgDark = Color(0xFF451A03)
 val AmberWarningDark   = Color(0xFFFDE68A)
 
-val CrimsonDanger      = Color(0xFF991B1B) // Section 270A Penalty / Critical Error
+val CrimsonDanger      = Color(0xFFDC2626) // Section 270A Penalty / Critical Error
 val CrimsonDangerBg    = Color(0xFFFEF2F2)
 val CrimsonDangerBgDark = Color(0xFF450A0A)
 val CrimsonDangerDark  = Color(0xFFFCA5A5)
 
-val IndigoStatutory    = Color(0xFF1E40AF) // Statutory Act / Clause Ref
-val IndigoStatutoryDark = Color(0xFF93C5FD) // Muted Steel Blue
-val IndigoStatutoryBg  = Color(0xFFEFF6FF)
-val IndigoStatutoryBgDark = Color(0xFF172554)
+val IndigoStatutory    = Color(0xFF4338CA) // Modern Electric Indigo Act / Clause Ref
+val IndigoStatutoryDark = Color(0xFF818CF8) // Radiant Indigo
+val IndigoStatutoryBg  = Color(0xFFEEF2FF)
+val IndigoStatutoryBgDark = Color(0xFF1E1B4B)
 
 // Unified Single-Source Palette Tokens (Mapped directly to the primary design variables)
 val PalettePrimary = EnterpriseTeal700      // Primary Text & Accents

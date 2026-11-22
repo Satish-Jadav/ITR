@@ -1605,26 +1605,28 @@ fun FilingTierSelectorCard(
         ) {
             plans.forEach { plan ->
                 val isSelected = currentTier == plan.tier
+                val isDark = androidx.compose.foundation.isSystemInDarkTheme()
                 Surface(
                     modifier = Modifier
                         .weight(1f)
                         .clickable { onTierSelected(plan.tier) },
-                    shape = RoundedCornerShape(8.dp),
-                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(14.dp),
+                    color = if (isSelected) (if (isDark) Slate800 else EnterpriseTeal50) else (if (isDark) Slate850 else PureWhite),
+                    shadowElevation = if (isSelected && !isDark) 2.dp else 0.dp,
                     border = androidx.compose.foundation.BorderStroke(
-                        if (isSelected) 1.5.dp else 0.5.dp,
-                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                        if (isSelected) 1.5.dp else 0.75.dp,
+                        if (isSelected) EnterpriseTeal600 else (if (isDark) Slate700 else Slate200)
                     )
                 ) {
                     Column(
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
                             imageVector = plan.icon,
                             contentDescription = null,
-                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
+                            tint = if (isSelected) EnterpriseTeal600 else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
@@ -1634,9 +1636,9 @@ fun FilingTierSelectorCard(
                                 FilingTierMode.ENTERPRISE_AUDIT -> "Audit"
                             },
                             style = TextStyle(
-                                fontSize = 11.sp,
+                                fontSize = 11.5.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                color = if (isSelected) EnterpriseTeal700 else MaterialTheme.colorScheme.onSurface
                             ),
                             maxLines = 1
                         )

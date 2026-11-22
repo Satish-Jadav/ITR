@@ -359,7 +359,7 @@ fun ZeroTaxFourTapSpineScaffold(
             if (uiState.currentTap == null) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp
+                    tonalElevation = 3.dp
                 ) {
                     val icons = mapOf(
                         WorkspaceTab.Filing to Icons.Default.AccountBalance,
@@ -377,7 +377,7 @@ fun ZeroTaxFourTapSpineScaffold(
                                 Text(
                                     text = tab.title,
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
                                 )
                             },
@@ -389,11 +389,11 @@ fun ZeroTaxFourTapSpineScaffold(
                                 )
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = if (isDarkNav) Slate800 else PaletteMuted,
-                                selectedIconColor = if (isDarkNav) PaletteBackground else PalettePrimary,
-                                selectedTextColor = if (isDarkNav) PaletteBackground else PalettePrimary,
-                                unselectedIconColor = if (isDarkNav) Slate400 else PaletteSecondary,
-                                unselectedTextColor = if (isDarkNav) Slate400 else PaletteSecondary
+                                indicatorColor = if (isDarkNav) Slate800 else EnterpriseTeal100.copy(alpha = 0.7f),
+                                selectedIconColor = if (isDarkNav) EnterpriseTeal300 else EnterpriseTeal700,
+                                selectedTextColor = if (isDarkNav) EnterpriseTeal300 else EnterpriseTeal700,
+                                unselectedIconColor = if (isDarkNav) Slate400 else Slate500,
+                                unselectedTextColor = if (isDarkNav) Slate400 else Slate500
                             )
                         )
                     }

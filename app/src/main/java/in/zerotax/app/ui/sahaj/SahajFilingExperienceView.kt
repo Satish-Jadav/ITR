@@ -84,9 +84,10 @@ fun SahajFilingExperienceView(
 
         // 1-TAP IN-APP ITD PORTAL SYNC CARD
         Surface(
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(16.dp),
             color = getTealHighlightBg(),
-            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500),
+            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500.copy(alpha = 0.5f)),
+            shadowElevation = 1.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onOpenPortalSync() }
@@ -180,14 +181,15 @@ fun SahajFilingExperienceView(
         // HERO OUTCOME CARD: Clean, Plain-Language Result
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(
                 containerColor = if (refundDue > 0) EmeraldSuccess.copy(alpha = 0.08f) else EnterpriseTeal50
             ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             border = CardDefaults.outlinedCardBorder().copy(
-                width = 1.5.dp,
+                width = 1.25.dp,
                 brush = androidx.compose.ui.graphics.SolidColor(
-                    if (refundDue > 0) EmeraldSuccess else EnterpriseTeal600
+                    if (refundDue > 0) EmeraldSuccess.copy(alpha = 0.6f) else EnterpriseTeal600.copy(alpha = 0.6f)
                 )
             )
         ) {

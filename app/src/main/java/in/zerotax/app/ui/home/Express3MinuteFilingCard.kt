@@ -59,15 +59,15 @@ fun Express3MinuteFilingCard(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(18.dp))
             .border(
                 width = 1.25.dp,
                 brush = cardBorderBrush,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(18.dp)
             ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         color = if (isDark) Slate850 else PureWhite,
-        shadowElevation = if (isDark) 0.dp else 2.dp
+        shadowElevation = if (isDark) 0.dp else 2.5.dp
     ) {
         Column(
             modifier = Modifier.padding(18.dp),
