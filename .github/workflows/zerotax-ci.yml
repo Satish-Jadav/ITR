@@ -32,6 +32,12 @@ jobs:
       - name: Adapt Gradle properties for Linux Runner
         run: sed -i '/org.gradle.java.home/d' gradle.properties
 
+      - name: Pre-provision Android Debug Keystore
+        run: |
+          mkdir -p ~/.android ~/.config/.android
+          keytool -genkeypair -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          cp ~/.android/debug.keystore ~/.config/.android/debug.keystore || true
+
       - name: Verify Pure-JVM Architectural Firewall in :core:tax-engine
         run: |
           if grep -rnE "import (android\.|androidx\.|com\.google\.ai\.edge\.aicore)" core/tax-engine/src/main/; then
@@ -101,9 +107,7 @@ jobs:
 
       - name: Distribute Release APK to Client via Firebase
         uses: wzieba/Firebase-Distribution-Github-Action@v1
-        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && env.FIREBASE_READY == 'true'
-        env:
-          FIREBASE_READY: ${{ secrets.FIREBASE_APP_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && secrets.FIREBASE_APP_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT != ''
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

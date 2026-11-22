@@ -106,17 +106,47 @@ android {
             val keyPass = System.getenv("RELEASE_KEY_PASSWORD")
                 ?: keystoreProperties.getProperty("keyPassword")
 
+            val debugKeystore = signingConfigs.getByName("debug").storeFile
             if (!keyStorePath.isNullOrBlank() && file(keyStorePath).exists()) {
                 storeFile = file(keyStorePath)
                 storePassword = storePass
                 keyAlias = alias
                 keyPassword = keyPass
-            } else {
-                // Secure fallback for local and CI environments without production signing secrets
-                storeFile = signingConfigs.getByName("debug").storeFile
+            } else if (debugKeystore != null && debugKeystore.exists()) {
+                storeFile = debugKeystore
                 storePassword = signingConfigs.getByName("debug").storePassword
                 keyAlias = signingConfigs.getByName("debug").keyAlias
                 keyPassword = signingConfigs.getByName("debug").keyPassword
+            } else {
+                // Provision a valid keystore for headless CI runners where debug.keystore is not pre-created
+                val ciKeystore = rootProject.file("build/ci-debug.keystore")
+                if (!ciKeystore.exists()) {
+                    ciKeystore.parentFile?.mkdirs()
+                    try {
+                        ProcessBuilder(
+                            "keytool", "-genkeypair", "-v",
+                            "-keystore", ciKeystore.absolutePath,
+                            "-storepass", "android",
+                            "-alias", "androiddebugkey",
+                            "-keypass", "android",
+                            "-keyalg", "RSA",
+                            "-keysize", "2048",
+                            "-validity", "10000",
+                            "-dname", "CN=Android Debug,O=Android,C=US"
+                        ).start().waitFor()
+                    } catch (_: Exception) {}
+                }
+                if (ciKeystore.exists()) {
+                    storeFile = ciKeystore
+                    storePassword = "android"
+                    keyAlias = "androiddebugkey"
+                    keyPassword = "android"
+                } else {
+                    storeFile = debugKeystore
+                    storePassword = signingConfigs.getByName("debug").storePassword
+                    keyAlias = signingConfigs.getByName("debug").keyAlias
+                    keyPassword = signingConfigs.getByName("debug").keyPassword
+                }
             }
         }
     }
