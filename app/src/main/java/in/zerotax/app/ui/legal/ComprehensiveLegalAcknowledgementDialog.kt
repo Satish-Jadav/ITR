@@ -194,18 +194,10 @@ fun ComprehensiveLegalAcknowledgementDialog(
                 Spacer(Modifier.height(14.dp))
 
                 // Action Buttons
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        shape = RoundedCornerShape(4.dp),
-                        modifier = Modifier.weight(1f).height(44.dp)
-                    ) {
-                        Text("Cancel", style = MaterialTheme.typography.labelMedium)
-                    }
-
                     Button(
                         onClick = {
                             val computedHash = CanonicalWarningHasher.computeSha256(statutoryLegalText)
@@ -213,16 +205,30 @@ fun ComprehensiveLegalAcknowledgementDialog(
                             onAcknowledgeAndAccept(computedHash, timestamp)
                         },
                         enabled = allAccepted,
-                        shape = RoundedCornerShape(4.dp),
+                        shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (allAccepted) EnterpriseTeal600 else Slate300
+                            containerColor = if (allAccepted) EnterpriseTeal600 else Slate400,
+                            contentColor = PureWhite
                         ),
-                        modifier = Modifier.weight(2f).height(44.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 48.dp)
                     ) {
                         Text(
                             text = if (allAccepted) "I Solemnly Acknowledge & Accept Terms →" else "Check All 4 Clauses to Proceed",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
+                    }
+
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
+                    ) {
+                        Text("Cancel & Return", style = MaterialTheme.typography.labelMedium)
                     }
                 }
         }

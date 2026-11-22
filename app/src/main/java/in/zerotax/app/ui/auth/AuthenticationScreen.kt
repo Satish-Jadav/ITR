@@ -413,72 +413,7 @@ fun AuthenticationScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // CA / Auditor link
-            TextButton(
-                onClick = { showCaSection = !showCaSection }
-            ) {
-                Text(
-                    text = if (showCaSection) "Hide CA Portal" else "Looking for Tax Auditor / CA Portal?",
-                    style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-            }
-
-            // Expandable CA Auditor Portal Login Form
-            AnimatedVisibility(visible = showCaSection) {
-                val isDark = isSystemInDarkTheme()
-                val caHeaderColor = if (isDark) IndigoStatutoryDark else IndigoStatutory
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = if (isDark) IndigoStatutoryBgDark.copy(alpha = 0.6f) else IndigoStatutoryBg.copy(alpha = 0.6f)),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, IndigoStatutory.copy(alpha = 0.3f)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.AssignmentInd, contentDescription = null, tint = caHeaderColor, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("Chartered Accountant / Auditor Portal", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = caHeaderColor))
-                        }
-                        Spacer(Modifier.height(10.dp))
-
-                        OutlinedTextField(
-                            value = caMembershipInput,
-                            onValueChange = { caMembershipInput = it },
-                            label = { Text("ICAI 6-Digit Membership No.") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        Spacer(Modifier.height(8.dp))
-
-                        OutlinedTextField(
-                            value = caPasswordInput,
-                            onValueChange = { caPasswordInput = it },
-                            label = { Text("Auditor Portal Password") },
-                            singleLine = true,
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        Spacer(Modifier.height(14.dp))
-
-                        Button(
-                            onClick = onLaunchCaPortal,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = IndigoStatutory)
-                        ) {
-                            Text("Launch CA Auditor Suite")
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Privacy and cloud sync assurance badge at bottom
             Text(

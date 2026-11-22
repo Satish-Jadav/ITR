@@ -75,7 +75,7 @@ val PaletteBackground = Slate50             // Clean App Backdrop
 val ButtonPrimaryBg = EnterpriseTeal600
 val ButtonPrimaryBgDark = EnterpriseTeal500
 val ButtonPrimaryText = PureWhite
-val ButtonPrimaryTextDark = Slate950
+val ButtonPrimaryTextDark = PureWhite
 
 val ButtonSuccessBg = EmeraldSuccess
 val ButtonSuccessBgDark = Color(0xFF10B981)

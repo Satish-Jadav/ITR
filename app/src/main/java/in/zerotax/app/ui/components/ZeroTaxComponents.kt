@@ -1335,6 +1335,9 @@ fun ZeroTaxPrimaryButton(
                 }
                 Text(
                     text = text,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.labelLarge.copy(
                         color = if (enabled) effectiveContentColor else disabledContent,
                         fontWeight = FontWeight.Bold,
@@ -1408,6 +1411,9 @@ fun ZeroTaxOutlinedButton(
                 }
                 Text(
                     text = text,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.labelLarge.copy(
                         color = if (enabled) effectiveContentColor else disabledContentColor,
                         fontWeight = FontWeight.SemiBold,
