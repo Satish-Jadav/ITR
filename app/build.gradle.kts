@@ -43,6 +43,10 @@ android {
         }
     }
 
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:Adobe-*:UniCNS-*:UniGB-*:UniJIS-*:UniKS-*:GBK*"
+    }
+
     packaging {
         resources {
             excludes += listOf(
@@ -54,18 +58,15 @@ android {
                 "META-INF/proguard/*",
                 "/META-INF/{AL2.0,LGPL2.1}",
                 "DebugProbesKt.bin",
+                "META-INF/INDEX.LIST",
+                "META-INF/*.md",
+                "META-INF/*.txt",
+                "kotlin-tooling-metadata.json",
                 // Exclude unused BouncyCastle PQC and test properties (saves ~8.25MB uncompressed)
                 "org/bouncycastle/pqc/**",
                 "org/bouncycastle/x509/**",
                 "**/*.properties",
-                "**/*.proto",
-                // Exclude unused Asian CJK font mapping tables in PDFBox (saves ~2.5MB)
-                "assets/com/tom_roush/fontbox/resources/cmap/Adobe-Japan*",
-                "assets/com/tom_roush/fontbox/resources/cmap/Adobe-CNS*",
-                "assets/com/tom_roush/fontbox/resources/cmap/Adobe-GB*",
-                "assets/com/tom_roush/fontbox/resources/cmap/UniJIS*",
-                "assets/com/tom_roush/fontbox/resources/cmap/UniCNS*",
-                "assets/com/tom_roush/fontbox/resources/cmap/UniGB*"
+                "**/*.proto"
             )
         }
     }

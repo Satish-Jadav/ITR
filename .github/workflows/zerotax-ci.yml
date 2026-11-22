@@ -61,7 +61,10 @@ jobs:
           echo "Inspecting all generated build outputs:"
           find app/build/outputs -type f || true
 
-          APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | grep -i "release" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | grep -i "arm64-v8a-release" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | grep -i "release" | head -n 1)
+          fi
           if [ -z "$APK_PATH" ]; then
             APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | head -n 1)
           fi
@@ -71,8 +74,16 @@ jobs:
             exit 1
           fi
 
-          echo "Target Release APK for Firebase Distribution: $APK_PATH"
+          echo "Target Release APK for Client & Artifact: $APK_PATH"
           echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Smallest Release APK as GitHub Artifact
+        uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          name: zerotax-compact-release-apk
+          path: ${{ steps.find_apk.outputs.apk_path }}
+          retention-days: 14
 
       - name: Generate Proper Summary Release Notes
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -83,14 +94,16 @@ jobs:
           • Direct Zero-Cost In-App ITD Portal Bridge (eportal.incometax.gov.in)
           • Instant statutory PAN entity validation u/s 139A
           • Deprecations resolved, Chucker stripped for zero-overhead production binary
-          • R8 tree-shaking & code shrinking enabled
+          • R8 tree-shaking & full code shrinking enabled for minimal binary footprint
           EOF
           echo "Generated Firebase Release Notes:"
           cat release-notes.txt
 
       - name: Distribute Release APK to Client via Firebase
         uses: wzieba/Firebase-Distribution-Github-Action@v1
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && env.FIREBASE_READY == 'true'
+        env:
+          FIREBASE_READY: ${{ secrets.FIREBASE_APP_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

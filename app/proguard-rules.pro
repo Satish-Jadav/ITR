@@ -8,10 +8,19 @@
     @android.webkit.JavascriptInterface <methods>;
 }
 
-# PDFBox Android Parser
--keep class com.tom_roush.pdfbox.** { *; }
+# PDFBox Android Parser - Tree-shake unused fonts, 3D annotations & forms
+-dontwarn com.tom_roush.pdfbox.**
+-dontwarn com.tom_roush.fontbox.**
 -dontwarn com.gemalto.jp2.**
 -dontwarn org.bouncycastle.**
+-keep class com.tom_roush.pdfbox.android.PDFBoxResourceLoader { *; }
+-keep class com.tom_roush.pdfbox.pdmodel.PDDocument { *; }
+-keep class com.tom_roush.pdfbox.pdmodel.PDPage { *; }
+-keep class com.tom_roush.pdfbox.pdmodel.PDPageContentStream { *; }
+-keep class com.tom_roush.pdfbox.pdmodel.common.PDRectangle { *; }
+-keep class com.tom_roush.pdfbox.pdmodel.font.PDType1Font { *; }
+-keep class com.tom_roush.pdfbox.text.PDFTextStripper { *; }
+-keep class com.tom_roush.pdfbox.io.** { <init>(...); }
 
 # On-Device Android AICore
 -keep class com.google.ai.edge.aicore.** { *; }
