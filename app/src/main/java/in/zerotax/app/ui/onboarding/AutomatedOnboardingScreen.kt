@@ -200,7 +200,7 @@ private fun OnboardingTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = topInset, bottom = 10.dp, start = 16.dp, end = 16.dp),
+                .padding(top = topInset, bottom = 6.dp, start = 14.dp, end = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

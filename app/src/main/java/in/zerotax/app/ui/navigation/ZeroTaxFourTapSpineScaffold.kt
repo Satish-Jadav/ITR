@@ -295,7 +295,7 @@ fun ZeroTaxFourTapSpineScaffold(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = topInset, bottom = 8.dp, start = 16.dp, end = 16.dp),
+                            .padding(top = topInset, bottom = 4.dp, start = 14.dp, end = 14.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -670,7 +670,7 @@ private fun Stage1IdentityConsent(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
         // Real-Time System & ITD Portal Health Telemetry
         Row(
@@ -948,7 +948,7 @@ private fun Stage2DocumentDiscovery(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1253,7 +1253,7 @@ private fun Stage3Reconciliation(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1504,7 +1504,7 @@ private fun Stage4RegimeShowdown(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
         Text(
             text = "Step 4 of 4: Old vs New Regime Comparison",

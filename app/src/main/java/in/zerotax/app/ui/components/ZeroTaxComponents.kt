@@ -236,7 +236,8 @@ fun StatutoryBadge(
 fun getSafeStatusBarTopInset(): Dp {
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val cutoutPadding = WindowInsets.displayCutout.asPaddingValues().calculateTopPadding()
-    return maxOf(statusBarPadding, cutoutPadding, 48.dp) + 4.dp
+    val rawInset = maxOf(statusBarPadding, cutoutPadding)
+    return if (rawInset > 0.dp) rawInset else 24.dp
 }
 
 @Composable
@@ -268,7 +269,7 @@ fun EnterpriseTopHeader(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = topInset, bottom = 8.dp)
+                .padding(top = topInset, bottom = 4.dp)
         ) {
             // Blinkit-style Minimal Top Bar (Brand + Identity + Profile/Lock)
             Row(
@@ -350,7 +351,7 @@ fun EnterpriseTopHeader(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
 
             // Horizontally Scrollable Fast Actions Strip (Responsive on all screen sizes, never wraps or overflows)
             val isTopDark = isSystemInDarkTheme()
