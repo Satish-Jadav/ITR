@@ -894,6 +894,10 @@ class ZeroTaxViewModel : ViewModel() {
             if (ifscCode.isBlank()) ifscCode = bankObj.optString("ifscCode", "")
         }
 
+        val caObj = itdBundle.optJSONObject("caDetails") ?: itdBundle.optJSONObject("authorizedRepresentative")
+        val caMemFromBundle = caObj?.optString("membershipNo", caObj.optString("caMembershipNo", "")) ?: itdBundle.optString("caMembershipNo", "")
+        val caNameFromBundle = caObj?.optString("caName", caObj.optString("repName", "")) ?: itdBundle.optString("caName", "")
+
         _uiState.update { current ->
             current.copy(
                 grossSalaryRupees = if (extractedGrossSalary > 0L) extractedGrossSalary else current.grossSalaryRupees,
@@ -904,6 +908,8 @@ class ZeroTaxViewModel : ViewModel() {
                 section80CInvestments = if (sec80C > 0L) sec80C else current.section80CInvestments,
                 section80DSelf = if (sec80D > 0L) sec80D else current.section80DSelf,
                 section80CCD1BNps = if (sec80CCD1B > 0L) sec80CCD1B else current.section80CCD1BNps,
+                planSpecificCaMembership = if (caMemFromBundle.isNotBlank()) caMemFromBundle else current.planSpecificCaMembership,
+                planSpecificCaName = if (caNameFromBundle.isNotBlank()) caNameFromBundle else current.planSpecificCaName,
                 bankAccount = if (accountNumber.isNotBlank()) {
                     current.bankAccount.copy(
                         bankName = bankName.ifBlank { current.bankAccount.bankName },
@@ -925,10 +931,26 @@ class ZeroTaxViewModel : ViewModel() {
      * Applies live ITD portal sync data (TDS credits + Bank interest) directly into the return
      */
     fun applyPortalSyncData(totalTds: Long, totalInterest: Long, grossSalary: Long = 0L) {
+        val caMem = `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge.latestCapturedCaMembership.ifBlank {
+            `in`.zerotax.feature.portalbridge.ItdTransactionFetcher.attachedCaMembership
+        }
+        val caName = `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge.latestCapturedCaName.ifBlank {
+            `in`.zerotax.feature.portalbridge.ItdTransactionFetcher.attachedCaName
+        }
+        if (caMem.isNotBlank() || caName.isNotBlank()) {
+            _uiState.update { current ->
+                current.copy(
+                    planSpecificCaMembership = if (caMem.isNotBlank()) caMem else current.planSpecificCaMembership,
+                    planSpecificCaName = if (caName.isNotBlank()) caName else current.planSpecificCaName
+                )
+            }
+        }
         val bundle = JSONObject().apply {
             put("aggregateTdsCredit", totalTds)
             put("savingsInterest", totalInterest)
             put("aggregateGrossAmount", grossSalary)
+            if (caMem.isNotBlank()) put("caMembershipNo", caMem)
+            if (caName.isNotBlank()) put("caName", caName)
         }
         applyFullPortalAndAaSyncPayload(bundle)
     }
@@ -1267,8 +1289,10 @@ class ZeroTaxViewModel : ViewModel() {
                     }
                     if (!userPan.isNullOrBlank()) {
                         verifyPanWithItr(userPan)
+                        ZeroTaxAuthSecurityManager.linkPanToActiveUser(userPan)
                     }
                     syncRealtimeBackendData()
+                    syncVaultToApi()
                     restoreVaultFromApi()
                 },
                 onFailure = { error ->
@@ -1294,14 +1318,21 @@ class ZeroTaxViewModel : ViewModel() {
             result.fold(
                 onSuccess = { profile ->
                     ZeroTaxCloudApiBridge.activeAccessToken = "zt_access_${profile.uid}"
+                    val userPan = profile.primaryPanLinked
                     _uiState.update {
                         it.copy(
                             isAuthLoading = false,
                             authSessionState = AuthSessionState.Authenticated(profile),
-                            authErrorMessage = null
+                            authErrorMessage = null,
+                            pan = if (!userPan.isNullOrBlank()) userPan else it.pan,
+                            isPanVerifiedWithItr = !userPan.isNullOrBlank()
                         )
                     }
+                    if (!userPan.isNullOrBlank()) {
+                        verifyPanWithItr(userPan)
+                    }
                     syncRealtimeBackendData()
+                    syncVaultToApi()
                     restoreVaultFromApi()
                 },
                 onFailure = { error ->
@@ -1327,14 +1358,21 @@ class ZeroTaxViewModel : ViewModel() {
             result.fold(
                 onSuccess = { profile ->
                     ZeroTaxCloudApiBridge.activeAccessToken = "zt_access_${profile.uid}"
+                    val userPan = profile.primaryPanLinked
                     _uiState.update {
                         it.copy(
                             isAuthLoading = false,
                             authSessionState = AuthSessionState.Authenticated(profile),
-                            authErrorMessage = null
+                            authErrorMessage = null,
+                            pan = if (!userPan.isNullOrBlank()) userPan else it.pan,
+                            isPanVerifiedWithItr = !userPan.isNullOrBlank()
                         )
                     }
+                    if (!userPan.isNullOrBlank()) {
+                        verifyPanWithItr(userPan)
+                    }
                     syncRealtimeBackendData()
+                    syncVaultToApi()
                     restoreVaultFromApi()
                 },
                 onFailure = { error ->

@@ -1596,226 +1596,163 @@ fun FilingTierSelectorCard(
             StatutoryBadge(text = "AY 2026-27", tone = BadgeTone.NEUTRAL)
         }
 
-        plans.forEach { plan ->
-            val isSelected = currentTier == plan.tier
-            val isRecommended = recommendedTier == plan.tier
-
-            val borderColor = when {
-                isSelected -> MaterialTheme.colorScheme.primary
-                else -> MaterialTheme.colorScheme.outlineVariant
-            }
-            val containerColor = when {
-                isSelected -> MaterialTheme.colorScheme.primaryContainer
-                else -> MaterialTheme.colorScheme.surface
-            }
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .animateContentSize()
-                    .clickable { onTierSelected(plan.tier) },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = containerColor),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    width = if (isSelected) 2.dp else 1.dp,
-                    brush = androidx.compose.ui.graphics.SolidColor(borderColor)
-                )
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    // Header row: icon + title + badges
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+        // 3-way Segmented Tier Selector Row (Responsive across all screens)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            plans.forEach { plan ->
+                val isSelected = currentTier == plan.tier
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { onTierSelected(plan.tier) },
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                    border = androidx.compose.foundation.BorderStroke(
+                        if (isSelected) 1.5.dp else 0.5.dp,
+                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                    else MaterialTheme.colorScheme.surfaceVariant
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = plan.icon,
-                                contentDescription = null,
-                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(Modifier.width(10.dp))
-                        Column(modifier = Modifier.weight(1f)) {
+                        Icon(
+                            imageVector = plan.icon,
+                            contentDescription = null,
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = when (plan.tier) {
+                                FilingTierMode.SAHAJ_SIMPLE -> "Sahaj"
+                                FilingTierMode.INVESTOR_PRO -> "Investor"
+                                FilingTierMode.ENTERPRISE_AUDIT -> "Audit"
+                            },
+                            style = TextStyle(
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            ),
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+        }
+
+        // Selected Plan Detail Card (Clean, compact, responsive)
+        val selectedPlan = plans.firstOrNull { it.tier == currentTier } ?: plans.first()
+        var showFeatures by remember { mutableStateOf(false) }
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+                .animateContentSize(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = CardDefaults.outlinedCardBorder().copy(
+                width = 1.dp,
+                brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary)
+            )
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                // Header row: icon + title + income limit
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = selectedPlan.icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = plan.tier.title,
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                ),
+                                text = selectedPlan.tier.title,
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
-                            Text(
-                                text = plan.eligibility,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                        }
-                        Spacer(Modifier.width(6.dp))
-                        Column(horizontalAlignment = Alignment.End) {
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Selected",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                            if (isRecommended) {
-                                Spacer(Modifier.height(2.dp))
+                            if (recommendedTier == selectedPlan.tier) {
+                                Spacer(Modifier.width(6.dp))
                                 StatutoryBadge(text = "RECOMMENDED", tone = BadgeTone.SUCCESS)
                             }
                         }
+                        Text(
+                            text = selectedPlan.eligibility,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+                    ) {
+                        Text(
+                            text = selectedPlan.incomeLimit,
+                            style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSecondaryContainer),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
                     }
 
-                    Spacer(Modifier.height(10.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = if (showFeatures) "Hide features ▴" else "View features (${selectedPlan.features.size}) ▾",
+                        style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.clickable { showFeatures = !showFeatures }
+                    )
+                }
 
-                    // Income limit chip — always visible
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                        modifier = Modifier.wrapContentWidth()
-                    ) {
+                if (showFeatures) {
+                    Spacer(Modifier.height(8.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    Spacer(Modifier.height(6.dp))
+                    selectedPlan.features.forEach { feature ->
                         Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 1.5.dp),
+                            verticalAlignment = Alignment.Top
                         ) {
                             Icon(
-                                imageVector = Icons.Default.AccountBalance,
+                                imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(12.dp)
+                                tint = EmeraldSuccess,
+                                modifier = Modifier.size(12.dp).padding(top = 1.dp)
                             )
-                            Spacer(Modifier.width(4.dp))
+                            Spacer(Modifier.width(6.dp))
                             Text(
-                                text = plan.incomeLimit,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                ),
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                text = feature,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                        }
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    // Primary form tag row — always visible (no word-wrap)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
-                        ) {
-                            Text(
-                                text = plan.forms.firstOrNull() ?: "",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                ),
-                                color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-                                maxLines = 1
-                            )
-                        }
-                        if (!isSelected) {
-                            Text(
-                                text = "Tap to select →",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            )
-                        }
-                    }
-
-                    // Expanded detail — only for selected plan
-                    if (isSelected) {
-                        Spacer(Modifier.height(10.dp))
-
-                        // All forms in scrollable row
-                        if (plan.forms.size > 1) {
-                            Text(
-                                text = "All Forms Covered",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                items(plan.forms) { form ->
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
-                                    ) {
-                                        Text(
-                                            text = form,
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontWeight = FontWeight.SemiBold,
-                                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                            ),
-                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            Spacer(Modifier.height(10.dp))
-                        }
-
-                        // Key features list
-                        Text(
-                            text = "What's Covered",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        plan.features.forEach { feature ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 2.dp),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    tint = EmeraldSuccess,
-                                    modifier = Modifier.size(13.dp).padding(top = 1.dp)
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    text = feature,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
                         }
                     }
                 }

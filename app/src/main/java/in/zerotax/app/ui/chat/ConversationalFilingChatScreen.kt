@@ -174,7 +174,10 @@ fun ConversationalFilingChatScreen(
                                 )
                             },
                             shape = RoundedCornerShape(4.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = ButtonSuccessBg,
+                                contentColor = ButtonSuccessText
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(44.dp)
@@ -660,7 +663,10 @@ fun ChatBubbleItem(
                                     Button(
                                         onClick = { onApplyWhatIf?.invoke(card.result) },
                                         shape = RoundedCornerShape(4.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess),
+                                        colors = ButtonDefaults.buttonColors(
+                                containerColor = ButtonSuccessBg,
+                                contentColor = ButtonSuccessText
+                            ),
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(32.dp),

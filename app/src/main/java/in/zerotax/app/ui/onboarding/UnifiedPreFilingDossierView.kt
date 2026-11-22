@@ -476,8 +476,8 @@ fun UnifiedPreFilingDossierView(
                     onClick = onShareWithCa,
                     modifier = Modifier.weight(1f)
                 )
-                ZeroTaxOutlinedButton(
-                    text = "Open Full Workspace",
+                ZeroTaxPrimaryButton(
+                    text = "Open Workspace",
                     onClick = onProceedToWorkspace,
                     modifier = Modifier.weight(1f)
                 )

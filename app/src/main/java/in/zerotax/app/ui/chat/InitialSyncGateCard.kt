@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.IndianCurrencyFormatter
-import `in`.zerotax.app.ui.theme.EmeraldSuccess
+import `in`.zerotax.app.ui.theme.*
 import `in`.zerotax.app.viewmodel.ZeroTaxUiState
 
 /**
@@ -278,7 +278,10 @@ fun PostSyncDiagnosticCard(
             Button(
                 onClick = onProceedToFiling,
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ButtonSuccessBg,
+                    contentColor = ButtonSuccessText
+                ),
                 modifier = Modifier.fillMaxWidth().height(44.dp)
             ) {
                 Text(

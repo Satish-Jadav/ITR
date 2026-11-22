@@ -254,20 +254,51 @@ fun AuthenticationScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 4b. Biometric Vault Quick Unlock
-            ZeroTaxOutlinedButton(
-                text = "Biometric Vault Quick-Unlock",
-                onClick = onBiometricUnlock,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Fingerprint,
-                        contentDescription = null,
-                        tint = PalettePrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // 4b. Biometric Vault Quick Unlock - Activated only after first login enrollment
+            val hasEnrolledAccount = remember { `in`.zerotax.core.security.ZeroTaxAuthSecurityManager.hasCompletedFirstLogin() }
+            val enrolledRecord = remember { `in`.zerotax.core.security.ZeroTaxAuthSecurityManager.getLastEnrolledUser() }
+
+            if (hasEnrolledAccount) {
+                val enrolledTitle = enrolledRecord?.displayName?.ifBlank { enrolledRecord.pan } ?: "Enrolled Client"
+                ZeroTaxOutlinedButton(
+                    text = "Biometric Quick-Unlock ($enrolledTitle)",
+                    onClick = onBiometricUnlock,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Fingerprint,
+                            contentDescription = null,
+                            tint = PalettePrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = PalettePrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "First login required: Authenticate with Google or PAN/Email to activate hardware biometrics and link your data with ZeroTax Secure Cloud.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(14.dp))
 

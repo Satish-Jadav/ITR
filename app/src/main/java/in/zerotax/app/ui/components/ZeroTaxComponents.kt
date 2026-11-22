@@ -1430,8 +1430,8 @@ fun ZeroTaxPrimaryButton(
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     val isDark = isSystemInDarkTheme()
-    val effectiveContainerColor = containerColor ?: if (isDark) EnterpriseTeal500 else EnterpriseTeal600
-    val effectiveContentColor = contentColor ?: if (isDark) Slate950 else PureWhite
+    val effectiveContainerColor = containerColor ?: if (isDark) ButtonPrimaryBgDark else ButtonPrimaryBg
+    val effectiveContentColor = contentColor ?: if (isDark) ButtonPrimaryTextDark else ButtonPrimaryText
     val disabledContainer = if (isDark) Slate800 else Slate200
     val disabledContent = if (isDark) Slate500 else Slate400
 
@@ -1489,11 +1489,11 @@ fun ZeroTaxOutlinedButton(
 ) {
     val isDark = isSystemInDarkTheme()
     val effectiveBorderColor = borderColor ?: if (enabled) {
-        if (isDark) EnterpriseTeal500 else EnterpriseTeal600
+        if (isDark) ButtonOutlinedBorderDark else ButtonOutlinedBorder
     } else {
         if (isDark) Slate700 else Slate300
     }
-    val effectiveContentColor = contentColor ?: if (isDark) EnterpriseTeal300 else EnterpriseTeal600
+    val effectiveContentColor = contentColor ?: if (isDark) ButtonOutlinedTextDark else ButtonOutlinedText
     val disabledContentColor = if (isDark) Slate500 else Slate400
 
     OutlinedButton(
@@ -1542,6 +1542,10 @@ fun ZeroTaxSecondaryButton(
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null
 ) {
+    val isDark = isSystemInDarkTheme()
+    val secondaryBg = if (isDark) ButtonSecondaryBgDark else ButtonSecondaryBg
+    val secondaryText = if (isDark) ButtonSecondaryTextDark else ButtonSecondaryText
+
     Button(
         onClick = onClick,
         modifier = modifier
@@ -1550,10 +1554,10 @@ fun ZeroTaxSecondaryButton(
         enabled = enabled,
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = EnterpriseTeal50,
-            contentColor = EnterpriseTeal700,
-            disabledContainerColor = Slate100,
-            disabledContentColor = Slate400
+            containerColor = secondaryBg,
+            contentColor = secondaryText,
+            disabledContainerColor = if (isDark) Slate800 else Slate100,
+            disabledContentColor = if (isDark) Slate600 else Slate400
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {

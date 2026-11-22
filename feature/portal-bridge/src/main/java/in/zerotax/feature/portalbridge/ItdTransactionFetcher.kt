@@ -21,6 +21,9 @@ class ItdTransactionFetcher(
         // Thread-safe storage for transactions synced live from ITD session
         private val liveTransactions = java.util.Collections.synchronizedList(mutableListOf<AisTransactionRecord>())
         var databaseInstance: ZeroTaxVaultDatabase? = null
+        var attachedCaMembership: String = ""
+        var attachedCaName: String = ""
+        var attachedCaFirm: String = ""
 
         fun updateLiveTransactions(records: List<AisTransactionRecord>) {
             liveTransactions.clear()

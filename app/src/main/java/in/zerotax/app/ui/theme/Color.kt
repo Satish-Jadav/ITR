@@ -70,6 +70,28 @@ val PaletteMuted = Slate100                 // Subtle Pills & Backgrounds
 val PaletteBackground = Slate50             // Clean App Backdrop
 
 // ============================================================================
+// CENTRALIZED BUTTON THEME VARIABLES (Easily customizable across all screens)
+// ============================================================================
+val ButtonPrimaryBg = EnterpriseTeal600
+val ButtonPrimaryBgDark = EnterpriseTeal500
+val ButtonPrimaryText = PureWhite
+val ButtonPrimaryTextDark = Slate950
+
+val ButtonSuccessBg = EmeraldSuccess
+val ButtonSuccessBgDark = Color(0xFF10B981)
+val ButtonSuccessText = PureWhite
+
+val ButtonSecondaryBg = EnterpriseTeal50
+val ButtonSecondaryBgDark = EnterpriseTeal800
+val ButtonSecondaryText = EnterpriseTeal700
+val ButtonSecondaryTextDark = EnterpriseTeal100
+
+val ButtonOutlinedBorder = EnterpriseTeal600
+val ButtonOutlinedBorderDark = EnterpriseTeal500
+val ButtonOutlinedText = EnterpriseTeal600
+val ButtonOutlinedTextDark = EnterpriseTeal300
+
+// ============================================================================
 // ZERO TAX BRAND COLOR TOKENS (Single Source of Truth)
 // ============================================================================
 object ZeroTaxBrandColors {
@@ -124,4 +146,25 @@ fun getTealHighlightText(): Color = if (isSystemInDarkTheme()) EnterpriseTeal100
 
 @Composable
 fun getTealHighlightIcon(): Color = if (isSystemInDarkTheme()) EnterpriseTeal300 else EnterpriseTeal700
+
+@Composable
+fun getButtonPrimaryBg(): Color = if (isSystemInDarkTheme()) ButtonPrimaryBgDark else ButtonPrimaryBg
+
+@Composable
+fun getButtonPrimaryText(): Color = if (isSystemInDarkTheme()) ButtonPrimaryTextDark else ButtonPrimaryText
+
+@Composable
+fun getButtonSuccessBg(): Color = if (isSystemInDarkTheme()) ButtonSuccessBgDark else ButtonSuccessBg
+
+@Composable
+fun getButtonSecondaryBg(): Color = if (isSystemInDarkTheme()) ButtonSecondaryBgDark else ButtonSecondaryBg
+
+@Composable
+fun getButtonSecondaryText(): Color = if (isSystemInDarkTheme()) ButtonSecondaryTextDark else ButtonSecondaryText
+
+@Composable
+fun getButtonOutlinedBorder(): Color = if (isSystemInDarkTheme()) ButtonOutlinedBorderDark else ButtonOutlinedBorder
+
+@Composable
+fun getButtonOutlinedText(): Color = if (isSystemInDarkTheme()) ButtonOutlinedTextDark else ButtonOutlinedText
 

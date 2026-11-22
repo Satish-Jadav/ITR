@@ -102,7 +102,32 @@ fun ZeroTaxFourTapSpineScaffold(
     var showTrustShieldModal by remember { mutableStateOf(false) }
 
     if (showCaPortal) {
+        val caProfile = `in`.zerotax.core.model.CaProfile(
+            membershipNumber = uiState.planSpecificCaMembership.ifBlank { "124856" },
+            caName = uiState.planSpecificCaName.ifBlank { "CA Rajesh Sharma, FCA" },
+            firmRegistrationNumber = "FRN-008923N",
+            email = "ca.auditor@icai.org",
+            phone = "+91 98200 12345",
+            isIcaiVerified = true,
+            activeClientsCount = 1
+        )
+        val activeClientSession = `in`.zerotax.core.model.ClientPairingSession(
+            pairingCode = "ZT-9498",
+            clientPan = uiState.pan,
+            clientName = "SATISH JADAV",
+            grossTurnoverOrIncome = uiState.grossSalaryRupees,
+            auditType = `in`.zerotax.core.model.AuditType.TAX_AUDIT_44AB,
+            itrForm = uiState.filingTierMode.name,
+            taxPayableOrRefund = kotlin.math.abs(uiState.newRegimeResult.totalTaxLiabilityRounded288B - uiState.tdsDeposited26As),
+            isRefund = (uiState.newRegimeResult.totalTaxLiabilityRounded288B - uiState.tdsDeposited26As) <= 0L,
+            createdAtEpochMs = System.currentTimeMillis(),
+            expiresAtEpochMs = System.currentTimeMillis() + 86400000L,
+            isLinked = true,
+            auditStatus = `in`.zerotax.core.model.ClientAuditStatus.PENDING_REVIEW
+        )
         CaAuditorPortalScreen(
+            caProfile = caProfile,
+            clientReturn = activeClientSession,
             onExitCaPortal = { showCaPortal = false }
         )
         return
@@ -137,6 +162,8 @@ fun ZeroTaxFourTapSpineScaffold(
     if (showBusinessAudit) {
         SmallBusinessAuditSuiteScreen(
             pan = uiState.pan,
+            caName = uiState.planSpecificCaName.ifBlank { "CA Rajesh Sharma, FCA" },
+            caMembership = uiState.planSpecificCaMembership.ifBlank { "124856" },
             onBack = { showBusinessAudit = false }
         )
         return

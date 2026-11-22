@@ -48,6 +48,7 @@ fun CaAuditorPortalScreen(
         isIcaiVerified = true,
         activeClientsCount = 0
     ),
+    clientReturn: ClientPairingSession? = null,
     onExitCaPortal: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -61,8 +62,8 @@ fun CaAuditorPortalScreen(
     val coroutineScope = rememberCoroutineScope()
 
     // In-memory roster of client returns attached to this CA
-    var clientRoster by remember {
-        mutableStateOf(emptyList<ClientPairingSession>())
+    var clientRoster by remember(clientReturn) {
+        mutableStateOf(if (clientReturn != null) listOf(clientReturn) else emptyList<ClientPairingSession>())
     }
 
     Scaffold(

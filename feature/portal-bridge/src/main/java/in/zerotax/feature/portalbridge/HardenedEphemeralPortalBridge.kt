@@ -134,7 +134,15 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
 
             return deduped
         }
+
+        var latestCapturedCaMembership: String = ""
+        var latestCapturedCaName: String = ""
+        var latestCapturedCaFirm: String = ""
     }
+
+    var capturedCaMembership: String = ""
+    var capturedCaName: String = ""
+    var capturedCaFirm: String = ""
 
     @SuppressLint("SetJavaScriptEnabled")
     fun configureIsolatedWebView(webView: WebView, onProgress: ((Int) -> Unit)? = null) {
@@ -208,6 +216,47 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
         val results = mutableListOf<AisTransactionRecord>()
         try {
             val root = JSONObject(sanitizedJson)
+
+            // Extract Authorized Chartered Accountant (CA) details if attached to taxpayer account
+            val caArray = root.optJSONArray("caDetails")
+                ?: root.optJSONArray("authorizedRepresentative")
+                ?: root.optJSONArray("myCaList")
+                ?: root.optJSONObject("profile")?.optJSONArray("caDetails")
+            val caDirect = root.optJSONObject("caDetails")
+                ?: root.optJSONObject("authorizedRepresentative")
+                ?: root.optJSONObject("myCa")
+                ?: root.optJSONObject("profile")?.optJSONObject("caDetails")
+                ?: (if (caArray != null && caArray.length() > 0) caArray.optJSONObject(0) else null)
+
+            if (caDirect != null) {
+                val mem = caDirect.optString("membershipNo",
+                    caDirect.optString("caMembershipNo",
+                        caDirect.optString("membershipNum",
+                            caDirect.optString("caRegistrationNo", ""))))
+                val name = caDirect.optString("caName",
+                    caDirect.optString("repName",
+                        caDirect.optString("auditorName",
+                            caDirect.optString("name", ""))))
+                val firm = caDirect.optString("firmName",
+                    caDirect.optString("firmRegistrationNo",
+                        caDirect.optString("firmRegNum",
+                            caDirect.optString("firm", ""))))
+                if (mem.isNotBlank()) {
+                    capturedCaMembership = mem
+                    latestCapturedCaMembership = mem
+                    ItdTransactionFetcher.attachedCaMembership = mem
+                }
+                if (name.isNotBlank()) {
+                    capturedCaName = name
+                    latestCapturedCaName = name
+                    ItdTransactionFetcher.attachedCaName = name
+                }
+                if (firm.isNotBlank()) {
+                    capturedCaFirm = firm
+                    latestCapturedCaFirm = firm
+                    ItdTransactionFetcher.attachedCaFirm = firm
+                }
+            }
 
             // 1. Direct official ITR Filing JSON (ITR-1 / ITR-2 / ITR-4 downloaded from portal)
             val itrObj = root.optJSONObject("ITR") ?: root
@@ -1014,7 +1063,9 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                         '/iec/foservices/api/ais/details?ay=' + ay,
                         '/iec/foservices/api/26as/download?ay=' + ay,
                         '/iec/foservices/api/user-profile',
-                        '/iec/foservices/api/filing/details?ay=' + ay
+                        '/iec/foservices/api/filing/details?ay=' + ay,
+                        '/iec/foservices/api/authorizedRepresentative/myCa',
+                        '/iec/foservices/api/ca/details'
                     ];
                     endpoints.forEach(ep => {
                         window.fetch(ep, {

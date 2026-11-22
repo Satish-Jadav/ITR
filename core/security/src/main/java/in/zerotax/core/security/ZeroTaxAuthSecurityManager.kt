@@ -75,7 +75,27 @@ object ZeroTaxAuthSecurityManager {
         prefs.edit().putString(record.email, obj.toString()).apply()
     }
 
-    private data class StoredUserRecord(
+    fun markFirstLoginCompleted(record: StoredUserRecord) {
+        val ctx = appContext ?: return
+        val prefs = ctx.getSharedPreferences("zt_auth_users_vault", android.content.Context.MODE_PRIVATE)
+        prefs.edit()
+            .putBoolean("has_completed_first_login", true)
+            .putString("last_enrolled_user_email", record.email)
+            .putString("last_enrolled_pan", record.pan ?: "")
+            .putString("last_enrolled_name", record.displayName)
+            .apply()
+    }
+
+    fun hasCompletedFirstLogin(): Boolean {
+        val ctx = appContext
+        if (ctx != null) {
+            val prefs = ctx.getSharedPreferences("zt_auth_users_vault", android.content.Context.MODE_PRIVATE)
+            if (prefs.getBoolean("has_completed_first_login", false)) return true
+        }
+        return localUserRegistry.isNotEmpty()
+    }
+
+    data class StoredUserRecord(
         val uid: String,
         val email: String,
         val displayName: String,
@@ -85,6 +105,18 @@ object ZeroTaxAuthSecurityManager {
         val isVerified: Boolean,
         val pan: String? = null
     )
+
+    fun getLastEnrolledUser(): StoredUserRecord? {
+        val ctx = appContext
+        if (ctx != null) {
+            val prefs = ctx.getSharedPreferences("zt_auth_users_vault", android.content.Context.MODE_PRIVATE)
+            val email = prefs.getString("last_enrolled_user_email", null)
+            if (!email.isNullOrBlank() && localUserRegistry.containsKey(email)) {
+                return localUserRegistry[email]
+            }
+        }
+        return localUserRegistry.values.firstOrNull()
+    }
 
     fun getActiveSession(): UserAuthProfile? = activeUserSession
 
@@ -155,6 +187,7 @@ object ZeroTaxAuthSecurityManager {
             lastLoginEpochMs = System.currentTimeMillis(),
             primaryPanLinked = existing.pan
         )
+        markFirstLoginCompleted(existing)
         activeUserSession = profile
         Result.success(profile)
     }
@@ -197,6 +230,7 @@ object ZeroTaxAuthSecurityManager {
             pan = cleanPan
         )
         persistUser(userRecord)
+        markFirstLoginCompleted(userRecord)
 
         val profile = UserAuthProfile(
             uid = uid,
@@ -223,6 +257,19 @@ object ZeroTaxAuthSecurityManager {
         }
 
         val uid = "goog_${UUID.nameUUIDFromBytes(cleanedEmail.toByteArray())}"
+        val userRecord = StoredUserRecord(
+            uid = uid,
+            email = cleanedEmail,
+            displayName = displayName.ifBlank { cleanedEmail.substringBefore("@") },
+            passwordHash = "GOOGLE_OAUTH_TOKEN_STORED",
+            salt = "GOOGLE_SALT",
+            authProvider = AuthProvider.GOOGLE,
+            isVerified = true,
+            pan = localUserRegistry[cleanedEmail]?.pan
+        )
+        persistUser(userRecord)
+        markFirstLoginCompleted(userRecord)
+
         val profile = UserAuthProfile(
             uid = uid,
             email = cleanedEmail,
@@ -230,7 +277,8 @@ object ZeroTaxAuthSecurityManager {
             photoUrl = photoUrl,
             authProvider = AuthProvider.GOOGLE,
             isEmailVerified = true,
-            lastLoginEpochMs = System.currentTimeMillis()
+            lastLoginEpochMs = System.currentTimeMillis(),
+            primaryPanLinked = userRecord.pan
         )
         activeUserSession = profile
         Result.success(profile)
@@ -267,24 +315,40 @@ object ZeroTaxAuthSecurityManager {
                 SecurityException("Hardware CryptoObject verification failed: KeyStore cipher was not authorized by biometric hardware.")
             )
         }
-        // If an existing session exists, refresh it; otherwise create a biometric vault profile
+        // If an existing session exists, refresh it; otherwise restore enrolled account
         val current = activeUserSession
         if (current != null) {
             val refreshed = current.copy(lastLoginEpochMs = System.currentTimeMillis())
             activeUserSession = refreshed
             Result.success(refreshed)
         } else {
-            val bioProfile = UserAuthProfile(
-                uid = "bio_${UUID.randomUUID().toString().take(8)}",
-                email = "biometric.user@zerotax.local",
-                displayName = "Biometric Vault User",
-                photoUrl = null,
-                authProvider = AuthProvider.BIOMETRIC_VAULT,
-                isEmailVerified = true,
-                lastLoginEpochMs = System.currentTimeMillis()
-            )
-            activeUserSession = bioProfile
-            Result.success(bioProfile)
+            val enrolled = getLastEnrolledUser()
+            if (enrolled != null) {
+                val bioProfile = UserAuthProfile(
+                    uid = enrolled.uid,
+                    email = enrolled.email,
+                    displayName = enrolled.displayName,
+                    photoUrl = null,
+                    authProvider = AuthProvider.BIOMETRIC_VAULT,
+                    isEmailVerified = enrolled.isVerified,
+                    lastLoginEpochMs = System.currentTimeMillis(),
+                    primaryPanLinked = enrolled.pan
+                )
+                activeUserSession = bioProfile
+                Result.success(bioProfile)
+            } else {
+                val bioProfile = UserAuthProfile(
+                    uid = "bio_${UUID.randomUUID().toString().take(8)}",
+                    email = "biometric.user@zerotax.local",
+                    displayName = "Biometric Vault User",
+                    photoUrl = null,
+                    authProvider = AuthProvider.BIOMETRIC_VAULT,
+                    isEmailVerified = true,
+                    lastLoginEpochMs = System.currentTimeMillis()
+                )
+                activeUserSession = bioProfile
+                Result.success(bioProfile)
+            }
         }
     }
 
