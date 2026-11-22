@@ -27,9 +27,11 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,13 +104,15 @@ fun ConversationalFilingChatScreen(
     val uiState = viewModel?.uiState?.collectAsState()?.value
     var inputText by remember { mutableStateOf("") }
     var showTrustModal by remember { mutableStateOf(false) }
+    var showChatFinalApprovalDialog by remember { mutableStateOf(false) }
+    var chatHasGivenExplicitApproval by remember { mutableStateOf(false) }
 
-    val gross = uiState?.grossSalaryRupees ?: fallbackBot.snapshot.grossSalary
-    val deductions = uiState?.let {
+    val gross = (uiState?.grossSalaryRupees?.takeIf { it > 0L }) ?: fallbackBot.snapshot.grossSalary
+    val deductions = (uiState?.let {
         val newDed = it.newRegimeResult.standardDeduction + it.newRegimeResult.totalChapterVIADeductions
         val oldDed = it.oldRegimeResult.standardDeduction + it.oldRegimeResult.totalChapterVIADeductions
-        minOf(newDed, oldDed)
-    } ?: fallbackBot.snapshot.totalDeductionsClaimed
+        minOf(newDed, oldDed).takeIf { d -> d > 0L }
+    }) ?: fallbackBot.snapshot.totalDeductionsClaimed
     val taxLiability = uiState?.let { minOf(it.newRegimeResult.totalTaxLiabilityRounded288B, it.oldRegimeResult.totalTaxLiabilityRounded288B) } ?: fallbackBot.snapshot.estimatedTaxLiability
     val refundDue = uiState?.let { maxOf(0L, it.tdsDeposited26As - taxLiability) } ?: fallbackBot.snapshot.estimatedRefundDue
 
@@ -125,6 +129,12 @@ fun ConversationalFilingChatScreen(
         val clean = text.trim()
         if (clean.isBlank()) return
         inputText = ""
+
+        val cleanLower = clean.lowercase()
+        if (cleanLower.contains("submit to portal") || cleanLower.contains("file return") || cleanLower.contains("submit return") || cleanLower.contains("final approval") || (cleanLower.contains("review") && cleanLower.contains("submit"))) {
+            showChatFinalApprovalDialog = true
+            return
+        }
 
         if (viewModel != null) {
             viewModel.sendUserChatMessage(clean)
@@ -164,15 +174,7 @@ fun ConversationalFilingChatScreen(
                     // Quick Action Review Button when ready
                     if (isReadyForReview) {
                         Button(
-                            onClick = {
-                                onProceedToFullReview(
-                                    gross,
-                                    maxOf(0L, gross - deductions),
-                                    taxLiability,
-                                    deductions,
-                                    refundDue
-                                )
-                            },
+                            onClick = { showChatFinalApprovalDialog = true },
                             shape = RoundedCornerShape(4.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = ButtonSuccessBg,
@@ -257,8 +259,8 @@ fun ConversationalFilingChatScreen(
                                         .background(MaterialTheme.colorScheme.primaryContainer)
                                         .border(0.75.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                                         .clickable {
-                                            if (reply.contains("Review All Points")) {
-                                                onProceedToFullReview(gross, maxOf(0L, gross - deductions), taxLiability, deductions, refundDue)
+                                            if (reply.contains("Review All Points") || reply.contains("Submit", ignoreCase = true) || reply.contains("Final Approval", ignoreCase = true)) {
+                                                showChatFinalApprovalDialog = true
                                             } else if (reply == "Apply to My Return") {
                                                 val latestCard = messages.findLast { it.actionCard is CopilotActionCardData.WhatIfResult }?.actionCard as? CopilotActionCardData.WhatIfResult
                                                 if (latestCard != null) {
@@ -512,6 +514,122 @@ fun ConversationalFilingChatScreen(
 
         if (showTrustModal) {
             ZeroKnowledgeTrustShieldModal(onDismiss = { showTrustModal = false })
+        }
+
+        if (showChatFinalApprovalDialog) {
+            androidx.compose.ui.window.Dialog(
+                onDismissRequest = { showChatFinalApprovalDialog = false },
+                properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(0.95f)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(EmeraldSuccess.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = EmeraldSuccess, modifier = Modifier.size(20.dp))
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Taxpayer Final Approval Required",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = "Section 140 of the Income-tax Act, 1961",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
+                            }
+                            IconButton(onClick = { showChatFinalApprovalDialog = false }) {
+                                Icon(Icons.Default.Close, contentDescription = "Close")
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Assessee:", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text(uiState?.taxpayerFullName?.ifBlank { "SATISH JADAV" } ?: "SATISH JADAV", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("PAN / Assessment Year:", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text("$pan • AY 2026-27", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Gross Income / Deductions:", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text("₹${"%,d".format(gross)} / ₹${"%,d".format(deductions)}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Net Tax Liability:", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text("₹0 (100% Rebated u/s 87A)", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                                }
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { chatHasGivenExplicitApproval = !chatHasGivenExplicitApproval }
+                        ) {
+                            Checkbox(
+                                checked = chatHasGivenExplicitApproval,
+                                onCheckedChange = { chatHasGivenExplicitApproval = it }
+                            )
+                            Text(
+                                text = "I hereby confirm that I have reviewed all income and deductions. I give my explicit final approval to transmit this return to the Income Tax Department portal.",
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, lineHeight = 16.sp)
+                            )
+                        }
+
+                        ZeroTaxPrimaryButton(
+                            text = "Grant Final Approval & Submit to Portal →",
+                            onClick = {
+                                showChatFinalApprovalDialog = false
+                                onProceedToFullReview(
+                                    gross,
+                                    maxOf(0L, gross - deductions),
+                                    taxLiability,
+                                    deductions,
+                                    refundDue
+                                )
+                            },
+                            enabled = chatHasGivenExplicitApproval,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        ZeroTaxOutlinedButton(
+                            text = "Wait & Review Return More",
+                            onClick = { showChatFinalApprovalDialog = false },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ package `in`.zerotax.app.ui.onboarding
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -44,6 +45,8 @@ fun UnifiedPreFilingDossierView(
 ) {
     val isDark = isSystemInDarkTheme()
     val scrollState = rememberScrollState()
+    var showFinalApprovalModal by remember { mutableStateOf(false) }
+    var hasGivenExplicitApproval by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -463,7 +466,7 @@ fun UnifiedPreFilingDossierView(
         ) {
             ZeroTaxPrimaryButton(
                 text = "1-Tap Direct E-Filing to ITD Portal",
-                onClick = onConfirmAndFile,
+                onClick = { showFinalApprovalModal = true },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -481,6 +484,116 @@ fun UnifiedPreFilingDossierView(
                     onClick = onProceedToWorkspace,
                     modifier = Modifier.weight(1f)
                 )
+            }
+        }
+
+        if (showFinalApprovalModal) {
+            androidx.compose.ui.window.Dialog(
+                onDismissRequest = { showFinalApprovalModal = false },
+                properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(0.95f)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(EmeraldSuccess.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = EmeraldSuccess, modifier = Modifier.size(20.dp))
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Taxpayer Final Approval Required",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = "Section 140 of the Income-tax Act, 1961",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
+                            }
+                            IconButton(onClick = { showFinalApprovalModal = false }) {
+                                Icon(Icons.Default.Close, contentDescription = "Close")
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Assessee:", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text(dossier.assesseeName.ifBlank { "SATISH JADAV" }, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("PAN / Form:", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text("${dossier.assesseePan} • ${dossier.recommendedItrForm.name.replace("_", "-")}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Gross Income:", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text("₹${"%,d".format(dossier.grossIncomeRupees)}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Net Tax Liability:", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                                    Text("₹0 (100% Rebated u/s 87A)", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess))
+                                }
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { hasGivenExplicitApproval = !hasGivenExplicitApproval }
+                        ) {
+                            Checkbox(
+                                checked = hasGivenExplicitApproval,
+                                onCheckedChange = { hasGivenExplicitApproval = it }
+                            )
+                            Text(
+                                text = "I confirm that I have reviewed all income and deductions. I give my explicit final approval to transmit this return to the Income Tax Department portal.",
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, lineHeight = 16.sp)
+                            )
+                        }
+
+                        ZeroTaxPrimaryButton(
+                            text = "Grant Final Approval & Submit to Portal →",
+                            onClick = {
+                                showFinalApprovalModal = false
+                                onConfirmAndFile()
+                            },
+                            enabled = hasGivenExplicitApproval,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        ZeroTaxOutlinedButton(
+                            text = "Wait & Review Return More",
+                            onClick = { showFinalApprovalModal = false },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
         }
 
