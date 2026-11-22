@@ -199,20 +199,20 @@ fun StatutoryBadge(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(bgColor)
-            .border(0.75.dp, borderColor, RoundedCornerShape(6.dp))
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+            .border(0.5.dp, borderColor, RoundedCornerShape(4.dp))
+            .padding(horizontal = 5.dp, vertical = 1.5.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             if (showIndicatorDot && tone != BadgeTone.NEUTRAL) {
                 Box(
                     modifier = Modifier
-                        .size(5.dp)
+                        .size(4.dp)
                         .clip(CircleShape)
                         .background(textColor)
                 )
@@ -223,9 +223,9 @@ fun StatutoryBadge(
                 maxLines = 1,
                 softWrap = false,
                 style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 10.5.sp,
+                    fontSize = 9.5.sp,
                     fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 0.3.sp
+                    letterSpacing = 0.2.sp
                 )
             )
         }
@@ -353,7 +353,7 @@ fun EnterpriseTopHeader(
 
             Spacer(Modifier.height(4.dp))
 
-            // Horizontally Scrollable Fast Actions Strip (Responsive on all screen sizes, never wraps or overflows)
+            // Horizontally Scrollable Fast Actions Strip (Compact & lightweight)
             val isTopDark = isSystemInDarkTheme()
             val chipBg = if (isTopDark) Slate850 else Slate100
             val chipBorder = if (isTopDark) Slate700 else Slate300
@@ -361,37 +361,37 @@ fun EnterpriseTopHeader(
 
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 if (onOpenChatbot != null) {
                     item {
                         Surface(
-                            shape = RoundedCornerShape(20.dp),
+                            shape = RoundedCornerShape(12.dp),
                             color = if (isTopDark) EnterpriseTeal900 else EnterpriseTeal50,
-                            border = androidx.compose.foundation.BorderStroke(1.25.dp, if (isTopDark) EnterpriseTeal500 else EnterpriseTeal400),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (isTopDark) EnterpriseTeal500 else EnterpriseTeal400),
                             modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
+                                .clip(RoundedCornerShape(12.dp))
                                 .clickable { onOpenChatbot() }
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.5.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.SmartToy,
                                     contentDescription = null,
                                     tint = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700,
-                                    modifier = Modifier.size(14.dp)
+                                    modifier = Modifier.size(11.dp)
                                 )
-                                Spacer(Modifier.width(6.dp))
+                                Spacer(Modifier.width(3.dp))
                                 Text(
                                     text = "AI Copilot",
                                     style = TextStyle(
-                                        fontSize = 11.5.sp,
+                                        fontSize = 10.sp,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700,
-                                        letterSpacing = 0.2.sp
+                                        letterSpacing = 0.1.sp
                                     )
                                 )
                             }
@@ -415,28 +415,28 @@ fun EnterpriseTopHeader(
                     val (label, iconAndAction) = standardChips[index]
                     val (icon, action) = iconAndAction
                     Surface(
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(12.dp),
                         color = chipBg,
-                        border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
+                        border = androidx.compose.foundation.BorderStroke(0.5.dp, chipBorder),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .clickable { action() }
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp)
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.5.dp)
                         ) {
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
                                 tint = chipContent,
-                                modifier = Modifier.size(13.dp)
+                                modifier = Modifier.size(11.dp)
                             )
-                            Spacer(Modifier.width(5.dp))
+                            Spacer(Modifier.width(3.dp))
                             Text(
                                 text = label,
                                 style = TextStyle(
-                                    fontSize = 11.sp,
+                                    fontSize = 9.5.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = chipContent,
                                     letterSpacing = 0.1.sp

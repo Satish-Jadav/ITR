@@ -24,7 +24,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import `in`.zerotax.app.ui.components.*
@@ -436,14 +441,17 @@ private fun TrustAndAuthStepView(
         )
 
         OutlinedTextField(
-            value = pan,
+            value = pan.uppercase(),
             onValueChange = { onPanChanged(it.take(10).uppercase()) },
             label = { Text("PAN Number (10 characters)") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             isError = pan.isNotEmpty() && !isPanValid,
             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, keyboardType = KeyboardType.Ascii),
+            visualTransformation = VisualTransformation { text ->
+                TransformedText(AnnotatedString(text.text.uppercase()), OffsetMapping.Identity)
+            },
             trailingIcon = {
                 if (isPanVerifying) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = EnterpriseTeal500)
@@ -571,65 +579,26 @@ private fun TrustAndAuthStepView(
                     }
                 }
             }
-        } else if (isPanValid) {
-            ZeroTaxOutlinedButton(
-                text = "Verify PAN with Income Tax Department →",
-                onClick = onVerifyPanWithItr,
-                leadingIcon = {
-                    Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = EnterpriseTeal600, modifier = Modifier.size(18.dp))
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
         }
 
-        // Official Portal Bridge
-        Text(
-            text = "Official Data Ingestion Bridge",
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-        )
-        Surface(
-            onClick = { executeIfVerified { onLaunchWebLogin() } },
-            shape = RoundedCornerShape(10.dp),
-            color = if (isDark) Slate850 else PaletteSurface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else PaletteSecondary),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(Icons.Default.Language, null, tint = PalettePrimary, modifier = Modifier.size(24.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Official In-App Web Portal Login", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                    Spacer(Modifier.height(4.dp))
-                    if (isPanVerifiedWithItr) {
-                        StatutoryBadge(text = "READY", tone = BadgeTone.SUCCESS)
-                    } else {
-                        StatutoryBadge(text = "REQUIRES VERIFIED PAN", tone = BadgeTone.WARNING)
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    Text("Log in securely on eportal.incometax.gov.in in an isolated ephemeral session.", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                }
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = PalettePrimary, modifier = Modifier.size(18.dp))
-            }
-        }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(12.dp))
+
+        // Direct Web Portal Login Bridge (Mandatory Step Always After PAN)
         ZeroTaxPrimaryButton(
-            text = when {
-                isPanVerifying -> "Verifying PAN with Income Tax Department..."
-                !isPanVerifiedWithItr -> "Verify PAN with ITR to Proceed"
-                else -> "Continue to Automated Radar (Step 2) →"
+            text = if (isPanValid) "Login to ITD Web Portal (eportal.incometax.gov.in) →" else "Enter 10-Digit PAN to Continue",
+            onClick = { onLaunchWebLogin() },
+            enabled = isPanValid,
+            leadingIcon = {
+                Icon(Icons.Default.Language, contentDescription = null, modifier = Modifier.size(18.dp))
             },
-            onClick = {
-                if (isPanVerifiedWithItr) {
-                    onStartHydration()
-                } else {
-                    onVerifyPanWithItr()
-                }
-            },
-            enabled = isPanValid && !isPanVerifying,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(48.dp)
+        )
+
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Direct ITD Gateway: Securely logs into eportal.incometax.gov.in to automatically sync Form 16, AIS, and 26AS records into your sovereign vault.",
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant),
+            modifier = Modifier.padding(horizontal = 4.dp)
         )
     }
 }

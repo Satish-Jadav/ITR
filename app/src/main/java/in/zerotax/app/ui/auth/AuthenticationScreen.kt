@@ -24,12 +24,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -297,11 +300,14 @@ fun AuthenticationScreen(
                     val cleanPan = panInput.uppercase().trim().take(10)
                     val isPanFormatValid = cleanPan.matches(Regex("^[A-Z]{5}[0-9]{4}[A-Z]$"))
                     ZeroTaxTextField(
-                        value = panInput,
+                        value = panInput.uppercase(),
                         onValueChange = { panInput = it.take(10).uppercase().trim() },
                         label = "PAN (Your Unique Login ID)",
                         placeholder = "e.g. ABCDE1234F",
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, keyboardType = KeyboardType.Ascii),
+                        visualTransformation = VisualTransformation { text ->
+                            TransformedText(AnnotatedString(text.text.uppercase()), OffsetMapping.Identity)
+                        }
                     )
                     if (panInput.isNotEmpty()) {
                         Spacer(Modifier.height(4.dp))
@@ -332,10 +338,12 @@ fun AuthenticationScreen(
                 } else {
                     ZeroTaxTextField(
                         value = emailInput,
-                        onValueChange = { emailInput = it },
+                        onValueChange = {
+                            emailInput = if (!it.contains("@")) it.uppercase() else it
+                        },
                         label = "Login ID (PAN or Email)",
                         placeholder = "e.g. ABCDE1234F or you@domain.com",
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
                     )
                 }
 
