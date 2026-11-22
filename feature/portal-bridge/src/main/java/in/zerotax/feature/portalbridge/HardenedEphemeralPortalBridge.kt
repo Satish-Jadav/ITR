@@ -138,6 +138,9 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
         var latestCapturedCaMembership: String = ""
         var latestCapturedCaName: String = ""
         var latestCapturedCaFirm: String = ""
+        var latestCapturedBankName: String = ""
+        var latestCapturedBankAccount: String = ""
+        var latestCapturedBankIfsc: String = ""
     }
 
     var capturedCaMembership: String = ""
@@ -263,23 +266,78 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
             val itrDoc = itrObj.optJSONObject("ITR1")
                 ?: itrObj.optJSONObject("ITR2")
                 ?: itrObj.optJSONObject("ITR4")
-                ?: (if (root.has("ITR1_IncomeDeductions") || root.has("IncomeDeductions")) root else null)
+                ?: (if (root.has("ITR1_IncomeDeductions") || root.has("IncomeDeductions") || root.has("GrossSalary") || root.has("grossSalary") || root.has("grossTotalIncome")) root else null)
+
+            // Extract Bank Details from ITR / Prefill if present
+            val bankArr = root.optJSONArray("bankAccounts")
+                ?: root.optJSONObject("BankAccountDtls")?.optJSONArray("AddtnlBankDetails")
+                ?: itrDoc?.optJSONObject("BankAccountDtls")?.optJSONArray("AddtnlBankDetails")
+                ?: itrDoc?.optJSONArray("bankAccounts")
+                ?: root.optJSONArray("BankAccountDtls")
+            if (bankArr != null && bankArr.length() > 0) {
+                val bankItem = bankArr.getJSONObject(0)
+                val accNo = bankItem.optString("BankAccountNo", bankItem.optString("accountNumber", ""))
+                val ifsc = bankItem.optString("IFSC", bankItem.optString("ifscCode", ""))
+                val bName = bankItem.optString("BankName", bankItem.optString("bankName", ""))
+                if (accNo.isNotBlank()) {
+                    latestCapturedBankAccount = accNo
+                    latestCapturedBankIfsc = ifsc
+                    latestCapturedBankName = bName
+                }
+            } else {
+                val bankObj = root.optJSONObject("bankAccount")
+                    ?: root.optJSONObject("BankAccountDtls")
+                    ?: itrDoc?.optJSONObject("BankAccountDtls")
+                    ?: itrDoc?.optJSONObject("bankAccount")
+                if (bankObj != null) {
+                    val accNo = bankObj.optString("BankAccountNo", bankObj.optString("accountNumber", ""))
+                    val ifsc = bankObj.optString("IFSC", bankObj.optString("ifscCode", ""))
+                    val bName = bankObj.optString("BankName", bankObj.optString("bankName", ""))
+                    if (accNo.isNotBlank()) {
+                        latestCapturedBankAccount = accNo
+                        latestCapturedBankIfsc = ifsc
+                        latestCapturedBankName = bName
+                    }
+                }
+            }
 
             if (itrDoc != null) {
                 val incDed = itrDoc.optJSONObject("ITR1_IncomeDeductions")
                     ?: itrDoc.optJSONObject("IncomeDeductions")
+                    ?: itrDoc.optJSONObject("ScheduleS")
                     ?: itrDoc
 
                 // GrossSalary can be a nested JSONObject or scalar Long
-                val grossSalObj = incDed.optJSONObject("GrossSalary")
-                val grossSal = if (grossSalObj != null) {
-                    grossSalObj.optLong("TotalGrossSalary", grossSalObj.optLong("Salary", 0L))
-                } else {
-                    incDed.optLong("GrossSalary", incDed.optLong("Salary", 0L))
+                val grossSalObj = incDed.optJSONObject("GrossSalary") ?: root.optJSONObject("GrossSalary")
+                val grossSal = when {
+                    grossSalObj != null -> {
+                        val sec171 = grossSalObj.optLong("Sec17_1", grossSalObj.optLong("Sec171", 0L))
+                        val totalGross = grossSalObj.optLong("TotalGrossSalary", 0L)
+                        val sal = grossSalObj.optLong("Salary", 0L)
+                        val sec172 = grossSalObj.optLong("Sec17_2", 0L)
+                        val sec173 = grossSalObj.optLong("Sec17_3", 0L)
+                        maxOf(totalGross, sec171 + sec172 + sec173, sal)
+                    }
+                    else -> {
+                        val gSal = incDed.optLong("GrossSalary", 0L)
+                        val sal = incDed.optLong("Salary", 0L)
+                        val sec17 = incDed.optLong("Sec17_1", 0L)
+                        val incChrgSal = incDed.optLong("IncomeChargeableUnderSalaries", incDed.optLong("IncChrgSal", 0L))
+                        val gti = incDed.optLong("GrossTotalIncome", incDed.optLong("GrossTotIncome", 0L))
+                        maxOf(gSal, sal, sec17, incChrgSal, gti)
+                    }
+                }.let { candidate ->
+                    if (candidate > 0L) candidate
+                    else {
+                        val partB = itrDoc.optJSONObject("PartB_TI") ?: itrObj.optJSONObject("PartB_TI") ?: root.optJSONObject("PartB_TI")
+                        val partBGti = partB?.optLong("GrossTotalIncome", partB.optLong("GrossTotIncome", partB.optLong("TotalIncome", 0L))) ?: 0L
+                        val rootGross = root.optLong("grossSalary", root.optLong("grossTotalIncome", root.optLong("totalGrossSalary", root.optLong("salary", root.optLong("incomeChargeableUnderSalaries", root.optLong("totalIncome", 0L))))))
+                        maxOf(partBGti, rootGross)
+                    }
                 }
 
                 val employerCategory = itrDoc.optJSONObject("PersonalInfo")?.optString("EmployerCategory", "OTH") ?: "OTH"
-                val assesseeName = itrDoc.optJSONObject("PersonalInfo")?.optString("AssesseeName", "Portal Verified Employment") ?: "Portal Verified Employment"
+                val assesseeName = itrDoc.optJSONObject("PersonalInfo")?.optString("AssesseeName", root.optString("taxpayerFullName", root.optString("assesseeName", "Portal Verified Employment"))) ?: "Portal Verified Employment"
 
                 // Extract TDS from TDSonSalaries in ITR1/ITR2/ITR4
                 val tdsSalArray = itrDoc.optJSONObject("TDSonSalaries")?.optJSONArray("TDSonSalary")
@@ -288,8 +346,8 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                     ?: root.optJSONArray("tdsOnSalaries")
 
                 var totalSalTds = 0L
-                var firstEmployerTan = "ITD-VERIFIED-SALARY"
-                var firstEmployerName = assesseeName
+                var firstEmployerTan = root.optString("employerTan", root.optString("tanOfEmployer", "ITD-VERIFIED-SALARY"))
+                var firstEmployerName = root.optString("employerName", root.optString("employerOrDeductorOrCollecterName", assesseeName))
 
                 if (tdsSalArray != null && tdsSalArray.length() > 0) {
                     for (i in 0 until tdsSalArray.length()) {
@@ -406,14 +464,44 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                     if (tdsSalArray != null) {
                         for (i in 0 until tdsSalArray.length()) {
                             val item = tdsSalArray.getJSONObject(i)
+                            val salGross = item.optLong("incomeChargeableUnderSalaries",
+                                item.optLong("TotalGrossSalary",
+                                    item.optLong("grossAmount",
+                                        item.optLong("grossSalary",
+                                            item.optLong("salary", 0L)))))
+                            val salTds = item.optLong("totalTDSSal", item.optLong("TotalTDSDeducted", item.optLong("tdsDeducted", 0L)))
+                            if (salGross > 0L || salTds > 0L) {
+                                results.add(
+                                    AisTransactionRecord(
+                                        transactionId = item.optString("id", "PREFILL-SAL-$i"),
+                                        category = AisCategory.SALARY,
+                                        reportingEntity = item.optString("employerOrDeductorOrCollecterName", item.optString("EmployerName", "Employer")),
+                                        accountOrFolioNumber = item.optString("tanOfEmployer", item.optString("EmployerTAN", "TAN-SALARY")),
+                                        grossAmount = salGross,
+                                        tdsWithheld = salTds,
+                                        quarterOrDate = "FY-2025-26",
+                                        suggestedSchedule = "Salary"
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    if (results.none { it.category == AisCategory.SALARY }) {
+                        val fallbackGrossSal = root.optLong("grossSalary",
+                            root.optLong("grossTotalIncome",
+                                root.optLong("totalGrossSalary",
+                                    root.optLong("salary",
+                                        root.optLong("incomeChargeableUnderSalaries",
+                                            root.optLong("totalIncome", 0L))))))
+                        if (fallbackGrossSal > 0L) {
                             results.add(
                                 AisTransactionRecord(
-                                    transactionId = item.optString("id", "PREFILL-SAL-$i"),
+                                    transactionId = "PREFILL-SAL-${System.currentTimeMillis()}",
                                     category = AisCategory.SALARY,
-                                    reportingEntity = item.optString("employerOrDeductorOrCollecterName", item.optString("EmployerName", "Employer")),
-                                    accountOrFolioNumber = item.optString("tanOfEmployer", item.optString("EmployerTAN", "TAN-SALARY")),
-                                    grossAmount = item.optLong("incomeChargeableUnderSalaries", item.optLong("TotalGrossSalary", 0L)),
-                                    tdsWithheld = item.optLong("totalTDSSal", item.optLong("TotalTDSDeducted", 0L)),
+                                    reportingEntity = root.optString("employerName", root.optString("employerOrDeductorOrCollecterName", "Verified Employer")),
+                                    accountOrFolioNumber = root.optString("employerTan", root.optString("tanOfEmployer", "TAN-SALARY")),
+                                    grossAmount = fallbackGrossSal,
+                                    tdsWithheld = root.optLong("tdsWithheld", root.optLong("totalTds", root.optLong("tdsDeposited", 0L))),
                                     quarterOrDate = "FY-2025-26",
                                     suggestedSchedule = "Salary"
                                 )
@@ -434,6 +522,25 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                                     accountOrFolioNumber = item.optString("tanOfDeductor", item.optString("DeductorTAN", "TAN-BANK")),
                                     grossAmount = item.optLong("grossAmount", item.optLong("TotGrossAmt", 0L)),
                                     tdsWithheld = item.optLong("tdsDeducted", item.optLong("TotalTDSDeducted", 0L)),
+                                    quarterOrDate = "FY-2025-26",
+                                    suggestedSchedule = "OS"
+                                )
+                            )
+                        }
+                    }
+                    if (results.none { it.category == AisCategory.SAVINGS_INTEREST || it.category == AisCategory.TIME_DEPOSIT_INTEREST }) {
+                        val fallbackInterest = root.optLong("savingsInterest",
+                            root.optLong("interestIncome",
+                                root.optLong("incomeOthSrc", 0L)))
+                        if (fallbackInterest > 0L) {
+                            results.add(
+                                AisTransactionRecord(
+                                    transactionId = "PREFILL-INT-${System.currentTimeMillis()}",
+                                    category = AisCategory.SAVINGS_INTEREST,
+                                    reportingEntity = "Interest from Savings/Deposits",
+                                    accountOrFolioNumber = "ITD-VERIFIED-INT",
+                                    grossAmount = fallbackInterest,
+                                    tdsWithheld = 0L,
                                     quarterOrDate = "FY-2025-26",
                                     suggestedSchedule = "OS"
                                 )

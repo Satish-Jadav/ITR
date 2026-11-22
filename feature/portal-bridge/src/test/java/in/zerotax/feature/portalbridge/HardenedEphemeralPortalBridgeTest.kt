@@ -118,4 +118,68 @@ class HardenedEphemeralPortalBridgeTest {
     fun testActivePanIsConfiguredProperly() {
         assertEquals("ABCDE1234F", bridge.activePan)
     }
+
+    @Test
+    fun testParsePrefillJsonWithZeroTdsAndGrossSalaryFallback() {
+        val zeroTdsPrefill = """
+            {
+                "pan": "BZRPJ9498J",
+                "grossSalary": 896645,
+                "employerName": "Private Enterprise Ltd",
+                "employerTan": "PUNE09988G",
+                "tdsOnSalaries": []
+            }
+        """.trimIndent()
+
+        val parsed = bridge.parsePayloadToTransactions(zeroTdsPrefill, PayloadType.PREFILL_JSON)
+        assertEquals(1, parsed.size)
+        val sal = parsed[0]
+        assertEquals(`in`.zerotax.core.model.AisCategory.SALARY, sal.category)
+        assertEquals(896645L, sal.grossAmount)
+        assertEquals(0L, sal.tdsWithheld)
+        assertEquals("Private Enterprise Ltd", sal.reportingEntity)
+    }
+
+    @Test
+    fun testParseItr1JsonWithSec17_1AndBankDetails() {
+        val itr1Json = """
+            {
+                "ITR": {
+                    "ITR1": {
+                        "PersonalInfo": {
+                            "AssesseeName": "SATISH JADAV",
+                            "EmployerCategory": "OTH"
+                        },
+                        "ITR1_IncomeDeductions": {
+                            "GrossSalary": {
+                                "Sec17_1": 896645,
+                                "Sec17_2": 0,
+                                "Sec17_3": 0
+                            },
+                            "IncomeChargeableUnderSalaries": 821645
+                        },
+                        "BankAccountDtls": {
+                            "AddtnlBankDetails": [
+                                {
+                                    "BankAccountNo": "123456789012",
+                                    "IFSC": "SBIN0001234",
+                                    "BankName": "State Bank of India"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val parsed = bridge.parsePayloadToTransactions(itr1Json, PayloadType.PREFILL_JSON)
+        assertEquals(1, parsed.size)
+        val sal = parsed[0]
+        assertEquals(`in`.zerotax.core.model.AisCategory.SALARY, sal.category)
+        assertEquals(896645L, sal.grossAmount)
+        assertEquals("SATISH JADAV", sal.reportingEntity)
+        assertEquals("123456789012", HardenedEphemeralPortalBridge.latestCapturedBankAccount)
+        assertEquals("SBIN0001234", HardenedEphemeralPortalBridge.latestCapturedBankIfsc)
+        assertEquals("State Bank of India", HardenedEphemeralPortalBridge.latestCapturedBankName)
+    }
 }

@@ -207,6 +207,7 @@ class ZeroTaxViewModel : ViewModel() {
         if (initialPan.isNotBlank()) {
             verifyPanWithItr(initialPan)
             syncRealtimeBackendData()
+            restoreFinancialDataForPan(initialPan)
         }
     }
 
@@ -691,6 +692,7 @@ class ZeroTaxViewModel : ViewModel() {
                         }
                         recompute()
                         generateUnifiedDossier()
+                        restoreFinancialDataForPan(targetPan)
                         onResult?.invoke(true, null)
                     } else {
                         val errMsg = res.optString("message", "PAN is not active or verified on Income Tax Department records.")
@@ -716,6 +718,7 @@ class ZeroTaxViewModel : ViewModel() {
                                 }
                                 recompute()
                                 generateUnifiedDossier()
+                                restoreFinancialDataForPan(targetPan)
                                 onResult?.invoke(true, null)
                                 return@fold
                             }
@@ -950,6 +953,40 @@ class ZeroTaxViewModel : ViewModel() {
             )
         }
 
+        val activePan = _uiState.value.pan
+        if (activePan.isNotBlank() && extractedGrossSalary > 0L) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val records = mutableListOf<AisTransactionRecord>()
+                records.add(
+                    AisTransactionRecord(
+                        transactionId = "SYNC-SAL-${System.currentTimeMillis()}",
+                        category = AisCategory.SALARY,
+                        reportingEntity = employerName.ifBlank { "Verified Employer" },
+                        accountOrFolioNumber = employerTan.ifBlank { "TAN-SALARY" },
+                        grossAmount = extractedGrossSalary,
+                        tdsWithheld = extractedTds,
+                        quarterOrDate = "AY-2026-27",
+                        suggestedSchedule = "Salary"
+                    )
+                )
+                if (extractedSavingsInterest > 0L) {
+                    records.add(
+                        AisTransactionRecord(
+                            transactionId = "SYNC-INT-${System.currentTimeMillis()}",
+                            category = AisCategory.SAVINGS_INTEREST,
+                            reportingEntity = "Savings Interest",
+                            accountOrFolioNumber = "ITD-INT",
+                            grossAmount = extractedSavingsInterest,
+                            tdsWithheld = 0L,
+                            quarterOrDate = "AY-2026-27",
+                            suggestedSchedule = "OS"
+                        )
+                    )
+                }
+                `in`.zerotax.feature.portalbridge.ItdTransactionFetcher.updateAndPersistLiveTransactions(activePan, records, null)
+            }
+        }
+
         recompute()
         scheduleCloudSync()
         FilingSpeedTelemetryEngine.markSyncCompleted()
@@ -965,6 +1002,10 @@ class ZeroTaxViewModel : ViewModel() {
         val caName = `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge.latestCapturedCaName.ifBlank {
             `in`.zerotax.feature.portalbridge.ItdTransactionFetcher.attachedCaName
         }
+        val bankAcc = `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge.latestCapturedBankAccount
+        val bankIfsc = `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge.latestCapturedBankIfsc
+        val bankName = `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge.latestCapturedBankName
+
         if (caMem.isNotBlank() || caName.isNotBlank()) {
             _uiState.update { current ->
                 current.copy(
@@ -979,6 +1020,11 @@ class ZeroTaxViewModel : ViewModel() {
             put("aggregateGrossAmount", grossSalary)
             if (caMem.isNotBlank()) put("caMembershipNo", caMem)
             if (caName.isNotBlank()) put("caName", caName)
+            if (bankAcc.isNotBlank()) {
+                put("accountNumber", bankAcc)
+                put("ifscCode", bankIfsc)
+                put("bankName", bankName)
+            }
         }
         applyFullPortalAndAaSyncPayload(bundle)
     }
@@ -1554,6 +1600,64 @@ class ZeroTaxViewModel : ViewModel() {
                         isCloudSyncing = false,
                         cloudSyncError = err.message
                     )
+                }
+            }
+        }
+    }
+
+    /**
+     * Restores persisted financial state from SQLCipher hardware vault, encrypted cloud vault,
+     * and live ITD portal sync snapshot so that user financial figures are never reset to 0.
+     */
+    fun restoreFinancialDataForPan(pan: String) {
+        val cleanPan = pan.trim().uppercase()
+        if (cleanPan.length != 10) return
+        viewModelScope.launch(Dispatchers.IO) {
+            // 1. Try local SQLCipher vault
+            val fetcher = `in`.zerotax.feature.portalbridge.ItdTransactionFetcher()
+            val localTxns = fetcher.fetchAisTransactions(cleanPan).getOrDefault(emptyList())
+            if (localTxns.isNotEmpty()) {
+                val deduped = `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge.deduplicateTransactions(localTxns)
+                val salarySum = deduped.filter { it.category == `in`.zerotax.core.model.AisCategory.SALARY }.sumOf { it.grossAmount }
+                val tdsSum = deduped.sumOf { it.tdsWithheld }
+                val interestSum = deduped.filter { it.category == `in`.zerotax.core.model.AisCategory.SAVINGS_INTEREST || it.category == `in`.zerotax.core.model.AisCategory.TIME_DEPOSIT_INTEREST }.sumOf { it.grossAmount }
+                val firstSal = deduped.firstOrNull { it.category == `in`.zerotax.core.model.AisCategory.SALARY }
+
+                if (salarySum > 0L || tdsSum > 0L || interestSum > 0L) {
+                    _uiState.update { current ->
+                        current.copy(
+                            grossSalaryRupees = if (salarySum > 0L) salarySum else current.grossSalaryRupees,
+                            tdsDeposited26As = if (tdsSum > 0L) tdsSum else current.tdsDeposited26As,
+                            savingsInterestRupees = if (interestSum > 0L) interestSum else current.savingsInterestRupees,
+                            employerName = if (!firstSal?.reportingEntity.isNullOrBlank()) firstSal!!.reportingEntity else current.employerName,
+                            employerTan = if (!firstSal?.accountOrFolioNumber.isNullOrBlank()) firstSal!!.accountOrFolioNumber else current.employerTan
+                        )
+                    }
+                    recompute()
+                }
+            }
+
+            // 2. Try encrypted cloud vault
+            restoreVaultFromApi()
+
+            // 3. If salary is still 0, check backend portal sync snapshot
+            if (_uiState.value.grossSalaryRupees == 0L) {
+                runCatching {
+                    val txnId = java.util.UUID.randomUUID().toString()
+                    val token = "SESSION_RESTORE_${System.currentTimeMillis()}"
+                    val syncRes = ZeroTaxCloudApiBridge.syncPortalRecords(
+                        pan = cleanPan,
+                        txnId = txnId,
+                        verificationToken = token,
+                        assessmentYear = "2026-27"
+                    ).getOrNull()
+                    if (syncRes != null && syncRes.optBoolean("success", false)) {
+                        val gross = syncRes.optLong("aggregateGrossAmount", 0L)
+                        val tds = syncRes.optLong("aggregateTdsCredit", 0L)
+                        if (gross > 0L || tds > 0L) {
+                            applyPortalSyncData(tds, 0L, gross)
+                        }
+                    }
                 }
             }
         }

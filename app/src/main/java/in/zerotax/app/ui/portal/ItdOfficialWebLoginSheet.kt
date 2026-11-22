@@ -115,14 +115,6 @@ fun ItdOfficialWebLoginSheet(
     LaunchedEffect(bridgeState) {
         when (val state = bridgeState) {
             is PortalBridgeState.CompletedAndSanitized -> {
-                scope.launch {
-                    try {
-                        ZeroTaxCloudApiBridge.ingestLivePrefill(
-                            pan = cleanPan,
-                            sourceOrigin = "OFFICIAL_WEBVIEW_EPHEMERAL_SESSION"
-                        )
-                    } catch (_: Exception) {}
-                }
                 val rawTxns = fetcher.fetchAisTransactions(cleanPan).getOrDefault(emptyList())
                 val allTxns = HardenedEphemeralPortalBridge.deduplicateTransactions(rawTxns)
                 val totalTds = allTxns.sumOf { it.tdsWithheld }
@@ -132,6 +124,32 @@ fun ItdOfficialWebLoginSheet(
                 val grossSalary = allTxns
                     .filter { it.category == AisCategory.SALARY }
                     .sumOf { it.grossAmount }
+
+                scope.launch {
+                    try {
+                        val txnArray = org.json.JSONArray()
+                        allTxns.forEach { rec ->
+                            txnArray.put(org.json.JSONObject().apply {
+                                put("id", rec.transactionId)
+                                put("category", rec.category.name)
+                                put("reportingEntity", rec.reportingEntity)
+                                put("accountOrFolioNumber", rec.accountOrFolioNumber)
+                                put("grossAmount", rec.grossAmount)
+                                put("tdsWithheld", rec.tdsWithheld)
+                                put("quarterOrDate", rec.quarterOrDate)
+                                put("suggestedSchedule", rec.suggestedSchedule)
+                            })
+                        }
+                        ZeroTaxCloudApiBridge.ingestLivePrefill(
+                            pan = cleanPan,
+                            sourceOrigin = "OFFICIAL_WEBVIEW_EPHEMERAL_SESSION",
+                            transactions = txnArray,
+                            recordCount = allTxns.size,
+                            aggregateGross = grossSalary,
+                            aggregateTds = totalTds
+                        )
+                    } catch (_: Exception) {}
+                }
                 onSyncSuccess(allTxns.size, totalTds, totalInterest, grossSalary)
             }
             else -> {}
@@ -482,6 +500,31 @@ fun ItdOfficialWebLoginSheet(
                                 if (finalRecords.isNotEmpty()) {
                                     HardenedEphemeralPortalBridge.setPortalSessionActive(true)
                                     `in`.zerotax.core.security.logging.ZeroTaxLogger.i("ItdOfficialWebLoginSheet", "Sync completed: discovered ${finalRecords.size} live items, totalTds=$totalTds, interest=$totalInterest, grossSalary=$grossSalary")
+                                    scope.launch {
+                                        try {
+                                            val txnArray = org.json.JSONArray()
+                                            finalRecords.forEach { rec ->
+                                                txnArray.put(org.json.JSONObject().apply {
+                                                    put("id", rec.transactionId)
+                                                    put("category", rec.category.name)
+                                                    put("reportingEntity", rec.reportingEntity)
+                                                    put("accountOrFolioNumber", rec.accountOrFolioNumber)
+                                                    put("grossAmount", rec.grossAmount)
+                                                    put("tdsWithheld", rec.tdsWithheld)
+                                                    put("quarterOrDate", rec.quarterOrDate)
+                                                    put("suggestedSchedule", rec.suggestedSchedule)
+                                                })
+                                            }
+                                            ZeroTaxCloudApiBridge.ingestLivePrefill(
+                                                pan = cleanPan,
+                                                sourceOrigin = "OFFICIAL_WEBVIEW_SYNC_COMPLETED",
+                                                transactions = txnArray,
+                                                recordCount = finalRecords.size,
+                                                aggregateGross = grossSalary,
+                                                aggregateTds = totalTds
+                                            )
+                                        } catch (_: Exception) {}
+                                    }
                                     delay(300)
                                     bridge.sanitizePortalSessionImmediately {
                                         webViewRef?.destroy()
