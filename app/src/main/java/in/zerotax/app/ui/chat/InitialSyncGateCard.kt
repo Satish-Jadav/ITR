@@ -195,9 +195,33 @@ fun PostSyncDiagnosticCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Gross Total Income:", style = MaterialTheme.typography.bodySmall)
+                    Text("Gross Salary:", style = MaterialTheme.typography.bodySmall)
                     Text(
                         "₹${IndianCurrencyFormatter.formatLakhs(uiState.grossSalaryRupees)}",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+
+                if (uiState.savingsInterestRupees > 0L) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Bank Interest Income:", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            "₹${IndianCurrencyFormatter.formatLakhs(uiState.savingsInterestRupees)}",
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Gross Total Income (GTI):", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "₹${IndianCurrencyFormatter.formatLakhs(uiState.newRegimeResult.grossTotalIncome)}",
                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
                     )
                 }

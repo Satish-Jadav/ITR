@@ -9,6 +9,7 @@ import `in`.zerotax.feature.aaaggregator.RebitFiDataInMemoryParser
 import `in`.zerotax.feature.pdfunlocker.SilentPdfUnlocker
 import `in`.zerotax.feature.pdfunlocker.DeterministicTracesRegexParser
 import `in`.zerotax.feature.portalbridge.FilingSpeedTelemetryEngine
+import `in`.zerotax.feature.portalbridge.HardenedEphemeralPortalBridge
 import `in`.zerotax.feature.portalbridge.ParallelOnboardingPrefetcher
 import `in`.zerotax.app.ui.components.IndianCurrencyFormatter
 import `in`.zerotax.feature.aiextractor.OfflineWhatIfTaxSimulator
@@ -335,8 +336,13 @@ class ZeroTaxViewModel : ViewModel() {
             }
 
             // Stream 3: Compliance AIS / TIS Data Hub
-            val interestVal = if (bundle.aisTisRecords.isNotEmpty()) {
-                bundle.aisTisRecords.filter { it.category == AisCategory.SAVINGS_INTEREST }.fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.grossAmount }
+            val allInterestRecords = HardenedEphemeralPortalBridge.deduplicateTransactions(
+                (bundle.aisTisRecords + bundle.form26AsTdsRecords).filter {
+                    it.category == AisCategory.SAVINGS_INTEREST || it.category == AisCategory.TIME_DEPOSIT_INTEREST
+                }
+            )
+            val interestVal = if (allInterestRecords.isNotEmpty()) {
+                allInterestRecords.fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.grossAmount }
             } else _uiState.value.savingsInterestRupees
 
             _uiState.update { state ->
@@ -355,9 +361,10 @@ class ZeroTaxViewModel : ViewModel() {
             }
 
             // Stream 4: Dynamic Stream
-            val discoveredSalary = (bundle.form26AsTdsRecords + bundle.aisTisRecords)
-                .filter { it.category == AisCategory.SALARY }
-                .fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.grossAmount }
+            val allSalaryRecords = HardenedEphemeralPortalBridge.deduplicateTransactions(
+                (bundle.form26AsTdsRecords + bundle.aisTisRecords).filter { it.category == AisCategory.SALARY }
+            )
+            val discoveredSalary = allSalaryRecords.fold(0L) { acc: Long, rec: AisTransactionRecord -> acc + rec.grossAmount }
             val resolvedSalary = if (discoveredSalary > 0L) discoveredSalary else _uiState.value.grossSalaryRupees
 
             _uiState.update { state ->
@@ -447,11 +454,9 @@ class ZeroTaxViewModel : ViewModel() {
         val salaryGross = state.grossSalaryRupees
         val grossIncome = maxOf(0L, salaryGross) + state.savingsInterestRupees + state.presumptiveGross44ADA
         val deductions = state.section80CInvestments + state.section80DSelf + state.section80CCD1BNps
-        val taxable = maxOf(0L, grossIncome - deductions - 75000L)
-        val newTax: Long = if (state.newRegimeResult.totalTaxLiabilityRounded288B > 0L) {
-            state.newRegimeResult.totalTaxLiabilityRounded288B
-        } else {
-            val calc = DeterministicIndianTaxEngine.computeNewRegime(
+
+        val newCalc = state.newRegimeResult.takeIf { it.grossTotalIncome > 0L }
+            ?: DeterministicIndianTaxEngine.computeNewRegime(
                 TaxpayerFinancialInput(
                     citizenCategory = state.citizenCategory,
                     grossSalary = salaryGross,
@@ -459,12 +464,8 @@ class ZeroTaxViewModel : ViewModel() {
                     assessmentYearProfile = AssessmentYearProfile.AY_2026_27
                 )
             )
-            calc.totalTaxLiabilityRounded288B
-        }
-        val oldTax: Long = if (state.oldRegimeResult.totalTaxLiabilityRounded288B > 0L) {
-            state.oldRegimeResult.totalTaxLiabilityRounded288B
-        } else {
-            val calc = DeterministicIndianTaxEngine.computeOldRegime(
+        val oldCalc = state.oldRegimeResult.takeIf { it.grossTotalIncome > 0L }
+            ?: DeterministicIndianTaxEngine.computeOldRegime(
                 TaxpayerFinancialInput(
                     citizenCategory = state.citizenCategory,
                     grossSalary = salaryGross,
@@ -472,10 +473,16 @@ class ZeroTaxViewModel : ViewModel() {
                     assessmentYearProfile = AssessmentYearProfile.AY_2026_27
                 )
             )
-            calc.totalTaxLiabilityRounded288B
-        }
+
+        val newTax: Long = newCalc.totalTaxLiabilityRounded288B
+        val oldTax: Long = oldCalc.totalTaxLiabilityRounded288B
         val recommendedRegime = if (newTax <= oldTax) TaxRegime.NEW_REGIME_115BAC else TaxRegime.OLD_REGIME
         val taxSavings: Long = if (oldTax >= newTax) oldTax - newTax else newTax - oldTax
+        val taxable: Long = if (recommendedRegime == TaxRegime.NEW_REGIME_115BAC) {
+            newCalc.netTaxableNormalIncomeRounded288A + newCalc.netTaxableSpecialRateIncome
+        } else {
+            oldCalc.netTaxableNormalIncomeRounded288A + oldCalc.netTaxableSpecialRateIncome
+        }
         val tdsTotal: Long = state.tdsDeposited26As
         val advanceTax: Long = state.totalTaxPaidViaChallan
         val taxDue: Long = if (recommendedRegime == TaxRegime.NEW_REGIME_115BAC) newTax else oldTax
@@ -830,28 +837,48 @@ class ZeroTaxViewModel : ViewModel() {
 
         val txns = itdBundle.optJSONArray("transactions")
         if (txns != null) {
-            var salarySum = 0L
-            var tdsSum = 0L
-            var interestSum = 0L
+            val rawTxnList = mutableListOf<AisTransactionRecord>()
             for (i in 0 until txns.length()) {
                 val t = txns.optJSONObject(i) ?: continue
                 val category = t.optString("category", "").uppercase()
                 val section = t.optString("section", "")
                 val gross = t.optLong("grossAmount", 0L)
-                val tds = t.optLong("tdsAmount", 0L)
-                tdsSum += tds
+                val tds = t.optLong("tdsAmount", t.optLong("tdsWithheld", 0L))
+                val deductorTan = t.optString("deductorOrIssuerTan", t.optString("employerTan", "TAN-SALARY"))
+                val deductorName = t.optString("deductorOrIssuerName", t.optString("employerName", "Employer"))
 
-                if (category == "SALARY" || section.contains("192")) {
-                    salarySum += gross
-                    if (employerName.isBlank()) employerName = t.optString("deductorOrIssuerName", t.optString("employerName", ""))
-                    if (employerTan.isBlank()) employerTan = t.optString("deductorOrIssuerTan", t.optString("employerTan", ""))
-                } else if (category == "SAVINGS_INTEREST" || category == "DEPOSIT_INTEREST" || section.contains("194A")) {
-                    interestSum += gross
-                }
+                val cat = if (category == "SALARY" || section.contains("192")) AisCategory.SALARY
+                else if (category == "SAVINGS_INTEREST" || category == "DEPOSIT_INTEREST" || section.contains("194A")) AisCategory.SAVINGS_INTEREST
+                else AisCategory.SAVINGS_INTEREST
+
+                rawTxnList.add(
+                    AisTransactionRecord(
+                        transactionId = "TXN-$i",
+                        category = cat,
+                        reportingEntity = deductorName,
+                        accountOrFolioNumber = deductorTan,
+                        grossAmount = gross,
+                        tdsWithheld = tds,
+                        quarterOrDate = t.optString("quarterOrDate", "AY-2026-27"),
+                        suggestedSchedule = t.optString("suggestedSchedule", if (cat == AisCategory.SALARY) "Salary" else "OS")
+                    )
+                )
             }
-            if (extractedGrossSalary == 0L && salarySum > 0L) extractedGrossSalary = salarySum
-            if (extractedTds == 0L && tdsSum > 0L) extractedTds = tdsSum
-            if (extractedSavingsInterest == 0L && interestSum > 0L) extractedSavingsInterest = interestSum
+
+            val deduped = HardenedEphemeralPortalBridge.deduplicateTransactions(rawTxnList)
+            val salarySum = deduped.filter { it.category == AisCategory.SALARY }.sumOf { it.grossAmount }
+            val tdsSum = deduped.sumOf { it.tdsWithheld }
+            val interestSum = deduped.filter { it.category == AisCategory.SAVINGS_INTEREST || it.category == AisCategory.TIME_DEPOSIT_INTEREST }.sumOf { it.grossAmount }
+
+            if (salarySum > 0L) extractedGrossSalary = salarySum
+            if (tdsSum > 0L) extractedTds = tdsSum
+            if (interestSum > 0L) extractedSavingsInterest = interestSum
+
+            val firstSal = deduped.firstOrNull { it.category == AisCategory.SALARY }
+            if (firstSal != null) {
+                if (employerName.isBlank()) employerName = firstSal.reportingEntity
+                if (employerTan.isBlank()) employerTan = firstSal.accountOrFolioNumber
+            }
         }
 
         for (aa in aaAccounts) {
@@ -1623,6 +1650,7 @@ class ZeroTaxViewModel : ViewModel() {
                 recommendedTierMode = autoTier
             )
         }
+        generateUnifiedDossier()
 
         scheduleCloudSync()
     }

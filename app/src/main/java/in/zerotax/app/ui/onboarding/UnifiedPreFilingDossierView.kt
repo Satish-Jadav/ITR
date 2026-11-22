@@ -202,15 +202,31 @@ fun UnifiedPreFilingDossierView(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Gross Total Income", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    Text("Gross Salary & Receipts", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
                     Text(IndianCurrencyFormatter.formatToInr(dossier.grossIncomeRupees), style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold))
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Standard & Chapter VI-A Deductions", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
-                    Text("-${IndianCurrencyFormatter.formatToInr(dossier.totalDeductionsRupees + 75000L)}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = if (isDark) PaletteSecondary else PalettePrimary))
+                    Text("Standard Deduction u/s 16(ia)", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    Text("-₹75,000", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = if (isDark) PaletteSecondary else PalettePrimary))
+                }
+                if (dossier.totalDeductionsRupees > 0L) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Chapter VI-A Deductions", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                        Text("-${IndianCurrencyFormatter.formatToInr(dossier.totalDeductionsRupees)}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = if (isDark) PaletteSecondary else PalettePrimary))
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Gross Total Income (GTI)", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    Text(IndianCurrencyFormatter.formatToInr(maxOf(0L, dossier.grossIncomeRupees - 75000L)), style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold))
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),

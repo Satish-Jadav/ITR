@@ -123,7 +123,8 @@ fun ItdOfficialWebLoginSheet(
                         )
                     } catch (_: Exception) {}
                 }
-                val allTxns = fetcher.fetchAisTransactions(cleanPan).getOrDefault(emptyList())
+                val rawTxns = fetcher.fetchAisTransactions(cleanPan).getOrDefault(emptyList())
+                val allTxns = HardenedEphemeralPortalBridge.deduplicateTransactions(rawTxns)
                 val totalTds = allTxns.sumOf { it.tdsWithheld }
                 val totalInterest = allTxns
                     .filter { it.category == AisCategory.SAVINGS_INTEREST || it.category == AisCategory.TIME_DEPOSIT_INTEREST }
@@ -461,11 +462,13 @@ fun ItdOfficialWebLoginSheet(
                                 }
 
                                 val finalRecords = if (parsedTxns.isNotEmpty()) {
-                                    ItdTransactionFetcher.updateLiveTransactions(parsedTxns)
-                                    ItdTransactionFetcher.updateAndPersistLiveTransactions(cleanPan, parsedTxns, null)
-                                    parsedTxns
+                                    val deduped = HardenedEphemeralPortalBridge.deduplicateTransactions(parsedTxns)
+                                    ItdTransactionFetcher.updateLiveTransactions(deduped)
+                                    ItdTransactionFetcher.updateAndPersistLiveTransactions(cleanPan, deduped, null)
+                                    deduped
                                 } else {
-                                    fetcher.fetchAisTransactions(cleanPan).getOrDefault(emptyList())
+                                    val raw = fetcher.fetchAisTransactions(cleanPan).getOrDefault(emptyList())
+                                    HardenedEphemeralPortalBridge.deduplicateTransactions(raw)
                                 }
 
                                 val totalTds = finalRecords.sumOf { it.tdsWithheld }
@@ -477,6 +480,7 @@ fun ItdOfficialWebLoginSheet(
                                     .sumOf { it.grossAmount }
 
                                 if (finalRecords.isNotEmpty()) {
+                                    HardenedEphemeralPortalBridge.setPortalSessionActive(true)
                                     `in`.zerotax.core.security.logging.ZeroTaxLogger.i("ItdOfficialWebLoginSheet", "Sync completed: discovered ${finalRecords.size} live items, totalTds=$totalTds, interest=$totalInterest, grossSalary=$grossSalary")
                                     delay(300)
                                     bridge.sanitizePortalSessionImmediately {

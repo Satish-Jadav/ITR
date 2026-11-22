@@ -36,28 +36,32 @@ class ItdTransactionFetcher(
             records: List<AisTransactionRecord>,
             db: ZeroTaxVaultDatabase? = null
         ) = withContext(Dispatchers.IO) {
-            updateLiveTransactions(records)
+            val deduped = HardenedEphemeralPortalBridge.deduplicateTransactions(records)
+            updateLiveTransactions(deduped)
             val targetDb = db ?: databaseInstance
-            if (targetDb != null && records.isNotEmpty()) {
-                val entities = records.map { rec ->
-                    IncomeLineItemEntity(
-                        line_item_id = rec.transactionId,
-                        pan = pan.uppercase(),
-                        income_head = rec.suggestedSchedule.ifBlank { "OS" },
-                        sub_category = rec.category.name,
-                        employer_or_deductor_tan = rec.accountOrFolioNumber,
-                        deductor_name = rec.reportingEntity,
-                        amount_rupees = rec.grossAmount,
-                        tds_deducted_form16 = rec.tdsWithheld,
-                        tds_verified_26as = rec.tdsWithheld,
-                        receipt_quarter_bucket = rec.quarterOrDate,
-                        authoritative_source = "AIS_TIS",
-                        formula_explanation = "Imported from ITD AIS/26AS statement",
-                        math_sanity_verified = 1
-                    )
+            if (targetDb != null) {
+                targetDb.taxVaultDao().deleteIncomeItemsForPan(pan.uppercase())
+                if (deduped.isNotEmpty()) {
+                    val entities = deduped.map { rec ->
+                        IncomeLineItemEntity(
+                            line_item_id = rec.transactionId,
+                            pan = pan.uppercase(),
+                            income_head = rec.suggestedSchedule.ifBlank { "OS" },
+                            sub_category = rec.category.name,
+                            employer_or_deductor_tan = rec.accountOrFolioNumber,
+                            deductor_name = rec.reportingEntity,
+                            amount_rupees = rec.grossAmount,
+                            tds_deducted_form16 = rec.tdsWithheld,
+                            tds_verified_26as = rec.tdsWithheld,
+                            receipt_quarter_bucket = rec.quarterOrDate,
+                            authoritative_source = "AIS_TIS",
+                            formula_explanation = "Imported from ITD AIS/26AS statement",
+                            math_sanity_verified = 1
+                        )
+                    }
+                    targetDb.taxVaultDao().upsertIncomeItems(entities)
+                    ZeroTaxLogger.i(TAG, "updateAndPersistLiveTransactions: persisted ${entities.size} deduplicated items to SQLCipher")
                 }
-                targetDb.taxVaultDao().upsertIncomeItems(entities)
-                ZeroTaxLogger.i(TAG, "updateAndPersistLiveTransactions: persisted ${entities.size} items to SQLCipher")
             }
         }
     }
@@ -71,25 +75,29 @@ class ItdTransactionFetcher(
         db: ZeroTaxVaultDatabase? = null
     ) = withContext(Dispatchers.IO) {
         val targetDb = db ?: database ?: databaseInstance ?: return@withContext
-        val entities = records.map { rec ->
-            IncomeLineItemEntity(
-                line_item_id = rec.transactionId,
-                pan = pan.uppercase(),
-                income_head = rec.suggestedSchedule.ifBlank { "OS" },
-                sub_category = rec.category.name,
-                employer_or_deductor_tan = rec.accountOrFolioNumber,
-                deductor_name = rec.reportingEntity,
-                amount_rupees = rec.grossAmount,
-                tds_deducted_form16 = rec.tdsWithheld,
-                tds_verified_26as = rec.tdsWithheld,
-                receipt_quarter_bucket = rec.quarterOrDate,
-                authoritative_source = "AIS_TIS",
-                formula_explanation = "Imported from ITD AIS/26AS statement",
-                math_sanity_verified = 1
-            )
+        val deduped = HardenedEphemeralPortalBridge.deduplicateTransactions(records)
+        targetDb.taxVaultDao().deleteIncomeItemsForPan(pan.uppercase())
+        if (deduped.isNotEmpty()) {
+            val entities = deduped.map { rec ->
+                IncomeLineItemEntity(
+                    line_item_id = rec.transactionId,
+                    pan = pan.uppercase(),
+                    income_head = rec.suggestedSchedule.ifBlank { "OS" },
+                    sub_category = rec.category.name,
+                    employer_or_deductor_tan = rec.accountOrFolioNumber,
+                    deductor_name = rec.reportingEntity,
+                    amount_rupees = rec.grossAmount,
+                    tds_deducted_form16 = rec.tdsWithheld,
+                    tds_verified_26as = rec.tdsWithheld,
+                    receipt_quarter_bucket = rec.quarterOrDate,
+                    authoritative_source = "AIS_TIS",
+                    formula_explanation = "Imported from ITD AIS/26AS statement",
+                    math_sanity_verified = 1
+                )
+            }
+            targetDb.taxVaultDao().upsertIncomeItems(entities)
+            ZeroTaxLogger.i(TAG, "persistTransactionsToVault: persisted ${entities.size} deduplicated items to SQLCipher")
         }
-        targetDb.taxVaultDao().upsertIncomeItems(entities)
-        ZeroTaxLogger.i(TAG, "persistTransactionsToVault: persisted ${entities.size} items to SQLCipher")
     }
 
     /**
@@ -110,8 +118,9 @@ class ItdTransactionFetcher(
         }
         try {
             if (liveTransactions.isNotEmpty()) {
-                ZeroTaxLogger.i(TAG, "fetchAisTransactions succeeded: retrieved ${liveTransactions.size} live records")
-                return@withContext Result.success(liveTransactions.toList())
+                val dedupedLive = HardenedEphemeralPortalBridge.deduplicateTransactions(liveTransactions.toList())
+                ZeroTaxLogger.i(TAG, "fetchAisTransactions succeeded: retrieved ${dedupedLive.size} live records")
+                return@withContext Result.success(dedupedLive)
             }
 
             // Fallback: Query SQLCipher hardware vault database if in-memory cache was cleared across app restarts
@@ -131,9 +140,11 @@ class ItdTransactionFetcher(
                             suggestedSchedule = item.income_head.ifBlank { "OS" }
                         )
                     }
-                    liveTransactions.addAll(restored)
-                    ZeroTaxLogger.i(TAG, "fetchAisTransactions: restored ${restored.size} records from SQLCipher vault")
-                    return@withContext Result.success(restored)
+                    val deduped = HardenedEphemeralPortalBridge.deduplicateTransactions(restored)
+                    liveTransactions.clear()
+                    liveTransactions.addAll(deduped)
+                    ZeroTaxLogger.i(TAG, "fetchAisTransactions: restored ${deduped.size} deduplicated records from SQLCipher vault")
+                    return@withContext Result.success(deduped)
                 }
             }
 

@@ -79,6 +79,61 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
         fun setPortalSessionActive(active: Boolean) {
             _isSessionActive = active
         }
+
+        /**
+         * Deduplicates transaction records across multiple portal payloads (Prefill, 26AS, AIS, DOM)
+         * to prevent double or triple counting of gross salary, interest, and TDS credits.
+         */
+        fun deduplicateTransactions(transactions: List<AisTransactionRecord>): List<AisTransactionRecord> {
+            if (transactions.isEmpty()) return emptyList()
+
+            val deduped = mutableListOf<AisTransactionRecord>()
+
+            // 1. Deduplicate SALARY records by employer identifier (TAN or employer name)
+            val salaryRecords = transactions.filter { it.category == AisCategory.SALARY }
+            val salaryByEmployer = salaryRecords.groupBy { rec ->
+                val tan = rec.accountOrFolioNumber.trim().uppercase()
+                if (tan.isNotBlank() && !tan.startsWith("TAN-") && !tan.startsWith("ITD-")) tan
+                else rec.reportingEntity.trim().uppercase()
+            }
+            salaryByEmployer.forEach { (_, records) ->
+                val best = records.maxByOrNull { it.grossAmount } ?: records.first()
+                val maxTds = records.maxOfOrNull { it.tdsWithheld } ?: best.tdsWithheld
+                deduped.add(best.copy(tdsWithheld = maxTds))
+            }
+
+            // 2. Deduplicate INTEREST records (SAVINGS_INTEREST, TIME_DEPOSIT_INTEREST)
+            val interestRecords = transactions.filter {
+                it.category == AisCategory.SAVINGS_INTEREST || it.category == AisCategory.TIME_DEPOSIT_INTEREST
+            }
+            val interestByAccount = interestRecords.groupBy { rec ->
+                val acct = rec.accountOrFolioNumber.trim().uppercase()
+                val entity = rec.reportingEntity.trim().uppercase()
+                if (acct.isNotBlank() && !acct.startsWith("ITD-") && !acct.startsWith("SB-") && !acct.startsWith("ACCT-")) acct
+                else entity
+            }
+            interestByAccount.forEach { (_, records) ->
+                val best = records.maxByOrNull { it.grossAmount } ?: records.first()
+                val maxTds = records.maxOfOrNull { it.tdsWithheld } ?: best.tdsWithheld
+                deduped.add(best.copy(tdsWithheld = maxTds))
+            }
+
+            // 3. Other categories (DIVIDENDS, SALE_OF_SECURITIES, RENT_RECEIVED, etc.)
+            val otherRecords = transactions.filter {
+                it.category != AisCategory.SALARY &&
+                it.category != AisCategory.SAVINGS_INTEREST &&
+                it.category != AisCategory.TIME_DEPOSIT_INTEREST
+            }
+            val otherByEntity = otherRecords.groupBy {
+                "${it.category.name}_${it.accountOrFolioNumber}_${it.reportingEntity}"
+            }
+            otherByEntity.forEach { (_, records) ->
+                val best = records.maxByOrNull { it.grossAmount } ?: records.first()
+                deduped.add(best)
+            }
+
+            return deduped
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -165,18 +220,53 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                 val incDed = itrDoc.optJSONObject("ITR1_IncomeDeductions")
                     ?: itrDoc.optJSONObject("IncomeDeductions")
                     ?: itrDoc
-                val grossSal = incDed.optLong("GrossSalary", incDed.optLong("Salary", 0L))
+
+                // GrossSalary can be a nested JSONObject or scalar Long
+                val grossSalObj = incDed.optJSONObject("GrossSalary")
+                val grossSal = if (grossSalObj != null) {
+                    grossSalObj.optLong("TotalGrossSalary", grossSalObj.optLong("Salary", 0L))
+                } else {
+                    incDed.optLong("GrossSalary", incDed.optLong("Salary", 0L))
+                }
+
                 val employerCategory = itrDoc.optJSONObject("PersonalInfo")?.optString("EmployerCategory", "OTH") ?: "OTH"
+                val assesseeName = itrDoc.optJSONObject("PersonalInfo")?.optString("AssesseeName", "Portal Verified Employment") ?: "Portal Verified Employment"
+
+                // Extract TDS from TDSonSalaries in ITR1/ITR2/ITR4
+                val tdsSalArray = itrDoc.optJSONObject("TDSonSalaries")?.optJSONArray("TDSonSalary")
+                    ?: itrDoc.optJSONArray("TDSonSalaries")
+                    ?: root.optJSONObject("TDSonSalaries")?.optJSONArray("TDSonSalary")
+                    ?: root.optJSONArray("tdsOnSalaries")
+
+                var totalSalTds = 0L
+                var firstEmployerTan = "ITD-VERIFIED-SALARY"
+                var firstEmployerName = assesseeName
+
+                if (tdsSalArray != null && tdsSalArray.length() > 0) {
+                    for (i in 0 until tdsSalArray.length()) {
+                        val item = tdsSalArray.getJSONObject(i)
+                        val salTds = item.optLong("TotalTDSDeducted", item.optLong("totalTDSSal", item.optLong("tdsDeducted", 0L)))
+                        totalSalTds += salTds
+                        val itemTan = item.optString("EmployerTAN", item.optString("tanOfEmployer", ""))
+                        if (itemTan.isNotBlank() && firstEmployerTan == "ITD-VERIFIED-SALARY") {
+                            firstEmployerTan = itemTan
+                        }
+                        val itemEmpName = item.optString("EmployerName", item.optString("employerOrDeductorOrCollecterName", ""))
+                        if (itemEmpName.isNotBlank() && firstEmployerName == assesseeName) {
+                            firstEmployerName = itemEmpName
+                        }
+                    }
+                }
 
                 if (grossSal > 0L) {
                     results.add(
                         AisTransactionRecord(
                             transactionId = "PORTAL-ITR-SAL-${System.currentTimeMillis()}",
                             category = AisCategory.SALARY,
-                            reportingEntity = "Portal Verified Employment ($employerCategory)",
-                            accountOrFolioNumber = "ITD-VERIFIED-SALARY",
+                            reportingEntity = firstEmployerName,
+                            accountOrFolioNumber = firstEmployerTan,
                             grossAmount = grossSal,
-                            tdsWithheld = 0L,
+                            tdsWithheld = totalSalTds,
                             quarterOrDate = "AY-2026-27",
                             suggestedSchedule = "Salary"
                         )
@@ -224,8 +314,38 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                         )
                     }
                 }
+
+                // Extract other TDS from TDSonOthThanSals
+                val tdsOtherArray = itrDoc.optJSONObject("TDSonOthThanSals")?.optJSONArray("TDSonOthThanSal")
+                    ?: itrDoc.optJSONArray("TDSonOthThanSals")
+                    ?: root.optJSONObject("TDSonOthThanSals")?.optJSONArray("TDSonOthThanSal")
+                    ?: root.optJSONArray("tdsOnOthThanSalaries")
+                if (tdsOtherArray != null) {
+                    for (i in 0 until tdsOtherArray.length()) {
+                        val item = tdsOtherArray.getJSONObject(i)
+                        val amt = item.optLong("TotGrossAmt", item.optLong("grossAmount", 0L))
+                        val tds = item.optLong("TotalTDSDeducted", item.optLong("tdsDeducted", 0L))
+                        val deductor = item.optString("EmployerOrDeductorOrCollecterName", item.optString("deductorName", "Financial Institution"))
+                        val tan = item.optString("DeductorTAN", item.optString("tanOfDeductor", "TAN-BANK"))
+                        if (amt > 0L || tds > 0L) {
+                            results.add(
+                                AisTransactionRecord(
+                                    transactionId = "PORTAL-ITR-TDS-OTH-$i",
+                                    category = AisCategory.SAVINGS_INTEREST,
+                                    reportingEntity = deductor,
+                                    accountOrFolioNumber = tan,
+                                    grossAmount = amt,
+                                    tdsWithheld = tds,
+                                    quarterOrDate = "AY-2026-27",
+                                    suggestedSchedule = "OS"
+                                )
+                            )
+                        }
+                    }
+                }
+
                 if (results.isNotEmpty()) {
-                    return results
+                    return deduplicateTransactions(results)
                 }
             }
 
@@ -377,11 +497,20 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
     fun parseAllCapturedToTransactions(): List<AisTransactionRecord> {
         val all = mutableListOf<AisTransactionRecord>()
         synchronized(capturedPayloads) {
-            capturedPayloads.forEach { (type, json) ->
-                all.addAll(parsePayloadToTransactions(json, type))
+            // Prioritize official return downloads or structured prefill
+            val priorityOrder = listOf(
+                PayloadType.PREFILL_JSON,
+                PayloadType.FORM_26AS_JSON,
+                PayloadType.AIS_TIS_JSON,
+                PayloadType.PORTAL_PROFILE_JSON
+            )
+            for (type in priorityOrder) {
+                capturedPayloads[type]?.let { json ->
+                    all.addAll(parsePayloadToTransactions(json, type))
+                }
             }
         }
-        return all
+        return deduplicateTransactions(all)
     }
 
     private fun getReadOnlyInterceptorScript(): String = """
@@ -540,6 +669,7 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                     }
                     synchronized(capturedPayloads) {
                         capturedPayloads[type] = sanitized
+                        setPortalSessionActive(true)
                         _state.value = PortalBridgeState.CapturingPayloads(capturedPayloads.keys.toSet())
                     }
                     val parsed = parsePayloadToTransactions(sanitized, type)
@@ -819,10 +949,10 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                                     const parsed = JSON.parse(val);
                                     if (parsed && typeof parsed === 'object') {
                                         if (parsed.grossTotalIncome || parsed.totalIncome || parsed.grossSalary) {
-                                            extracted.grossSalary = parsed.grossSalary || parsed.grossTotalIncome || parsed.totalIncome;
+                                            extracted.grossSalary = Number(parsed.grossSalary || parsed.grossTotalIncome || parsed.totalIncome) || 0;
                                         }
                                         if (parsed.tds || parsed.totalTds || parsed.taxPaid) {
-                                            extracted.tdsWithheld = parsed.tds || parsed.totalTds || parsed.taxPaid;
+                                            extracted.tdsWithheld = Number(parsed.tds || parsed.totalTds || parsed.taxPaid) || 0;
                                         }
                                         if (parsed.fullName || parsed.name || parsed.taxpayerName) {
                                             extracted.fullName = parsed.fullName || parsed.name || parsed.taxpayerName;
@@ -833,19 +963,22 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
                         }
                     });
 
-                    const textNodes = document.body ? document.body.innerText : '';
-                    const grossMatch = textNodes.match(/(?:Gross Total Income|Total Gross Income|Gross Income)[^\d₹]*₹?\s*([\d,]+)/i);
-                    if (grossMatch && grossMatch[1]) {
-                        const rawVal = parseInt(grossMatch[1].replace(/,/g, ''), 10);
-                        if (!isNaN(rawVal) && rawVal > 0) {
-                            extracted.grossSalary = rawVal;
-                        }
-                    }
-                    const tdsMatch = textNodes.match(/(?:Total Tax Paid|Tax Deducted|TDS Deposited)[^\d₹]*₹?\s*([\d,]+)/i);
-                    if (tdsMatch && tdsMatch[1]) {
-                        const rawVal = parseInt(tdsMatch[1].replace(/,/g, ''), 10);
-                        if (!isNaN(rawVal) && rawVal > 0) {
-                            extracted.tdsWithheld = rawVal;
+                    // Match strictly labeled currency elements only, ignoring descriptive sentences
+                    const summaryCells = Array.from(document.querySelectorAll('td, .form-value, .dashboard-card-value, span, div'));
+                    for (let cell of summaryCells) {
+                        const txt = (cell.innerText || '').trim();
+                        // Strictly match numbers formatted as Indian Rupees (e.g., ₹ 12,50,000 or ₹1250000)
+                        const match = txt.match(/^₹\s*([\d,]{4,})$/);
+                        if (match) {
+                            const parentText = (cell.parentElement ? cell.parentElement.innerText : '') || '';
+                            const num = parseInt(match[1].replace(/,/g, ''), 10);
+                            if (num > 0) {
+                                if (/gross\s*(?:total\s*)?income|gross\s*salary/i.test(parentText) && !extracted.grossSalary) {
+                                    extracted.grossSalary = num;
+                                } else if (/(?:total\s*)?tax\s*paid|tds\s*(?:deposited|deducted)/i.test(parentText) && !extracted.tdsWithheld) {
+                                    extracted.tdsWithheld = num;
+                                }
+                            }
                         }
                     }
 
@@ -871,31 +1004,30 @@ class HardenedEphemeralPortalBridge(private val scope: CoroutineScope) {
     }
 
     fun injectFetchLivePrefillAndAisScript(webView: WebView, assessmentYear: String = "2026-27") {
+        val escapedAy = JSONObject.quote(assessmentYear)
         val script = """
             (function() {
                 try {
-                    const ays = ['2026-27', '2025-26', '2024-25'];
-                    ays.forEach(ay => {
-                        const endpoints = [
-                            '/iec/foservices/api/prefill?ay=' + ay,
-                            '/iec/foservices/api/ais/details?ay=' + ay,
-                            '/iec/foservices/api/26as/download?ay=' + ay,
-                            '/iec/foservices/api/user-profile',
-                            '/iec/foservices/api/filing/details?ay=' + ay
-                        ];
-                        endpoints.forEach(ep => {
-                            window.fetch(ep, {
-                                method: 'GET',
-                                headers: { 'Accept': 'application/json' }
-                            }).then(r => {
-                                if (r.ok) return r.text();
-                                return null;
-                            }).then(body => {
-                                if (body && window.ZeroTaxClientBridge) {
-                                    window.ZeroTaxClientBridge.onJsonIntercepted(ep, body);
-                                }
-                            }).catch(() => {});
-                        });
+                    const ay = $escapedAy;
+                    const endpoints = [
+                        '/iec/foservices/api/prefill?ay=' + ay,
+                        '/iec/foservices/api/ais/details?ay=' + ay,
+                        '/iec/foservices/api/26as/download?ay=' + ay,
+                        '/iec/foservices/api/user-profile',
+                        '/iec/foservices/api/filing/details?ay=' + ay
+                    ];
+                    endpoints.forEach(ep => {
+                        window.fetch(ep, {
+                            method: 'GET',
+                            headers: { 'Accept': 'application/json' }
+                        }).then(r => {
+                            if (r.ok) return r.text();
+                            return null;
+                        }).then(body => {
+                            if (body && window.ZeroTaxClientBridge) {
+                                window.ZeroTaxClientBridge.onJsonIntercepted(ep, body);
+                            }
+                        }).catch(() => {});
                     });
                 } catch(e) {}
             })();

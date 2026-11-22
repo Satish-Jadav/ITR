@@ -183,8 +183,8 @@ class ParallelOnboardingPrefetcher(
             PrefetchedOnboardingBundle(
                 pan = cleanPan,
                 prefillPersonalJson = prefillResult,
-                form26AsTdsRecords = parsed26As,
-                aisTisRecords = parsedAis,
+                form26AsTdsRecords = HardenedEphemeralPortalBridge.deduplicateTransactions(parsed26As),
+                aisTisRecords = HardenedEphemeralPortalBridge.deduplicateTransactions(parsedAis),
                 priorYearItrSummary = priorYearResult,
                 discoveredLocalPdfs = localPdfs,
                 aaAccountStreamsReady = aaReady,

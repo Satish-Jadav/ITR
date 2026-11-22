@@ -280,6 +280,9 @@ interface TaxVaultDao {
     @Query("SELECT * FROM income_line_items WHERE pan = :pan")
     suspend fun getIncomeItems(pan: String): List<IncomeLineItemEntity>
 
+    @Query("DELETE FROM income_line_items WHERE pan = :pan")
+    suspend fun deleteIncomeItemsForPan(pan: String): Int
+
     @Query("DELETE FROM income_line_items WHERE line_item_id = :lineItemId")
     suspend fun deleteIncomeItemById(lineItemId: String): Int
 

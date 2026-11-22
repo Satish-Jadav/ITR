@@ -116,7 +116,7 @@ fun PortalAssistantScreen(
     var isStatutoryDeclarationAccepted by remember { mutableStateOf(false) }
 
     // In-App Authentication inputs (Zero Password Captured Architecture)
-    var loginMethod by remember { mutableStateOf("AADHAAR_OTP") } // AADHAAR_OTP or OFFICIAL_WEB
+    var loginMethod by remember { mutableStateOf("OFFICIAL_WEB") } // OFFICIAL_WEB or AADHAAR_OTP
     var aadhaarOtpAuth by remember { mutableStateOf("") }
     var showWebLoginSheet by remember { mutableStateOf(false) }
     var isAuthenticating by remember { mutableStateOf(false) }
@@ -790,42 +790,6 @@ private fun InAppAuthenticationStage(
         ) {
             Surface(
                 shape = RoundedCornerShape(6.dp),
-                color = if (loginMethod == "AADHAAR_OTP") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
-                border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    if (loginMethod == "AADHAAR_OTP") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clickable { onLoginMethodChanged("AADHAAR_OTP") }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(10.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Bolt,
-                            contentDescription = null,
-                            tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal900,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            "Instant Aadhaar OTP",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            color = if (isDark) MaterialTheme.colorScheme.onSurface else EnterpriseTeal900
-                        )
-                    }
-                    Text("No password needed", fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
-                }
-            }
-
-            Surface(
-                shape = RoundedCornerShape(6.dp),
                 color = if (loginMethod == "OFFICIAL_WEB") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
@@ -856,7 +820,43 @@ private fun InAppAuthenticationStage(
                             color = if (isDark) MaterialTheme.colorScheme.onSurface else EnterpriseTeal900
                         )
                     }
-                    Text("Log in once on portal", fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
+                    Text("ITD Portal / Real OTP", fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
+                }
+            }
+
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = if (loginMethod == "AADHAAR_OTP") (if (isDark) EnterpriseTeal900.copy(alpha = 0.35f) else EnterpriseTeal50) else (if (isDark) MaterialTheme.colorScheme.surfaceVariant else Slate100),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    if (loginMethod == "AADHAAR_OTP") EnterpriseTeal600 else if (isDark) MaterialTheme.colorScheme.outlineVariant else Slate300
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clickable { onLoginMethodChanged("AADHAAR_OTP") }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Bolt,
+                            contentDescription = null,
+                            tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal900,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "Direct Aadhaar OTP",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = if (isDark) MaterialTheme.colorScheme.onSurface else EnterpriseTeal900
+                        )
+                    }
+                    Text("Requires ERI Gateway", fontSize = 10.sp, color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Slate500)
                 }
             }
         }
