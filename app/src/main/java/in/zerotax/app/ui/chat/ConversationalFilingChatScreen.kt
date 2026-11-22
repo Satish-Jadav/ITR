@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VerifiedUser
@@ -168,81 +169,53 @@ fun ConversationalFilingChatScreen(
             )
         }
 
-        // Live Real-Time Return Snapshot Card (Modern Elevated Surface)
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 6.dp)
-                .animateContentSize(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)),
-            shape = RoundedCornerShape(14.dp),
-            color = if (isDark) Slate850 else PureWhite,
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate200),
-            shadowElevation = if (isDark) 0.dp else 2.dp
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+        // Sleek compact context pill if inside tab navigation
+        if (!showTopBar && gross > 0L) {
+            val recRegime = uiState?.let {
+                if (it.newRegimeResult.totalTaxLiabilityRounded288B <= it.oldRegimeResult.totalTaxLiabilityRounded288B) "New Regime (u/s 115BAC)" else "Old Regime"
+            } ?: fallbackBot.snapshot.recommendedRegime
+            val saved = uiState?.let {
+                kotlin.math.abs(it.newRegimeResult.totalTaxLiabilityRounded288B - it.oldRegimeResult.totalTaxLiabilityRounded288B)
+            } ?: fallbackBot.snapshot.taxSavedByRecommendedRegime
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                shape = RoundedCornerShape(20.dp),
+                color = if (isDark) Slate850 else Slate100,
+                border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isDark) Slate700 else Slate300)
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text("Gross Income", style = MaterialTheme.typography.labelSmall, color = Slate400)
-                        Text(
-                            text = Rupee(gross).toString(),
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.5.sp, color = if (isDark) PureWhite else Slate900)
+                    Row(
+                        modifier = Modifier.weight(1f, fill = false),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(EmeraldSuccess)
                         )
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Deductions", style = MaterialTheme.typography.labelSmall, color = Slate400)
+                        Spacer(Modifier.width(8.dp))
                         Text(
-                            text = Rupee(deductions).toString(),
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.5.sp, color = if (isDark) IndigoStatutoryDark else IndigoStatutory)
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("Net Refund Due", style = MaterialTheme.typography.labelSmall, color = Slate400)
-                        Text(
-                            text = Rupee(refundDue).toString(),
-                            style = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.5.sp, color = if (isDark) EnterpriseTeal300 else EmeraldSuccess)
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-                val recRegime = uiState?.let {
-                    if (it.newRegimeResult.totalTaxLiabilityRounded288B <= it.oldRegimeResult.totalTaxLiabilityRounded288B) "New Regime (u/s 115BAC)" else "Old Regime"
-                } ?: fallbackBot.snapshot.recommendedRegime
-                val saved = uiState?.let {
-                    kotlin.math.abs(it.newRegimeResult.totalTaxLiabilityRounded288B - it.oldRegimeResult.totalTaxLiabilityRounded288B)
-                } ?: fallbackBot.snapshot.taxSavedByRecommendedRegime
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) EnterpriseTeal900.copy(alpha = 0.5f) else EnterpriseTeal50)
-                        .border(0.5.dp, EnterpriseTeal500.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = if (isDark) EnterpriseTeal300 else EnterpriseTeal700,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = "Optimal: $recRegime",
-                            style = TextStyle(fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal200 else EnterpriseTeal900)
+                            text = "Gross: ${Rupee(gross)} • Optimal: $recRegime",
+                            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = if (isDark) Slate200 else Slate800),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                     if (saved > 0L) {
+                        Spacer(Modifier.width(8.dp))
                         Text(
-                            text = "Saves ₹${Rupee.formatInr(saved)}",
-                            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal300 else EmeraldSuccess)
+                            text = "Save ₹${Rupee.formatInr(saved)}",
+                            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isDark) EnterpriseTeal300 else EmeraldSuccess),
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }
@@ -258,71 +231,53 @@ fun ConversationalFilingChatScreen(
                 .padding(horizontal = 14.dp),
             contentPadding = PaddingValues(top = 4.dp, bottom = 12.dp)
         ) {
-            // WhatsApp-Style End-to-End Encryption Banner at top of chat
             item {
-                WhatsAppEndToEndEncryptionBanner(
-                    onClick = { showTrustModal = true },
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    customText = "🔒 Messages & tax calculations are end-to-end encrypted. No one outside of this chat, not even ZeroTax, can read them. Tap to verify."
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = Slate400,
+                        modifier = Modifier.size(11.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "Zero-telemetry • End-to-end encrypted on-device • AY 2026-27",
+                        style = TextStyle(fontSize = 10.5.sp, color = Slate400, fontWeight = FontWeight.Medium)
+                    )
+                }
             }
 
-                // Turn 0: Sync-First Gate Card (Strict statutory rule: zero guessed figures before sync)
-                if (gross == 0L) {
-                    item {
-                        InitialSyncGateCard(
-                            onConnectItdPortal = {
-                                viewModel?.startDynamicHydrationRadar()
-                            },
-                            onScanForm16 = {
-                                docPickerLauncher.launch(arrayOf("application/pdf", "image/*"))
-                            },
-                            modifier = Modifier.padding(vertical = 8.dp)
+            items(
+                items = messages,
+                key = { it.id }
+            ) { msg ->
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(tween(220)) + slideInVertically(tween(250)) { it / 4 }
+                ) {
+                    Column {
+                        ChatBubbleItem(
+                            message = msg,
+                            onApplyWhatIf = { sim -> viewModel?.applyWhatIfScenarioToReturn(sim) },
+                            onSwitchRegime = { regime -> viewModel?.switchRegime(regime) }
                         )
-                    }
-                } else if (uiState != null) {
-                    // Turn 1: Post-Sync Reconciled Diagnostic Card
-                    item {
-                        PostSyncDiagnosticCard(
-                            uiState = uiState,
-                            onProceedToFiling = {
-                                onProceedToFullReview(
-                                    gross,
-                                    maxOf(0L, gross - deductions),
-                                    taxLiability,
-                                    deductions,
-                                    refundDue
-                                )
-                            },
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-                }
-                items(
-                    items = messages,
-                    key = { it.id }
-                ) { msg ->
-                    AnimatedVisibility(
-                        visible = true,
-                        enter = fadeIn(tween(220)) + slideInVertically(tween(250)) { it / 4 }
-                    ) {
-                        Column {
-                            ChatBubbleItem(
-                                message = msg,
-                                onApplyWhatIf = { sim -> viewModel?.applyWhatIfScenarioToReturn(sim) },
-                                onSwitchRegime = { regime -> viewModel?.switchRegime(regime) }
-                            )
-                            Spacer(Modifier.height(8.dp))
-                        }
-                    }
-                }
-
-                if (isBotThinking) {
-                    item {
-                        PulsingTypingIndicator()
+                        Spacer(Modifier.height(8.dp))
                     }
                 }
             }
+
+            if (isBotThinking) {
+                item {
+                    PulsingTypingIndicator()
+                }
+            }
+        }
 
         // Floating Bottom Actions & Modern Input Pill
         Surface(
@@ -335,32 +290,6 @@ fun ConversationalFilingChatScreen(
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Quick Action Review Button when ready
-                if (isReadyForReview) {
-                    Button(
-                        onClick = { showChatFinalApprovalDialog = true },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = EmeraldSuccess,
-                            contentColor = PureWhite
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(44.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            tint = PureWhite,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "Review All Points & Submit to ITR Portal →",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-                }
 
                 // Single consolidated prompt suggestions row
                 val allPrompts = remember(gross, messages.size) {

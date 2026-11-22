@@ -359,84 +359,48 @@ fun EnterpriseTopHeader(
             val chipBorder = if (isTopDark) Slate700 else Slate300
             val chipContent = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700
 
+            val standardChips = listOfNotNull(
+                onOpenAnalytics?.let { "Insights" to Pair(Icons.Default.BarChart, it) },
+                onOpenNotices?.let { "Notices" to Pair(Icons.Default.Security, it) },
+                onOpenThinkLikeCa?.let { "Think Like CA" to Pair(Icons.AutoMirrored.Filled.TrendingUp, it) },
+                onOpenCaPortal?.let { "CA Desk" to Pair(Icons.Default.AssignmentInd, it) },
+                onOpenBusinessAudit?.let { "Business Audit" to Pair(Icons.Default.Domain, it) },
+                onOpenNriSuite?.let { "NRI Suite" to Pair(Icons.Default.Public, it) },
+                onOpenCorporateSuite?.let { "Corporate Suite" to Pair(Icons.Default.Apartment, it) },
+                onOpenTrustShield?.let { "Trust Shield" to Pair(Icons.Default.VerifiedUser, it) }
+            )
+
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                if (onOpenChatbot != null) {
-                    item {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (isTopDark) EnterpriseTeal900 else EnterpriseTeal50,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, if (isTopDark) EnterpriseTeal500 else EnterpriseTeal400),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { onOpenChatbot() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.5.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.SmartToy,
-                                    contentDescription = null,
-                                    tint = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700,
-                                    modifier = Modifier.size(11.dp)
-                                )
-                                Spacer(Modifier.width(3.dp))
-                                Text(
-                                    text = "AI Copilot",
-                                    style = TextStyle(
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700,
-                                        letterSpacing = 0.1.sp
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-
-                val standardChips = listOfNotNull(
-                    onOpenToolkit?.let { "Tools" to Pair(Icons.Default.Build, it) },
-                    onOpenAnalytics?.let { "Insights" to Pair(Icons.Default.BarChart, it) },
-                    onOpenNotices?.let { "Notices" to Pair(Icons.Default.Security, it) },
-                    onOpenThinkLikeCa?.let { "Think Like CA" to Pair(Icons.AutoMirrored.Filled.TrendingUp, it) },
-                    onOpenCaPortal?.let { "CA Desk" to Pair(Icons.Default.AssignmentInd, it) },
-                    onOpenBusinessAudit?.let { "Business Audit" to Pair(Icons.Default.Domain, it) },
-                    onOpenNriSuite?.let { "NRI Suite" to Pair(Icons.Default.Public, it) },
-                    onOpenCorporateSuite?.let { "Corporate Suite" to Pair(Icons.Default.Apartment, it) },
-                    onOpenTrustShield?.let { "Trust Shield" to Pair(Icons.Default.VerifiedUser, it) }
-                )
-
                 items(standardChips.size) { index ->
                     val (label, iconAndAction) = standardChips[index]
                     val (icon, action) = iconAndAction
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = chipBg,
                         border = androidx.compose.foundation.BorderStroke(0.5.dp, chipBorder),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(10.dp))
                             .clickable { action() }
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.5.dp)
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
                                 tint = chipContent,
-                                modifier = Modifier.size(11.dp)
+                                modifier = Modifier.size(10.dp)
                             )
                             Spacer(Modifier.width(3.dp))
                             Text(
                                 text = label,
                                 style = TextStyle(
-                                    fontSize = 9.5.sp,
+                                    fontSize = 9.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = chipContent,
                                     letterSpacing = 0.1.sp

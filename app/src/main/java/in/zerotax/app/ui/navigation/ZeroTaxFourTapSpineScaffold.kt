@@ -1664,41 +1664,6 @@ private fun ProWorkspaceView(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    imageVector = when (selectedTab) {
-                        WorkspaceTab.Filing -> Icons.Default.AccountBalance
-                        WorkspaceTab.AiCopilot -> Icons.Default.SmartToy
-                        WorkspaceTab.AisAndVault -> Icons.Default.Receipt
-                        WorkspaceTab.Tools -> Icons.Default.Build
-                    },
-                    contentDescription = null,
-                    tint = EnterpriseTeal600,
-                    modifier = Modifier.size(18.dp)
-                )
-                Text(
-                    text = selectedTab.title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-            }
-            StatutoryBadge(
-                text = if (uiState.isVaultShredded) "Vault Shredded" else "Vault Locked",
-                tone = if (uiState.isVaultShredded) BadgeTone.DANGER else BadgeTone.SUCCESS
-            )
-        }
-
-        Spacer(Modifier.height(4.dp))
-
         // Fluid horizontal slide & fade between workspace tabs
         AnimatedContent(
             targetState = selectedTab,
@@ -1805,6 +1770,7 @@ private fun ProWorkspaceView(
                 WorkspaceTab.AisAndVault -> {
                     SmartTransactionSuggestionsView(
                         pan = uiState.pan,
+                        showTopBar = false,
                         onBack = { onSelectTab(WorkspaceTab.Filing) },
                         modifier = Modifier.padding(horizontal = 14.dp)
                     )
