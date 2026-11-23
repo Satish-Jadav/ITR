@@ -283,20 +283,7 @@ fun EnterpriseTopHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(ForestGreenPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = "ZeroTax",
-                        tint = SageMintPill,
-                        modifier = Modifier.size(17.dp)
-                    )
-                }
+                ZeroTaxBrandLogo(size = 28.dp, showText = false)
                 Text(
                     text = "ZeroTax",
                     style = TextStyle(
