@@ -89,70 +89,195 @@ fun SmartTaxToolkitScreen(
     showTopBar: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    androidx.activity.compose.BackHandler(onBack = onBack)
-
     val liveUiState = viewModel?.uiState?.collectAsState()?.value
-    var selectedTab by remember { mutableStateOf(ToolkitTab.HRA_OPTIMIZER) }
+    var activeTool by remember { mutableStateOf<ToolkitTab?>(null) }
+    val isDark = isSystemInDarkTheme()
+
+    androidx.activity.compose.BackHandler(enabled = activeTool != null) {
+        activeTool = null
+    }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .background(if (isDark) Slate950 else CanvasWarm)
     ) {
-        if (showTopBar) {
-            ZeroTaxTopAppBar(
-                title = "Smart Tax Toolkit",
-                subtitle = "Statutory Calculators & Optimization Engines",
-                pan = pan,
-                onBack = onBack,
-                badgeText = "Value-Add Tools",
-                badgeTone = BadgeTone.SUCCESS
-            )
-        }
-
-        // Horizontal Tab Navigation
-        ScrollableTabRow(
-                selectedTabIndex = selectedTab.ordinal,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = EnterpriseTeal600,
-                edgePadding = 12.dp
+        if (showTopBar || activeTool != null) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = if (isDark) Slate950 else PureWhite,
+                shadowElevation = 1.dp
             ) {
-                ToolkitTab.entries.forEach { tab ->
-                    val isSelected = selectedTab == tab
-                    Tab(
-                        selected = isSelected,
-                        onClick = { selectedTab = tab },
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = tab.icon,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(tab.label, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold))
-                            }
+                val topInset = getSafeStatusBarTopInset()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = topInset + 4.dp, bottom = 10.dp, start = 14.dp, end = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        IconButton(
+                            onClick = {
+                                if (activeTool != null) {
+                                    activeTool = null
+                                } else {
+                                    onBack()
+                                }
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = if (isDark) PureWhite else Slate900,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
-                    )
+
+                        Column {
+                            Text(
+                                text = activeTool?.label ?: "Smart Tax Toolkit",
+                                style = TextStyle(
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isDark) PureWhite else Slate900
+                                ),
+                                maxLines = 1
+                            )
+                            Text(
+                                text = if (activeTool != null) "Statutory Calculator" else "Choose a tool or calculator",
+                                style = TextStyle(
+                                    fontSize = 11.sp,
+                                    color = Slate500
+                                )
+                            )
+                        }
+                    }
+
+                    if (pan.isNotBlank()) {
+                        StatutoryBadge(text = pan, tone = BadgeTone.NEUTRAL)
+                    }
                 }
             }
+        }
 
-            // Tab Content with Smooth Horizontal Slide & Fade Transitions
-            AnimatedContent(
-                targetState = selectedTab,
-                transitionSpec = {
-                    val isForward = targetState.ordinal > initialState.ordinal
-                    (slideInHorizontally(tween(280, easing = FastOutSlowInEasing)) { if (isForward) it / 3 else -it / 3 } +
-                            fadeIn(tween(220))).togetherWith(
-                        slideOutHorizontally(tween(220, easing = FastOutSlowInEasing)) { if (isForward) -it / 3 else it / 3 } +
-                                fadeOut(tween(180))
-                    )
-                },
-                label = "ToolkitTabTransition",
+        if (activeTool == null) {
+            // Clean Menu Options (Cards)
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-            ) { tab ->
-                when (tab) {
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(top = 14.dp, bottom = 120.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                item {
+                    Text(
+                        text = "Calculators & Financial Engines",
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Slate600
+                        ),
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+                    )
+                }
+
+                items(ToolkitTab.entries) { tab ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .clickable { activeTool = tab },
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isDark) Slate850 else PureWhite,
+                        shadowElevation = 1.dp
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(if (isDark) Slate800 else SageMintPill),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = tab.icon,
+                                        contentDescription = tab.label,
+                                        tint = ForestGreenPrimary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = tab.label,
+                                        style = TextStyle(
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isDark) PureWhite else Slate900
+                                        )
+                                    )
+                                    Text(
+                                        text = when (tab) {
+                                            ToolkitTab.HRA_OPTIMIZER -> "Rent receipts & Section 10(13A) Rule 2A"
+                                            ToolkitTab.CTC_OPTIMIZER -> "Rebalance flexi-benefits & allowances"
+                                            ToolkitTab.CAPITAL_GAINS_LEDGER -> "Equities, MFs & carry-forward loss ledger"
+                                            ToolkitTab.PROPERTY_LTCG -> "12.5% without vs 20% with indexation"
+                                            ToolkitTab.FORM_10E_RELIEF -> "Salary arrears tax relief under Section 89"
+                                            ToolkitTab.ITR_U_UPDATED_RETURN -> "File for past 2 FYs under Section 139(8A)"
+                                            ToolkitTab.ADVANCE_TAX_RADAR -> "Quarterly schedules & Challan 280 UPI"
+                                            ToolkitTab.LTCG_HARVESTING -> "Maximize ₹1.25 Lakh annual tax-free gains"
+                                            ToolkitTab.STATEMENT_EXPORTER -> "Certified visa & bank loan tax statement"
+                                            ToolkitTab.WHAT_IF_SIMULATOR -> "Simulate increment, job switch & deductions"
+                                            ToolkitTab.FORM_12BB_PROOF -> "Generate employee investment declaration"
+                                            ToolkitTab.FORM_15G_15H -> "Zero TDS on FD interest declaration"
+                                            ToolkitTab.RESIDENTIAL_STATUS -> "FEMA & Income Tax 182-day rule calculator"
+                                            ToolkitTab.REFUND_AUDIT_244A -> "Section 244A 0.5% monthly refund interest"
+                                            ToolkitTab.SCHEDULE_AL_WEALTH -> "Assets & Liabilities disclosure u/s 139"
+                                            ToolkitTab.CORPORATE_SUITE -> "LLP, Pvt Ltd & Trust statutory tools"
+                                        },
+                                        style = TextStyle(
+                                            fontSize = 11.sp,
+                                            color = Slate500
+                                        ),
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null,
+                                tint = Slate400,
+                                modifier = Modifier.size(13.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            // Selected Tool View
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                when (activeTool!!) {
                     ToolkitTab.HRA_OPTIMIZER -> HraOptimizerView(pan = pan, grossSalary = liveUiState?.grossSalaryRupees ?: grossSalary, onApplyHraToReturn = { viewModel?.onExemptAllowancesSec10Changed(it) })
                     ToolkitTab.CTC_OPTIMIZER -> CtcRestructuringView(grossSalary = grossSalary)
                     ToolkitTab.CAPITAL_GAINS_LEDGER -> CapitalGainsLedgerView()
@@ -173,6 +298,7 @@ fun SmartTaxToolkitScreen(
             }
         }
     }
+}
 
 // ============================================================================
 // 1. HRA EXEMPTION OPTIMIZER & RENT RECEIPTS GENERATOR (RULE 2A)
