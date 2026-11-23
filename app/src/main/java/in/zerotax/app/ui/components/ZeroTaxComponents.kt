@@ -1383,22 +1383,22 @@ fun ZeroTaxCard(
     modifier: Modifier = Modifier,
     accentBorderColor: Color? = null,
     containerColor: Color = MaterialTheme.colorScheme.surface,
-    shape: RoundedCornerShape = RoundedCornerShape(18.dp),
+    shape: RoundedCornerShape = RoundedCornerShape(22.dp),
     contentPadding: PaddingValues = PaddingValues(16.dp),
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-    val defaultBorderColor = if (isDark) Slate700.copy(alpha = 0.5f) else Slate200
+    val defaultBorderColor = if (isDark) Slate700.copy(alpha = 0.35f) else Color.Transparent
     val effectiveBorderColor = accentBorderColor ?: defaultBorderColor
 
     val baseModifier = modifier
         .fillMaxWidth()
         .clip(shape)
-        .border(
-            width = 0.75.dp,
-            color = effectiveBorderColor,
-            shape = shape
+        .then(
+            if (effectiveBorderColor != Color.Transparent) {
+                Modifier.border(width = 0.75.dp, color = effectiveBorderColor, shape = shape)
+            } else Modifier
         )
     val cardModifier = if (onClick != null) {
         baseModifier.clickable(onClick = onClick)
@@ -1410,7 +1410,7 @@ fun ZeroTaxCard(
         modifier = cardModifier,
         shape = shape,
         color = containerColor,
-        shadowElevation = if (isDark) 0.dp else 2.dp
+        shadowElevation = if (isDark) 0.dp else 2.5.dp
     ) {
         Column(
             modifier = Modifier.padding(contentPadding),
@@ -1440,18 +1440,18 @@ fun ZeroTaxActionCard(
 ) {
     val isDark = isSystemInDarkTheme()
     val defaultBg = containerColor ?: if (isDark) Slate850 else PureWhite
-    val defaultBorder = accentBorderColor ?: if (isDark) Slate700.copy(alpha = 0.6f) else Slate200
-    val effectiveIconTint = iconTint ?: if (isDark) EnterpriseTeal300 else EnterpriseTeal600
-    val effectiveIconBgColor = iconBgColor ?: if (isDark) Slate800 else EnterpriseTeal50
+    val defaultBorder = accentBorderColor ?: if (isDark) Slate700.copy(alpha = 0.35f) else Slate200.copy(alpha = 0.5f)
+    val effectiveIconTint = iconTint ?: if (isDark) EnterpriseTeal300 else ForestGreenPrimary
+    val effectiveIconBgColor = iconBgColor ?: if (isDark) Slate800 else SageMintPill
 
     Surface(
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(22.dp),
         color = defaultBg,
         shadowElevation = if (isDark) 0.dp else 2.dp,
-        border = androidx.compose.foundation.BorderStroke(0.75.dp, defaultBorder),
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, defaultBorder),
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(22.dp))
             .clickable(onClick = onClick)
     ) {
         Row(
