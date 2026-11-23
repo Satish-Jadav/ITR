@@ -77,13 +77,64 @@ class ConversationalTaxFilingBot {
     private var employerCount: Int = 1
     private var bankNameAndAccount: String = "Verified Primary Bank Account"
 
+    /**
+     * Synchronizes chatbot memory with live taxpayer profile data.
+     * Prevents asking the user for Gross Total Income or details already on file.
+     */
+    fun syncWithTaxpayerProfile(
+        grossSalary: Long,
+        hraExemption: Long = 0L,
+        homeLoan24b: Long = 0L,
+        sec80c: Long = 0L,
+        sec80d: Long = 0L,
+        nps80ccd1b: Long = 0L,
+        savingsInterest: Long = 0L,
+        taxpayerName: String = "",
+        pan: String = ""
+    ) {
+        if (grossSalary > 0L) {
+            snapshot = snapshot.copy(
+                grossSalary = grossSalary,
+                hraExemption = hraExemption,
+                homeLoanInterest24b = homeLoan24b,
+                sec80cTotal = sec80c,
+                healthInsurance80d = sec80d,
+                nps80ccd1b = nps80ccd1b,
+                savingsExemption80tta = minOf(10_000L, savingsInterest)
+            )
+            recalculateSnapshot()
+            if (currentStep == ChatStep.WELCOME || currentStep == ChatStep.ASK_SALARY) {
+                currentStep = if (sec80c > 0L || sec80d > 0L || nps80ccd1b > 0L || homeLoan24b > 0L) {
+                    ChatStep.COMPLETED_AWAITING_REVIEW
+                } else {
+                    ChatStep.ASK_HRA_RENT
+                }
+            }
+        }
+    }
+
     fun getInitialGreeting(): List<ChatMessage> {
+        val hasSalary = snapshot.grossSalary > 0L
+        val greetingText = if (hasSalary) {
+            "Namaste! I am your ZeroTax AI Copilot.\n\n" +
+            "I already have your verified Gross Total Income of ₹${formatInr(snapshot.grossSalary)} on record from your Form 16 / AIS sync. " +
+            "How can I help you maximize your refund, uncover hidden deductions, or compare Old vs. New tax regimes?"
+        } else {
+            "Namaste! I am your ZeroTax AI Copilot — powered by on-device intelligence with deterministic tax math.\n\n" +
+            "You don't need to struggle with complex CBDT tax schedules. Just chat with me naturally, and I'll assemble your complete return, recommend the best tax regime, and uncover hidden deductions to maximize your refund!"
+        }
+
+        val replies = if (hasSalary) {
+            listOf("What is my Gross Total Income?", "Which Regime is Better for Me?", "How to Save More Tax?")
+        } else {
+            listOf("Start Filing Return", "Which Regime is Better for Me?", "Can I Claim HRA & Home Loan Both?")
+        }
+
         return listOf(
             ChatMessage(
                 sender = ChatSender.BOT,
-                text = "Namaste! I am your ZeroTax AI Copilot — powered by on-device intelligence with deterministic tax math.\n\n" +
-                       "You don't need to struggle with complex CBDT tax schedules. Just chat with me naturally, and I'll assemble your complete return, recommend the best tax regime, and uncover hidden deductions to maximize your refund!",
-                quickReplies = listOf("Start Filing Return", "Which Regime is Better for Me?", "Can I Claim HRA & Home Loan Both?")
+                text = greetingText,
+                quickReplies = replies
             )
         )
     }
@@ -99,45 +150,78 @@ class ConversationalTaxFilingBot {
             botResponses.add(queryResponse)
             // If user just asked a question without advancing step, offer next action
             if (currentStep == ChatStep.WELCOME) {
-                botResponses.add(
-                    ChatMessage(
-                        sender = ChatSender.BOT,
-                        text = "Ready to start assembling your return? Let's begin with your salary income.",
-                        quickReplies = listOf("Start Filing Return", "Switched Jobs This Year (2 Form 16s)")
+                if (snapshot.grossSalary > 0L) {
+                    currentStep = ChatStep.ASK_HRA_RENT
+                } else {
+                    botResponses.add(
+                        ChatMessage(
+                            sender = ChatSender.BOT,
+                            text = "Ready to start assembling your return? Let's begin with your salary income.",
+                            quickReplies = listOf("Start Filing Return", "Switched Jobs This Year (2 Form 16s)")
+                        )
                     )
-                )
-                return botResponses
+                    return botResponses
+                }
             }
         }
 
         // 2. Guided State Machine Transition
         when (currentStep) {
             ChatStep.WELCOME -> {
-                currentStep = ChatStep.ASK_SALARY
-                botResponses.add(
-                    ChatMessage(
-                        sender = ChatSender.BOT,
-                        text = "Let's start with your income for Financial Year 2025-26 (AY 2026-27).\n\nWhat was your Gross Salary as per your Form 16? Did you switch companies during the year?",
-                        quickReplies = listOf("₹12,75,000 (Zero Tax Slab)", "₹15,00,000", "₹18,50,000", "Switched Jobs (2 Form 16s)")
+                if (snapshot.grossSalary > 0L) {
+                    currentStep = ChatStep.ASK_HRA_RENT
+                    botResponses.add(
+                        ChatMessage(
+                            sender = ChatSender.BOT,
+                            text = "I have your Gross Total Income of ₹${formatInr(snapshot.grossSalary)} verified on file.\n\n" +
+                                   "Next: Do you live in a rented home and pay monthly rent? (Section 10(13A) Rule 2A exempts HRA from tax).",
+                            quickReplies = listOf("Yes, Rent ₹25,000/mo", "Yes, Rent ₹35,000/mo (Metro)", "Yes, Rent ₹15,000/mo", "No Rented Home / Own House")
+                        )
                     )
-                )
+                } else {
+                    currentStep = ChatStep.ASK_SALARY
+                    botResponses.add(
+                        ChatMessage(
+                            sender = ChatSender.BOT,
+                            text = "Let's start with your income for Financial Year 2025-26 (AY 2026-27).\n\nWhat was your Gross Salary as per your Form 16? Did you switch companies during the year?",
+                            quickReplies = listOf("₹12,75,000 (Zero Tax Slab)", "₹15,00,000", "₹18,50,000", "Switched Jobs (2 Form 16s)")
+                        )
+                    )
+                }
             }
 
             ChatStep.ASK_SALARY -> {
-                val parsedSalary = parseCurrencyFromText(clean, default = 15_00_000L)
-                if (lower.contains("switch") || lower.contains("2 form") || lower.contains("two")) {
-                    employerCount = 2
+                if (snapshot.grossSalary > 0L && !clean.any { it.isDigit() }) {
+                    // User didn't type a new amount, keep existing verified salary
+                    currentStep = ChatStep.ASK_HRA_RENT
+                    botResponses.add(
+                        ChatMessage(
+                            sender = ChatSender.BOT,
+                            text = "Using your verified Gross Salary of ₹${formatInr(snapshot.grossSalary)}.\n\n" +
+                                   "Next: Do you live in a rented home and pay monthly rent? (Section 10(13A) Rule 2A exempts HRA from tax).",
+                            quickReplies = listOf("Yes, Rent ₹25,000/mo", "Yes, Rent ₹35,000/mo (Metro)", "Yes, Rent ₹15,000/mo", "No Rented Home / Own House")
+                        )
+                    )
+                } else {
+                    val parsedSalary = parseCurrencyFromText(clean, default = if (snapshot.grossSalary > 0L) snapshot.grossSalary else 15_00_000L)
+                    if (lower.contains("switch") || lower.contains("2 form") || lower.contains("two")) {
+                        employerCount = 2
+                    }
+
+                    snapshot = snapshot.copy(grossSalary = parsedSalary)
+                    recalculateSnapshot()
+
+                    currentStep = ChatStep.ASK_HRA_RENT
+                    botResponses.add(
+                        ChatMessage(
+                            sender = ChatSender.BOT,
+                            text = "Recorded Gross Salary: ₹${formatInr(parsedSalary)}${if (employerCount > 1) " (2 Employers Auto-Merged to prevent Sec 192 double-deduction)" else ""}.\n\n" +
+                                   "Next: Do you live in a rented home and pay monthly rent? (Section 10(13A) Rule 2A exempts HRA from tax).",
+                            quickReplies = listOf("Yes, Rent ₹25,000/mo", "Yes, Rent ₹35,000/mo (Metro)", "Yes, Rent ₹15,000/mo", "No Rented Home / Own House")
+                        )
+                    )
                 }
-
-                snapshot = snapshot.copy(grossSalary = parsedSalary)
-                recalculateSnapshot()
-
-                currentStep = ChatStep.ASK_HRA_RENT
-                botResponses.add(
-                    ChatMessage(
-                        sender = ChatSender.BOT,
-                        text = "Recorded Gross Salary: ₹${formatInr(parsedSalary)}${if (employerCount > 1) " (2 Employers Auto-Merged to prevent Sec 192 double-deduction)" else ""}.\n\n" +
-                               "Next: Do you live in a rented home and pay monthly rent? (Section 10(13A) Rule 2A exempts HRA from tax).",
+            }
                         quickReplies = listOf("Yes, Rent ₹25,000/mo", "Yes, Rent ₹35,000/mo (Metro)", "Yes, Rent ₹15,000/mo", "No Rented Home / Own House")
                     )
                 )
@@ -422,6 +506,28 @@ class ConversationalTaxFilingBot {
      */
     private fun answerTaxQueryIfPresent(query: String): ChatMessage? {
         return when {
+            query.contains("gross") || query.contains("total income") || query.contains("my salary") || query.contains("my income") || query.contains("salary income") -> {
+                val grossAmt = snapshot.grossSalary
+                val otherAmt = snapshot.savingsExemption80tta
+                val totalGross = grossAmt + otherAmt
+                val text = if (grossAmt > 0L) {
+                    "Your Recorded Income Details:\n" +
+                    "• Gross Salary Income u/s 17(1): ₹${formatInr(grossAmt)}\n" +
+                    (if (otherAmt > 0L) "• Savings / Other Income: ₹${formatInr(otherAmt)}\n" else "") +
+                    "• Gross Total Income: ₹${formatInr(totalGross)}\n\n" +
+                    "✓ Pre-filled from your Form 16 / AIS records. You do not need to enter it again!\n" +
+                    "Would you like to review your deductions or compare Old vs. New Regime tax?"
+                } else {
+                    "Your Gross Salary has not been recorded yet. You can tell me your salary amount (e.g. 'My salary is ₹15,00,000') or sync Form 16 to record it."
+                }
+                ChatMessage(
+                    sender = ChatSender.BOT,
+                    text = text,
+                    isAdvisorTip = true,
+                    quickReplies = listOf("Which Regime is Better?", "How to Save More Tax?", "Review Deductions")
+                )
+            }
+
             query.contains("which regime") || query.contains("compare regime") || query.contains("old vs new") -> {
                 ChatMessage(
                     sender = ChatSender.BOT,

@@ -73,6 +73,24 @@ fun ConversationalFilingChatScreen(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val fallbackBot = remember { ConversationalTaxFilingBot() }
+    val uiState = viewModel?.uiState?.collectAsState()?.value
+
+    LaunchedEffect(uiState?.grossSalaryRupees) {
+        uiState?.let { s ->
+            fallbackBot.syncWithTaxpayerProfile(
+                grossSalary = s.grossSalaryRupees,
+                hraExemption = s.exemptAllowancesSec10,
+                homeLoan24b = s.homeLoanInterestSec24b,
+                sec80c = s.section80CInvestments,
+                sec80d = s.section80DSelf,
+                nps80ccd1b = s.section80CCD1BNps,
+                savingsInterest = s.savingsInterestRupees,
+                taxpayerName = s.taxpayerFullName.ifBlank { s.pan },
+                pan = s.pan
+            )
+        }
+    }
+
     val context = LocalContext.current
     val docPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -103,7 +121,6 @@ fun ConversationalFilingChatScreen(
     var localThinking by remember { mutableStateOf(false) }
     val isBotThinking = if (viewModel != null) viewModelThinking else localThinking
 
-    val uiState = viewModel?.uiState?.collectAsState()?.value
     var inputText by remember { mutableStateOf("") }
     var showTrustModal by remember { mutableStateOf(false) }
     var showChatFinalApprovalDialog by remember { mutableStateOf(false) }

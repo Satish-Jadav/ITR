@@ -1826,13 +1826,34 @@ class ZeroTaxViewModel : ViewModel() {
             )
         }
         generateUnifiedDossier()
+        syncChatbotWithUiState()
 
         scheduleCloudSync()
+    }
+
+    fun syncChatbotWithUiState() {
+        val state = _uiState.value
+        bot.syncWithTaxpayerProfile(
+            grossSalary = state.grossSalaryRupees,
+            hraExemption = state.exemptAllowancesSec10,
+            homeLoan24b = state.homeLoanInterestSec24b,
+            sec80c = state.section80CInvestments,
+            sec80d = state.section80DSelf,
+            nps80ccd1b = state.section80CCD1BNps,
+            savingsInterest = state.savingsInterestRupees,
+            taxpayerName = state.taxpayerFullName.ifBlank { state.pan },
+            pan = state.pan
+        )
+        if (_chatMessages.value.size <= 1) {
+            _chatMessages.value = bot.getInitialGreeting()
+        }
     }
 
     fun sendUserChatMessage(query: String) {
         val clean = query.trim()
         if (clean.isBlank()) return
+
+        syncChatbotWithUiState()
 
         val userMessage = ChatMessage(
             sender = ChatSender.USER,
