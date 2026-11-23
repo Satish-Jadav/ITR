@@ -334,25 +334,6 @@ fun ZeroTaxFourTapSpineScaffold(
                         StatutoryBadge(text = "AY ${uiState.assessmentYear}", tone = BadgeTone.STATUTORY)
                     }
                 }
-            } else {
-                EnterpriseTopHeader(
-                    pan = uiState.pan,
-                    assessmentYear = uiState.assessmentYear,
-                    isVaultEncrypted = !uiState.isVaultShredded,
-                    userProfile = (uiState.authSessionState as? `in`.zerotax.core.model.AuthSessionState.Authenticated)?.user,
-                    onSignOut = { viewModel.signOut() },
-                    onOpenChatbot = { showChatbotFiling = true },
-                    onOpenToolkit = { showTaxToolkit = true },
-                    onOpenAnalytics = { showAnalyticsScreen = true },
-                    onOpenNotices = { showNoticeDefense = true },
-                    onOpenBusinessAudit = { showBusinessAudit = true },
-                    onOpenNriSuite = { showNriSuite = true },
-                    onOpenCorporateSuite = { showCorporateSuite = true },
-                    onOpenTrustShield = { showTrustShieldModal = true },
-                    onOpenThinkLikeCa = { showThinkLikeCa = true },
-                    onOpenCaPortal = { showCaPortal = true },
-                    onLockVault = { ZeroTaxBiometricManager.lockVaultNow() }
-                )
             }
         },
         bottomBar = {
