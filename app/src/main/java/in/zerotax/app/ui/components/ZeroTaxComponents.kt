@@ -263,82 +263,96 @@ fun EnterpriseTopHeader(
 ) {
     val topInset = getSafeStatusBarTopInset()
     val isTopDark = isSystemInDarkTheme()
-    val displayName = userProfile?.displayName?.split(" ")?.firstOrNull() ?: if (pan.isNotBlank()) "SATISH" else "ASHU"
+    val initials = userProfile?.displayName?.split(" ")?.mapNotNull { it.firstOrNull() }?.take(2)?.joinToString("")
+        ?: if (pan.isNotBlank()) "SJ" else "ZT"
 
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = if (isTopDark) Slate950 else CanvasWarm,
         tonalElevation = 0.dp
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = topInset + 4.dp, bottom = 8.dp, start = 18.dp, end = 18.dp)
+                .padding(top = topInset + 4.dp, bottom = 6.dp, start = 12.dp, end = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Reference Style Top Bar: Circular Avatar + Greeting + Bold Name + Forest Green Circle '+' Button
+            // Left: ZeroTax Shield Brand Logo + Title
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Avatar Circle with Soft Warm Border
-                    Box(
-                        modifier = Modifier
-                            .size(46.dp)
-                            .clip(CircleShape)
-                            .background(if (isTopDark) Slate800 else SageMintSubtle)
-                            .border(1.5.dp, if (isTopDark) Slate700 else PureWhite, CircleShape)
-                            .clickable { onSignOut?.invoke() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            tint = ForestGreenPrimary,
-                            modifier = Modifier.size(34.dp)
-                        )
-                    }
-
-                    Column {
-                        Text(
-                            text = "Good Evening",
-                            style = TextStyle(
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = if (isTopDark) Slate400 else Slate500,
-                                letterSpacing = 0.2.sp
-                            )
-                        )
-                        Text(
-                            text = displayName.uppercase(),
-                            style = TextStyle(
-                                fontSize = 19.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = if (isTopDark) PureWhite else Slate900,
-                                letterSpacing = (-0.3).sp
-                            )
-                        )
-                    }
-                }
-
-                // Top Right Circular Floating Action Button (+) in Deep Forest Green
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(ForestGreenPrimary)
-                        .clickable { onOpenChatbot?.invoke() ?: onQuickAdd?.invoke() },
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(ForestGreenPrimary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Quick Action / AI Copilot",
-                        tint = PureWhite,
-                        modifier = Modifier.size(24.dp)
+                        imageVector = Icons.Default.Shield,
+                        contentDescription = "ZeroTax",
+                        tint = SageMintPill,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+                Text(
+                    text = "ZeroTax",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isTopDark) PureWhite else Slate900,
+                        letterSpacing = (-0.3).sp
+                    )
+                )
+            }
+
+            // Middle: AY 2026-27 pill tag
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = if (isTopDark) Slate800 else SageMintPill
+            ) {
+                Text(
+                    text = "AY $assessmentYear",
+                    style = TextStyle(
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isTopDark) SageMintLight else ForestGreenPrimary
+                    ),
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                )
+            }
+
+            // Right: Green lock icon + Circular Avatar with initials
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "Encrypted Vault",
+                    tint = if (isTopDark) SageMintLight else ForestGreenPrimary,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable { onLockVault?.invoke() }
+                )
+
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(if (isTopDark) Slate800 else Slate900)
+                        .clickable { onSignOut?.invoke() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = initials,
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PureWhite
+                        )
                     )
                 }
             }

@@ -334,6 +334,14 @@ fun ZeroTaxFourTapSpineScaffold(
                         StatutoryBadge(text = "AY ${uiState.assessmentYear}", tone = BadgeTone.STATUTORY)
                     }
                 }
+            } else {
+                EnterpriseTopHeader(
+                    pan = uiState.pan,
+                    assessmentYear = uiState.assessmentYear,
+                    userProfile = null,
+                    onSignOut = { viewModel.signOut() },
+                    onOpenChatbot = { viewModel.onSelectWorkspaceTab(WorkspaceTab.AiCopilot) }
+                )
             }
         },
         bottomBar = {
@@ -355,10 +363,10 @@ fun ZeroTaxFourTapSpineScaffold(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         val icons = listOf(
-                            Triple(WorkspaceTab.Filing, Icons.Default.Home, "Home"),
-                            Triple(WorkspaceTab.AiCopilot, Icons.Default.SmartToy, "Copilot"),
-                            Triple(WorkspaceTab.AisAndVault, Icons.Default.Receipt, "Vault"),
-                            Triple(WorkspaceTab.Tools, Icons.Default.Settings, "Tools")
+                            Triple(WorkspaceTab.Filing, Icons.Default.Home, "Filing"),
+                            Triple(WorkspaceTab.AiCopilot, Icons.Default.ChatBubbleOutline, "Assistant"),
+                            Triple(WorkspaceTab.AisAndVault, Icons.Default.FolderZip, "Documents"),
+                            Triple(WorkspaceTab.Tools, Icons.Default.Calculate, "Calculators")
                         )
 
                         icons.forEach { (tab, icon, label) ->
