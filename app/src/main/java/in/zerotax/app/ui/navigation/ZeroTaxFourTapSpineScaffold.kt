@@ -687,12 +687,13 @@ private fun Stage1IdentityConsent(
 ) {
     val isPanValid = pan.length == 10 && (pan[3] == 'P' || pan[3] == 'H')
     val canProceed = isPanValid && isPanVerifiedWithItr
+    val isDark = isSystemInDarkTheme()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         // Real-Time System & ITD Portal Health Telemetry
         Row(
@@ -748,60 +749,76 @@ private fun Stage1IdentityConsent(
 
         // Assessment Year Selector (Current & Previous Year Option)
         Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = if (assessmentYear != "2026-27") AmberWarning.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (assessmentYear != "2026-27") AmberWarning.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant),
+            shape = RoundedCornerShape(16.dp),
+            color = if (isDark) Slate850 else PureWhite,
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else Slate300),
+            shadowElevation = 1.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Icon(Icons.Default.DateRange, null, modifier = Modifier.size(16.dp), tint = if (assessmentYear != "2026-27") AmberWarning else EnterpriseTeal600)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(SageMintPill),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.DateRange, null, modifier = Modifier.size(16.dp), tint = ForestGreenPrimary)
+                        }
                         Text(
                             text = "Assessment Year (AY)",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                            style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = if (isDark) PureWhite else Slate900)
                         )
                     }
                     if (assessmentYear != "2026-27") {
-                        Text(
-                            text = "Previous Year Mode",
-                            style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = AmberWarning)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AmberPillBg)
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "Previous Year Mode",
+                                style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = AmberPillText)
+                            )
+                        }
                     }
                 }
-                Spacer(Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Spacer(Modifier.height(10.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("2026-27" to "AY 26-27 (Current)", "2025-26" to "AY 25-26 (Past)", "2024-25" to "AY 24-25 (ITR-U)").forEach { (ayCode, ayLabel) ->
                         val isSelected = assessmentYear == ayCode
                         Surface(
                             onClick = { onAssessmentYearChanged(ayCode) },
-                            shape = RoundedCornerShape(8.dp),
-                            color = if (isSelected) EnterpriseTeal600 else MaterialTheme.colorScheme.surface,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, if (isSelected) EnterpriseTeal600 else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (isSelected) ForestGreenPrimary else (if (isDark) Slate800 else CanvasWarm),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (isSelected) ForestGreenPrimary else (if (isDark) Slate700 else Slate300)),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
                                 text = ayLabel,
                                 style = TextStyle(
-                                    fontSize = 10.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                    color = if (isSelected) PureWhite else (if (isDark) PureWhite else Slate800),
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 ),
-                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 2.dp)
+                                modifier = Modifier.padding(vertical = 10.dp, horizontal = 2.dp)
                             )
                         }
                     }
                 }
                 if (assessmentYear != "2026-27") {
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     Text(
                         text = if (assessmentYear == "2024-25") "• Section 139(8A) ITR-U mode: File past missed return or declare income safely." else "• Belated Return u/s 139(4) or ITR-U mode enabled for FY 2024-25.",
-                        style = TextStyle(fontSize = 10.sp, color = AmberWarning, fontWeight = FontWeight.Medium)
+                        style = TextStyle(fontSize = 11.sp, color = AmberPillText, fontWeight = FontWeight.Medium)
                     )
                 }
             }
@@ -1036,7 +1053,7 @@ private fun Stage2DocumentDiscovery(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1345,7 +1362,7 @@ private fun Stage3Reconciliation(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1598,7 +1615,7 @@ private fun Stage4RegimeShowdown(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Text(
             text = "Step 4 of 4: Old vs New Regime Comparison",

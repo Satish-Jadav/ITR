@@ -87,8 +87,9 @@ fun SahajFilingExperienceView(
 
         // 1-TAP IN-APP ITD PORTAL SYNC CARD
         Surface(
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(16.dp),
             color = if (isSahajDark) Slate850 else PureWhite,
+            border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isSahajDark) Slate700 else Slate300),
             shadowElevation = 1.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -211,9 +212,13 @@ fun SahajFilingExperienceView(
         // HERO OUTCOME CARD: Clean, Plain-Language Result
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(16.dp),
             color = if (refundDue > 0) SageMintPill else PureWhite,
-            shadowElevation = 2.dp
+            border = androidx.compose.foundation.BorderStroke(
+                0.5.dp,
+                if (refundDue > 0) SageMintBorder else if (isSahajDark) Slate700 else Slate300
+            ),
+            shadowElevation = 1.dp
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Row(
@@ -362,8 +367,9 @@ fun SahajFilingExperienceView(
             ) {
                 // New Regime Card (Winning)
                 Surface(
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(14.dp),
                     color = SageMintPill,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, SageMintBorder),
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
@@ -395,8 +401,9 @@ fun SahajFilingExperienceView(
 
                 // Old Regime Card
                 Surface(
-                    shape = RoundedCornerShape(18.dp),
-                    color = Slate100,
+                    shape = RoundedCornerShape(14.dp),
+                    color = if (isSahajDark) Slate800 else CanvasWarm,
+                    border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isSahajDark) Slate700 else Slate300),
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
@@ -484,8 +491,9 @@ fun SahajFilingExperienceView(
             Spacer(Modifier.height(10.dp))
 
             Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = PureWhite,
+                shape = RoundedCornerShape(14.dp),
+                color = if (isSahajDark) Slate800 else PureWhite,
+                border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isSahajDark) Slate700 else Slate300),
                 shadowElevation = 1.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {

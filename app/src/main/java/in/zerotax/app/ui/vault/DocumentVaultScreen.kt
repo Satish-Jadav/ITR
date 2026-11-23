@@ -153,7 +153,7 @@ fun DocumentVaultScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 8.dp)
         ) {
             Spacer(Modifier.height(10.dp))
 

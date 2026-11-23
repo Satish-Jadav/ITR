@@ -150,7 +150,12 @@ object StatutoryTaxTimelineManager {
     }
 
     fun daysUntilJuly31(referenceDate: LocalDate = LocalDate.now()): Long {
-        val target = LocalDate.of(referenceDate.year, Month.JULY, 31)
+        val targetYear = if (referenceDate.month > Month.JULY || (referenceDate.month == Month.JULY && referenceDate.dayOfMonth > 31)) {
+            referenceDate.year + 1
+        } else {
+            referenceDate.year
+        }
+        val target = LocalDate.of(targetYear, Month.JULY, 31)
         return ChronoUnit.DAYS.between(referenceDate, target).coerceAtLeast(0)
     }
 }
@@ -176,10 +181,11 @@ fun StatutoryTimelineBanner(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable { showReminderModal = true },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         color = if (isDark) Slate850 else PureWhite,
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, if (isDark) Slate700 else Slate300),
         shadowElevation = 1.dp
     ) {
         Row(

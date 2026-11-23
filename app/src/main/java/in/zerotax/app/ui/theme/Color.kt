@@ -36,6 +36,7 @@ val ForestGreenAccent = Color(0xFF1E6152) // Interactive button accent
 val SageMintLight = Color(0xFFC0D8CF) // Soft sage / mint for chart bars
 val SageMintSubtle = Color(0xFFDCEAE5) // Very light sage tint
 val SageMintPill = Color(0xFFE4F0EB) // Soft green pill background
+val SageMintBorder = Color(0xFFC0D8CF) // Soft sage / mint border stroke
 val RosePillBg = Color(0xFFFCEBEB) // Soft rose pill background
 val RosePillText = Color(0xFFD94444) // Rose badge text
 val AmberPillBg = Color(0xFFFEF5E7) // Soft amber/gold pill background
@@ -76,18 +77,18 @@ val IndigoStatutoryBg  = Color(0xFFEEF2FF)
 val IndigoStatutoryBgDark = Color(0xFF1E1B4B)
 
 // Unified Single-Source Palette Tokens (Mapped directly to the primary design variables)
-val PalettePrimary = EnterpriseTeal700      // Primary Text & Accents
-val PaletteAccent = EnterpriseTeal600       // Brand Interactive Buttons & Highlights
+val PalettePrimary = ForestGreenPrimary     // Primary Text & Accents
+val PaletteAccent = ForestGreenPrimary      // Brand Interactive Buttons & Highlights
 val PaletteSecondary = Slate600             // Supporting Labels & Dividers
 val PaletteSurface = PureWhite              // Crisp Elevated Cards
-val PaletteMuted = Slate100                 // Subtle Pills & Backgrounds
-val PaletteBackground = Slate50             // Clean App Backdrop
+val PaletteMuted = SageMintPill             // Subtle Pills & Backgrounds
+val PaletteBackground = CanvasWarm          // Clean App Backdrop
 
 // ============================================================================
 // CENTRALIZED BUTTON THEME VARIABLES (Easily customizable across all screens)
 // ============================================================================
-val ButtonPrimaryBg = EnterpriseTeal600
-val ButtonPrimaryBgDark = EnterpriseTeal500
+val ButtonPrimaryBg = ForestGreenPrimary
+val ButtonPrimaryBgDark = ForestGreenPrimary
 val ButtonPrimaryText = PureWhite
 val ButtonPrimaryTextDark = PureWhite
 
@@ -95,15 +96,15 @@ val ButtonSuccessBg = EmeraldSuccess
 val ButtonSuccessBgDark = Color(0xFF10B981)
 val ButtonSuccessText = PureWhite
 
-val ButtonSecondaryBg = EnterpriseTeal50
-val ButtonSecondaryBgDark = EnterpriseTeal800
-val ButtonSecondaryText = EnterpriseTeal700
-val ButtonSecondaryTextDark = EnterpriseTeal100
+val ButtonSecondaryBg = SageMintPill
+val ButtonSecondaryBgDark = Slate800
+val ButtonSecondaryText = ForestGreenPrimary
+val ButtonSecondaryTextDark = SageMintLight
 
-val ButtonOutlinedBorder = EnterpriseTeal600
-val ButtonOutlinedBorderDark = EnterpriseTeal500
-val ButtonOutlinedText = EnterpriseTeal600
-val ButtonOutlinedTextDark = EnterpriseTeal300
+val ButtonOutlinedBorder = ForestGreenPrimary
+val ButtonOutlinedBorderDark = Slate700
+val ButtonOutlinedText = ForestGreenPrimary
+val ButtonOutlinedTextDark = PureWhite
 
 // ============================================================================
 // ZERO TAX BRAND COLOR TOKENS (Single Source of Truth)

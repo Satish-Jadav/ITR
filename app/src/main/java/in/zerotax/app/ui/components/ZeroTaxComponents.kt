@@ -538,7 +538,14 @@ fun SmartIndividualPanField(
                 keyboardType = dynamicKeyboardType,
                 imeAction = ImeAction.Done
             ),
-            shape = RoundedCornerShape(4.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = PureWhite,
+                unfocusedContainerColor = PureWhite,
+                focusedBorderColor = ForestGreenPrimary,
+                unfocusedBorderColor = Slate300,
+                focusedLabelColor = ForestGreenPrimary
+            ),
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
