@@ -398,64 +398,93 @@ fun WhatsAppEndToEndEncryptionBanner(
     }
 }
 
+data class DiscreteStepInfo(
+    val tap: OnboardingTap,
+    val stepNumber: String,
+    val labelText: String
+)
+
 @Composable
 fun DiscreteStatutoryStepper(
     currentTap: OnboardingTap,
     onStepClick: (OnboardingTap) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val steps = OnboardingTap.entries
+    val isDark = isSystemInDarkTheme()
+    val steps = listOf(
+        DiscreteStepInfo(OnboardingTap.Tap1IdentityConsent, "1", "Ingestion"),
+        DiscreteStepInfo(OnboardingTap.Tap2LiveDiscovery, "2", "Compute"),
+        DiscreteStepInfo(OnboardingTap.Tap3NudgeCards, "3", "Audit"),
+        DiscreteStepInfo(OnboardingTap.Tap4RegimeShowdown, "4", "File")
+    )
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 6.dp)
+    ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            steps.forEachIndexed { index, tap ->
-                val isCurrent = tap == currentTap
-                val isCompleted = tap.ordinal < currentTap.ordinal
-                val targetBarColor = when {
-                    isCurrent -> MaterialTheme.colorScheme.primary
-                    isCompleted -> EmeraldSuccess
-                    else -> MaterialTheme.colorScheme.outlineVariant
+            steps.forEachIndexed { index, item ->
+                val isCurrent = item.tap == currentTap
+                val isCompleted = item.tap.ordinal < currentTap.ordinal
+
+                val circleBg = when {
+                    isCurrent || isCompleted -> ForestGreenPrimary
+                    else -> if (isDark) Slate800 else Color(0xFFE5EAE7)
                 }
-                val animatedBarColor by animateColorAsState(
-                    targetValue = targetBarColor,
-                    animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
-                    label = "StepperBarColor_$index"
-                )
+                val textColor = when {
+                    isCurrent || isCompleted -> PureWhite
+                    else -> if (isDark) Slate400 else Slate600
+                }
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(1.5.dp))
-                        .background(animatedBarColor)
-                )
+                // Step Circle + Label
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { onStepClick(item.tap) }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(circleBg),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (isCompleted) "✓" else item.stepNumber,
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor
+                            )
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = item.labelText,
+                        style = TextStyle(
+                            fontSize = 11.sp,
+                            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isCurrent) (if (isDark) PureWhite else ForestGreenPrimary) else (if (isDark) Slate400 else Slate600)
+                        )
+                    )
+                }
+
+                // Connecting Line between steps
+                if (index < steps.size - 1) {
+                    val lineCompleted = item.tap.ordinal < currentTap.ordinal
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(2.dp)
+                            .padding(horizontal = 4.dp)
+                            .offset(y = (-8).dp)
+                            .background(if (lineCompleted) ForestGreenPrimary else (if (isDark) Slate700 else Slate300))
+                    )
+                }
             }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "STAGE ${currentTap.ordinal + 1} OF 4",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            Text(
-                text = currentTap.title,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
         }
     }
 }
@@ -1158,8 +1187,8 @@ fun ZeroTaxTopAppBar(
             actions()
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            scrolledContainerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (isSystemInDarkTheme()) Slate950 else CanvasWarm,
+            scrolledContainerColor = if (isSystemInDarkTheme()) Slate950 else CanvasWarm
         )
     )
 }

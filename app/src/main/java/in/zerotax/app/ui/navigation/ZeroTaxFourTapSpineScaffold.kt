@@ -346,83 +346,75 @@ fun ZeroTaxFourTapSpineScaffold(
             }
         },
         bottomBar = {
-            if (uiState.currentTap == null) {
-                val isDarkNav = isSystemInDarkTheme()
-                Surface(
+            val isDarkNav = isSystemInDarkTheme()
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                color = if (isDarkNav) Slate950 else PureWhite,
+                tonalElevation = 6.dp,
+                shadowElevation = 8.dp,
+                border = androidx.compose.foundation.BorderStroke(
+                    0.5.dp,
+                    if (isDarkNav) Slate800 else Color(0xFFE5EAE7)
+                )
+            ) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .navigationBarsPadding(),
-                    color = if (isDarkNav) Slate950 else PureWhite,
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val icons = listOf(
-                            Triple(WorkspaceTab.Filing, Icons.Default.Home, "Filing"),
-                            Triple(WorkspaceTab.AiCopilot, Icons.Default.ChatBubbleOutline, "Assistant"),
-                            Triple(WorkspaceTab.AisAndVault, Icons.Default.FolderZip, "Documents"),
-                            Triple(WorkspaceTab.Tools, Icons.Default.Calculate, "Calculators")
-                        )
+                    val icons = listOf(
+                        Triple(WorkspaceTab.Filing, Icons.Default.Home, "Filing"),
+                        Triple(WorkspaceTab.AiCopilot, Icons.Default.ChatBubbleOutline, "Assistant"),
+                        Triple(WorkspaceTab.AisAndVault, Icons.Default.FolderZip, "Documents"),
+                        Triple(WorkspaceTab.Tools, Icons.Default.Calculate, "Calculators")
+                    )
 
-                        icons.forEach { (tab, icon, label) ->
-                            val isSelected = uiState.selectedWorkspaceTab == tab
-                            val activePillColor = if (isDarkNav) Slate800 else Color(0xFFE4EDFA)
-                            val iconColor = if (isSelected) (if (isDarkNav) PureWhite else Slate900) else (if (isDarkNav) Slate500 else Slate400)
+                    icons.forEach { (tab, icon, label) ->
+                        val isSelected = uiState.selectedWorkspaceTab == tab
+                        val activePillColor = if (isDarkNav) Slate800 else Color(0xFFDEE5F5)
+                        val iconColor = if (isSelected) (if (isDarkNav) PureWhite else Slate900) else (if (isDarkNav) Slate500 else Slate400)
 
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier
-                                    .clickable { viewModel.onSelectWorkspaceTab(tab) }
-                                    .padding(vertical = 4.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(width = 54.dp, height = 30.dp)
-                                        .clip(RoundedCornerShape(15.dp))
-                                        .background(if (isSelected) activePillColor else Color.Transparent),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = icon,
-                                        contentDescription = label,
-                                        tint = iconColor,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .clickable {
+                                    if (uiState.currentTap != null) {
+                                        viewModel.onNavigateToTap(null)
+                                    }
+                                    viewModel.onSelectWorkspaceTab(tab)
                                 }
-                                Spacer(Modifier.height(3.dp))
-                                Text(
-                                    text = label,
-                                    style = TextStyle(
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) (if (isDarkNav) PureWhite else Slate900) else (if (isDarkNav) Slate500 else Slate500)
-                                    )
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(width = 60.dp, height = 32.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(if (isSelected) activePillColor else Color.Transparent),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = label,
+                                    tint = iconColor,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
+                            Spacer(Modifier.height(3.dp))
+                            Text(
+                                text = label,
+                                style = TextStyle(
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) (if (isDarkNav) PureWhite else Slate900) else (if (isDarkNav) Slate500 else Slate500)
+                                )
+                            )
                         }
                     }
-                }
-            } else {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp,
-                    border = CardDefaults.outlinedCardBorder().copy(
-                        width = 0.5.dp,
-                        brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
-                    ),
-                    modifier = Modifier.imePadding().navigationBarsPadding()
-                ) {
-                    DiscreteStatutoryStepper(
-                        currentTap = uiState.currentTap!!,
-                        onStepClick = { viewModel.onNavigateToTap(it) }
-                    )
                 }
             }
         }
@@ -431,12 +423,23 @@ fun ZeroTaxFourTapSpineScaffold(
             isUnlocked = ZeroTaxBiometricManager.isVaultBiometricallyUnlocked,
             onUnlock = { ZeroTaxBiometricManager.unlockVault() }
         ) {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
                     .background(MaterialTheme.colorScheme.background)
             ) {
+                if (uiState.currentTap != null) {
+                    DiscreteStatutoryStepper(
+                        currentTap = uiState.currentTap!!,
+                        onStepClick = { viewModel.onNavigateToTap(it) }
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)
+                ) {
             // Directional smooth horizontal slide & fade transitions between steps
             AnimatedContent(
                 targetState = uiState.currentTap,
@@ -568,6 +571,7 @@ fun ZeroTaxFourTapSpineScaffold(
                     )
                 }
             }
+        }
 
             if (showPortalSyncModal) {
                 ItdOfficialWebLoginSheet(

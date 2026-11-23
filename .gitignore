@@ -85,3 +85,4 @@ config.bat
 node_modules
 screenshots/
 keystore.properties
+design_reference/
