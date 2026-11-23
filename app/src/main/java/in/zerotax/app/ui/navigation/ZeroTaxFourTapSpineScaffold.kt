@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import `in`.zerotax.app.ui.vault.DocumentVaultScreen
 import `in`.zerotax.app.ui.components.*
 import `in`.zerotax.app.ui.audit.PreFilingAuditView
 import `in`.zerotax.app.ui.business.SmallBusinessAuditSuiteScreen
@@ -1857,11 +1858,10 @@ private fun ProWorkspaceView(
                 }
 
                 WorkspaceTab.AisAndVault -> {
-                    SmartTransactionSuggestionsView(
-                        pan = uiState.pan,
+                    DocumentVaultScreen(
+                        viewModel = viewModel,
                         showTopBar = false,
-                        onBack = { onSelectTab(WorkspaceTab.Filing) },
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        onBack = { onSelectTab(WorkspaceTab.Filing) }
                     )
                 }
 

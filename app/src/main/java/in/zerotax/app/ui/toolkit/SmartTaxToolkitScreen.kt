@@ -166,63 +166,340 @@ fun SmartTaxToolkitScreen(
         }
 
         if (activeTool == null) {
-            // Clean Menu Options (ITR-5 Entity Card Style)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 16.dp),
                 contentPadding = PaddingValues(top = 10.dp, bottom = 120.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                // Screen introduction (Figma 4:1208)
+                item {
+                    Column {
+                        Text(
+                            text = "Statutory Tax Toolkit",
+                            style = TextStyle(
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isDark) PureWhite else Slate900
+                            )
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Specialized calculators for complex statutory provisions",
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                color = if (isDark) Slate400 else Slate600
+                            )
+                        )
+                    }
+                }
+
+                // 2x2 Calculator Grid (Figma 4:1211)
+                item {
+                    val tiles = listOf(
+                        Triple(ToolkitTab.ADVANCE_TAX_RADAR, "Advance Tax", "Sec 208 quarterly schedules & Challan 280"),
+                        Triple(ToolkitTab.HRA_OPTIMIZER, "HRA Exemption", "Sec 10(13A) Rule 2A metro vs non-metro"),
+                        Triple(ToolkitTab.CAPITAL_GAINS_LEDGER, "Capital Gains Indexation", "Cost Inflation Index (CII) base multiplier"),
+                        Triple(ToolkitTab.REFUND_AUDIT_244A, "Penal Interest", "Calculate Sec 234A, 234B & 234C interest")
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            tiles.take(2).forEach { (tab, title, desc) ->
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = if (isDark) Slate850 else PureWhite),
+                                    shape = RoundedCornerShape(16.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                                    border = CardDefaults.outlinedCardBorder().copy(
+                                        width = 1.dp,
+                                        brush = androidx.compose.ui.graphics.SolidColor(if (isDark) Slate700 else Slate300)
+                                    ),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(134.dp)
+                                        .clickable { activeTool = tab }
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(14.dp),
+                                        verticalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(if (isDark) Slate800 else SageMintPill),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = tab.icon,
+                                                contentDescription = title,
+                                                tint = ForestGreenPrimary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = title,
+                                                style = TextStyle(
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (isDark) PureWhite else Slate900
+                                                ),
+                                                maxLines = 1
+                                            )
+                                            Spacer(Modifier.height(2.dp))
+                                            Text(
+                                                text = desc,
+                                                style = TextStyle(
+                                                    fontSize = 10.5.sp,
+                                                    color = if (isDark) Slate400 else Slate600,
+                                                    lineHeight = 14.sp
+                                                ),
+                                                maxLines = 2
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            tiles.drop(2).forEach { (tab, title, desc) ->
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = if (isDark) Slate850 else PureWhite),
+                                    shape = RoundedCornerShape(16.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                                    border = CardDefaults.outlinedCardBorder().copy(
+                                        width = 1.dp,
+                                        brush = androidx.compose.ui.graphics.SolidColor(if (isDark) Slate700 else Slate300)
+                                    ),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(134.dp)
+                                        .clickable { activeTool = tab }
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(14.dp),
+                                        verticalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(if (isDark) Slate800 else SageMintPill),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = tab.icon,
+                                                contentDescription = title,
+                                                tint = ForestGreenPrimary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = title,
+                                                style = TextStyle(
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (isDark) PureWhite else Slate900
+                                                ),
+                                                maxLines = 1
+                                            )
+                                            Spacer(Modifier.height(2.dp))
+                                            Text(
+                                                text = desc,
+                                                style = TextStyle(
+                                                    fontSize = 10.5.sp,
+                                                    color = if (isDark) Slate400 else Slate600,
+                                                    lineHeight = 14.sp
+                                                ),
+                                                maxLines = 2
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Featured HRA Quick Calculator Card (Figma 4:1238)
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = if (isDark) Slate850 else PureWhite),
+                        shape = RoundedCornerShape(18.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            width = 1.dp,
+                            brush = androidx.compose.ui.graphics.SolidColor(if (isDark) Slate700 else Slate300)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { activeTool = ToolkitTab.HRA_OPTIMIZER }
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "HRA Quick Exemption",
+                                    style = TextStyle(
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isDark) PureWhite else Slate900
+                                    )
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isDark) Slate800 else SageMintPill)
+                                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = "MUMBAI · METRO",
+                                        style = TextStyle(
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = ForestGreenPrimary
+                                        )
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(
+                                color = if (isDark) Slate800 else Slate200,
+                                thickness = 0.5.dp
+                            )
+
+                            // Row 1: Basic Salary
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Basic salary", style = TextStyle(fontSize = 13.sp, color = if (isDark) Slate400 else Slate600))
+                                Text("₹80,000 / month", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (isDark) PureWhite else Slate900))
+                            }
+
+                            // Row 2: HRA Received
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("HRA received", style = TextStyle(fontSize = 13.sp, color = if (isDark) Slate400 else Slate600))
+                                Text("₹35,000 / month", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (isDark) PureWhite else Slate900))
+                            }
+
+                            // Row 3: Actual Rent Paid
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Actual rent paid", style = TextStyle(fontSize = 13.sp, color = if (isDark) Slate400 else Slate600))
+                                Text("₹30,000 / month", style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (isDark) PureWhite else Slate900))
+                            }
+
+                            Spacer(Modifier.height(2.dp))
+
+                            // Computed Exemption Banner
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = SageMintPill,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        tint = ForestGreenPrimary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        text = "₹22,000 / month exempt from tax",
+                                        style = TextStyle(
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = ForestGreenPrimary
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Additional Statutory Engines Header & List
                 item {
                     Text(
-                        text = "Calculators & Financial Engines",
+                        text = "More Financial Engines",
                         style = TextStyle(
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Slate600
                         ),
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(top = 6.dp)
                     )
                 }
 
-                items(ToolkitTab.entries) { tab ->
+                items(ToolkitTab.entries.filter {
+                    it !in listOf(
+                        ToolkitTab.ADVANCE_TAX_RADAR,
+                        ToolkitTab.HRA_OPTIMIZER,
+                        ToolkitTab.CAPITAL_GAINS_LEDGER,
+                        ToolkitTab.REFUND_AUDIT_244A
+                    )
+                }) { tab ->
                     val badgeLabel = when (tab) {
-                        ToolkitTab.HRA_OPTIMIZER -> "Rule 2A"
                         ToolkitTab.CTC_OPTIMIZER -> "Tax Saver"
-                        ToolkitTab.CAPITAL_GAINS_LEDGER -> "Schedule CG"
                         ToolkitTab.PROPERTY_LTCG -> "Sec 112"
                         ToolkitTab.FORM_10E_RELIEF -> "Sec 89"
                         ToolkitTab.ITR_U_UPDATED_RETURN -> "Sec 139(8A)"
-                        ToolkitTab.ADVANCE_TAX_RADAR -> "Challan 280"
                         ToolkitTab.LTCG_HARVESTING -> "₹1.25L Cap"
                         ToolkitTab.STATEMENT_EXPORTER -> "Bank/Visa"
                         ToolkitTab.WHAT_IF_SIMULATOR -> "Planner"
                         ToolkitTab.FORM_12BB_PROOF -> "Form 12BB"
                         ToolkitTab.FORM_15G_15H -> "Zero TDS"
                         ToolkitTab.RESIDENTIAL_STATUS -> "FEMA / NRI"
-                        ToolkitTab.REFUND_AUDIT_244A -> "Sec 244A"
                         ToolkitTab.SCHEDULE_AL_WEALTH -> "Schedule AL"
                         ToolkitTab.CORPORATE_SUITE -> "ITR-5/6/7"
+                        else -> "Tool"
                     }
 
                     val subText = when (tab) {
-                        ToolkitTab.HRA_OPTIMIZER -> "Rent receipts & Section 10(13A) Rule 2A exemption"
                         ToolkitTab.CTC_OPTIMIZER -> "Rebalance flexi-benefits & allowances"
-                        ToolkitTab.CAPITAL_GAINS_LEDGER -> "Equities, MFs & carry-forward loss ledger"
                         ToolkitTab.PROPERTY_LTCG -> "12.5% without vs 20% with indexation dual-option"
                         ToolkitTab.FORM_10E_RELIEF -> "Salary arrears tax relief under Section 89"
                         ToolkitTab.ITR_U_UPDATED_RETURN -> "File for past 2 FYs under Section 139(8A)"
-                        ToolkitTab.ADVANCE_TAX_RADAR -> "Quarterly schedules & Challan 280 UPI"
                         ToolkitTab.LTCG_HARVESTING -> "Maximize ₹1.25 Lakh annual tax-free gains"
                         ToolkitTab.STATEMENT_EXPORTER -> "Certified visa & bank loan tax statement"
                         ToolkitTab.WHAT_IF_SIMULATOR -> "Simulate increment, job switch & deductions"
                         ToolkitTab.FORM_12BB_PROOF -> "Generate employee investment declaration"
                         ToolkitTab.FORM_15G_15H -> "Zero TDS on FD interest declaration"
                         ToolkitTab.RESIDENTIAL_STATUS -> "FEMA & Income Tax 182-day rule calculator"
-                        ToolkitTab.REFUND_AUDIT_244A -> "Section 244A 0.5% monthly refund interest"
                         ToolkitTab.SCHEDULE_AL_WEALTH -> "Assets & Liabilities disclosure u/s 139"
                         ToolkitTab.CORPORATE_SUITE -> "LLP, Pvt Ltd & Trust statutory tools"
+                        else -> ""
                     }
 
                     Card(

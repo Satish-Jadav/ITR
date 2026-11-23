@@ -1,0 +1,290 @@
+=== SCREEN 4:380 ===
+id="4:380" name="03 · Data ingestion" x="705" y="1746" width="393" height="852">
+    <frame id="4:381" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:382" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:383" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:384" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:404" name="Screen body" x="16" y="108" width="361" height="528">
+      <frame id="4:973" name="Screen introduction" x="0" y="0" width="361" height="64">
+        <text id="4:974" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:975" name="Supporting text" x="0" y="42" width="361" height="18" />
+      </frame>
+      <instance id="4:976" name="Stepper" x="0" y="80" width="361" height="64" />
+      <frame id="4:992" name="Account aggregator connection" x="0" y="160" width="361" height="166">
+        <frame id="4:993" name="AA icon surface" x="16" y="16" width="40" height="40" />
+        <frame id="4:994" name="bank icon" x="26" y="26" width="20" height="20" />
+        <text id="4:996" name="AA heading" x="68" y="17" width="210" height="20" />
+        <text id="4:997" name="AA regulator" x="68" y="41" width="250" height="14" />
+        <frame id="4:998" name="CONNECTED" x="239" y="74" width="105" height="24">
+          <text id="4:999" name="Label" x="8" y="5" width="89" height="14" />
+        </frame>
+        <frame id="
+
+========================================
+
+=== SCREEN 4:424 ===
+id="4:424" name="04 · Copilot chat" x="1146" y="1746" width="393" height="852">
+    <frame id="4:425" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:426" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:427" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:428" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:448" name="Screen body" x="16" y="108" width="361" height="566">
+      <frame id="4:1025" name="Screen introduction" x="0" y="0" width="361" height="48">
+        <text id="4:1026" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1027" name="Supporting text" x="0" y="29" width="361" height="18" />
+      </frame>
+      <text id="4:1028" name="Session timestamp" x="0" y="56" width="361" height="14" />
+      <frame id="4:1029" name="Copilot recommendation" x="0" y="78" width="361" height="246">
+        <frame id="4:1030" name="spark icon" x="16" y="16" width="20" height="20" />
+        <text id="4:1032" name="Copilot label" x="46" y="19" width="290" height="14" />
+        <text id="4:1033" name="Assistant message" x="16" y="49" width="329" height="57" />
+        <frame id="4:1034" name="80D deduction recommendation" x="12" y="125" width="337" height="109">
+          <text id="4:1035" name="Deduction title" x="12" y="10" width="313" height="18" />
+          <instance id="4:1036" name="AmountField" x="12" y="36" width="313"
+
+========================================
+
+=== SCREEN 4:468 ===
+id="4:468" name="05 · Tax analytics" x="1587" y="1746" width="393" height="852">
+    <frame id="4:469" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:470" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:471" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:472" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:492" name="Screen body" x="16" y="108" width="361" height="564">
+      <frame id="4:1060" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1061" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1062" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <instance id="4:1074" name="RegimeComparisonCard · Compact" x="0" y="68" width="361" height="134" />
+      <frame id="4:1085" name="Income breakdown" x="0" y="214" width="361" height="180">
+        <ellipse id="4:1086" name="Salary · 68%" x="16" y="16" width="148" height="148" />
+        <ellipse id="4:1087" name="Capital gains · 18%" x="16" y="16" width="148" height="148" />
+        <ellipse id="4:1088" name="Others · 14%" x="16" y="16" width="148" height="148" />
+        <text id="4:1089" name="Income label" x="33" y="70" width="114" height="14" />
+        <text id="4:1090" name="Total income" x="27" y="91" width="126" height="24" />
+        <frame id="4:1091" name="Salary · 68% marker" x="183" y="28" 
+
+========================================
+
+=== SCREEN 4:512 ===
+id="4:512" name="06 · Smart deductions" x="2028" y="1746" width="393" height="852">
+    <frame id="4:513" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:514" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:515" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:516" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:536" name="Screen body" x="16" y="108" width="361" height="560">
+      <frame id="4:1114" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1115" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1116" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <frame id="4:1117" name="Optimized savings" x="0" y="68" width="361" height="122">
+        <text id="4:1118" name="Eyebrow" x="20" y="16" width="321" height="14" />
+        <text id="4:1119" name="Savings" x="20" y="38" width="321" height="40" />
+        <text id="4:1120" name="Rules applied" x="20" y="91" width="321" height="18" />
+      </frame>
+      <frame id="4:1121" name="Deduction utilization" x="0" y="202" width="361" height="240">
+        <text id="4:1122" name="80C · PPF, ELSS, EPF" x="16" y="16" width="211" height="16" />
+        <text id="4:1123" name="₹1,50,000 / ₹1,50,000" x="198" y="16" width="147" height="14" />
+        <frame id="4:1124" name="80C · PPF, ELSS, EPF track" x="16" y="41"
+
+========================================
+
+=== SCREEN 4:556 ===
+id="4:556" name="07 · Document vault" x="2469" y="1746" width="393" height="852">
+    <frame id="4:557" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:558" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:559" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:560" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:580" name="Screen body" x="16" y="108" width="361" height="624">
+      <instance id="4:1150" name="HardwareVaultStatusCard" x="0" y="0" width="361" height="98" />
+      <frame id="4:1157" name="Document search" x="0" y="110" width="361" height="44">
+        <frame id="4:1158" name="Search field" x="0" y="0" width="305" height="44" />
+        <frame id="4:1159" name="search icon" x="12" y="13" width="18" height="18" />
+        <text id="4:1162" name="Placeholder" x="40" y="14" width="253" height="16" />
+        <frame id="4:1163" name="Filter control" x="317" y="0" width="44" height="44" />
+        <frame id="4:1164" name="filter icon" x="328" y="11" width="22" height="22" />
+      </frame>
+      <frame id="4:1166" name="Document grid" x="0" y="166" width="361" height="360">
+        <instance id="4:1167" name="VaultCard" x="0" y="0" width="174" height="174" />
+        <instance id="4:1176" name="VaultCard" x="187" y="0" width="174" height="174" />
+        <instance id="4:1185" name="VaultCard" x="0" y="186" width="174" height="174" />
+        <in
+
+========================================
+
+=== SCREEN 4:600 ===
+id="4:600" name="08 · Tax toolkit" x="2910" y="1746" width="393" height="852">
+    <frame id="4:601" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:602" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:603" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:604" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:624" name="Screen body" x="16" y="108" width="361" height="604">
+      <frame id="4:1208" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1209" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1210" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <frame id="4:1211" name="Calculator grid" x="0" y="72" width="361" height="280">
+        <frame id="4:1212" name="Advance tax" x="0" y="0" width="174" height="134">
+          <frame id="4:1213" name="Icon surface" x="14" y="12" width="32" height="32" />
+          <frame id="4:1214" name="calc icon" x="21" y="19" width="18" height="18" />
+          <text id="4:1217" name="Tool name" x="14" y="53" width="146" height="18" />
+          <text id="4:1218" name="Tool description" x="14" y="81" width="146" height="30" />
+        </frame>
+        <frame id="4:1219" name="HRA exemption" x="187" y="0" width="174" height="134">
+          <frame id="4:1220" name="Icon surface" x="14" y="12" width="32" height="32" />
+  
+
+========================================
+
+=== SCREEN 4:644 ===
+id="4:644" name="09 · ITD portal bridge" x="3351" y="1746" width="393" height="852">
+    <frame id="4:645" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:646" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:647" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:648" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:668" name="Screen body" x="16" y="108" width="361" height="518">
+      <frame id="4:1250" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1251" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1252" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <frame id="4:1253" name="Live e-filing session" x="0" y="68" width="361" height="138">
+        <text id="4:1254" name="Connection" x="16" y="16" width="329" height="14" />
+        <text id="4:1255" name="PAN" x="16" y="43" width="232" height="26" />
+        <frame id="4:1256" name="AADHAAR LINK VERIFIED" x="16" y="83" width="204" height="24">
+          <text id="4:1257" name="Label" x="8" y="5" width="188" height="14" />
+        </frame>
+        <text id="4:1258" name="Countdown" x="254" y="50" width="91" height="32" />
+        <text id="4:1259" name="Countdown label" x="254" y="85" width="91" height="14" />
+      </frame>
+      <frame id="4:1260" name="Pre-filing validation checklist" x="0" y="218" 
+
+========================================
+
+=== SCREEN 4:688 ===
+id="4:688" name="10 · 44AD business suite" x="3792" y="1746" width="393" height="852">
+    <frame id="4:689" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:690" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:691" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:692" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:712" name="Screen body" x="16" y="108" width="361" height="590">
+      <frame id="4:1296" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1297" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1298" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <frame id="4:1299" name="Turnover and presumptive profit" x="0" y="72" width="361" height="314">
+        <text id="4:1300" name="Input label" x="16" y="16" width="329" height="18" />
+        <instance id="4:1301" name="AmountField" x="16" y="47" width="329" height="54.68144226074219" />
+        <text id="4:1305" name="Split label" x="16" y="123" width="329" height="14" />
+        <frame id="4:1306" name="Cash slider track" x="16" y="153" width="329" height="8" />
+        <frame id="4:1307" name="Digital slider segment" x="16" y="153" width="263" height="8" />
+        <frame id="4:1308" name="Slider thumb" x="267" y="145" width="24" height="24" />
+        <text id="4:1309" name="Digital percentage" 
+
+========================================
+
+=== SCREEN 4:732 ===
+id="4:732" name="11 · NRI compliance" x="4233" y="1746" width="393" height="852">
+    <frame id="4:733" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:734" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:735" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:736" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:756" name="Screen body" x="16" y="108" width="361" height="572">
+      <frame id="4:1326" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1327" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1328" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <frame id="4:1329" name="Residency test wizard" x="0" y="68" width="361" height="214">
+        <text id="4:1330" name="Question" x="16" y="16" width="329" height="20" />
+        <frame id="4:1331" name="Decrease day count" x="32" y="56" width="44" height="44" />
+        <frame id="4:1332" name="minus icon" x="44" y="68" width="20" height="20" />
+        <frame id="4:1334" name="Increase day count" x="285" y="56" width="44" height="44" />
+        <frame id="4:1335" name="plus icon" x="297" y="68" width="20" height="20" />
+        <text id="4:1337" name="Day count" x="100" y="47" width="161" height="40" />
+        <text id="4:1338" name="Days unit" x="100" y="90" width="161" height="12" />
+        <text i
+
+========================================
+
+=== SCREEN 4:776 ===
+id="4:776" name="12 · Corporate audit" x="4674" y="1746" width="393" height="852">
+    <frame id="4:777" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:778" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:779" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:780" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:800" name="Screen body" x="16" y="108" width="361" height="546">
+      <frame id="4:1362" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1363" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1364" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <frame id="4:1365" name="Corporate entity switcher" x="0" y="68" width="361" height="76">
+        <text id="4:1366" name="Entity" x="16" y="13" width="299" height="20" />
+        <text id="4:1367" name="CIN" x="16" y="45" width="315" height="16" />
+        <frame id="4:1368" name="down icon" x="325" y="28" width="20" height="20" />
+      </frame>
+      <frame id="4:1370" name="ITR-6 statutory module checklist" x="0" y="156" width="361" height="252">
+        <frame id="4:1371" name="check icon" x="16" y="22" width="18" height="18" />
+        <text id="4:1373" name="Balance sheet &amp; P&amp;L" x="46" y="16" width="299" height="18" />
+        <text id="4:1374" name="IND-AS compliant" x="46" y="40" width=
+
+========================================
+
+=== SCREEN 4:820 ===
+id="4:820" name="13 · CA command center" x="5115" y="1746" width="393" height="852">
+    <frame id="4:821" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:822" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:823" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:824" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:844" name="Screen body" x="16" y="108" width="361" height="560">
+      <frame id="4:1403" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1404" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1405" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <frame id="4:1409" name="Roster metrics" x="0" y="68" width="361" height="84">
+        <instance id="4:1410" name="StatCard · Compact" x="0" y="0" width="112" height="84" />
+        <instance id="4:1413" name="StatCard · Compact" x="124" y="0" width="112" height="84" />
+        <instance id="4:1416" name="StatCard · Compact" x="248" y="0" width="112" height="84" />
+      </frame>
+      <frame id="4:1419" name="Client audit queue" x="0" y="164" width="361" height="226">
+        <text id="4:1420" name="Title" x="16" y="14" width="329" height="20" />
+        <text id="4:1421" name="Client" x="16" y="48" width="329" height="18" />
+        <text id="4:1422" name="ITR and tax" x="16" y="74" width="165" hei
+
+========================================
+
+=== SCREEN 4:864 ===
+id="4:864" name="14 · Notice defense" x="5556" y="1746" width="393" height="852">
+    <frame id="4:865" name="Status bar" x="0" y="0" width="393" height="44">
+      <text id="4:866" name="Time" x="24" y="15" width="60" height="18" />
+      <text id="4:867" name="Connection" x="289" y="15" width="83" height="16" />
+    </frame>
+    <instance id="4:868" name="EnterpriseTopHeader" x="16" y="44" width="361" height="48" />
+    <frame id="4:888" name="Screen body" x="16" y="108" width="361" height="512">
+      <frame id="4:1447" name="Screen introduction" x="0" y="0" width="361" height="56">
+        <text id="4:1448" name="Screen title" x="0" y="0" width="361" height="28" />
+        <text id="4:1449" name="Supporting text" x="0" y="36" width="361" height="18" />
+      </frame>
+      <frame id="4:1450" name="Statutory notice DIN" x="0" y="68" width="361" height="146">
+        <frame id="4:1451" name="NOTICE U/S 143(1)(a)" x="16" y="14" width="164" height="24">
+          <text id="4:1452" name="Label" x="8" y="5" width="148" height="14" />
+        </frame>
+        <text id="4:1453" name="DIN label" x="16" y="52" width="329" height="12" />
+        <text id="4:1454" name="DIN" x="16" y="72" width="329" height="18" />
+        <text id="4:1455" name="Demand" x="16" y="103" width="190" height="32" />
+        <frame id="4:1456" name="12 Days Remaining" x="200" y="108" width="145" height="24">
+          <text id="4:1457" name="Label" x="8" y="5" width="129" height="14" />
+        </frame>
+ 
+
+========================================
+

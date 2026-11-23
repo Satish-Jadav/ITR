@@ -308,57 +308,34 @@ fun ConversationalFilingChatScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
 
-                // Single consolidated prompt suggestions row
-                val allPrompts = remember(gross, messages.size) {
-                    val dynamic = if (gross > 0L) {
-                        listOf(
-                            "⚡ Compare Regimes",
-                            "💡 Simulate ₹50k NPS",
-                            "🏥 ₹25k Health Ins 80D",
-                            "🏠 HRA vs Home Loan",
-                            "📊 Restructure CTC 14% NPS"
-                        )
-                    } else {
-                        listOf(
-                            "📄 Auto-Find Form 16",
-                            "🔄 1-Tap Sync AIS & 26AS",
-                            "⚡ Which Regime is Better?",
-                            "💡 Maximize Deductions",
-                            "🏥 80D Limits"
-                        )
-                    }
-                    val replies = messages.lastOrNull { it.sender == ChatSender.BOT }?.quickReplies.orEmpty()
-                    (replies + dynamic).distinct()
+                // Quick reply suggestion chips matching Figma 4:1046
+                val figmaChips = remember {
+                    listOf("Compare regimes", "HRA receipts", "Losses")
                 }
 
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp)
                 ) {
-                    items(allPrompts) { prompt ->
-                        val cleanPrompt = prompt.replace("⚡ ", "").replace("💡 ", "").replace("🏥 ", "").replace("🏠 ", "").replace("📊 ", "").replace("📄 ", "").replace("🔄 ", "")
+                    items(figmaChips) { prompt ->
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (isDark) Slate800 else Slate100,
-                            border = androidx.compose.foundation.BorderStroke(0.75.dp, if (isDark) Slate700 else Slate300),
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isDark) Slate800 else SageMintPill,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) Slate700 else SageMintLight),
                             modifier = Modifier.clickable {
-                                if (cleanPrompt.contains("Review All Points") || cleanPrompt.contains("Submit", ignoreCase = true) || cleanPrompt.contains("Final Approval", ignoreCase = true)) {
-                                    showChatFinalApprovalDialog = true
-                                } else {
-                                    handleSend(cleanPrompt)
-                                }
+                                handleSend(prompt)
                             }
                         ) {
                             Text(
                                 text = prompt,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                                style = TextStyle(fontSize = 11.sp, color = if (isDark) Slate200 else Slate700, fontWeight = FontWeight.Medium)
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = TextStyle(fontSize = 12.sp, color = if (isDark) PureWhite else ForestGreenPrimary, fontWeight = FontWeight.SemiBold)
                             )
                         }
                     }
                 }
 
-                // Ergonomic Pill Input Field
+                // Ergonomic Input Bar matching Figma 4:1053
                 Surface(
                     shape = RoundedCornerShape(26.dp),
                     color = if (isDark) Slate850 else PureWhite,
@@ -368,7 +345,7 @@ fun ConversationalFilingChatScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
@@ -376,10 +353,10 @@ fun ConversationalFilingChatScreen(
                             modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.AttachFile,
-                                contentDescription = "Attach Document",
-                                tint = EnterpriseTeal500,
-                                modifier = Modifier.size(20.dp)
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Attachment",
+                                tint = ForestGreenPrimary,
+                                modifier = Modifier.size(22.dp)
                             )
                         }
 
@@ -388,8 +365,8 @@ fun ConversationalFilingChatScreen(
                             onValueChange = { inputText = it },
                             placeholder = {
                                 Text(
-                                    "Ask Copilot (e.g. NPS, 80C, HRA)...",
-                                    style = MaterialTheme.typography.bodySmall.copy(color = Slate400)
+                                    "Ask your copilot anything about deductions...",
+                                    style = TextStyle(fontSize = 12.5.sp, color = Slate400)
                                 )
                             },
                             colors = TextFieldDefaults.colors(
@@ -412,13 +389,13 @@ fun ConversationalFilingChatScreen(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(if (canSend) EnterpriseTeal600 else if (isDark) Slate800 else Slate200)
+                                .background(if (canSend) ForestGreenPrimary else if (isDark) Slate800 else Slate200)
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = "Send",
                                 tint = if (canSend) PureWhite else Slate400,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
