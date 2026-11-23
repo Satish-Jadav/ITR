@@ -1379,17 +1379,95 @@ fun ZeroTaxSecondaryButton(
  * Responsive by default with adaptive padding, 16.dp radius, and modern fintech elevation.
  */
 @Composable
+fun ZeroTaxEntityCard(
+    title: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    badgeText: String? = null,
+    badgeTone: BadgeTone = BadgeTone.STATUTORY,
+    subtitle: String? = null,
+    onClick: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit = {}
+) {
+    val cardBaseModifier = modifier.fillMaxWidth()
+    val finalModifier = if (onClick != null) cardBaseModifier.clickable(onClick = onClick) else cardBaseModifier
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = CardDefaults.outlinedCardBorder().copy(
+            width = 0.5.dp,
+            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+        ),
+        modifier = finalModifier
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
+                if (badgeText != null) {
+                    Spacer(Modifier.width(6.dp))
+                    StatutoryBadge(text = badgeText, tone = badgeTone)
+                }
+            }
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+            }
+            content()
+        }
+    }
+}
+
+@Composable
 fun ZeroTaxCard(
     modifier: Modifier = Modifier,
     accentBorderColor: Color? = null,
     containerColor: Color = MaterialTheme.colorScheme.surface,
-    shape: RoundedCornerShape = RoundedCornerShape(22.dp),
-    contentPadding: PaddingValues = PaddingValues(16.dp),
+    shape: RoundedCornerShape = RoundedCornerShape(16.dp),
+    contentPadding: PaddingValues = PaddingValues(14.dp),
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-    val defaultBorderColor = if (isDark) Slate700.copy(alpha = 0.35f) else Color.Transparent
+    val defaultBorderColor = if (isDark) Slate700.copy(alpha = 0.35f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     val effectiveBorderColor = accentBorderColor ?: defaultBorderColor
 
     val baseModifier = modifier
@@ -1397,7 +1475,7 @@ fun ZeroTaxCard(
         .clip(shape)
         .then(
             if (effectiveBorderColor != Color.Transparent) {
-                Modifier.border(width = 0.75.dp, color = effectiveBorderColor, shape = shape)
+                Modifier.border(width = 0.5.dp, color = effectiveBorderColor, shape = shape)
             } else Modifier
         )
     val cardModifier = if (onClick != null) {
@@ -1410,7 +1488,7 @@ fun ZeroTaxCard(
         modifier = cardModifier,
         shape = shape,
         color = containerColor,
-        shadowElevation = if (isDark) 0.dp else 2.5.dp
+        shadowElevation = if (isDark) 0.dp else 1.dp
     ) {
         Column(
             modifier = Modifier.padding(contentPadding),
@@ -1595,7 +1673,7 @@ fun ZeroTaxStatCard(
 }
 
 /**
- * Standardized Section Header with Brand Indicator Pill.
+ * Standardized Section Header matching the clean ITR-5 Entity card style.
  */
 @Composable
 fun ZeroTaxSectionHeader(
@@ -1603,37 +1681,50 @@ fun ZeroTaxSectionHeader(
     subtitle: String? = null,
     badgeText: String? = null,
     badgeTone: BadgeTone = BadgeTone.STATUTORY,
+    icon: ImageVector? = null,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f, fill = false)
+            ) {
                 Box(
                     modifier = Modifier
-                        .size(width = 4.dp, height = 18.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(Brush.verticalGradient(listOf(EnterpriseTeal500, EnterpriseTeal700)))
-                )
-                Spacer(Modifier.width(8.dp))
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon ?: Icons.Default.CorporateFare,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
             if (badgeText != null) {
+                Spacer(Modifier.width(6.dp))
                 StatutoryBadge(text = badgeText, tone = badgeTone)
             }
         }
         if (subtitle != null) {
-            Spacer(Modifier.height(2.dp))
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp),
-                modifier = Modifier.padding(start = 12.dp)
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
         }
     }

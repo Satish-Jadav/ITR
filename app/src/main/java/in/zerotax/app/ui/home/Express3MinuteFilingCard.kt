@@ -57,19 +57,21 @@ fun Express3MinuteFilingCard(
         listOf(EnterpriseTeal500, EmeraldSuccess, Color(0xFF10B981))
     )
 
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp)),
-        shape = RoundedCornerShape(24.dp),
-        color = if (isDark) Slate850 else PureWhite,
-        shadowElevation = if (isDark) 0.dp else 2.5.dp
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = CardDefaults.outlinedCardBorder().copy(
+            width = 0.5.dp,
+            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+        )
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Header: Express Filing Ready
+            // Header: Express Filing Ready (ITR-5 Entity style)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -77,57 +79,42 @@ fun Express3MinuteFilingCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f, fill = false)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(42.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(SageMintPill),
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ElectricBolt,
                             contentDescription = "Express Filing",
-                            tint = ForestGreenPrimary,
-                            modifier = Modifier.size(22.dp)
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
-                    Column {
-                        Text(
-                            text = "Express Filing Ready",
-                            style = TextStyle(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isDark) PureWhite else Slate900,
-                                letterSpacing = (-0.2).sp
-                            )
-                        )
-                        Text(
-                            text = "Pre-filled & Reconciled with ITD",
-                            style = TextStyle(
-                                color = Slate500,
-                                fontSize = 11.5.sp
-                            )
-                        )
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(50),
-                    color = SageMintPill
-                ) {
                     Text(
-                        text = formName,
-                        style = TextStyle(
-                            fontSize = 11.sp,
+                        text = "Express Filing Ready",
+                        style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = ForestGreenPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         ),
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        maxLines = 1
                     )
                 }
+                Spacer(Modifier.width(6.dp))
+                StatutoryBadge(
+                    text = formName,
+                    tone = BadgeTone.SUCCESS
+                )
             }
+            Text(
+                text = "Pre-filled & Reconciled with ITD • 90-Second Instant e-Filing",
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
 
             // Regime and Refund / Tax Payable Summary Row
             Surface(

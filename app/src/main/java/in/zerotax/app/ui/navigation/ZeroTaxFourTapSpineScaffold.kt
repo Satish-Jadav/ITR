@@ -350,7 +350,7 @@ fun ZeroTaxFourTapSpineScaffold(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -1762,7 +1762,7 @@ private fun ProWorkspaceView(
             when (currentTab) {
                 WorkspaceTab.Filing -> {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
                         contentPadding = PaddingValues(bottom = 120.dp)
                     ) {
                         item {
@@ -1853,7 +1853,7 @@ private fun ProWorkspaceView(
                         pan = uiState.pan,
                         showTopBar = false,
                         onBack = { onSelectTab(WorkspaceTab.Filing) },
-                        modifier = Modifier.padding(horizontal = 14.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     )
                 }
 

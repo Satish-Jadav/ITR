@@ -112,7 +112,7 @@ fun SmartTaxToolkitScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = topInset + 4.dp, bottom = 10.dp, start = 14.dp, end = 14.dp),
+                        .padding(top = topInset + 4.dp, bottom = 10.dp, start = 8.dp, end = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -166,105 +166,125 @@ fun SmartTaxToolkitScreen(
         }
 
         if (activeTool == null) {
-            // Clean Menu Options (Cards)
+            // Clean Menu Options (ITR-5 Entity Card Style)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(top = 14.dp, bottom = 120.dp),
+                    .padding(horizontal = 8.dp),
+                contentPadding = PaddingValues(top = 10.dp, bottom = 120.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 item {
                     Text(
                         text = "Calculators & Financial Engines",
                         style = TextStyle(
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Slate600
                         ),
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                     )
                 }
 
                 items(ToolkitTab.entries) { tab ->
-                    Surface(
+                    val badgeLabel = when (tab) {
+                        ToolkitTab.HRA_OPTIMIZER -> "Rule 2A"
+                        ToolkitTab.CTC_OPTIMIZER -> "Tax Saver"
+                        ToolkitTab.CAPITAL_GAINS_LEDGER -> "Schedule CG"
+                        ToolkitTab.PROPERTY_LTCG -> "Sec 112"
+                        ToolkitTab.FORM_10E_RELIEF -> "Sec 89"
+                        ToolkitTab.ITR_U_UPDATED_RETURN -> "Sec 139(8A)"
+                        ToolkitTab.ADVANCE_TAX_RADAR -> "Challan 280"
+                        ToolkitTab.LTCG_HARVESTING -> "₹1.25L Cap"
+                        ToolkitTab.STATEMENT_EXPORTER -> "Bank/Visa"
+                        ToolkitTab.WHAT_IF_SIMULATOR -> "Planner"
+                        ToolkitTab.FORM_12BB_PROOF -> "Form 12BB"
+                        ToolkitTab.FORM_15G_15H -> "Zero TDS"
+                        ToolkitTab.RESIDENTIAL_STATUS -> "FEMA / NRI"
+                        ToolkitTab.REFUND_AUDIT_244A -> "Sec 244A"
+                        ToolkitTab.SCHEDULE_AL_WEALTH -> "Schedule AL"
+                        ToolkitTab.CORPORATE_SUITE -> "ITR-5/6/7"
+                    }
+
+                    val subText = when (tab) {
+                        ToolkitTab.HRA_OPTIMIZER -> "Rent receipts & Section 10(13A) Rule 2A exemption"
+                        ToolkitTab.CTC_OPTIMIZER -> "Rebalance flexi-benefits & allowances"
+                        ToolkitTab.CAPITAL_GAINS_LEDGER -> "Equities, MFs & carry-forward loss ledger"
+                        ToolkitTab.PROPERTY_LTCG -> "12.5% without vs 20% with indexation dual-option"
+                        ToolkitTab.FORM_10E_RELIEF -> "Salary arrears tax relief under Section 89"
+                        ToolkitTab.ITR_U_UPDATED_RETURN -> "File for past 2 FYs under Section 139(8A)"
+                        ToolkitTab.ADVANCE_TAX_RADAR -> "Quarterly schedules & Challan 280 UPI"
+                        ToolkitTab.LTCG_HARVESTING -> "Maximize ₹1.25 Lakh annual tax-free gains"
+                        ToolkitTab.STATEMENT_EXPORTER -> "Certified visa & bank loan tax statement"
+                        ToolkitTab.WHAT_IF_SIMULATOR -> "Simulate increment, job switch & deductions"
+                        ToolkitTab.FORM_12BB_PROOF -> "Generate employee investment declaration"
+                        ToolkitTab.FORM_15G_15H -> "Zero TDS on FD interest declaration"
+                        ToolkitTab.RESIDENTIAL_STATUS -> "FEMA & Income Tax 182-day rule calculator"
+                        ToolkitTab.REFUND_AUDIT_244A -> "Section 244A 0.5% monthly refund interest"
+                        ToolkitTab.SCHEDULE_AL_WEALTH -> "Assets & Liabilities disclosure u/s 139"
+                        ToolkitTab.CORPORATE_SUITE -> "LLP, Pvt Ltd & Trust statutory tools"
+                    }
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            width = 0.5.dp,
+                            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
-                            .clickable { activeTool = tab },
-                        shape = RoundedCornerShape(20.dp),
-                        color = if (isDark) Slate850 else PureWhite,
-                        shadowElevation = 1.dp
+                            .clickable { activeTool = tab }
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(42.dp)
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .background(if (isDark) Slate800 else SageMintPill),
-                                    contentAlignment = Alignment.Center
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.weight(1f, fill = false)
                                 ) {
-                                    Icon(
-                                        imageVector = tab.icon,
-                                        contentDescription = tab.label,
-                                        tint = ForestGreenPrimary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-
-                                Column {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(MaterialTheme.colorScheme.primaryContainer),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = tab.icon,
+                                            contentDescription = tab.label,
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                     Text(
                                         text = tab.label,
-                                        style = TextStyle(
-                                            fontSize = 14.sp,
+                                        style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isDark) PureWhite else Slate900
-                                        )
-                                    )
-                                    Text(
-                                        text = when (tab) {
-                                            ToolkitTab.HRA_OPTIMIZER -> "Rent receipts & Section 10(13A) Rule 2A"
-                                            ToolkitTab.CTC_OPTIMIZER -> "Rebalance flexi-benefits & allowances"
-                                            ToolkitTab.CAPITAL_GAINS_LEDGER -> "Equities, MFs & carry-forward loss ledger"
-                                            ToolkitTab.PROPERTY_LTCG -> "12.5% without vs 20% with indexation"
-                                            ToolkitTab.FORM_10E_RELIEF -> "Salary arrears tax relief under Section 89"
-                                            ToolkitTab.ITR_U_UPDATED_RETURN -> "File for past 2 FYs under Section 139(8A)"
-                                            ToolkitTab.ADVANCE_TAX_RADAR -> "Quarterly schedules & Challan 280 UPI"
-                                            ToolkitTab.LTCG_HARVESTING -> "Maximize ₹1.25 Lakh annual tax-free gains"
-                                            ToolkitTab.STATEMENT_EXPORTER -> "Certified visa & bank loan tax statement"
-                                            ToolkitTab.WHAT_IF_SIMULATOR -> "Simulate increment, job switch & deductions"
-                                            ToolkitTab.FORM_12BB_PROOF -> "Generate employee investment declaration"
-                                            ToolkitTab.FORM_15G_15H -> "Zero TDS on FD interest declaration"
-                                            ToolkitTab.RESIDENTIAL_STATUS -> "FEMA & Income Tax 182-day rule calculator"
-                                            ToolkitTab.REFUND_AUDIT_244A -> "Section 244A 0.5% monthly refund interest"
-                                            ToolkitTab.SCHEDULE_AL_WEALTH -> "Assets & Liabilities disclosure u/s 139"
-                                            ToolkitTab.CORPORATE_SUITE -> "LLP, Pvt Ltd & Trust statutory tools"
-                                        },
-                                        style = TextStyle(
-                                            fontSize = 11.sp,
-                                            color = Slate500
+                                            color = MaterialTheme.colorScheme.onSurface
                                         ),
                                         maxLines = 1
                                     )
                                 }
+                                Spacer(Modifier.width(6.dp))
+                                StatutoryBadge(
+                                    text = badgeLabel,
+                                    tone = BadgeTone.STATUTORY
+                                )
                             }
-
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null,
-                                tint = Slate400,
-                                modifier = Modifier.size(13.dp)
+                            Text(
+                                text = subText,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             )
                         }
                     }
@@ -275,7 +295,7 @@ fun SmartTaxToolkitScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
             ) {
                 when (activeTool!!) {
                     ToolkitTab.HRA_OPTIMIZER -> HraOptimizerView(pan = pan, grossSalary = liveUiState?.grossSalaryRupees ?: grossSalary, onApplyHraToReturn = { viewModel?.onExemptAllowancesSec10Changed(it) })
@@ -344,7 +364,7 @@ private fun HraOptimizerView(
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = getTealHighlightBg()),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600))
             ) {
@@ -429,7 +449,7 @@ private fun HraOptimizerView(
             // Rule 2A 3-Condition Breakdown Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
             ) {
@@ -451,7 +471,7 @@ private fun HraOptimizerView(
                 Spacer(Modifier.height(12.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = getAmberWarningBg()),
                     border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(AmberWarning))
                 ) {
@@ -483,7 +503,7 @@ private fun HraOptimizerView(
                         onApplyHraToReturn(hraExemption)
                         appliedHra = true
                     },
-                    shape = RoundedCornerShape(4.dp),
+                    shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth().height(42.dp)
                 ) {
                     Icon(
@@ -504,7 +524,7 @@ private fun HraOptimizerView(
             // Rent Receipt Generator Button
             Button(
                 onClick = { showRentReceiptPreview = !showRentReceiptPreview },
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                 modifier = Modifier.fillMaxWidth().height(44.dp)
             ) {
@@ -532,7 +552,7 @@ private fun HraOptimizerView(
                 Spacer(Modifier.height(12.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Slate50),
                     border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
                 ) {
@@ -595,7 +615,7 @@ private fun AdvanceTaxRadarView(
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = if (requiresAdvanceTax) getAmberWarningBg() else getEmeraldSuccessBg()
                 ),
@@ -650,7 +670,7 @@ private fun AdvanceTaxRadarView(
             // Penalty Interest Avoidance Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
             ) {
@@ -668,7 +688,7 @@ private fun AdvanceTaxRadarView(
             // Instant Challan 280 UPI Generation
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
                 border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600))
             ) {
@@ -699,7 +719,7 @@ private fun AdvanceTaxRadarView(
                             )
                             UpiChallan280IntentLauncher.launchUpiPaymentIntent(context, uri)
                         },
-                        shape = RoundedCornerShape(4.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                         modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {
@@ -729,7 +749,7 @@ private fun AdvanceTaxRadarView(
 private fun AdvanceTaxMilestoneRow(quarter: String, deadline: String, percentage: Int, targetAmount: Long) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
     ) {
@@ -761,7 +781,7 @@ private fun LtcgHarvestingRadarView() {
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = EnterpriseTeal50),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(EnterpriseTeal600))
             ) {
@@ -806,7 +826,7 @@ private fun LtcgHarvestingRadarView() {
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant))
             ) {
@@ -848,7 +868,7 @@ private fun LtcgHarvestingRadarView() {
                 harvestRecs.forEach { rec ->
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
-                        shape = RoundedCornerShape(4.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate300))
                     ) {
@@ -894,7 +914,7 @@ private fun BankReadyStatementView(
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = PureWhite),
                 border = CardDefaults.outlinedCardBorder().copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(Slate400))
             ) {
@@ -973,7 +993,7 @@ private fun BankReadyStatementView(
 
                     Button(
                         onClick = { /* Export PDF */ },
-                        shape = RoundedCornerShape(4.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                         modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {

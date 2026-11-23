@@ -259,7 +259,7 @@ fun WhatIfScenarioSimulatorView(
                                     onApplyScenario(result)
                                     appliedScenario = true
                                 },
-                                shape = RoundedCornerShape(4.dp),
+                                shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = EnterpriseTeal600),
                                 modifier = Modifier.fillMaxWidth().height(42.dp)
                             ) {
