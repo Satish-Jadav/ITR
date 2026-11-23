@@ -6,6 +6,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -64,6 +66,7 @@ fun SahajFilingExperienceView(
     val regimeSavings = max(0L, oldRegimeTax - newRegimeTax)
     val refundDue = max(0L, tdsClaimed - bestRegimeTax)
     val taxPayable = max(0L, bestRegimeTax - tdsClaimed)
+    val isSahajDark = isSystemInDarkTheme()
 
     Column(
         modifier = modifier
@@ -84,9 +87,8 @@ fun SahajFilingExperienceView(
 
         // 1-TAP IN-APP ITD PORTAL SYNC CARD
         Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = getTealHighlightBg(),
-            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500.copy(alpha = 0.5f)),
+            shape = RoundedCornerShape(22.dp),
+            color = if (isSahajDark) Slate850 else PureWhite,
             shadowElevation = 1.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -95,7 +97,7 @@ fun SahajFilingExperienceView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -103,25 +105,53 @@ fun SahajFilingExperienceView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Sync,
-                        contentDescription = null,
-                        tint = getTealHighlightIcon(),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(SageMintPill),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Sync,
+                            contentDescription = null,
+                            tint = ForestGreenPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
                     Column {
                         Text(
-                            "Sync Directly from Income Tax Portal",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = getTealHighlightText())
+                            "Sync Income Tax Portal",
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSahajDark) PureWhite else Slate900
+                            )
                         )
                         Text(
-                            "Pull Form 26AS, AIS/TIS & prefill in-app. Never leave ZeroTax!",
-                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                            "Auto-pull Form 26AS, AIS/TIS & prefill salary",
+                            style = TextStyle(
+                                color = Slate500,
+                                fontSize = 11.sp
+                            )
                         )
                     }
                 }
-                StatutoryBadge(text = "1-Tap Sync", tone = BadgeTone.SUCCESS)
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = SageMintPill
+                ) {
+                    Text(
+                        text = "1-Tap Sync",
+                        style = TextStyle(
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = ForestGreenPrimary
+                        ),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
         }
 

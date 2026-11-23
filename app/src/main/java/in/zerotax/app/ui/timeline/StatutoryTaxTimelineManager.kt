@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -169,25 +171,21 @@ fun StatutoryTimelineBanner(
         StatutoryTaxTimelineManager.syncDynamicTimelineFromCloud()
     }
 
-    Card(
+    val isDark = isSystemInDarkTheme()
+
+    Surface(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
             .clickable { showReminderModal = true },
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (daysLeft <= 15) AmberWarning.copy(alpha = 0.08f) else EnterpriseTeal50
-        ),
-        border = CardDefaults.outlinedCardBorder().copy(
-            width = 1.dp,
-            brush = androidx.compose.ui.graphics.SolidColor(
-                if (daysLeft <= 15) AmberWarning.copy(alpha = 0.5f) else EnterpriseTeal300
-            )
-        )
+        shape = RoundedCornerShape(20.dp),
+        color = if (isDark) Slate850 else PureWhite,
+        shadowElevation = 1.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -197,40 +195,36 @@ fun StatutoryTimelineBanner(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(34.dp)
-                        .clip(CircleShape)
-                        .background(if (daysLeft <= 15) AmberWarning.copy(alpha = 0.2f) else EnterpriseTeal100),
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (daysLeft <= 15) AmberPillBg else SageMintPill),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (daysLeft <= 15) Icons.Default.Warning else Icons.Default.CalendarMonth,
                         contentDescription = null,
-                        tint = if (daysLeft <= 15) AmberWarning else EnterpriseTeal900,
-                        modifier = Modifier.size(18.dp)
+                        tint = if (daysLeft <= 15) AmberPillText else ForestGreenPrimary,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(12.dp))
 
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "ITR Due Date: July 31, 2026",
-                            style = MaterialTheme.typography.labelLarge.copy(
+                            text = "Due Date: July 31, 2026",
+                            style = TextStyle(
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (daysLeft <= 15) AmberWarning else EnterpriseTeal900
+                                color = if (isDark) PureWhite else Slate900
                             )
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        StatutoryBadge(
-                            text = "Sec 139(1)",
-                            tone = if (daysLeft <= 15) BadgeTone.WARNING else BadgeTone.STATUTORY
                         )
                     }
                     Text(
-                        text = "Filing window open • Avoid ₹5,000 late fee u/s 234F",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Slate600,
+                        text = "Filing window open • Section 139(1)",
+                        style = TextStyle(
+                            color = Slate500,
                             fontSize = 11.sp
                         )
                     )
@@ -239,25 +233,19 @@ fun StatutoryTimelineBanner(
 
             // Countdown Pill
             Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = if (daysLeft <= 15) AmberWarning else EnterpriseTeal600
+                shape = RoundedCornerShape(50),
+                color = if (daysLeft <= 15) AmberPillBg else SageMintPill
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = null,
-                        tint = if (daysLeft <= 15) Slate900 else PureWhite,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
                     Text(
                         text = "$daysLeft Days Left",
-                        style = MaterialTheme.typography.labelSmall.copy(
+                        style = TextStyle(
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (daysLeft <= 15) Slate900 else PureWhite
+                            color = if (daysLeft <= 15) AmberPillText else ForestGreenPrimary
                         )
                     )
                 }

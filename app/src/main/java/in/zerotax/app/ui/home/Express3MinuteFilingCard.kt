@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,7 +69,7 @@ fun Express3MinuteFilingCard(
             modifier = Modifier.padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Header: ⚡ 90-Second Express Filing Ready
+            // Header: Express Filing Ready
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -76,52 +77,62 @@ fun Express3MinuteFilingCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF10B981).copy(alpha = 0.15f)),
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(SageMintPill),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ElectricBolt,
                             contentDescription = "Express Filing",
-                            tint = Color(0xFF10B981),
-                            modifier = Modifier.size(20.dp)
+                            tint = ForestGreenPrimary,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                     Column {
                         Text(
-                            text = "⚡ 90-Second Express Filing",
-                            style = MaterialTheme.typography.titleMedium.copy(
+                            text = "Express Filing Ready",
+                            style = TextStyle(
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = if (isDark) PureWhite else Slate900,
                                 letterSpacing = (-0.2).sp
                             )
                         )
                         Text(
                             text = "Pre-filled & Reconciled with ITD",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 11.sp
+                            style = TextStyle(
+                                color = Slate500,
+                                fontSize = 11.5.sp
                             )
                         )
                     }
                 }
 
-                StatutoryBadge(text = formName, tone = BadgeTone.SUCCESS)
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = SageMintPill
+                ) {
+                    Text(
+                        text = formName,
+                        style = TextStyle(
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ForestGreenPrimary
+                        ),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
             }
 
             // Regime and Refund / Tax Payable Summary Row
             Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (isDark) Slate800.copy(alpha = 0.7f) else Slate50,
-                border = androidx.compose.foundation.BorderStroke(
-                    0.75.dp,
-                    if (isDark) Slate700 else Slate200
-                ),
+                shape = RoundedCornerShape(16.dp),
+                color = if (isDark) Slate800 else Slate100,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -211,17 +222,18 @@ fun Express3MinuteFilingCard(
 
             // Primary 1-Tap CTA Button with tactile feedback
             ZeroTaxPrimaryButton(
-                text = if (taxPayable > 0L) "Pay Tax via UPI & File (1 Tap)" else "File & e-Verify Now (1 Tap)",
+                text = if (taxPayable > 0L) "Pay Tax via UPI & File" else "File & e-Verify Return",
                 onClick = onFileAndEVerifyNow,
-                containerColor = EmeraldSuccess,
+                containerColor = ForestGreenPrimary,
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.ElectricBolt,
                         contentDescription = null,
+                        tint = PureWhite,
                         modifier = Modifier.size(18.dp)
                     )
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(52.dp)
             )
         }
     }
