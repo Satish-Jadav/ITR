@@ -13,32 +13,46 @@ import androidx.compose.ui.graphics.Color
 // Single Source of Truth: update variables here to re-theme the entire application.
 // ============================================================================
 
-// Sovereign Neutral Slate Foundation (Modern High-Contrast Architecture)
-val Slate950 = Color(0xFF0A0F1D) // Deepest Midnight Obsidian backdrop
-val Slate900 = Color(0xFF0F172A) // Rich Charcoal / Primary text on light
-val Slate850 = Color(0xFF111827) // Elevated dark card surface
-val Slate800 = Color(0xFF1E293B) // Dark surface container
-val Slate700 = Color(0xFF334155) // Dark border / muted text on dark
-val Slate600 = Color(0xFF475569) // Secondary text
-val Slate500 = Color(0xFF64748B) // Tertiary / Muted labels
-val Slate400 = Color(0xFF94A3B8) // Placeholder text / subtle borders
-val Slate300 = Color(0xFFCBD5E1) // Light card border
-val Slate200 = Color(0xFFE2E8F0) // Subtle dividers
-val Slate100 = Color(0xFFF1F5F9) // Light surface variant
-val Slate50  = Color(0xFFF8FAFC) // Primary light backdrop (clean porcelain)
-val PureWhite = Color(0xFFFFFFFF) // Clean high-contrast card surface
+// Soft Warm Canvas & Elevated Card System (Matching Reference Design)
+val CanvasWarm = Color(0xFFF4F6F5) // Soft warm off-white canvas
+val Slate950 = Color(0xFF0F1513) // Deepest charcoal / dark canvas
+val Slate900 = Color(0xFF151C19) // Rich deep charcoal / Primary text
+val Slate850 = Color(0xFF1E2623) // Elevated dark card surface
+val Slate800 = Color(0xFF28322E) // Dark surface container
+val Slate700 = Color(0xFF434E49) // Dark border / muted text on dark
+val Slate600 = Color(0xFF6B7772) // Secondary text (#6B7772)
+val Slate500 = Color(0xFF8E9592) // Muted subtle labels (Greeting / Subtitles)
+val Slate400 = Color(0xFFA5AEA9) // Placeholder text / subtle borders
+val Slate300 = Color(0xFFD4DAD7) // Light card border
+val Slate200 = Color(0xFFE5EAE7) // Subtle dividers
+val Slate100 = Color(0xFFECEFE8) // Light surface variant / active nav pill
+val Slate50  = Color(0xFFF4F6F5) // Primary light backdrop (soft warm canvas)
+val PureWhite = Color(0xFFFFFFFF) // Clean elevated card surface
 
-// Modern Luxury Emerald & Sovereign Spruce Accent System (Authoritative, Luminous & Modern)
-val EnterpriseTeal900 = Color(0xFF063326) // Deepest Luxury Spruce
-val EnterpriseTeal800 = Color(0xFF064E3B) // Deep Forest
-val EnterpriseTeal700 = Color(0xFF047857) // Rich British Racing Green
-val EnterpriseTeal600 = Color(0xFF059669) // Modern Vivid Emerald (Brand Primary)
-val EnterpriseTeal500 = Color(0xFF10B981) // Radiant Mint (Interactive CTA / Highlights)
-val EnterpriseTeal400 = Color(0xFF34D399) // Luminous Glow Accent
-val EnterpriseTeal300 = Color(0xFF6EE7B7) // Light Mint
-val EnterpriseTeal200 = Color(0xFFA7F3D0) // Soft Pastel Mint
-val EnterpriseTeal100 = Color(0xFFD1FAE5) // Delicate Tint Container
-val EnterpriseTeal50  = Color(0xFFF0FDF4) // Ultra-clean subtle highlight
+// Deep Forest Green & Modern Sage Palette
+val ForestGreenDark = Color(0xFF133E35) // Deep forest green
+val ForestGreenPrimary = Color(0xFF184E42) // Primary brand forest green
+val ForestGreenAccent = Color(0xFF1E6152) // Interactive button accent
+val SageMintLight = Color(0xFFC0D8CF) // Soft sage / mint for chart bars
+val SageMintSubtle = Color(0xFFDCEAE5) // Very light sage tint
+val SageMintPill = Color(0xFFE4F0EB) // Soft green pill background
+val RosePillBg = Color(0xFFFCEBEB) // Soft rose pill background
+val RosePillText = Color(0xFFD94444) // Rose badge text
+val AmberPillBg = Color(0xFFFEF5E7) // Soft amber/gold pill background
+val AmberPillText = Color(0xFFB46E13) // Amber badge text
+val NavPillActive = Color(0xFFDEE5F5) // Soft active nav selector pill (light lavender/periwinkle tint)
+
+// Legacy alias mappings for backward compatibility
+val EnterpriseTeal900 = ForestGreenDark
+val EnterpriseTeal800 = ForestGreenPrimary
+val EnterpriseTeal700 = ForestGreenPrimary
+val EnterpriseTeal600 = ForestGreenAccent
+val EnterpriseTeal500 = Color(0xFF2E7D6B)
+val EnterpriseTeal400 = Color(0xFF52A390)
+val EnterpriseTeal300 = SageMintLight
+val EnterpriseTeal200 = SageMintSubtle
+val EnterpriseTeal100 = SageMintPill
+val EnterpriseTeal50  = Color(0xFFF2F8F5)
 
 // Semantic Status Colors (High-Contrast, Vivid FinTech Badges)
 val EmeraldSuccess     = Color(0xFF059669) // Verified / Zero Discrepancy

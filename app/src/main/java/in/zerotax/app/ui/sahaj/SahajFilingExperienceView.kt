@@ -6,6 +6,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -65,486 +67,661 @@ fun SahajFilingExperienceView(
     val refundDue = max(0L, tdsClaimed - bestRegimeTax)
     val taxPayable = max(0L, bestRegimeTax - tdsClaimed)
 
+    var selectedTimelineMode by remember { mutableStateOf(0) } // 0: "New", 1: "Old"
+    val isSahajDark = isSystemInDarkTheme()
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Statutory Timeline Banner with July 31 Countdown
-        StatutoryTimelineBanner()
-
-        // ⚡ 90-Second Express Filing Spine Card
-        if (uiState != null) {
-            Express3MinuteFilingCard(
-                uiState = uiState,
-                onFileAndEVerifyNow = onLaunchPortalAssistant
-            )
-        }
-
-        // 1-TAP IN-APP ITD PORTAL SYNC CARD
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = getTealHighlightBg(),
-            border = androidx.compose.foundation.BorderStroke(1.dp, EnterpriseTeal500.copy(alpha = 0.5f)),
-            shadowElevation = 1.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onOpenPortalSync() }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Sync,
-                        contentDescription = null,
-                        tint = getTealHighlightIcon(),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Column {
-                        Text(
-                            "Sync Directly from Income Tax Portal",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = getTealHighlightText())
-                        )
-                        Text(
-                            "Pull Form 26AS, AIS/TIS & prefill in-app. Never leave ZeroTax!",
-                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
-                        )
-                    }
-                }
-                StatutoryBadge(text = "1-Tap Sync", tone = BadgeTone.SUCCESS)
-            }
-        }
-
-        // Guided Tour Mini-Popup Card ("Do this then click this")
-        AnimatedVisibility(
-            visible = showTour,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
-        ) {
-            ZeroTaxCoachmarkPopup(
-                currentStep = currentTourStep,
-                onNext = {
-                    val nextOrdinal = currentTourStep.ordinal + 1
-                    if (nextOrdinal < SahajTourStep.entries.size) {
-                        currentTourStep = SahajTourStep.entries[nextOrdinal]
-                    } else {
-                        showTour = false
-                    }
-                },
-                onPrevious = {
-                    val prevOrdinal = currentTourStep.ordinal - 1
-                    if (prevOrdinal >= 0) {
-                        currentTourStep = SahajTourStep.entries[prevOrdinal]
-                    }
-                },
-                onDismiss = { showTour = false }
-            )
-        }
-
-        // Tour Replay Pill if tour was dismissed
-        if (!showTour) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    onClick = {
-                        currentTourStep = SahajTourStep.STEP_1_SALARY
-                        showTour = true
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = EnterpriseTeal700)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Lightbulb,
-                            contentDescription = null,
-                            tint = EnterpriseTeal700,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text("How to File: Show Step-by-Step Guide", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-
-        // HERO OUTCOME CARD: Clean, Plain-Language Result
-        Card(
+        // ====================================================================
+        // DUAL METRIC CARDS (Matching Reference Design Top Two Cards)
+        // ====================================================================
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (refundDue > 0) EmeraldSuccess.copy(alpha = 0.08f) else EnterpriseTeal50
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            border = CardDefaults.outlinedCardBorder().copy(
-                width = 1.25.dp,
-                brush = androidx.compose.ui.graphics.SolidColor(
-                    if (refundDue > 0) EmeraldSuccess.copy(alpha = 0.6f) else EnterpriseTeal600.copy(alpha = 0.6f)
-                )
-            )
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(modifier = Modifier.padding(18.dp)) {
+            // Card 1: Tax Refund Due (or Net Payable)
+            Surface(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(24.dp),
+                color = if (isSahajDark) Slate850 else PureWhite,
+                shadowElevation = 2.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 18.dp)
+                ) {
+                    Text(
+                        text = if (refundDue > 0) "Tax Refund Due" else "Net Tax Liability",
+                        style = TextStyle(
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isSahajDark) Slate400 else Slate600
+                        )
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "₹${Rupee.formatInr(if (refundDue > 0) refundDue else taxPayable)}",
+                        style = TextStyle(
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (isSahajDark) PureWhite else Slate900,
+                            letterSpacing = (-0.5).sp
+                        )
+                    )
+                    Spacer(Modifier.height(14.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = if (refundDue > 0) SageMintPill else AmberPillBg
+                        ) {
+                            Text(
+                                text = if (refundDue > 0) "100% Reconciled" else "Zero Tax Slab",
+                                style = TextStyle(
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (refundDue > 0) ForestGreenPrimary else AmberPillText
+                                ),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(ForestGreenPrimary)
+                        )
+                    }
+                }
+            }
+
+            // Card 2: Due in 30 Days / Advance Tax / TDS
+            Surface(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(24.dp),
+                color = if (isSahajDark) Slate850 else PureWhite,
+                shadowElevation = 2.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 18.dp)
+                ) {
+                    Text(
+                        text = "TDS Deducted",
+                        style = TextStyle(
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isSahajDark) Slate400 else Slate600
+                        )
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "₹${Rupee.formatInr(tdsClaimed)}",
+                        style = TextStyle(
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (isSahajDark) PureWhite else Slate900,
+                            letterSpacing = (-0.5).sp
+                        )
+                    )
+                    Spacer(Modifier.height(14.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = AmberPillBg
+                        ) {
+                            Text(
+                                text = "Form 26AS Match",
+                                style = TextStyle(
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AmberPillText
+                                ),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(AmberPillText)
+                        )
+                    }
+                }
+            }
+        }
+
+        // ====================================================================
+        // HERO PILL BAR CHART CARD (Exact Match to Reference Card)
+        // ====================================================================
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            color = if (isSahajDark) Slate850 else PureWhite,
+            shadowElevation = 2.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                // Header: Title + [✓ New | Old] Toggle Pill
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = if (refundDue > 0) Icons.Default.CheckCircle else Icons.Default.AccountBalance,
-                            contentDescription = null,
-                            tint = if (refundDue > 0) EmeraldSuccess else EnterpriseTeal700,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = if (refundDue > 0) "Income Tax Refund Ready" else if (taxPayable == 0L) "Zero Tax Payable" else "Tax Due to Pay",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = if (refundDue > 0) EmeraldDark else Slate900
-                            )
-                        )
-                    }
-                    StatutoryBadge(
-                        text = if (refundDue > 0) "Refund Due" else if (taxPayable == 0L) "₹0 Balance" else "Self-Assessment",
-                        tone = if (refundDue > 0) BadgeTone.SUCCESS else if (taxPayable == 0L) BadgeTone.STATUTORY else BadgeTone.WARNING
-                    )
-                }
-
-                Spacer(Modifier.height(10.dp))
-
-                val displayAmount = if (refundDue > 0) refundDue else taxPayable
-                Text(
-                    text = "₹${Rupee.formatInr(displayAmount)}",
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = if (refundDue > 0) EmeraldSuccess else if (taxPayable == 0L) EnterpriseTeal700 else AmberWarning
-                    )
-                )
-
-                Spacer(Modifier.height(6.dp))
-
-                Text(
-                    text = if (refundDue > 0)
-                        "Your company deducted ₹${Rupee.formatInr(tdsClaimed)} in taxes, but your actual tax is only ₹${Rupee.formatInr(bestRegimeTax)}. The government will refund the excess directly to your bank account."
-                    else if (taxPayable == 0L)
-                        "Your total income qualifies for full tax rebate under Section 87A. You do not owe any income tax this year!"
-                    else
-                        "You have a remaining tax balance of ₹${Rupee.formatInr(taxPayable)}. Pay instantly via UPI/Challan 280 before filing.",
-                    style = MaterialTheme.typography.bodySmall.copy(color = Slate600, lineHeight = 18.sp)
-                )
-            }
-        }
-
-        // STEP 1: WHAT YOU EARNED (Plain Language)
-        ZeroTaxCard {
-            ZeroTaxSectionHeader(
-                title = "1. What You Earned (FY 2025-26)",
-                subtitle = "Extracted safely in-memory from your Form 16 & AIS",
-                badgeText = "Form 16 Verified",
-                badgeTone = BadgeTone.SUCCESS
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            EnterpriseLedgerRow(
-                label = "Salary from Employer",
-                statutoryRef = "Form 16 Part B",
-                amount = grossSalary
-            )
-            EnterpriseLedgerRow(
-                label = "Savings Bank Interest",
-                statutoryRef = "Annual AIS / TIS",
-                amount = bankInterest
-            )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Slate200)
-
-            EnterpriseLedgerRow(
-                label = "Total Income Earned",
-                amount = grossSalary + bankInterest,
-                isHighlighted = true
-            )
-        }
-
-        // STEP 2: AUTOMATIC GOVERNMENT DISCOUNT
-        ZeroTaxCard {
-            ZeroTaxSectionHeader(
-                title = "2. Automatic Government Discount",
-                subtitle = "Applied automatically by law — zero receipts required",
-                badgeText = "Sec 16(ia)",
-                badgeTone = BadgeTone.STATUTORY
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            EnterpriseLedgerRow(
-                label = "Standard Salary Deduction",
-                statutoryRef = "Flat ₹75,000",
-                amount = standardDeduction,
-                isDeduction = true
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = EnterpriseTeal50,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lightbulb,
-                        contentDescription = null,
-                        tint = EnterpriseTeal900,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "The government gives you this ₹75,000 discount automatically. Your taxable income is reduced to ₹${Rupee.formatInr(netTaxableEarnings)}.",
-                        style = MaterialTheme.typography.bodySmall.copy(color = EnterpriseTeal900, fontSize = 11.sp)
+                        text = "Tax Slabs & Regimes",
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSahajDark) PureWhite else Slate900
+                        )
                     )
-                }
-            }
-        }
 
-        // STEP 3: REGIME COMPARISON (Which saves you more?)
-        ZeroTaxCard {
-            ZeroTaxSectionHeader(
-                title = "3. Best Tax Rule Chosen For You",
-                subtitle = "We compared New vs Old Tax Regime automatically",
-                badgeText = "Auto-Optimized",
-                badgeTone = BadgeTone.SUCCESS
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // New Regime Card (Winning)
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = EnterpriseTeal50,
-                    border = androidx.compose.foundation.BorderStroke(1.5.dp, EnterpriseTeal600),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(12.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                    // Pill Segmented Control
+                    Surface(
+                        shape = RoundedCornerShape(50),
+                        color = if (isSahajDark) Slate800 else Slate100
                     ) {
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                        Row(modifier = Modifier.padding(3.dp)) {
+                            // "New" Option
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(50))
+                                    .background(if (selectedTimelineMode == 0) ForestGreenPrimary else Color.Transparent)
+                                    .clickable { selectedTimelineMode = 0 }
+                                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text("New Regime", fontWeight = FontWeight.Bold, color = EnterpriseTeal900, fontSize = 13.sp)
-                                StatutoryBadge(text = "Best", tone = BadgeTone.SUCCESS)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    if (selectedTimelineMode == 0) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = PureWhite,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                    }
+                                    Text(
+                                        text = "New",
+                                        style = TextStyle(
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (selectedTimelineMode == 0) PureWhite else Slate600
+                                        )
+                                    )
+                                }
                             }
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = "₹${Rupee.formatInr(newRegimeTax)}",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EnterpriseTeal700)
-                            )
+
+                            // "Old" Option
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(50))
+                                    .background(if (selectedTimelineMode == 1) ForestGreenPrimary else Color.Transparent)
+                                    .clickable { selectedTimelineMode = 1 }
+                                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    if (selectedTimelineMode == 1) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = PureWhite,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                    }
+                                    Text(
+                                        text = "Old",
+                                        style = TextStyle(
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (selectedTimelineMode == 1) PureWhite else Slate600
+                                        )
+                                    )
+                                }
+                            }
                         }
-                        Spacer(Modifier.height(2.dp))
-                        Text("Zero paperwork needed", fontSize = 10.sp, color = Slate600)
                     }
                 }
 
-                // Old Regime Card
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
+                Spacer(Modifier.height(14.dp))
+
+                // Amount Figure + Soft Rose/Green Pill Badge
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(12.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                    Text(
+                        text = "₹${Rupee.formatInr(if (selectedTimelineMode == 0) newRegimeTax else oldRegimeTax)}",
+                        style = TextStyle(
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (isSahajDark) PureWhite else Slate900,
+                            letterSpacing = (-0.5).sp
+                        )
+                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(50),
+                        color = if (regimeSavings > 0) RosePillBg else SageMintPill
                     ) {
-                        Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
                             Text(
-                                text = "Old Regime",
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 13.sp
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = "₹${Rupee.formatInr(oldRegimeTax)}",
-                                style = MaterialTheme.typography.titleMedium.copy(
+                                text = if (regimeSavings > 0) "↑ ₹${Rupee.formatInr(regimeSavings)} Saved" else "Optimal Slab",
+                                style = TextStyle(
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (regimeSavings > 0) RosePillText else ForestGreenPrimary
                                 )
                             )
                         }
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            text = "Needs 80C/80D proofs",
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                        )
                     }
                 }
-            }
 
-            if (regimeSavings > 0) {
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(24.dp))
+
+                // Vertical Pill Bar Chart (6 Rounded Bars with labels)
+                val barHeights = listOf(70.dp, 55.dp, 28.dp, 20.dp, 50.dp, 22.dp)
+                val barLabels = listOf("0-3L", "3-7L", "7-10L", "10-12L", "12-15L", ">15L")
+                val activeBarIndex = 4
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    barHeights.forEachIndexed { index, barHeight ->
+                        val isActive = index == activeBarIndex
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom,
+                            modifier = Modifier.width(36.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(30.dp)
+                                    .height(barHeight)
+                                    .clip(RoundedCornerShape(15.dp))
+                                    .background(if (isActive) ForestGreenPrimary else (if (isSahajDark) Slate700 else SageMintLight))
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = barLabels[index],
+                                style = TextStyle(
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isActive) (if (isSahajDark) PureWhite else Slate900) else Slate500
+                                )
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(14.dp))
+
+                // Carousel Dots Indicator (like in reference image)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                        contentDescription = null,
-                        tint = EmeraldSuccess,
-                        modifier = Modifier.size(16.dp)
+                    Box(
+                        modifier = Modifier
+                            .size(width = 16.dp, height = 4.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(ForestGreenPrimary)
                     )
-                    Spacer(Modifier.width(6.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(width = 6.dp, height = 4.dp)
+                            .clip(CircleShape)
+                            .background(if (isSahajDark) Slate700 else Slate300)
+                    )
+                }
+            }
+        }
+
+        // ====================================================================
+        // SUBSCRIPTIONS & DEDUCTIONS LIST (Matching Spotify/YouTube list in image)
+        // ====================================================================
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Deductions & Benefits",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSahajDark) PureWhite else Slate900
+                    )
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { onOpenDeductionsAdvisor() }
+                ) {
                     Text(
-                        text = "New Tax Regime saves you ₹${Rupee.formatInr(regimeSavings)} in tax!",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldSuccess)
+                        text = "Optimize",
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Slate600
+                        )
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Tune,
+                        contentDescription = "Optimize",
+                        tint = Slate600,
+                        modifier = Modifier.size(14.dp)
                     )
                 }
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(6.dp))
 
-            ZeroTaxOutlinedButton(
-                text = "Have Extra Deductions? (Home Loan, 80D, Rent)",
-                onClick = onOpenDeductionsAdvisor
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            ZeroTaxPrimaryButton(
-                text = "Maximize Refund: Think Like a CA (Turn Tax to ₹0)",
-                onClick = onOpenThinkLikeCa,
-                containerColor = EmeraldSuccess,
-                leadingIcon = {
-                    Icon(Icons.AutoMirrored.Filled.TrendingUp, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
-                }
-            )
-        }
-
-        // STEP 4: REFUND BANK ACCOUNT
-        ZeroTaxCard {
-            ZeroTaxSectionHeader(
-                title = "4. Bank Account for Direct Refund",
-                subtitle = "Where the Income Tax Dept sends your money",
-                badgeText = "Pre-Validated",
-                badgeTone = BadgeTone.SUCCESS
-            )
-
-            Spacer(Modifier.height(10.dp))
-
+            // Deduction Item 1: Standard Deduction (Sec 16ia)
             Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = Slate50,
-                border = androidx.compose.foundation.BorderStroke(1.dp, Slate200),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(20.dp),
+                color = if (isSahajDark) Slate850 else PureWhite,
+                shadowElevation = 1.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
+                        .padding(14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.AccountBalance,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        val displayBank = bankAccount?.bankName?.ifBlank { null } ?: "Direct CBDT Validated Bank"
-                        val displayAcc = if (bankAccount != null && bankAccount.accountNumber.isNotBlank()) "Account: ${bankAccount.accountNumber} • IFSC: ${bankAccount.ifscCode}" else "Direct Credit to Pre-Validated Bank Account"
-                        val isPreVal = bankAccount?.isPreValidated ?: true
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(SageMintPill),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Shield,
+                                contentDescription = null,
+                                tint = ForestGreenPrimary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                         Column {
-                            Text(displayBank, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
-                            Text(displayAcc, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                            Text(
+                                text = "Standard Deduction",
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSahajDark) PureWhite else Slate900
+                                )
+                            )
+                            Text(
+                                text = "Sec 16(ia) • Auto applied",
+                                style = TextStyle(
+                                    fontSize = 11.sp,
+                                    color = Slate500
+                                )
+                            )
                         }
                     }
-                    StatutoryBadge(text = if (bankAccount?.isPreValidated == true) "Pre-Validated" else "Primary Refund", tone = BadgeTone.SUCCESS)
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "₹75,000",
+                            style = TextStyle(
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSahajDark) PureWhite else Slate900
+                            )
+                        )
+                        Text(
+                            text = "Standard",
+                            style = TextStyle(fontSize = 10.sp, color = Slate500)
+                        )
+                    }
                 }
             }
-        }
 
-        // STEP 5: 1-TAP BIOMETRIC e-FILING
-        if (taxPayable > 0) {
-            Button(
-                onClick = onOpenTaxPaymentHub,
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AmberWarning),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+            // Deduction Item 2: Sec 87A Tax Rebate (Zero Tax under 7L/12L)
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(20.dp),
+                color = if (isSahajDark) Slate850 else PureWhite,
+                shadowElevation = 1.dp
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CreditCard,
-                        contentDescription = null,
-                        tint = PureWhite,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "Pay ₹${Rupee.formatInr(taxPayable)} Tax via Instant UPI / Challan 280",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = PureWhite)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(AmberPillBg),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = AmberPillText,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Sec 87A Full Rebate",
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSahajDark) PureWhite else Slate900
+                                )
+                            )
+                            Text(
+                                text = "Zero Tax on income up to ₹12L",
+                                style = TextStyle(
+                                    fontSize = 11.sp,
+                                    color = Slate500
+                                )
+                            )
+                        }
+                    }
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "₹25,000",
+                            style = TextStyle(
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ForestGreenPrimary
+                            )
+                        )
+                        Text(
+                            text = "Rebate",
+                            style = TextStyle(fontSize = 10.sp, color = Slate500)
+                        )
+                    }
+                }
+            }
+
+            // Deduction Item 3: Direct Bank Refund Account
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(20.dp),
+                color = if (isSahajDark) Slate850 else PureWhite,
+                shadowElevation = 1.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFE8F1FD)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountBalance,
+                                contentDescription = null,
+                                tint = Color(0xFF1976D2),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = bankAccount?.bankName?.ifBlank { null } ?: "Pre-Validated Bank",
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSahajDark) PureWhite else Slate900
+                                )
+                            )
+                            Text(
+                                text = if (bankAccount != null && bankAccount.accountNumber.isNotBlank()) "A/C: ••••${bankAccount.accountNumber.takeLast(4)}" else "Direct ECS Credit",
+                                style = TextStyle(
+                                    fontSize = 11.sp,
+                                    color = Slate500
+                                )
+                            )
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(50),
+                        color = SageMintPill
+                    ) {
+                        Text(
+                            text = "Verified",
+                            style = TextStyle(
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = ForestGreenPrimary
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
             }
         }
 
-        ZeroTaxPrimaryButton(
-            text = "Authenticate with Biometrics to e-File ITR-1",
-            onClick = { showBiometricFilingDialog = true },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
-        )
-
-        ZeroTaxOutlinedButton(
-            text = "Review AIS Tax Transactions & Form 26AS",
-            onClick = onOpenAisTransactions,
-            leadingIcon = {
+        // Primary Action Button matching reference rounded button
+        Button(
+            onClick = onLaunchPortalAssistant,
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = ForestGreenPrimary,
+                contentColor = PureWhite
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    imageVector = Icons.Default.Fingerprint,
                     contentDescription = null,
-                    tint = EnterpriseTeal700,
-                    modifier = Modifier.size(18.dp)
+                    tint = PureWhite,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "Authenticate & e-File Return Now",
+                    style = TextStyle(
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PureWhite
+                    )
                 )
             }
-        )
+        }
 
-        Spacer(Modifier.height(48.dp))
-    }
+        // Secondary Button: Sync Portal
+        OutlinedButton(
+            onClick = onOpenPortalSync,
+            shape = RoundedCornerShape(20.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, ForestGreenPrimary.copy(alpha = 0.4f)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Sync,
+                    contentDescription = null,
+                    tint = ForestGreenPrimary,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "Sync ITD Portal Data",
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = ForestGreenPrimary
+                    )
+                )
+            }
+        }
+
+        Spacer(Modifier.height(30.dp))
 
     // Biometric e-Filing Verification Sheet
     if (showBiometricFilingDialog) {
@@ -607,5 +784,6 @@ fun SahajFilingExperienceView(
             )
         }
     }
+}
 }
 

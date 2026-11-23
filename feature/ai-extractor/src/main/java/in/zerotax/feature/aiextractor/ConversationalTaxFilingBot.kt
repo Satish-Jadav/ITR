@@ -222,10 +222,6 @@ class ConversationalTaxFilingBot {
                     )
                 }
             }
-                        quickReplies = listOf("Yes, Rent ₹25,000/mo", "Yes, Rent ₹35,000/mo (Metro)", "Yes, Rent ₹15,000/mo", "No Rented Home / Own House")
-                    )
-                )
-            }
 
             ChatStep.ASK_HRA_RENT -> {
                 if (!lower.contains("no") && !lower.contains("own")) {

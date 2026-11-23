@@ -357,45 +357,66 @@ fun ZeroTaxFourTapSpineScaffold(
         },
         bottomBar = {
             if (uiState.currentTap == null) {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 3.dp
+                val isDarkNav = isSystemInDarkTheme()
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding(),
+                    color = if (isDarkNav) Slate950 else PureWhite,
+                    tonalElevation = 6.dp,
+                    shadowElevation = 8.dp
                 ) {
-                    val icons = mapOf(
-                        WorkspaceTab.Filing to Icons.Default.AccountBalance,
-                        WorkspaceTab.AiCopilot to Icons.Default.SmartToy,
-                        WorkspaceTab.AisAndVault to Icons.Default.Receipt,
-                        WorkspaceTab.Tools to Icons.Default.Build
-                    )
-                    val isDarkNav = isSystemInDarkTheme()
-                    WorkspaceTab.entries.forEach { tab ->
-                        val isSelected = uiState.selectedWorkspaceTab == tab
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = { viewModel.onSelectWorkspaceTab(tab) },
-                            label = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val icons = listOf(
+                            Triple(WorkspaceTab.Filing, Icons.Default.Home, "Home"),
+                            Triple(WorkspaceTab.AiCopilot, Icons.Default.SmartToy, "Copilot"),
+                            Triple(WorkspaceTab.AisAndVault, Icons.Default.Receipt, "Vault"),
+                            Triple(WorkspaceTab.Tools, Icons.Default.Settings, "Tools")
+                        )
+
+                        icons.forEach { (tab, icon, label) ->
+                            val isSelected = uiState.selectedWorkspaceTab == tab
+                            val activePillColor = if (isDarkNav) Slate800 else Color(0xFFE4EDFA)
+                            val iconColor = if (isSelected) (if (isDarkNav) PureWhite else Slate900) else (if (isDarkNav) Slate500 else Slate400)
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .clickable { viewModel.onSelectWorkspaceTab(tab) }
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(width = 54.dp, height = 30.dp)
+                                        .clip(RoundedCornerShape(15.dp))
+                                        .background(if (isSelected) activePillColor else Color.Transparent),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = label,
+                                        tint = iconColor,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(Modifier.height(3.dp))
                                 Text(
-                                    text = tab.title,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    text = label,
+                                    style = TextStyle(
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isSelected) (if (isDarkNav) PureWhite else Slate900) else (if (isDarkNav) Slate500 else Slate500)
                                     )
                                 )
-                            },
-                            icon = {
-                                Icon(
-                                    imageVector = icons[tab] ?: Icons.Default.Description,
-                                    contentDescription = tab.title,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = if (isDarkNav) Slate800 else EnterpriseTeal100.copy(alpha = 0.7f),
-                                selectedIconColor = if (isDarkNav) EnterpriseTeal300 else EnterpriseTeal700,
-                                selectedTextColor = if (isDarkNav) EnterpriseTeal300 else EnterpriseTeal700,
-                                unselectedIconColor = if (isDarkNav) Slate400 else Slate500,
-                                unselectedTextColor = if (isDarkNav) Slate400 else Slate500
-                            )
-                        )
+                            }
+                        }
                     }
                 }
             } else {

@@ -258,156 +258,88 @@ fun EnterpriseTopHeader(
     onOpenThinkLikeCa: (() -> Unit)? = null,
     onOpenCaPortal: (() -> Unit)? = null,
     onLockVault: (() -> Unit)? = null,
+    onQuickAdd: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val topInset = getSafeStatusBarTopInset()
+    val isTopDark = isSystemInDarkTheme()
+    val displayName = userProfile?.displayName?.split(" ")?.firstOrNull() ?: if (pan.isNotBlank()) "SATISH" else "ASHU"
+
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp
+        color = if (isTopDark) Slate950 else CanvasWarm,
+        tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = topInset, bottom = 4.dp)
+                .padding(top = topInset + 4.dp, bottom = 8.dp, start = 18.dp, end = 18.dp)
         ) {
-            // Blinkit-style Minimal Top Bar (Brand + Identity + Profile/Lock)
+            // Reference Style Top Bar: Circular Avatar + Greeting + Bold Name + Forest Green Circle '+' Button
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.weight(1f, fill = false)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    ZeroTaxBrandLogo(size = 24.dp, showText = false)
-                    Text(
-                        text = "ZeroTax",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                    // On-device security indicator dot
+                    // Avatar Circle with Soft Warm Border
                     Box(
                         modifier = Modifier
-                            .size(7.dp)
+                            .size(46.dp)
                             .clip(CircleShape)
-                            .background(if (isVaultEncrypted) EmeraldSuccess else AmberWarning)
-                    )
-                    StatutoryBadge(text = "AY $assessmentYear", tone = BadgeTone.STATUTORY)
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    if (pan.isNotBlank()) {
-                        StatutoryBadge(text = pan, tone = BadgeTone.NEUTRAL)
-                    }
-
-                    if (userProfile != null) {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
-                            modifier = Modifier.clickable { onSignOut?.invoke() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AccountCircle,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(Modifier.width(3.dp))
-                                Text(
-                                    text = userProfile.displayName.split(" ").firstOrNull() ?: userProfile.displayName.take(6),
-                                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface),
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                    } else if (onLockVault != null) {
-                        IconButton(
-                            onClick = onLockVault,
-                            modifier = Modifier.size(28.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Lock Vault",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(4.dp))
-
-            // Horizontally Scrollable Fast Actions Strip (Compact & lightweight)
-            val isTopDark = isSystemInDarkTheme()
-            val chipBg = if (isTopDark) Slate850 else Slate100
-            val chipBorder = if (isTopDark) Slate700 else Slate300
-            val chipContent = if (isTopDark) EnterpriseTeal300 else EnterpriseTeal700
-
-            val standardChips = listOfNotNull(
-                onOpenAnalytics?.let { "Insights" to Pair(Icons.Default.BarChart, it) },
-                onOpenNotices?.let { "Notices" to Pair(Icons.Default.Security, it) },
-                onOpenThinkLikeCa?.let { "Think Like CA" to Pair(Icons.AutoMirrored.Filled.TrendingUp, it) },
-                onOpenCaPortal?.let { "CA Desk" to Pair(Icons.Default.AssignmentInd, it) },
-                onOpenBusinessAudit?.let { "Business Audit" to Pair(Icons.Default.Domain, it) },
-                onOpenNriSuite?.let { "NRI Suite" to Pair(Icons.Default.Public, it) },
-                onOpenCorporateSuite?.let { "Corporate Suite" to Pair(Icons.Default.Apartment, it) },
-                onOpenTrustShield?.let { "Trust Shield" to Pair(Icons.Default.VerifiedUser, it) }
-            )
-
-            androidx.compose.foundation.lazy.LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(standardChips.size) { index ->
-                    val (label, iconAndAction) = standardChips[index]
-                    val (icon, action) = iconAndAction
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = chipBg,
-                        border = androidx.compose.foundation.BorderStroke(0.75.dp, chipBorder),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .clickable { action() }
+                            .background(if (isTopDark) Slate800 else SageMintSubtle)
+                            .border(1.5.dp, if (isTopDark) Slate700 else PureWhite, CircleShape)
+                            .clickable { onSignOut?.invoke() },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = null,
-                                tint = chipContent,
-                                modifier = Modifier.size(11.dp)
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text(
-                                text = label,
-                                style = TextStyle(
-                                    fontSize = 9.5.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = chipContent,
-                                    letterSpacing = 0.15.sp
-                                )
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile",
+                            tint = ForestGreenPrimary,
+                            modifier = Modifier.size(34.dp)
+                        )
                     }
+
+                    Column {
+                        Text(
+                            text = "Good Evening",
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = if (isTopDark) Slate400 else Slate500,
+                                letterSpacing = 0.2.sp
+                            )
+                        )
+                        Text(
+                            text = displayName.uppercase(),
+                            style = TextStyle(
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (isTopDark) PureWhite else Slate900,
+                                letterSpacing = (-0.3).sp
+                            )
+                        )
+                    }
+                }
+
+                // Top Right Circular Floating Action Button (+) in Deep Forest Green
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(ForestGreenPrimary)
+                        .clickable { onOpenChatbot?.invoke() ?: onQuickAdd?.invoke() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Quick Action / AI Copilot",
+                        tint = PureWhite,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
         }
